@@ -3,9 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>九九・段別読み方マスター</title>
+    <title>ぱぱん式　九九の読み方マスター</title>
     <style>
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f0f4f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        body { 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            background-color: #f0f4f8; 
+            display: flex; 
+            flex-direction: column; /* 縦並び */
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px 0; /* 上下に少し余白を追加 */
+        }
+        
         .quiz-card { background: white; width: 90%; max-width: 500px; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
         h1 { color: #2c3e50; font-size: 1.4rem; margin-bottom: 20px; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
         .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
@@ -20,7 +31,7 @@
         .option.wrong { background-color: #e74c3c; border-color: #c0392b; color: white; }
         #feedback { margin-top: 20px; font-weight: bold; min-height: 1.5rem; }
         #next-btn { margin-top: 20px; padding: 12px 30px; background: #34495e; color: white; border: none; border-radius: 5px; cursor: pointer; display: none; margin-left: auto; margin-right: auto; }
-        #back-btn { margin-top: 20px; background: none; border: none; color: #3498db; text-decoration: underline; cursor: pointer; display: none; }
+        #back-btn { margin-top: 20px; background: none; border: none; color: #3498db; text-decoration: underline; cursor: pointer; display: none; margin-left: auto; margin-right: auto; }
     </style>
 </head>
 <body>
@@ -47,6 +58,20 @@
     <div id="feedback"></div>
     <button id="next-btn" onclick="loadNextQuestion()">次の問題へ</button>
     <button id="back-btn" onclick="resetToMenu()">メニューに戻る</button>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="index.html" style="
+        display: inline-block;
+        padding: 10px 25px;
+        background-color: #ff9d00;
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        box-shadow: 0 4px #e68a00;
+        font-weight: bold;
+        transition: 0.2s;
+    ">🏠 ホームにもどる</a>
 </div>
 
 <script>
@@ -228,9 +253,6 @@
     }
 </script>
 
-<br><br>
-<div style="text-align: center; margin-top: 30px;">
-    <a href="index.html" style="text-decoration: none; font-size: 20px;">🏠 ホームにもどる</a>
-</div>
+
 </body>
 </html>
