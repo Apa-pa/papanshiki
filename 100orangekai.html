@@ -4,7 +4,17 @@
     <meta charset="UTF-8">
     <title>五色百人一首クイズ - だいだい色</title>
     <style>
-        body { font-family: "Helvetica Neue", Arial, sans-serif; background-color: #fff5e6; display: flex; justify-content: center; padding: 20px; }
+        body { 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            background-color: #f0f4f8; 
+            display: flex; 
+            flex-direction: column; /* 縦並び */
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px 0; /* 上下に少し余白を追加 */
+        }
         #quiz-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
         h1 { color: #e67e22; font-size: 1.5em; }
         #question-num { font-weight: bold; color: #666; }
@@ -29,6 +39,20 @@
     <button id="next-btn" onclick="nextQuestion()">次の問題へ</button>
 </div>
 
+<div style="text-align: center; margin-top: 30px;">
+    <a href="index.html" style="
+        display: inline-block;
+        padding: 10px 25px;
+        background-color: #ff9d00;
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        box-shadow: 0 4px #e68a00;
+        font-weight: bold;
+        transition: 0.2s;
+    ">🏠 ホームにもどる</a>
+</div>
+
 <script>
     // CSVから抽出した「だいだい色」の厳密な20首データ
     const allData = [
@@ -45,10 +69,10 @@
         {no:56, u:"あらざらん このよのほかの おもいでに", l:"いまひとたびの あうこともがな"},
         {no:63, u:"いまわただ おもいたえなん とばかりを", l:"ひとづてならで ゆうよしもがな"},
         {no:64, u:"朝ぼらけ うじのかわぎり　たえだえに", l:"あらはれわたる　せぜのあじろぎ"},
-        {no:67, u:"春の夜の ゆめばかりなる 手枕に", l:"かいなくたたん なこそをしけれ"},
+        {no:67, u:"はるのよの ゆめばかりなる 手まくらに", l:"かひなくたたん なこそをしけれ"},
         {no:77, u:"せをはやみ いわにせかるる たきがわの", l:"われてもすえに あわんとぞおもう"},
         {no:88, u:"なにわえの あしのかりねの ひとよゆえ", l:"みをつくしてや こいわたるべき"},
-        {no:90, u:"見せばやな 雄島のあまの 袖だにも", l:"ぬれにぞぬれし いろわかわらず"},      
+        {no:90, u:"見せばやな おじまのあまの そでだにも", l:"ぬれにぞぬれし いろわかわらず"},      
         {no:95, u:"おほけなく うき世の民に おほふかな", l:"わがたつそまに すみぞめのそで"},
         {no:98, u:"風そよぐ ならの小川の 夕ぐれは", l:"みそぎぞなつの しるしなりける"},
         {no:99, u:"人もをし 人もうらめし あぢきなく", l:"よをおもふゆゑに ものおもーみわ"},
