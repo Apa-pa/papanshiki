@@ -41,6 +41,17 @@
         .btn-print { background-color: #444; color: white; }
         button:hover { opacity: 0.7; transform: translateY(-2px); }
 
+	.home-btn { background-color: #ff9d00; color: white; 
+	 padding: 10px 20px; 
+            font-size: 16px; 
+            cursor: pointer;
+            border: none; 
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;}
+        .home-btn:hover { background-color: #e68a00; }
+
+
         /* A4用紙設定 */
         .sheet {
             width: 210mm;
@@ -122,6 +133,7 @@
         <button class="btn-add" onclick="generate('add')">＋ たし算をつくる</button>
         <button class="btn-sub" onclick="generate('sub')">－ ひき算をつくる</button>
         <button class="btn-print" onclick="window.print()">🖨️ いんさつする</button>
+	<a href="index.html" class="btn home-btn">🏠 ホームにもどる</a>
     </div>
 
     <div class="sheet" id="sheet"></div>
