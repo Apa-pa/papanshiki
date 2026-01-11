@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ひっ算れんしゅうシート</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500&display=swap');
+
+        body {
+            font-family: 'Zen Maru Gothic', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 操作パネル */
+        .controls {
+            background: white;
+            padding: 15px 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        button {
+            font-size: 16px;
+            font-weight: bold;
+            padding: 10px 25px;
+            margin: 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 50px;
+            transition: 0.2s;
+        }
+        .btn-add { background-color: #ffeef0; color: #ff5e78; border-color: #ff5e78; }
+        .btn-sub { background-color: #eef5ff; color: #4a90e2; border-color: #4a90e2; }
+        .btn-print { background-color: #444; color: white; }
+        button:hover { opacity: 0.7; transform: translateY(-2px); }
+
+        /* A4用紙設定 */
+        .sheet {
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            padding: 25mm 20mm;
+            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 20px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        /* ひっ算のデザイン修正 */
+        .problem-outer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            border: 1px dashed #ccc; /* 切り取り目安（不要なら消せます） */
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+        }
+        .problem-number {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-size: 20px;
+            color: #888;
+        }
+        
+        .hissan-box {
+            font-size: 60px; /* 数字をより大きく */
+            line-height: 1.1;
+            margin-top: 20px;
+            display: inline-block;
+            text-align: right;
+            position: relative;
+            letter-spacing: 8px;
+        }
+
+        /* 演算子（＋－）を数字の左側に配置 */
+        .operator {
+            position: absolute;
+            left: -60px; /* 左側に十分な距離をとる */
+            bottom: 0px;
+        }
+
+        /* ひっ算の横線 */
+        .hissan-line {
+            border-bottom: 4px solid #333;
+            width: 140%; /* 線を少し長めに */
+            margin-left: -30%; /* 線を左側に突き出させる */
+            margin-top: 5px;
+            margin-bottom: 15px;
+        }
+
+        /* 答えを書くスペース */
+        .answer-space {
+            height: 80px;
+            width: 100%;
+        }
+
+        /* 印刷設定 */
+        @media print {
+            body { background: white; padding: 0; }
+            .controls { display: none; }
+            .sheet { box-shadow: none; border: none; }
+            .problem-outer { border: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <h2 style="margin-top:0;">ひっ算練習メーカー</h2>
+        <button class="btn-add" onclick="generate('add')">＋ たし算をつくる</button>
+        <button class="btn-sub" onclick="generate('sub')">－ ひき算をつくる</button>
+        <button class="btn-print" onclick="window.print()">🖨️ いんさつする</button>
+    </div>
+
+    <div class="sheet" id="sheet"></div>
+
+    <script>
+        function generate(type) {
+            const sheet = document.getElementById('sheet');
+            sheet.innerHTML = '';
+
+            for (let i = 1; i <= 6; i++) {
+                let num1, num2, symbol;
+
+                if (type === 'add') {
+                    symbol = '＋';
+                    num1 = Math.floor(Math.random() * 80) + 10;
+                    num2 = Math.floor(Math.random() * (99 - num1)) + 10;
+                } else {
+                    symbol = '－';
+                    num1 = Math.floor(Math.random() * 80) + 19;
+                    num2 = Math.floor(Math.random() * (num1 - 10)) + 10;
+                }
+
+                const probHtml = `
+                    <div class="problem-outer">
+                        <span class="problem-number">(${i})</span>
+                        <div class="hissan-box">
+                            <div>${num1}</div>
+                            <div style="position: relative;">
+                                <span class="operator">${symbol}</span>${num2}
+                            </div>
+                            <div class="hissan-line"></div>
+                            <div class="answer-space"></div>
+                        </div>
+                    </div>
+                `;
+                sheet.insertAdjacentHTML('beforeend', probHtml);
+            }
+        }
+        generate('add');
+    </script>
+</body>
+</html>
