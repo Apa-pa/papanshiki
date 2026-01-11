@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>100マス計算メーカー</title>
+    <style>
+        /* 全体のサイズを調整（90%スケール相当） */
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; margin: 0; padding: 10px; }
+        .sheet { width: 162mm; margin: 0 auto; } /* 180mmの90% */
+        
+        h2 { margin: 8px 0; font-size: 16px; color: #333; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 25px; table-layout: fixed; }
+        th, td { border: 2px solid #000; height: 38px; text-align: center; font-size: 17px; }
+        th { background-color: #f2f2f2; }
+        
+        /* 操作パネルのデザイン */
+        .controls { 
+            margin-bottom: 15px; 
+            padding: 15px; 
+            background: #f8f9fa; 
+            border-bottom: 1px solid #ddd;
+        }
+        .btn-group { margin-bottom: 10px; }
+        button {
+            padding: 8px 15px; font-size: 14px; cursor: pointer;
+            margin: 0 5px; border: none; border-radius: 4px;
+            background-color: #6c757d; color: white;
+        }
+        button.active { background-color: #007bff; font-weight: bold; }
+        button.print-btn { background-color: #28a745; margin-left: 20px; }
+        button:hover { opacity: 0.8; }
+
+	.home-btn { background-color: #ff9d00; color: white; 
+	 padding: 10px 20px; 
+            font-size: 16px; 
+            cursor: pointer;
+            border: none; 
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;}
+        .home-btn:hover { background-color: #e68a00; }
+
+        /* 印刷設定 */
+        @media print {
+            .controls { display: none; }
+            body { padding: 0; }
+            .sheet { width: 100%; }
+            table { margin-bottom: 40px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <div class="btn-group">
+            <strong>計算の種類：</strong>
+            <button id="btn-plus" onclick="setMode('+')">たしざん (+)</button>
+            <button id="btn-minus" onclick="setMode('-')">ひきざん (-)</button>
+            <button id="btn-multi" onclick="setMode('×')" class="active">かけざん (×)</button>
+        </div>
+        <div>
+            <button onclick="randomizeAll()">🎲 数字をシャッフル</button>
+            <button onclick="window.print()" class="print-btn">🖨️ 印刷 / PDF保存</button>
+		<a href="index.html" class="btn home-btn">🏠 ホームにもどる</a>
+        </div>
+        <p style="font-size: 11px; color: #666; margin-top: 10px;">
+            ※ひきざんは「おおきいずうじからちいさいすうじ」をひきます
+        </p>
+    </div>
+
+    <div class="sheet">
+        <h2 id="title1">100マス計算（かけざん） ①</h2>
+        <table id="table1"></table>
+
+        <h2 id="title2">100マス計算（かけざん） ②</h2>
+        <table id="table2"></table>
+    </div>
+
+    <script>
+        let currentMode = '×';
+        let modeName = 'かけざん';
+
+        function setMode(mode) {
+            currentMode = mode;
+            if (mode === '+') modeName = 'たしざん';
+            else if (mode === '-') modeName = 'ひきざん';
+            else modeName = 'かけざん';
+
+            // ボタンの見た目を更新
+            document.querySelectorAll('.btn-group button').forEach(btn => btn.classList.remove('active'));
+            if (mode === '+') document.getElementById('btn-plus').classList.add('active');
+            if (mode === '-') document.getElementById('btn-minus').classList.add('active');
+            if (mode === '×') document.getElementById('btn-multi').classList.add('active');
+
+            randomizeAll();
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function createTable(tableId, titleId, index) {
+            const table = document.getElementById(tableId);
+            const title = document.getElementById(titleId);
+            table.innerHTML = "";
+            title.innerText = `100マス計算（${modeName}） ${index}`;
+            
+            const numsTop = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+            const numsLeft = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+
+            let tr = document.createElement("tr");
+            tr.innerHTML = `<th>${currentMode}</th>` + numsTop.map(n => `<th>${n}</th>`).join("");
+            table.appendChild(tr);
+
+            for (let i = 0; i < 10; i++) {
+                tr = document.createElement("tr");
+                let rowHtml = `<th>${numsLeft[i]}</th>`;
+                for (let j = 0; j < 10; j++) {
+                    rowHtml += `<td></td>`;
+                }
+                tr.innerHTML = rowHtml;
+                table.appendChild(tr);
+            }
+        }
+
+        function randomizeAll() {
+            createTable("table1", "title1", "①");
+            createTable("table2", "title2", "②");
+        }
+
+        randomizeAll();
+    </script>
+</body>
+</html>
