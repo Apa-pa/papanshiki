@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1ねんせい かんじクイズ</title>
+    <style>
+        /* --- デザイン設定 --- */
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "UD Digital Kyokasho-tai", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+            background-color: #f0f8ff; /* 優しい背景色 */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        /* もどるボタン */
+        .home-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            text-decoration: none;
+            color: #888;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            padding: 5px 10px;
+            border-radius: 15px;
+            transition: 0.3s;
+        }
+        .home-btn:hover {
+            background-color: #eee;
+        }
+
+        /* 問題文 */
+        #question-text {
+            font-size: 32px;
+            margin: 60px 0 40px;
+            line-height: 1.6;
+            font-weight: bold;
+        }
+
+        /* 穴埋め部分の強調 */
+        .blank {
+            color: #e67e22; /* パパン式っぽいオレンジ色 */
+            text-decoration: underline;
+        }
+
+        /* 選択肢ボタンのエリア */
+        .options {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* 選択肢ボタン */
+        .option-btn {
+            background-color: #ffffff;
+            border: 3px solid #4CAF50;
+            color: #333;
+            font-size: 40px; /* 漢字を大きく */
+            padding: 15px 30px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 100px;
+            font-family: inherit;
+        }
+
+        .option-btn:hover {
+            background-color: #4CAF50;
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .option-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 正解・不正解のエフェクト */
+        .feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 150px;
+            font-weight: bold;
+            display: none;
+            pointer-events: none; /* クリックを邪魔しない */
+            z-index: 10;
+        }
+        .correct-mark { color: #ff5252; } /* 花丸のような赤 */
+        .wrong-mark { color: #555; }
+
+        /* 進捗バー */
+        .progress {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        /* 終了画面 */
+        #end-screen {
+            display: none;
+        }
+        .score-text {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .restart-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+
+        /* スマホ対応 */
+        @media (max-width: 480px) {
+            #question-text { font-size: 24px; }
+            .option-btn { font-size: 32px; padding: 10px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a href="index.html" class="home-btn">← もどる</a>
+
+        <div id="quiz-screen">
+            <div class="progress">もんだい <span id="current-count">1</span> / 10</div>
+            
+            <div id="question-text">ここに もんだい が でるよ</div>
+            
+            <div id="feedback" class="feedback"></div>
+
+            <div class="options" id="options-container">
+                </div>
+        </div>
+
+        <div id="end-screen">
+            <h2>おしまい！</h2>
+            <p class="score-text" id="result-msg">よくがんばったね！</p>
+            <button class="restart-btn" onclick="location.reload()">もういちど やる</button>
+            <br><br>
+            <a href="index.html" class="home-btn" style="position:static; display:inline-block;">トップへもどる</a>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. 問題データ（ここを増やすとランダムの幅が広がります） ---
+        // q: 問題文（__の部分が穴埋め）, a: 正解, dummy: 間違いの選択肢
+        const allQuestions = [
+            // --- 自然・天気 ---
+    { q: "あさに<span class='blank'>__</span> が のぼる。", a: "日", dummy: ["白", "目"] },
+    { q: "よるにみえるお <span class='blank'>__</span> さま。", a: "月", dummy: ["目", "円"] },
+    { q: "プールの<span class='blank'>__</span> の なか。", a: "水", dummy: ["氷", "木"] },
+    { q: "おお <span class='blank'>__</span> が ふる。", a: "雨", dummy: ["天", "両"] },
+    { q: "あおい <span class='blank'>__</span>に白いくも 。", a: "空", dummy: ["天", "室"] },
+    { q: "きれいな<span class='blank'>__</span> が さく。", a: "花", dummy: ["草", "竹"] },
+    { q: "<span class='blank'>__</span> のくまさん。", a: "森", dummy: ["林", "木"] },
+    { q: "<span class='blank'>__</span> やけこやけ。", a: "夕", dummy: ["名", "多"] },
+    
+    // --- 学校・勉強 ---
+    { q: "学校の<span class='blank'>__</span> せい。", a: "先", dummy: ["失", "矢"] },
+    { q: "いちねん <span class='blank'>__</span> 。", a: "生", dummy: ["正", "王"] },
+    { q: "ノートに<span class='blank'>__</span> を かく。", a: "字", dummy: ["学", "子"] },
+    { q: "<span class='blank'>__</span> を よむ。", a: "本", dummy: ["木", "大"] },
+    { q: "さく <span class='blank'>__</span> を かく。", a: "文", dummy: ["父", "交"] },
+    { q: "友だちと<span class='blank'>__</span> まる。", a: "集", dummy: ["進", "住"] }, 
+    
+    // --- 体・人 ---
+    { q: "<span class='blank'>__</span> で みる。", a: "目", dummy: ["耳", "日"] },
+    { q: "<span class='blank'>__</span> で きく。", a: "耳", dummy: ["目", "気"] },
+    { q: "じゅぎょうで<span class='blank'>__</span> を あげる。", a: "手", dummy: ["毛", "年"] },
+    { q: "チーターは<span class='blank'>__</span> が はやい。", a: "足", dummy: ["口", "走"] },
+    { q: "おとこ の <span class='blank'>__</span> 。", a: "子", dummy: ["了", "字"] },
+    { q: "ジャイアンは<span class='blank'>__</span> もち。", a: "力", dummy: ["刀", "九"] },
+    
+    // --- 数・お金 ---
+    { q: "いまのじかんは<span class='blank'>__</span> じ。", a: "四", dummy: ["西", "皿"] },
+    { q: "６つよりも１つおおいのは<span class='blank'>__</span> つ。", a: "七", dummy: ["ヒ", "九"] },
+    { q: "きょうは<span class='blank'>__</span> ようび。", a: "金", dummy: ["全", "会"] },
+    { q: "ぼくのおこづかいは<span class='blank'>__</span> えん。", a: "百", dummy: ["白", "日"] },
+    { q: "かみのおかねでいちばんちいさいのは <span class='blank'>__</span> 円。", a: "千", dummy: ["干", "十"] },
+    
+    // --- 動き・様子 ---
+    { q: "へや に <span class='blank'>__</span> る。", a: "入", dummy: ["人", "八"] },
+    { q: "そと に <span class='blank'>__</span> る。", a: "出", dummy: ["山", "田"] },
+    { q: "そこに<span class='blank'>__</span> って ください。", a: "立", dummy: ["位", "音"] },
+    { q: "ゆっくり <span class='blank'>__</span> む。", a: "休", dummy: ["体", "木"] },
+    { q: "はやく <span class='blank'>__</span> る。", a: "走", dummy: ["足", "赤"] },
+    { q: "<span class='blank'>__</span> きい こえ。", a: "大", dummy: ["犬", "天"] },
+    { q: "<span class='blank'>__</span> さい アリ。", a: "小", dummy: ["少", "山"] },
+    { q: "<span class='blank'>__</span> くて まるい。", a: "白", dummy: ["百", "日"] },
+    { q: "とまれは<span class='blank'>__</span> しんごう。", a: "赤", dummy: ["青", "走"] },
+    
+    // --- 位置・その他 ---
+    { q: "とけいで３があるのは<span class='blank'>__</span> がわ。", a: "右", dummy: ["左", "石"] },
+    { q: "そらをみるために<span class='blank'>__</span> を むく。", a: "上", dummy: ["下", "止"] },
+    { q: " <span class='blank'>__</span>にのる 。", a: "車", dummy: ["東", "事"] },
+    { q: "<span class='blank'>__</span> さまになる。", a: "王", dummy: ["玉", "主"] },
+    { q: "<span class='blank'>__</span> を かう。", a: "犬", dummy: ["大", "太"] },
+    { q: "ボーちゃんがすきなのは<span class='blank'>__</span> 。", a: "石", dummy: ["右", "岩"] },
+    { q: "林で<span class='blank'>__</span> を とる。", a: "虫", dummy: ["中", "忠"] }
+        ];
+
+        // --- 2. 変数設定 ---
+        let quizList = [];
+        let currentQuestionIndex = 0;
+        const maxQuestions = 10; // 出題数
+
+        // --- 3. 起動時の処理 ---
+        window.onload = function() {
+            initQuiz();
+        };
+
+        function initQuiz() {
+            // 問題をシャッフルして先頭10問を取得
+            quizList = shuffleArray([...allQuestions]).slice(0, maxQuestions);
+            currentQuestionIndex = 0;
+            showQuestion();
+        }
+
+        // --- 4. 問題表示 ---
+        function showQuestion() {
+            const qData = quizList[currentQuestionIndex];
+            
+            // 進捗表示
+            document.getElementById('current-count').textContent = currentQuestionIndex + 1;
+            
+            // 問題文表示
+            document.getElementById('question-text').innerHTML = qData.q;
+
+            // 選択肢の準備（正解とダミーを混ぜる）
+            let options = [qData.a, ...qData.dummy];
+            options = shuffleArray(options);
+
+            // ボタン生成
+            const container = document.getElementById('options-container');
+            container.innerHTML = ""; // 前のボタンを消す
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(opt, qData.a);
+                container.appendChild(btn);
+            });
+        }
+
+        // --- 5. 正誤判定 ---
+        function checkAnswer(selected, correct) {
+            const feedback = document.getElementById('feedback');
+            
+            if (selected === correct) {
+                // 正解の処理
+                feedback.textContent = "◎";
+                feedback.className = "feedback correct-mark";
+                feedback.style.display = "block";
+                
+                // ボタンを押せなくする（連打防止）
+                disableButtons();
+
+                // 0.8秒後に次の問題へ
+                setTimeout(() => {
+                    feedback.style.display = "none";
+                    nextQuestion();
+                }, 800);
+
+            } else {
+                // 不正解の処理
+                feedback.textContent = "×";
+                feedback.className = "feedback wrong-mark";
+                feedback.style.display = "block";
+                
+                // 0.5秒だけバツを出して消す（再挑戦させる）
+                setTimeout(() => {
+                    feedback.style.display = "none";
+                }, 500);
+            }
+        }
+
+        function disableButtons() {
+            const btns = document.querySelectorAll('.option-btn');
+            btns.forEach(btn => btn.disabled = true);
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < maxQuestions) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        // --- 6. 結果画面 ---
+        function showResult() {
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'block';
+        }
+
+        // --- ユーティリティ: 配列シャッフル ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+    </script>
+</body>
+</html>
