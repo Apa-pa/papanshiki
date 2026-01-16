@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アルファベット タイムアタック</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+            background-color: #e0f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        /* タイマーのスタイル */
+        #timer-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ef5350;
+            background: #ffebee;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 10px;
+            min-width: 100px;
+        }
+
+        h1 { color: #0288d1; font-size: 24px; margin-bottom: 10px; }
+        
+        .start-btn {
+            font-size: 28px;
+            padding: 15px 40px;
+            background: #03a9f4;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px #0277bd;
+            margin: 20px 0;
+        }
+
+        #target-container {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            border: 3px dashed #03a9f4;
+        }
+
+        #target-alphabet { font-size: 80px; font-weight: bold; color: #333; display: block; }
+        #target-reading { font-size: 24px; color: #ff5722; font-weight: bold; }
+
+        #choices { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+
+        .choice-card {
+            background: #fff;
+            border: 3px solid #b3e5fc;
+            border-radius: 15px;
+            padding: 15px 5px;
+            cursor: pointer;
+        }
+        .choice-card:active { transform: scale(0.95); background: #fff9c4; }
+        .choice-alpha { font-size: 40px; font-weight: bold; display: block; }
+        .choice-reading { font-size: 16px; color: #777; }
+
+        .back-to-index-btn {
+            margin-top: 25px;
+            font-size: 14px;
+            padding: 8px 15px;
+            background: #90a4ae;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .final-time {
+            font-size: 32px;
+            color: #ff5722;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .correct-flash { animation: flash 0.3s; }
+        @keyframes flash {
+            0% { background-color: white; }
+            50% { background-color: #c8e6c9; }
+            100% { background-color: white; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    
+    <div id="home-screen" class="screen active">
+        <h1>アルファベット タイムアタック</h1>
+        <p>aからzまで なんびょうで できるかな？</p>
+        <div style="font-size: 60px; margin: 10px;">⏱️</div>
+        <button class="start-btn" onclick="startGame()">よーい、スタート！</button>
+        <br>
+        <a href="index.html" class="back-to-index-btn">🏠 トップページへ</a>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <div id="timer-display">0.0びょう</div>
+        <div id="target-container">
+            <span id="target-alphabet">a / A</span>
+            <span id="target-reading">えー</span>
+        </div>
+        <div id="choices"></div>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h1>✨ ゴール！ ✨</h1>
+        <div style="font-size: 60px;">🏆</div>
+        <p>きみの タイムは...</p>
+        <div id="final-time-display" class="final-time">0.0びょう</div>
+        <button class="start-btn" onclick="startGame()">もういっかい！</button>
+        <br>
+        <a href="index.html" class="back-to-index-btn">🏠 トップページへ</a>
+    </div>
+
+</div>
+
+<script>
+    const alphabetData = [
+        { char: 'a / A', read: 'えー' }, { char: 'b / B', read: 'びー' }, { char: 'c / C', read: 'しー' },
+        { char: 'd / D', read: 'でー' }, { char: 'e / E', read: 'いー' }, { char: 'f / F', read: 'えふ' },
+        { char: 'g / G', read: 'じー' }, { char: 'h / H', read: 'えっち' }, { char: 'i / I', read: 'あい' },
+        { char: 'j / J', read: 'じぇー' }, { char: 'k / K', read: 'けー' }, { char: 'l / L', read: 'える' },
+        { char: 'm / M', read: 'えむ' }, { char: 'n / N', read: 'えぬ' }, { char: 'o / O', read: 'おー' },
+        { char: 'p / P', read: 'ぴー' }, { char: 'q / Q', read: 'きゅー' }, { char: 'r / R', read: 'あーる' },
+        { char: 's / S', read: 'えす' }, { char: 't / T', read: 'てぃー' }, { char: 'u / U', read: 'ゆー' },
+        { char: 'v / V', read: 'ぶい' }, { char: 'w / W', read: 'だぶりゅー' }, { char: 'x / X', read: 'えっくす' },
+        { char: 'y / Y', read: 'わい' }, { char: 'z / Z', read: 'ぜっと' }
+    ];
+
+    let currentIndex = 0;
+    let startTime;
+    let timerInterval;
+
+    function changeScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    // タイマーを開始する関数
+    function startTimer() {
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+            const elapsedTime = (Date.now() - startTime) / 1000;
+            document.getElementById('timer-display').textContent = elapsedTime.toFixed(1) + "びょう";
+        }, 100);
+    }
+
+    // タイマーを止める関数
+    function stopTimer() {
+        clearInterval(timerInterval);
+        return ((Date.now() - startTime) / 1000).toFixed(1);
+    }
+
+    function startGame() {
+        currentIndex = 0;
+        changeScreen('quiz-screen');
+        startTimer();
+        showQuestion();
+    }
+
+    function showQuestion() {
+        // zまで到達したら（yの次のzを正解したら）終了
+        if (currentIndex >= alphabetData.length - 1) {
+            const finalTime = stopTimer();
+            document.getElementById('final-time-display').textContent = finalTime + "びょう";
+            changeScreen('result-screen');
+            return;
+        }
+
+        const currentAlpha = alphabetData[currentIndex];
+        const nextAlpha = alphabetData[currentIndex + 1];
+
+        document.getElementById('target-alphabet').textContent = currentAlpha.char;
+        document.getElementById('target-reading').textContent = currentAlpha.read;
+
+        let others = alphabetData.filter((_, idx) => idx !== currentIndex + 1);
+        let distractors = others.sort(() => Math.random() - 0.5).slice(0, 3);
+        let choices = [nextAlpha, ...distractors].sort(() => Math.random() - 0.5);
+
+        const container = document.getElementById('choices');
+        container.innerHTML = '';
+
+        choices.forEach(data => {
+            const card = document.createElement('div');
+            card.className = 'choice-card';
+            card.innerHTML = `<span class="choice-alpha">${data.char}</span><span class="choice-reading">${data.read}</span>`;
+            card.onclick = () => {
+                if (data === nextAlpha) {
+                    document.body.classList.add('correct-flash');
+                    setTimeout(() => {
+                        document.body.classList.remove('correct-flash');
+                        currentIndex++;
+                        showQuestion();
+                    }, 150);
+                }
+            };
+            container.appendChild(card);
+        });
+    }
+</script>
+
+</body>
+</html>

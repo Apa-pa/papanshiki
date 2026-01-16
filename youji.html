@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>おなじのどーれだ？</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #fff9e6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        h1 { color: #ff6f61; font-size: 26px; }
+
+        /* はじめるボタン */
+        .start-btn {
+            font-size: 30px;
+            padding: 20px 50px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px #e68a00;
+            margin-top: 20px;
+        }
+
+        /* 問題の表示 */
+        #target-symbol {
+            font-size: 100px;
+            margin: 15px 0;
+            padding: 20px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        #choices {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .choice-card {
+            font-size: 60px;
+            padding: 15px;
+            background: #e3f2fd;
+            border: 4px solid #bbdefb;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        /* 外部ページ（index.html）へ戻るボタン */
+        .back-to-index-btn {
+            margin-top: 30px;
+            font-size: 16px;
+            padding: 10px 20px;
+            background: #f44336; /* わかりやすい赤系 */
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        /* 結果画面のボタン */
+        .retry-btn {
+            font-size: 24px;
+            padding: 15px 40px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .correct-flash { animation: flash 0.3s; }
+        @keyframes flash {
+            0% { background-color: white; }
+            50% { background-color: #c8e6c9; }
+            100% { background-color: white; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    
+    <div id="home-screen" class="screen active">
+        <h1>おなじのどーれだ？</h1>
+        <div style="font-size: 80px; margin: 20px;">🔍</div>
+        <button class="start-btn" onclick="startGame()">はじめる</button>
+        <br>
+        <a href="index.html" class="back-to-index-btn">🏠 ページをもどる</a>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <div id="progress">1 / 10</div>
+        <div id="target-symbol">🍎</div>
+        <div id="choices"></div>
+        <br>
+        <a href="index.html" class="back-to-index-btn" style="font-size: 14px; background: #9e9e9e;">🏠 やめる</a>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h1>✨ できたね！ ✨</h1>
+        <div style="font-size: 80px; margin: 20px;">🏆</div>
+        <button class="retry-btn" onclick="startGame()">もういっかい！</button>
+        <br>
+        <a href="index.html" class="back-to-index-btn">🏠 ページをもどる</a>
+    </div>
+
+</div>
+
+<script>
+    const allSymbols = ['🍎','🐶','🚗','⭐️','🌙','🌸','☀️','🎈','🧸','🍦','🍬','🚀','🐱','🐘','🐧','🍄','💎','⚽️','🎨','🎁','🍀','🦁','🍓','🐝'];
+    let currentQuestion = 0;
+    let selectedQuestions = [];
+    const totalQuestions = 10;
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function changeScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function startGame() {
+        currentQuestion = 0;
+        selectedQuestions = shuffle([...allSymbols]).slice(0, totalQuestions);
+        changeScreen('quiz-screen');
+        showQuestion();
+    }
+
+    function showQuestion() {
+        if (currentQuestion >= totalQuestions) {
+            changeScreen('result-screen');
+            return;
+        }
+
+        const target = selectedQuestions[currentQuestion];
+        document.getElementById('target-symbol').textContent = target;
+        document.getElementById('progress').textContent = `だい ${currentQuestion + 1} もん / ${totalQuestions}`;
+
+        let others = allSymbols.filter(s => s !== target);
+        let distractors = shuffle(others).slice(0, 3);
+        let choices = shuffle([target, ...distractors]);
+
+        const container = document.getElementById('choices');
+        container.innerHTML = '';
+        choices.forEach(symbol => {
+            const card = document.createElement('div');
+            card.className = 'choice-card';
+            card.textContent = symbol;
+            card.onclick = () => {
+                if (symbol === target) {
+                    document.body.classList.add('correct-flash');
+                    setTimeout(() => {
+                        document.body.classList.remove('correct-flash');
+                        currentQuestion++;
+                        showQuestion();
+                    }, 200);
+                }
+            };
+            container.appendChild(card);
+        });
+    }
+</script>
+
+</body>
+</html>
