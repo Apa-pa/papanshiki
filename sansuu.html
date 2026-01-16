@@ -34,7 +34,7 @@
             text-align: center;
             width: 90%;
             max-width: 450px;
-            position: relative;
+            position: relative; /* ◎を表示するために必要 */
         }
 
         .hidden { display: none; }
@@ -107,11 +107,28 @@
 
         /* 結果画面 */
         #result-time { font-size: 3rem; color: var(--accent-color); margin: 15px 0; }
+
+        /* ▼▼▼ 追加：正解の◎マーク ▼▼▼ */
+        #correct-mark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 150px;
+            color: #ff3d00;
+            font-weight: bold;
+            display: none; /* 最初は隠しておく */
+            z-index: 100;
+            pointer-events: none;
+            text-shadow: 2px 2px 0px white;
+        }
     </style>
 </head>
 <body>
 
 <div id="game-container">
+    <div id="correct-mark">◎</div>
+
     <div id="start-screen">
         <div class="main-title">✨ さんすう ✨<br>タイムアタック！</div>
         <div class="sub-title">10もん、とけるかな？</div>
@@ -196,6 +213,9 @@
             const btn = document.createElement('button');
             btn.className = 'choice-btn';
             btn.innerText = val;
+            
+            // ここでcheckAnswerを呼び出すときに、ボタン自体を無効化する処理などは入れていませんが、
+            // 0.2秒で切り替わるので連打の問題は少ないはずです。
             btn.onclick = () => checkAnswer(val);
             choicesDiv.appendChild(btn);
         });
@@ -203,9 +223,19 @@
 
     function checkAnswer(selected) {
         if (selected === correctAnswer) {
-            currentQuestion++;
-            nextQuestion();
+            // ▼▼▼ 変更：正解の処理 ▼▼▼
+            const mark = document.getElementById('correct-mark');
+            mark.style.display = 'block'; // ◎を表示
+
+            // 0.2秒待ってから次の問題へ（スピード感重視）
+            setTimeout(() => {
+                mark.style.display = 'none'; // ◎を消す
+                currentQuestion++;
+                nextQuestion();
+            }, 200);
+
         } else {
+            // ▼▼▼ 不正解の処理（背景を赤くフラッシュ） ▼▼▼
             document.body.style.backgroundColor = "#ff7675";
             setTimeout(() => { document.body.style.backgroundColor = ""; }, 150);
         }
