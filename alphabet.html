@@ -108,12 +108,38 @@
             50% { background-color: #c8e6c9; }
             100% { background-color: white; }
         }
+
+        #correct-mark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 150px;
+            color: #ff3d00; /* 鮮やかな赤 */
+            font-weight: bold;
+            display: none; /* 最初は隠しておく */
+            z-index: 100;
+            pointer-events: none; /* ◎をクリックしても邪魔にならないようにする */
+            text-shadow: 2px 2px 0px white; /* 白いふちどり */
+        }
+
+        /* アニメーションの動き */
+        .mark-active {
+            display: block !important;
+            animation: pop-mark 0.3s ease-out;
+        }
+
+        @keyframes pop-mark {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            70% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.0); opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    
+    <div id="correct-mark">◎</div>
     <div id="home-screen" class="screen active">
         <h1>アルファベット タイムアタック</h1>
         <p>aからzまで なんびょうで できるかな？</p>
@@ -216,12 +242,24 @@
             card.innerHTML = `<span class="choice-alpha">${data.char}</span><span class="choice-reading">${data.read}</span>`;
             card.onclick = () => {
                 if (data === nextAlpha) {
+                    // ▼▼▼ ここから追加・変更した部分 ▼▼▼
+                    
+                    // ◎を表示する
+                    const mark = document.getElementById('correct-mark');
+                    mark.classList.add('mark-active');
+                    
+                    // 画面のフラッシュ
                     document.body.classList.add('correct-flash');
+
                     setTimeout(() => {
+                        // アニメーションをリセットして次の問題へ
+                        mark.classList.remove('mark-active');
                         document.body.classList.remove('correct-flash');
                         currentIndex++;
                         showQuestion();
-                    }, 150);
+                    }, 300); // 秒数も150から300に変更（◎が見えやすくするため）
+                    
+                    // ▲▲▲ ここまで ▲▲▲
                 }
             };
             container.appendChild(card);

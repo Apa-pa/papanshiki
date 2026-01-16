@@ -234,18 +234,27 @@
 
     function check(btn, selected, correct) {
         const btns = document.querySelectorAll(".option");
-        btns.forEach(b => b.disabled = true);
+        btns.forEach(b => b.disabled = true); // すべてのボタンを押せなくする
 
         if (selected === correct) {
+            // ▼ 正解のときの処理 ▼
             btn.classList.add("correct");
             document.getElementById("feedback").innerText = "正解！⭕️";
             document.getElementById("feedback").style.color = "#2ecc71";
+            
+            // 1秒(1000ミリ秒)後に自動で次の問題へ
+            setTimeout(() => {
+                loadNextQuestion();
+            }, 1000); 
+
         } else {
+            // ▼ まちがいのときの処理 ▼
             btn.classList.add("wrong");
+            // 正解をしっかり見せるために、ここはそのままで「次へボタン」を出す
             document.getElementById("feedback").innerText = `❌ 正解は「${correct}」`;
             document.getElementById("feedback").style.color = "#e74c3c";
+            document.getElementById("next-btn").style.display = "block";
         }
-        document.getElementById("next-btn").style.display = "block";
     }
 
     function resetToMenu() {
