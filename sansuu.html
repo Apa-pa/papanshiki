@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>さんすうタイムアタック！</title>
+    <style>
+        :root {
+            --primary-bg: #e0f7fa;
+            --card-bg: #ffffff;
+            --accent-color: #ff4081;
+            --plus-color: #ff6b6b;
+            --minus-color: #4dadff;
+            --multi-color: #ff9f43;
+            --home-color: #95a5a6;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            /* 華やかなグラデーション背景 */
+            background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+        }
+
+        #game-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            text-align: center;
+            width: 90%;
+            max-width: 450px;
+            position: relative;
+        }
+
+        .hidden { display: none; }
+
+        /* タイトル装飾 */
+        .main-title {
+            font-size: 2rem;
+            color: #444;
+            margin-bottom: 5px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .sub-title {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 25px;
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        /* コース選択ボタン */
+        button {
+            padding: 18px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-weight: bold;
+            transition: all 0.2s;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.1);
+        }
+
+        button:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+        }
+
+        .op-plus { background: linear-gradient(to bottom, #ff8787, #ff6b6b); }
+        .op-minus { background: linear-gradient(to bottom, #74c0fc, #4dadff); }
+        .op-multi { background: linear-gradient(to bottom, #ffbf69, #ff9f43); }
+        
+        /* ホームに戻るボタン */
+        .home-link {
+            display: inline-block;
+            margin-top: 25px;
+            color: var(--home-color);
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: bold;
+            border-bottom: 2px solid var(--home-color);
+            transition: opacity 0.2s;
+        }
+        .home-link:hover { opacity: 0.7; }
+
+        /* ゲーム中画面 */
+        #question { font-size: 4rem; margin: 20px 0; color: #333; }
+        #progress { font-size: 1.1rem; color: #777; background: #eee; border-radius: 20px; padding: 5px; }
+        .choice-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .choice-btn { background-color: #6c5ce7; }
+
+        /* 結果画面 */
+        #result-time { font-size: 3rem; color: var(--accent-color); margin: 15px 0; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="start-screen">
+        <div class="main-title">✨ さんすう ✨<br>タイムアタック！</div>
+        <div class="sub-title">10もん、とけるかな？</div>
+        
+        <div class="btn-grid">
+            <button class="op-plus" onclick="startGame('+')">たしざん (＋)</button>
+            <button class="op-minus" onclick="startGame('-')">ひきざん (－)</button>
+            <button class="op-multi" onclick="startGame('×')">かけざん (×)</button>
+        </div>
+
+        <a href="index.html" class="home-link">🏠 ホームページにもどる</a>
+    </div>
+
+    <div id="quiz-screen" class="hidden">
+        <span id="progress">だい 1 / 10 もん</span>
+        <div id="question">0 + 0</div>
+        <div id="choices" class="choice-grid"></div>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <div class="main-title">🚩 ゴール！</div>
+        <p>あなたのタイム</p>
+        <div id="result-time">0.00秒</div>
+        <button class="op-plus" style="width: 100%;" onclick="resetGame()">もういちど あそぶ</button>
+        <br>
+        <a href="index.html" class="home-link">🏠 ホームページにもどる</a>
+    </div>
+</div>
+
+<script>
+    let currentQuestion = 0;
+    let operator = '';
+    let correctAnswer = 0;
+    let startTime;
+    const totalQuestions = 10;
+
+    function startGame(op) {
+        operator = op;
+        currentQuestion = 1;
+        startTime = Date.now();
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        nextQuestion();
+    }
+
+    function nextQuestion() {
+        if (currentQuestion > totalQuestions) {
+            endGame();
+            return;
+        }
+
+        document.getElementById('progress').innerText = `だい ${currentQuestion} / ${totalQuestions} もん`;
+        
+        let n1 = Math.floor(Math.random() * 10);
+        let n2 = Math.floor(Math.random() * 10);
+
+        if (operator === '-' && n1 < n2) [n1, n2] = [n2, n1];
+
+        if (operator === '+') correctAnswer = n1 + n2;
+        else if (operator === '-') correctAnswer = n1 - n2;
+        else if (operator === '×') correctAnswer = n1 * n2;
+
+        document.getElementById('question').innerText = `${n1} ${operator} ${n2}`;
+        generateChoices(correctAnswer);
+    }
+
+    function generateChoices(correct) {
+        const choicesDiv = document.getElementById('choices');
+        choicesDiv.innerHTML = '';
+        let choices = new Set([correct]);
+
+        while(choices.size < 4) {
+            let diff = Math.floor(Math.random() * 10) - 5;
+            let wrong = correct + diff;
+            if (wrong >= 0 && !choices.has(wrong)) choices.add(wrong);
+        }
+
+        let choiceArray = Array.from(choices).sort(() => Math.random() - 0.5);
+
+        choiceArray.forEach(val => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerText = val;
+            btn.onclick = () => checkAnswer(val);
+            choicesDiv.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected) {
+        if (selected === correctAnswer) {
+            currentQuestion++;
+            nextQuestion();
+        } else {
+            document.body.style.backgroundColor = "#ff7675";
+            setTimeout(() => { document.body.style.backgroundColor = ""; }, 150);
+        }
+    }
+
+    function endGame() {
+        const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+        document.getElementById('result-time').innerText = `${duration}秒`;
+    }
+
+    function resetGame() {
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>

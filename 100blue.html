@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>五色百人一首クイズ - 青色（あお）</title>
+    <style>
+        body { 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            background-color: #f0f4f8; 
+            display: flex; 
+            flex-direction: column; /* 縦並び */
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px 0; /* 上下に少し余白を追加 */
+        }
+        #quiz-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
+        h1 { color: #e67e22; font-size: 1.5em; }
+        #question-num { font-weight: bold; color: #666; }
+        #upper-phrase { font-size: 1.3em; margin: 20px 0; min-height: 3em; display: flex; align-items: center; justify-content: center; line-height: 1.5; }
+        .option-btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #f39c12; background: white; border-radius: 8px; cursor: pointer; font-size: 1em; transition: 0.2s; }
+        .option-btn:hover { background: #f39c12; color: white; }
+        #result-area { margin-top: 20px; font-weight: bold; font-size: 1.2em; min-height: 1.5em; }
+        .correct { color: #27ae60; }
+        .incorrect { color: #e74c3c; }
+        button:disabled { cursor: not-allowed; opacity: 0.6; }
+        #next-btn { margin-top: 20px; padding: 10px 25px; background: #e67e22; color: white; border: none; border-radius: 5px; cursor: pointer; display: none; }
+    </style>
+</head>
+<body>
+
+<div id="quiz-card">
+    <h1>五色百人一首クイズ【あお】</h1>
+    <p id="question-num">第 1 問 / 10</p>
+    <div id="upper-phrase">上の句がここに表示されます</div>
+    <div id="options"></div>
+    <div id="result-area"></div>
+    <button id="next-btn" onclick="nextQuestion()">次の問題へ</button>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="index.html" style="
+        display: inline-block;
+        padding: 10px 25px;
+        background-color: #ff9d00;
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        box-shadow: 0 4px #e68a00;
+        font-weight: bold;
+        transition: 0.2s;
+    ">🏠 ホームにもどる</a>
+</div>
+
+<script>
+    // CSVから抽出した「だいだい色」の厳密な20首データ
+    const allData = [
+        {no:3, u:"あしびきの やまどりのおの しだりおの", l:"ながながしよを ひとりかもねん"},
+  {no:5, u:"おくやまに もみじふみわけ なくしかの", l:"こえきくときぞ あきわかなしき"},
+  {no:6, u:"かささぎの わたせるはしに おくしもの", l:"しろきをみれば よぞふけにける"},
+  {no:12, u:"あまつかぜ くものかよいじ ふきとじよ", l:"おとめのすがた しばしとどめん"},
+  {no:14, u:"みちのくの しのぶもじずり たれゆえに", l:"みだれそめにし われならなくに"},
+  {no:24, u:"このたびわ ぬさもとりあえず たむけやま", l:"もみじのにしき かみのまにまに"},
+  {no:30, u:"ありあけの つれなくみえし わかれより", l:"あかつきばかり うきものわなし"},
+  {no:31, u:"あさぼらけ ありあけのつきと みるまでに", l:"よしののさとに ふれるしらゆき"},
+  {no:50, u:"きみがため おしからざりし いのちさえ", l:"ながくもがなと おもいけるかな"},
+  {no:57, u:"めぐりあいて みしやそれとも わかぬまに", l:"くもがくれにし よわのつきかな"},
+  {no:61, u:"いにしえの ならのみやこの やえざくら", l:"きょーここのえに においぬるかな"},
+  {no:62, u:"よ(お)こめて とりのそらねわ はかるとも", l:"よにおーさかの せきわゆるさじ"},
+  {no:69, u:"あらしふく みむろのやまの もみじばわ", l:"たつたのかわの にしきなりけり"},
+  {no:70, u:"さびしさに やどをたちいでて ながむれば", l:"いずこもおなじ あきのゆーぐれ"},
+  {no:74, u:"うかりける ひとをはつせの やまおろし", l:"はげしかれとわ いのらぬものを"},
+  {no:75, u:"ちぎりおきし させもがつゆを いのちにて", l:"あわれことしの あきもいぬめり"},
+  {no:76, u:"わたのはら こぎいでてみれば ひさかたの", l:"くもいにまごー おきつしらなみ"},
+  {no:82, u:"おもいわび さてもいのちわ あるものを", l:"うきにたえぬわ なみだなりけり"},
+  {no:91, u:"きりぎりす なくやしもよの さむしろに", l:"ころもかたしき ひとりかもねん"},
+  {no:100, u:"ももしきや ふるきのきばの しのぶにも", l:"なおあまりある むかしなりけり"},
+        
+    ];
+
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let wrongQuestions = []; // 間違えた問題を保存する配列
+    let isReviewMode = false; // 今が復習モードかどうか
+
+    function initQuiz() {
+        isReviewMode = false;
+        wrongQuestions = [];
+        score = 0;
+        currentIndex = 0;
+        // 最初はランダムに10問選ぶ
+        currentQuestions = [...allData].sort(() => 0.5 - Math.random()).slice(0, 10);
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const q = currentQuestions[currentIndex];
+        const titlePrefix = isReviewMode ? "【復習】" : "";
+        document.getElementById("question-num").innerText = `${titlePrefix}第 ${currentIndex + 1} 問 / ${currentQuestions.length}`;
+        document.getElementById("upper-phrase").innerText = q.u;
+        document.getElementById("result-area").innerText = "";
+        document.getElementById("next-btn").style.display = "none";
+
+        let options = [q.l];
+        let others = allData.filter(d => d.l !== q.l).sort(() => 0.5 - Math.random());
+        options.push(others[0].l, others[1].l);
+        options.sort(() => 0.5 - Math.random());
+
+        const optionsDiv = document.getElementById("options");
+        optionsDiv.innerHTML = "";
+        options.forEach(opt => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn";
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt, q.l, q);
+            optionsDiv.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected, correct, questionObj) {
+        const resultArea = document.getElementById("result-area");
+        const btns = document.getElementsByClassName("option-btn");
+        for(let btn of btns) btn.disabled = true;
+
+        if (selected === correct) {
+            resultArea.innerHTML = "<span class='correct'>正解！</span>";
+            if(!isReviewMode) score++;
+        } else {
+            resultArea.innerHTML = `<span class='incorrect'>残念！正解は：<br>${correct}</span>`;
+            // 間違えた問題をリストに追加（重複しないように）
+            if (!wrongQuestions.includes(questionObj)) {
+                wrongQuestions.push(questionObj);
+            }
+        }
+        document.getElementById("next-btn").style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+        currentIndex++;
+        if (currentIndex < currentQuestions.length) {
+            showQuestion();
+        } else {
+            finishQuiz();
+        }
+    }
+
+    function finishQuiz() {
+        if (wrongQuestions.length > 0) {
+            if (confirm(`終了！スコア: ${score}/10\n間違えた ${wrongQuestions.length} 問を復習しますか？`)) {
+                startReview();
+            } else {
+                initQuiz();
+            }
+        } else {
+            alert(`全問正解です！おめでとうございます！`);
+            initQuiz();
+        }
+    }
+
+    function startReview() {
+        isReviewMode = true;
+        currentQuestions = [...wrongQuestions]; // 間違えた問題だけでリストを作成
+        wrongQuestions = []; // 復習中にまた間違えた時のためにリセット
+        currentIndex = 0;
+        showQuestion();
+    }
+
+    initQuiz();
+</script>
+
+</body>
+</html>

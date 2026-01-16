@@ -4,25 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%%22 y=%2250%%22 style=%22dominant-baseline:central;text-anchor:middle;font-size:90px;%22>🏠</text></svg>">
-　　<meta property="og:title" content="ぱぱん式　学習補助サイト">
-<meta property="og:description" content="親子で楽しく学べる自作学習教材サイトです。">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://apa-pa.github.io/papanshiki/">
-<meta property="og:image" content="https://apa-pa.github.io/papanshiki/icon.png">
+    <meta property="og:title" content="ぱぱん式　学習補助サイト">
+    <meta property="og:description" content="親子で楽しく学べる自作学習サイトです">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://apa-pa.github.io/papanshiki/">
+    <meta property="og:image" content="https://apa-pa.github.io/papanshiki/icon.png">
 
     <title>ぱぱん式</title>
     <style>
-    /* 全体のデザイン設定 */
     body {
-        /* フォントはそのまま維持 */
         font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
-        background-color: #f0f9ff; /* 優しい水色（ヘッダーの空と合っているのでそのまま） */
-        color: #554c46; /* 全体の文字色を真っ黒から少し茶色がかったグレーにして柔らかく */
+        background-color: #f0f9ff;
+        color: #554c46;
         margin: 0;
         padding: 0;
     }
 
-    /* --- ヘッダーの変更点 --- */
     .hero-header {
         width: 100%;
         height: 350px;
@@ -34,137 +31,141 @@
         border-radius: 0 0 20px 20px;
     }
 
-    /* headerタグのスタイルは不要になるので削除しても良いですが、念のため残すならpaddingを調整 */
-    header {
-        /* color: white;  削除 */
-        text-align: center;
-        padding: 0; /* 画像だけになるのでpaddingは0に */
-    }
-
     main {
         max-width: 900px;
         margin: 20px auto;
         padding: 20px;
     }
 
-    /* --- 見出しの変更点 --- */
-    h2 {
-        text-align: center;
-        /* ヘッダーの文字色に合わせた、落ち着いた茶色に変更 */
+    /* セクションごとの見出し */
+    .section-title {
+        text-align: left;
         color: #6b4e3d; 
-        /* 少し手書き風の雰囲気を出すために文字間を広げても良いでしょう */
         letter-spacing: 0.05em;
+        border-left: 8px solid #ffad60;
+        padding-left: 15px;
+        margin: 40px 0 20px 0;
+        font-size: 1.5rem;
     }
 
-    /* コンテンツを並べるグリッド */
     .grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 25px; /* 間隔を少し広げてゆったりと */
-        margin-top: 30px;
+        gap: 25px;
+        margin-bottom: 50px;
     }
 
-    /* --- カードデザインの変更点 --- */
     .card {
         background: white;
-        /* 角丸を少し強くして、より柔らかい印象に */
         border-radius: 20px; 
-        padding: 25px; /* 内側の余白も少し広げる */
+        padding: 25px;
         text-align: center;
-        /* 影の色を青みがかったグレーにし、背景と馴染ませる */
         box-shadow: 0 8px 16px rgba(135, 206, 235, 0.2);
-        transition: transform 0.3s, box-shadow 0.3s; /* トランジションを少しゆっくりに */
+        transition: transform 0.3s, box-shadow 0.3s;
         text-decoration: none;
         color: inherit;
-        /* 薄い水色のボーダーを追加して、絵本のような雰囲気に（お好みで） */
         border: 3px solid #e6f7ff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
     .card:hover {
         transform: translateY(-5px);
-        /* ホバー時の影も少し強調 */
         box-shadow: 0 12px 20px rgba(135, 206, 235, 0.3);
-        /* ホバー時にボーダーの色を少し濃くする（お好みで） */
         border-color: #b3e0ff;
     }
 
     .icon {
         font-size: 50px;
         margin-bottom: 15px;
-        /* アイコンにも少し影をつけて浮かび上がらせる（お好みで） */
         text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }
 
-    /* --- カードタイトルの変更点 --- */
     .card h3 {
         margin: 10px 0;
-        /* 虹の色のような、少しソフトで優しいオレンジに変更 */
         color: #ffad60; 
     }
     
-    /* カード内の説明文のスタイル調整 */
     .card p {
-        /* 文字色を少し薄くして、タイトルとのコントラストをつける */
         color: #7a7a7a;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         line-height: 1.6;
+        margin: 0;
     }
-    </style>
 
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%%22 y=%2250%%22 style=%22dominant-baseline:central;text-anchor:middle;font-size:90px;%22>🏠</text></svg>">
-　　<meta property="og:title" content="ぱぱん式">
-<meta property="og:description" content="親子で楽しく学べる自作学習教材サイトです。">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://apa-pa.github.io/papanshiki/">
-<meta property="og:image" content="https://apa-pa.github.io/papanshiki/icon.png">
+    /* 種類がわかるラベル（お好みで） */
+    .label {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+    .label-quiz { background-color: #fff3e0; color: #ff9800; }
+    .label-print { background-color: #e3f2fd; color: #2196f3; }
+
+    </style>
 </head>
 <body>
 
-<header class="hero-header">
-    
-</header>
+<header class="hero-header"></header>
 
 <main>
-    <h2>べんきょうをえらぼう</h2>
-
+    <h2 class="section-title">📝 クイズでべんきょう</h2>
     <div class="grid">
-        <a href="math100.html" class="card">
-            <div class="icon">➕</div>
-            <h3>ひゃくますけいさん表</h3>
-            <p>たしざん、ひきざん、かけざんに対応！印刷してしようするタイプ</p>
+        <a href="sansuu.html" class="card"　data-age="5,6,7,8,9,10,11,12">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">⏱️</div>
+            <h3>さんすうタイムアタック</h3>
+            <p>たしざん、ひきざん、かけざんに対応！10もん解くのに何秒かかるかな？タイムに挑戦しよう！</p>
         </a>
 
-        <a href="hissan.html" class="card">
-            <div class="icon">➖</div>
-            <h3>２けたのひっさん</h3>
-            <p>たしざんとひきざんに対応！印刷してしようするタイプ</p>
-        </a>
-
-
-        <a href="99.html" class="card">
+        <a href="99.html" class="card" data-age="6,7,8,9,10,11,12">
+            <span class="label label-quiz">クイズ</span>
             <div class="icon">✖</div>
-            <h3>かけざんの九九にチャレンジ</h3>
+            <h3>かけざん九九チャレンジ</h3>
             <p>九九（くく）のよみかたをおぼえるクイズだよ</p>
         </a>
 
-        <a href="100orangekai.html" class="card">
+        <a href="100home.html" class="card" data-age="7,8,9,10,11,12">
+            <span class="label label-quiz">クイズ</span>
             <div class="icon">📖</div>
-            <h3>百人一首のオレンジ</h3>
+            <h3>五色百人一首クイズ</h3>
             <p>五色百人一首のオレンジ色をおぼえるクイズだよ</p>
         </a>
 
-        <a href="youji.html" class="card">
+        <a href="youji.html" class="card" data-age="3,4,5">
+            <span class="label label-quiz">クイズ</span>
             <div class="icon">🍎</div>
             <h3>えあわせクイズ</h3>
             <p>おなじイラストをみつけるかんたんなクイズだよ</p>
         </a>
 
-        <a href="alphabet.html" class="card">
+        <a href="alphabet.html" class="card" data-age="5,6,7,8,9">
+            <span class="label label-quiz">クイズ</span>
             <div class="icon">🔠</div>
             <h3>アルファベットチャレンジ</h3>
             <p>アルファベットのよみかたとじゅんばんをおぼえるクイズ</p>
         </a>
+    </div>
 
+    <h2 class="section-title">🖨️ プリントしてべんきょう</h2>
+    <div class="grid">
+        <a href="math100.html" class="card">
+            <span class="label label-print">プリント</span>
+            <div class="icon">➕</div>
+            <h3>ひゃくますけいさん表</h3>
+            <p>たしざん、ひきざん、かけざんに対応！印刷してつかうタイプ</p>
+        </a>
+
+        <a href="hissan.html" class="card">
+            <span class="label label-print">プリント</span>
+            <div class="icon">➖</div>
+            <h3>２けたのひっさん</h3>
+            <p>たしざんとひきざんに対応！印刷してつかうタイプ</p>
+        </a>
     </div>
 </main>
 
