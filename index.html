@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%%22 y=%2250%%22 style=%22dominant-baseline:central;text-anchor:middle;font-size:90px;%22>🏠</text></svg>">
-    <meta property="og:title" content="ぱぱん式　学習補助サイト">
-    <meta property="og:description" content="親子で楽しく学べる自作学習サイトです">
+    <meta property="og:title" content="ぱぱん式　学習ポータル">
+    <meta property="og:description" content="ダウンロード不要で好きなだけ学べる学習サイトです">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://apa-pa.github.io/papanshiki/">
     <meta property="og:image" content="https://apa-pa.github.io/papanshiki/icon.png">
@@ -22,6 +22,7 @@
         padding: 0;
     }
 
+    /* ヘッダー画像の設定（今のまま） */
     .hero-header {
         width: 100%;
         height: 350px;
@@ -31,6 +32,13 @@
         background-repeat: no-repeat;
         background-color: #f0f9ff;
         border-radius: 0 0 20px 20px;
+    }
+
+    /* スマホなどでヘッダーが大きすぎる場合の調整 */
+    @media (max-width: 600px) {
+        .hero-header {
+            height: 200px;
+        }
     }
 
     main {
@@ -46,15 +54,23 @@
         letter-spacing: 0.05em;
         border-left: 8px solid #ffad60;
         padding-left: 15px;
-        margin: 40px 0 20px 0;
+        margin: 50px 0 20px 0; /* 少し間隔を広げました */
         font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
+
+    /* カテゴリごとに色を変えるアクセント（オプション） */
+    .title-math { border-color: #4dd0e1; }
+    .title-jp { border-color: #ff8a65; }
+    .title-brain { border-color: #aed581; }
 
     .grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 25px;
-        margin-bottom: 50px;
+        margin-bottom: 30px;
     }
 
     .card {
@@ -70,6 +86,8 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
+        height: 100%; /* 高さを揃える */
+        box-sizing: border-box; /* 枠線を含めて計算 */
     }
 
     .card:hover {
@@ -87,6 +105,7 @@
     .card h3 {
         margin: 10px 0;
         color: #ffad60; 
+        font-size: 1.1rem;
     }
     
     .card p {
@@ -96,7 +115,7 @@
         margin: 0;
     }
 
-    /* 種類がわかるラベル（お好みで） */
+    /* ラベル */
     .label {
         display: inline-block;
         padding: 4px 12px;
@@ -115,49 +134,113 @@
 <header class="hero-header"></header>
 
 <main>
-    <h2 class="section-title">📝 クイズでべんきょう</h2>
+
+    <h2 class="section-title title-math">🔢 さんすう・けいさん</h2>
     <div class="grid">
-        <a href="sansuu.html" class="card"　data-age="5,6,7,8,9,10,11,12">
+        <a href="sansuu.html" class="card" data-age="5,6,7,8,9,10,11,12">
             <span class="label label-quiz">クイズ</span>
             <div class="icon">⏱️</div>
             <h3>さんすうタイムアタック</h3>
-            <p>たしざん、ひきざん、かけざんに対応！10もん解くのに何秒かかるかな？タイムに挑戦しよう！</p>
+            <p>たしざん、ひきざん、かけざん！新記録にちょうせんだ</p>
+        </a>
+
+        <a href="make10.html" class="card" data-age="5,6,7,8">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">🔟</div>
+            <h3>あわせて10（メイクテン）</h3>
+            <p>あといくつで10になる？くりあがりのきほん！</p>
+        </a>
+
+        <a href="flash_anzan.html" class="card" data-age="6,7,8,9,10,11,12">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">🧮</div>
+            <h3>フラッシュあんざん</h3>
+            <p>じゅんばんに出る数字をたそう！1けた〜3けたまで</p>
         </a>
 
         <a href="99.html" class="card" data-age="6,7,8,9,10,11,12">
             <span class="label label-quiz">クイズ</span>
             <div class="icon">✖</div>
             <h3>かけざん九九チャレンジ</h3>
-            <p>九九（くく）のよみかたをおぼえるクイズだよ</p>
+            <p>九九（くく）のよみかたをおぼえるクイズ</p>
+        </a>
+
+        <a href="whattime.html" class="card" data-age="6,7,8">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">🕒</div>
+            <h3>とけいの読み方</h3>
+            <p>いまなんじ？とけいをみて正しいじかんをえらぼう！</p>
+        </a>
+    </div>
+
+    <h2 class="section-title title-jp">📖 こくご・ことば</h2>
+    <div class="grid">
+        <a href="katakana.html" class="card" data-age="5,6,7,8">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">📖</div>
+            <h3>カタカナへんかん</h3>
+            <p>ひらがなをカタカナになおす特訓！ぜんぶわかるかな？</p>
         </a>
 
         <a href="1gradekanji.html" class="card" data-age="7,8,9,10,11,12">
             <span class="label label-quiz">クイズ</span>
-            <div class="icon">📖</div>
+            <div class="icon">✏️</div>
             <h3>1年生のかんじクイズ</h3>
-            <p>ぶんしょうにあてはまるかんじをえらぼう</p>
+            <p>ぶんしょうにあてはまる正しい漢字をえらぼう</p>
+        </a>
+
+        <a href="alphabet.html" class="card" data-age="5,6,7,8,9">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">ABC</div>
+            <h3>アルファベット</h3>
+            <p>アルファベットのよみかたとじゅんばんをおぼえよう</p>
         </a>
 
         <a href="100home.html" class="card" data-age="7,8,9,10,11,12">
             <span class="label label-quiz">クイズ</span>
-            <div class="icon">📖</div>
+            <div class="icon">👘</div>
             <h3>五色百人一首クイズ</h3>
             <p>五色百人一首のオレンジ色をおぼえるクイズだよ</p>
+        </a>
+    </div>
+
+    <h2 class="section-title title-brain">🧠 脳トレ・パズル</h2>
+    <div class="grid">
+        <a href="memory.html" class="card" data-age="4,5,6,7">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">🃏</div>
+            <h3>どうぶつあわせ</h3>
+            <p>カードをめくって同じ絵をみつけよう！きおく力をきたえるよ</p>
+        </a>
+
+        <a href="flash.html" class="card" data-age="4,5,6,7,8,9,10,11,12">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">⚡</div>
+            <h3>フラッシュ絵文字</h3>
+            <p>一瞬だけみえる絵文字のじゅんばんをおぼえてね！</p>
+        </a>
+
+        <a href="numbers.html" class="card" data-age="5,6,7,8,9,10">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">🔢</div>
+            <h3>1から25までタッチ</h3>
+            <p>バラバラの数字を1からじゅんばんにさがそう！</p>
         </a>
 
         <a href="youji.html" class="card" data-age="3,4,5">
             <span class="label label-quiz">クイズ</span>
             <div class="icon">🍎</div>
-            <h3>えあわせクイズ</h3>
-            <p>おなじイラストをみつけるかんたんなクイズだよ</p>
+            <h3>えあわせパズル</h3>
+            <p>おなじイラストをみつける幼児むけのかんたんパズル</p>
         </a>
 
-        <a href="alphabet.html" class="card" data-age="5,6,7,8,9">
-            <span class="label label-quiz">クイズ</span>
-            <div class="icon">🔠</div>
-            <h3>アルファベットチャレンジ</h3>
-            <p>アルファベットのよみかたとじゅんばんをおぼえるクイズ</p>
+        <a href="kyorokyoro.html" class="card" data-age="5,6,7,8,9,10,11,12">
+        <span class="label label-quiz">クイズ</span>
+        <div class="icon">👀</div>
+        <h3>どこにきえた？（動体視力）</h3>
+        <p>はこの上を高速でうごくキャラクターを目で追おう！どこで消えたか当てるゲーム。</p>
         </a>
+        
     </div>
 
     <h2 class="section-title">🖨️ プリントしてべんきょう</h2>
@@ -176,6 +259,7 @@
             <p>たしざんとひきざんに対応！印刷してつかうタイプ</p>
         </a>
     </div>
+
 </main>
 
 <script>

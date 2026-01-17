@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>フラッシュあんざん</title>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #e0f2f1; /* 知的な青緑 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 95%;
+            max-width: 500px;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        h1 { color: #00695c; font-size: 24px; margin: 10px 0; }
+
+        /* 設定エリア */
+        .setting-group {
+            background: #b2dfdb;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        .setting-group label {
+            font-weight: bold;
+            color: #004d40;
+            display: block;
+            margin-bottom: 5px;
+        }
+        select {
+            width: 100%;
+            font-size: 18px;
+            padding: 8px;
+            border-radius: 8px;
+            border: 2px solid #00695c;
+            background: white;
+        }
+
+        /* フラッシュ表示エリア */
+        #flash-display {
+            height: 220px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 120px; /* 数字を大きく */
+            font-weight: bold;
+            background: #fff;
+            border: 5px solid #004d40;
+            border-radius: 20px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace; /* 数字がブレないように等幅フォント */
+            color: #333;
+        }
+
+        /* 電卓風キーパッド */
+        #calculator {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .calc-btn {
+            font-size: 28px;
+            padding: 15px 0;
+            background: #ffffff;
+            border: 2px solid #80cbc4;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 3px #4db6ac;
+            color: #004d40;
+            font-weight: bold;
+        }
+        .calc-btn:active { transform: translateY(2px); box-shadow: none; }
+        .btn-zero { grid-column: span 2; } /* 0ボタンは横長 */
+        .btn-clear { background: #ffccbc; border-color: #ffab91; color: #d84315;}
+        .btn-enter { background: #4db6ac; border-color: #009688; color: white; grid-column: span 3; }
+
+        /* 入力表示窓 */
+        #input-display {
+            font-size: 40px;
+            background: #f1f8e9;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 20px;
+            min-height: 50px;
+            text-align: right;
+            padding-right: 20px;
+            letter-spacing: 2px;
+        }
+
+        /* ボタン類 */
+        .start-btn {
+            font-size: 24px;
+            padding: 15px 40px;
+            background: #009688;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px #00695c;
+            margin-top: 10px;
+            font-weight: bold;
+            width: 100%;
+        }
+        .start-btn:active { transform: scale(0.95); box-shadow: 0 2px #00695c; }
+
+        .back-btn {
+            background: #90a4ae;
+            font-size: 14px;
+            padding: 8px 20px;
+            color: white;
+            border-radius: 20px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        /* 結果画面 */
+        .result-val { font-size: 32px; font-weight: bold; margin: 10px 0; }
+        .correct-color { color: #f44336; }
+        .user-color { color: #00695c; }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+
+    <div id="home-screen" class="screen active">
+        <h1>フラッシュあんざん</h1>
+        <div style="font-size: 60px; margin: 10px;">🧮</div>
+        
+        <div class="setting-group">
+            <label>なんけた？</label>
+            <select id="digit-select">
+                <option value="1">1けた (1-9)</option>
+                <option value="2">2けた (10-99)</option>
+                <option value="3">3けた (100-999)</option>
+            </select>
+        </div>
+
+        <div class="setting-group">
+            <label>いくつ たす？</label>
+            <select id="count-select">
+                <option value="3">3こ</option>
+                <option value="5">5こ</option>
+                <option value="10">10こ</option>
+                <option value="15">15こ</option>
+            </select>
+        </div>
+
+        <div class="setting-group">
+            <label>スピード</label>
+            <select id="speed-select">
+                <option value="2000">ゆっくり (2びょう)</option>
+                <option value="1000" selected>ふつう (1びょう)</option>
+                <option value="500">はやい (0.5びょう)</option>
+                <option value="300">超高速 (0.3びょう)</option>
+            </select>
+        </div>
+
+        <button class="start-btn" onclick="prepareGame()">スタート！</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 もどる</a>
+    </div>
+
+    <div id="flash-screen" class="screen">
+        <div id="flash-display"></div>
+    </div>
+
+    <div id="answer-screen" class="screen">
+        <h2>こたえは いくつ？</h2>
+        <div id="input-display"></div>
+        
+        <div id="calculator">
+            <button class="calc-btn" onclick="inputNum(7)">7</button>
+            <button class="calc-btn" onclick="inputNum(8)">8</button>
+            <button class="calc-btn" onclick="inputNum(9)">9</button>
+            <button class="calc-btn" onclick="inputNum(4)">4</button>
+            <button class="calc-btn" onclick="inputNum(5)">5</button>
+            <button class="calc-btn" onclick="inputNum(6)">6</button>
+            <button class="calc-btn" onclick="inputNum(1)">1</button>
+            <button class="calc-btn" onclick="inputNum(2)">2</button>
+            <button class="calc-btn" onclick="inputNum(3)">3</button>
+            <button class="calc-btn btn-zero" onclick="inputNum(0)">0</button>
+            <button class="calc-btn btn-clear" onclick="clearInput()">C</button>
+            <button class="calc-btn btn-enter" onclick="checkAnswer()">決定</button>
+        </div>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <div id="result-icon" style="font-size: 80px; margin: 10px;"></div>
+        <div id="result-msg" style="font-size: 24px; font-weight: bold;"></div>
+        
+        <div style="background:#f1f8e9; padding:15px; border-radius:15px; margin:20px 0;">
+            <p style="margin:0; font-size:14px; color:#777;">正解（せいかい）</p>
+            <div id="correct-val" class="result-val correct-color"></div>
+            <hr style="border:1px dashed #ccc;">
+            <p style="margin:0; font-size:14px; color:#777;">きみの答え</p>
+            <div id="user-val" class="result-val user-color"></div>
+        </div>
+
+        <button class="start-btn" onclick="prepareGame()">もういっかい</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 ホームへ</a>
+    </div>
+
+</div>
+
+<script>
+    let correctSum = 0;
+    let numbers = [];
+    let currentInput = "";
+    
+    // 設定値
+    let digits = 1;
+    let count = 3;
+    let speed = 1000;
+
+    function changeScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    // ゲーム準備
+    function prepareGame() {
+        // 設定読み込み
+        digits = parseInt(document.getElementById('digit-select').value);
+        count = parseInt(document.getElementById('count-select').value);
+        speed = parseInt(document.getElementById('speed-select').value);
+
+        // 数字生成
+        numbers = [];
+        correctSum = 0;
+        
+        // 桁数に応じた最小値と最大値 (例: 2桁なら 10〜99)
+        const min = Math.pow(10, digits - 1);
+        const max = Math.pow(10, digits) - 1;
+
+        for(let i=0; i<count; i++){
+            // ランダム生成
+            const num = Math.floor(Math.random() * (max - min + 1)) + min;
+            numbers.push(num);
+            correctSum += num;
+        }
+
+        currentInput = "";
+        changeScreen('flash-screen');
+        startFlash();
+    }
+
+    // フラッシュ再生
+    function startFlash() {
+        const display = document.getElementById('flash-display');
+        
+        // 3,2,1 カウントダウン
+        let countdown = 3;
+        display.textContent = countdown;
+        display.style.fontSize = "80px";
+        display.style.color = "#aaa";
+
+        const countTimer = setInterval(() => {
+            countdown--;
+            if(countdown > 0){
+                display.textContent = countdown;
+            } else {
+                clearInterval(countTimer);
+                // 本番スタート
+                display.style.fontSize = "120px";
+                display.style.color = "#333";
+                runNumbers();
+            }
+        }, 700);
+    }
+
+    function runNumbers() {
+        const display = document.getElementById('flash-display');
+        let index = 0;
+
+        // 最初の数字を表示
+        display.textContent = numbers[index];
+
+        const flashTimer = setInterval(() => {
+            // 前の数字を消す（一瞬空白を作ることで、同じ数字が続いても分かるようにする）
+            display.textContent = "";
+            
+            // 少しだけ待ってから次の数字を表示
+            setTimeout(() => {
+                index++;
+                if (index >= count) {
+                    // 終了
+                    clearInterval(flashTimer);
+                    changeScreen('answer-screen');
+                    updateInputDisplay();
+                } else {
+                    display.textContent = numbers[index];
+                }
+            }, 100); // 0.1秒の空白時間
+
+        }, speed);
+    }
+
+    // --- 電卓入力処理 ---
+    function inputNum(n) {
+        if(currentInput.length < 10) { // 文字数制限
+            currentInput += n;
+            updateInputDisplay();
+        }
+    }
+
+    function clearInput() {
+        currentInput = "";
+        updateInputDisplay();
+    }
+
+    function updateInputDisplay() {
+        const disp = document.getElementById('input-display');
+        // カーソル点滅っぽい表現
+        disp.textContent = currentInput === "" ? "_" : currentInput;
+    }
+
+    // 答え合わせ
+    function checkAnswer() {
+        if(currentInput === "") return;
+
+        const userAns = parseInt(currentInput);
+        changeScreen('result-screen');
+
+        const icon = document.getElementById('result-icon');
+        const msg = document.getElementById('result-msg');
+        
+        document.getElementById('correct-val').textContent = correctSum;
+        document.getElementById('user-val').textContent = userAns;
+
+        if(userAns === correctSum) {
+            icon.textContent = "💮";
+            msg.textContent = "だいせいかい！";
+            msg.style.color = "#e91e63";
+        } else {
+            icon.textContent = "🤔";
+            msg.textContent = "おしい！ざんねん";
+            msg.style.color = "#555";
+        }
+    }
+</script>
+
+</body>
+</html>
