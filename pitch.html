@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>おとあてクイズ</title>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background-color: #e1f5fe;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 95%;
+            max-width: 600px;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        h1 { color: #039be5; font-size: 24px; margin: 10px 0; }
+
+        /* メニューボタン */
+        .level-btn {
+            display: block;
+            width: 80%;
+            margin: 10px auto;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: #039be5;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px #0277bd;
+        }
+        .level-btn:active { transform: translateY(2px); box-shadow: none; }
+        .lvl-easy { background: #4caf50; box-shadow: 0 4px #2e7d32; }
+        .lvl-normal { background: #ff9800; box-shadow: 0 4px #ef6c00; }
+        .lvl-hard { background: #f44336; box-shadow: 0 4px #c62828; }
+
+        /* 再生エリア */
+        .controls-row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .play-btn {
+            padding: 15px 20px;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 4px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 120px;
+        }
+        .play-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        .btn-replay { background: #fbc02d; color: #555; }
+        .btn-hint { background: #90a4ae; color: white; }
+
+        .icon-large { font-size: 40px; margin-bottom: 5px; }
+
+        /* 鍵盤エリア */
+        #keyboard-area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            min-height: 150px; /* 高さを確保 */
+        }
+        
+        .key-btn {
+            width: 60px;
+            height: 100px; /* 縦長にしてピアノっぽく */
+            border-radius: 0 0 10px 10px;
+            font-size: 18px;
+            font-weight: bold;
+            border: 1px solid rgba(0,0,0,0.1);
+            cursor: pointer;
+            box-shadow: 0 4px rgba(0,0,0,0.2);
+            color: #555; /* 文字色 */
+            transition: transform 0.1s;
+            background: white; /* 基本は白鍵 */
+            display: flex;
+            align-items: flex-end; /* 文字を下揃え */
+            justify-content: center;
+            padding-bottom: 10px;
+            position: relative;
+        }
+        .key-btn:active { transform: translateY(2px); box-shadow: none; background: #eee; }
+
+        /* 音ごとのボーダーカラー（視覚補助） */
+        .key-btn[data-note="C4"] { border-top: 10px solid #e57373; }
+        .key-btn[data-note="D4"] { border-top: 10px solid #ffb74d; }
+        .key-btn[data-note="E4"] { border-top: 10px solid #fff176; }
+        .key-btn[data-note="F4"] { border-top: 10px solid #81c784; }
+        .key-btn[data-note="G4"] { border-top: 10px solid #4fc3f7; }
+        .key-btn[data-note="A4"] { border-top: 10px solid #7986cb; }
+        .key-btn[data-note="B4"] { border-top: 10px solid #ba68c8; }
+        .key-btn[data-note="C5"] { border-top: 10px solid #f06292; }
+
+        .back-btn {
+            background: #cfd8dc; font-size: 14px; padding: 8px 20px;
+            color: #555; border-radius: 20px; text-decoration: none;
+            display: inline-block; margin-top: 20px;
+        }
+
+        #feedback {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 150px;
+            display: none;
+            z-index: 100;
+            text-shadow: 2px 2px 0 white;
+            pointer-events: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="feedback">⭕</div>
+
+    <div id="home-screen" class="screen active">
+        <h1>おとあてクイズ</h1>
+        <div style="font-size: 60px; margin: 10px;">🎹</div>
+        <p>レベルをえらんでね</p>
+        
+        <button class="level-btn lvl-easy" onclick="startGame(1)">レベル1<br><span style="font-size:14px; font-weight:normal;">ド・ミ・ソ の3つ</span></button>
+        <button class="level-btn lvl-normal" onclick="startGame(2)">レベル2<br><span style="font-size:14px; font-weight:normal;">ド〜ソ の5つ</span></button>
+        <button class="level-btn lvl-hard" onclick="startGame(3)">レベル3<br><span style="font-size:14px; font-weight:normal;">ド〜高いド ぜんぶ</span></button>
+
+        <p style="color:#f57f17; font-size:12px; margin-top:20px;">※音が出るよ！マナーモードを解除してね</p>
+        <a href="index.html" class="back-btn">🏠 もどる</a>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div style="text-align: right; color:#888; font-size:14px;">
+            もんだい <span id="q-count">1</span> / 10
+        </div>
+
+        <div class="controls-row">
+            <button class="play-btn btn-hint" onclick="playTone(261.63)">
+                <span class="icon-large">💡</span>
+                ヒント(ド)
+            </button>
+            <button class="play-btn btn-replay" onclick="playCurrentNote()">
+                <span class="icon-large">🔊</span>
+                もういちど
+            </button>
+        </div>
+
+        <h2>どのおと かな？</h2>
+
+        <div id="keyboard-area">
+            </div>
+
+        <a href="index.html" class="back-btn">🏠 やめる</a>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h1>🎉 おしまい！ 🎉</h1>
+        <div style="font-size: 80px; margin: 20px;">🎵</div>
+        <p>せいかいは...</p>
+        <p style="font-size:24px; font-weight:bold; color:#e91e63;">
+            <span id="score-display">0</span> / 10 もん
+        </p>
+        <button class="level-btn" onclick="location.reload()">もういっかい</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 ホームへ</a>
+    </div>
+</div>
+
+<script>
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+
+    // 全データ
+    const allNotes = {
+        'C4': { freq: 261.63, name: 'ド' },
+        'D4': { freq: 293.66, name: 'レ' },
+        'E4': { freq: 329.63, name: 'ミ' },
+        'F4': { freq: 349.23, name: 'ファ' },
+        'G4': { freq: 392.00, name: 'ソ' },
+        'A4': { freq: 440.00, name: 'ラ' },
+        'B4': { freq: 493.88, name: 'シ' },
+        'C5': { freq: 523.25, name: 'ド↑' }
+    };
+
+    // レベル設定
+    const levels = {
+        1: ['C4', 'E4', 'G4'], // ドミソ
+        2: ['C4', 'D4', 'E4', 'F4', 'G4'], // ドレミファソ
+        3: ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'] // 全部
+    };
+
+    let currentLevelKeys = [];
+    let currentQuestionKey = '';
+    let questionCount = 0;
+    let score = 0;
+    const totalQuestions = 10;
+    
+    function changeScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function playTone(freq) {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.2);
+
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 1.2);
+    }
+
+    function startGame(lvl) {
+        if (!audioCtx) audioCtx = new AudioContext();
+        
+        // レベルに応じたキーを設定
+        currentLevelKeys = levels[lvl];
+        
+        // 鍵盤を描画
+        renderKeyboard();
+
+        questionCount = 0;
+        score = 0;
+        changeScreen('game-screen');
+        nextQuestion();
+    }
+
+    function renderKeyboard() {
+        const area = document.getElementById('keyboard-area');
+        area.innerHTML = ''; // クリア
+
+        // currentLevelKeys にある音だけボタンを作る
+        // ただし、見た目のバランスのために全キーを表示して、使わないキーを無効化する手もあるが、
+        // 今回は「選択肢を減らして簡単にする」ために、対象キーだけを表示します。
+        
+        // 順番通りに表示したいので、allNotesのキー順を基準にフィルタリング
+        const orderedKeys = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
+        
+        orderedKeys.forEach(key => {
+            if (currentLevelKeys.includes(key)) {
+                const note = allNotes[key];
+                const btn = document.createElement('button');
+                btn.className = 'key-btn';
+                btn.textContent = note.name;
+                btn.setAttribute('data-note', key); // 色付け用
+                btn.onclick = () => checkAnswer(key);
+                area.appendChild(btn);
+            }
+        });
+    }
+
+    function nextQuestion() {
+        if (questionCount >= totalQuestions) {
+            document.getElementById('score-display').textContent = score;
+            changeScreen('result-screen');
+            return;
+        }
+
+        questionCount++;
+        document.getElementById('q-count').textContent = questionCount;
+
+        // 現在のレベルのキーからランダムに選ぶ
+        const r = Math.floor(Math.random() * currentLevelKeys.length);
+        currentQuestionKey = currentLevelKeys[r];
+
+        setTimeout(() => {
+            playTone(allNotes[currentQuestionKey].freq);
+        }, 500);
+    }
+
+    function playCurrentNote() {
+        if(currentQuestionKey) {
+            playTone(allNotes[currentQuestionKey].freq);
+        }
+    }
+
+    function checkAnswer(userKey) {
+        const feedback = document.getElementById('feedback');
+        
+        if (userKey === currentQuestionKey) {
+            score++;
+            feedback.textContent = '⭕';
+            feedback.style.color = '#ff3d00';
+            feedback.style.display = 'block';
+            
+            // 正解音
+            playTone(880); 
+            setTimeout(() => playTone(1108), 100); 
+            
+            setTimeout(() => {
+                feedback.style.display = 'none';
+                nextQuestion();
+            }, 1000);
+        } else {
+            feedback.textContent = '❌';
+            feedback.style.color = '#555';
+            feedback.style.display = 'block';
+            
+            playTone(150); 
+
+            setTimeout(() => {
+                feedback.style.display = 'none';
+                // 間違えても次へ（ストレス軽減）
+                nextQuestion(); 
+            }, 1000);
+        }
+    }
+</script>
+
+</body>
+</html>
