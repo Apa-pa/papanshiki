@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>バラバラぶんしょうパズル</title>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #fce4ec; /* やさしいピンク */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 95%;
+            max-width: 600px;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        h1 { color: #e91e63; font-size: 24px; margin: 10px 0; }
+
+        /* --- ゲーム画面のデザイン --- */
+        
+        /* 1. 答えを表示するエリア（上の段） */
+        #answer-area {
+            background-color: #fff0f5;
+            border: 3px dashed #f48fb1;
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 80px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* 空っぽのときのメッセージ */
+        .placeholder-text {
+            color: #aaa;
+            font-size: 16px;
+            pointer-events: none;
+        }
+
+        /* 2. 選ぶ言葉のエリア（下の段） */
+        #choices-area {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            min-height: 100px;
+        }
+
+        /* 言葉カードのデザイン */
+        .word-card {
+            background: white;
+            border: 2px solid #e91e63;
+            color: #e91e63;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px #f8bbd0;
+            transition: transform 0.1s, background 0.2s;
+            user-select: none;
+        }
+        .word-card:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+        /* 選択済みのカードスタイル */
+        .word-card-selected {
+            background: #e91e63;
+            color: white;
+            box-shadow: 0 4px #b0003a;
+        }
+
+        /* ボタン類 */
+        .start-btn {
+            font-size: 24px; padding: 15px 40px;
+            background: #e91e63; color: white;
+            border: none; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px #c2185b;
+            margin: 10px; font-weight: bold;
+        }
+        .start-btn:active { transform: scale(0.95); box-shadow: none; }
+
+        .check-btn {
+            font-size: 22px; padding: 12px 50px;
+            background: #00bcd4; color: white;
+            border: none; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px #0097a7;
+            font-weight: bold; margin-bottom: 10px;
+            display: none; /* 最初は隠す */
+        }
+        .check-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        .back-btn {
+            background: #90a4ae; font-size: 14px; padding: 8px 20px;
+            color: white; border-radius: 20px; text-decoration: none;
+            display: inline-block; margin-top: 20px;
+        }
+
+        /* 結果表示 */
+        #result-msg {
+            font-size: 28px; font-weight: bold; margin: 20px 0; min-height: 40px;
+        }
+        .correct-anim { animation: hop 0.5s; }
+        @keyframes hop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+
+    <div id="home-screen" class="screen active">
+        <h1>バラバラぶんしょう</h1>
+        <div style="font-size: 80px; margin: 20px;">🧩</div>
+        <p>バラバラになった ことばを<br>ただしい じゅんばんに ならべてね！</p>
+        <p style="color:#e91e63; font-weight:bold;">ぜんぶで 5もん だよ</p>
+        <button class="start-btn" onclick="startGame()">スタート！</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 もどる</a>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div style="text-align: right; color:#888; font-size:14px;">
+            もんだい <span id="q-count">1</span> / 5
+        </div>
+        
+        <h2>ただしい じゅんばんに おしてね</h2>
+
+        <div id="answer-area">
+            <span class="placeholder-text">ここをおして ことばを いれてね</span>
+        </div>
+
+        <div id="choices-area">
+            </div>
+
+        <div id="result-msg"></div>
+
+        <button id="check-btn" class="check-btn" onclick="checkAnswer()">これできまり！</button>
+        
+        <div id="next-area" style="display:none;">
+            <button class="start-btn" onclick="nextProblem()">つぎの もんだい</button>
+        </div>
+
+        <br>
+        <a href="index.html" class="back-btn" id="quit-btn">🏠 やめる</a>
+    </div>
+
+    <div id="clear-screen" class="screen">
+        <h1>🎉 ぜんぶできた！ 🎉</h1>
+        <div style="font-size: 80px; margin: 20px;">💮</div>
+        <p>すごい！ こくごマスターだね！</p>
+        <button class="start-btn" onclick="startGame()">もういっかい</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 ホームへ</a>
+    </div>
+
+</div>
+
+<script>
+    // 問題データ（すべてひらがな）
+    // 30問以上に増やしました
+    const problems = [
+        ["ねこ", "が", "さかな", "を", "たべた"],
+        ["わたし", "は", "りんご", "が", "すき"],
+        ["あした", "は", "こうえん", "に", "いく"],
+        ["いぬ", "が", "わんわん", "と", "ほえる"],
+        ["きょう", "は", "いい", "てんき", "だ"],
+        ["て", "を", "きれいに", "あらう"],
+        ["おおきな", "こえ", "で", "うたう"],
+        ["あかい", "はな", "が", "さいた"],
+        ["ほん", "を", "たくさん", "よむ"],
+        ["ごちそうさま", "でした"],
+        ["おとうさん", "が", "ごはん", "を", "つくる"],
+        ["うさぎ", "が", "ぴょんぴょん", "はねる"],
+        ["がっこう", "へ", "いってきます"],
+        ["おふろ", "に", "はいって", "あたたまる"],
+        ["えんぴつ", "で", "じ", "を", "かく"],
+        ["あめ", "が", "ざあざあ", "ふって", "きた"],
+        ["ともだち", "と", "なかよく", "あそぶ"],
+        ["ぱんだ", "が", "ささ", "を", "たべる"],
+        ["きいろい", "ちょうちょ", "が", "とんでいる"],
+        ["おばあちゃん", "の", "いえ", "に", "いく"],
+        ["うみ", "で", "さかな", "と", "およぐ"],
+        ["どんぐり", "を", "ひろって", "あそぶ"],
+        ["は", "を", "しっかり", "みがく"],
+        ["よる", "は", "はやく", "ねる"],
+        ["せんせい", "に", "おはよう", "と", "いう"],
+        ["ぎゅうにゅう", "を", "ごくごく", "のむ"],
+        ["ぽけっと", "に", "はんかち", "を", "いれる"],
+        ["みず", "を", "たいせつに", "つかう"],
+        ["おひさま", "が", "ぽかぽか", "あたたかい"],
+        ["にじ", "が", "きれいに", "でている"],
+        ["とり", "が", "そら", "を", "とぶ"]
+    ];
+
+    let currentProblemIndex = 0;
+    let currentProblem = []; // 今の問題（正しい順序）
+    let shuffledChoices = []; // バラバラの選択肢
+    let userAns = []; // ユーザーが選んだ順序
+    
+    // 全5問に変更
+    let totalQuestions = 5; 
+    
+    // 出題用配列
+    let selectedProblems = [];
+
+    // 画面切り替え
+    function changeScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function startGame() {
+        currentProblemIndex = 0;
+        
+        // 全問題からランダムに5問選ぶ
+        // 配列をコピーしてシャッフルし、先頭5個を取得
+        selectedProblems = [...problems].sort(() => Math.random() - 0.5).slice(0, totalQuestions);
+        
+        changeScreen('game-screen');
+        loadProblem();
+    }
+
+    function loadProblem() {
+        // 全問終了チェック
+        if(currentProblemIndex >= totalQuestions) {
+            changeScreen('clear-screen');
+            return;
+        }
+
+        // 表示のリセット
+        document.getElementById('q-count').textContent = currentProblemIndex + 1;
+        document.getElementById('result-msg').textContent = "";
+        document.getElementById('check-btn').style.display = 'none'; // ボタン隠す
+        document.getElementById('next-area').style.display = 'none';
+        document.getElementById('quit-btn').style.display = 'inline-block';
+        
+        // 問題のセットアップ
+        currentProblem = selectedProblems[currentProblemIndex]; // 正解データ
+        userAns = [];
+
+        // 選択肢用にコピーしてシャッフル
+        shuffledChoices = currentProblem.map((word, index) => ({
+            id: index,
+            text: word
+        }));
+        shuffledChoices.sort(() => Math.random() - 0.5);
+
+        renderArea();
+    }
+
+    // 画面の描画（答えエリアと選択肢エリア）
+    function renderArea() {
+        const ansArea = document.getElementById('answer-area');
+        const choiceArea = document.getElementById('choices-area');
+        
+        ansArea.innerHTML = "";
+        choiceArea.innerHTML = "";
+
+        // --- 1. 答えエリアの描画 ---
+        if (userAns.length === 0) {
+            ansArea.innerHTML = '<span class="placeholder-text">ここをおして ことばを いれてね</span>';
+        } else {
+            userAns.forEach((item, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'word-card word-card-selected';
+                btn.textContent = item.text;
+                // クリックで戻す
+                btn.onclick = () => returnWord(index);
+                ansArea.appendChild(btn);
+            });
+        }
+
+        // --- 2. 選択肢エリアの描画 ---
+        // userAnsに含まれていないものだけ表示
+        shuffledChoices.forEach(item => {
+            // すでに選ばれているかチェック
+            const isSelected = userAns.some(selected => selected.id === item.id);
+            
+            if (!isSelected) {
+                const btn = document.createElement('div');
+                btn.className = 'word-card';
+                btn.textContent = item.text;
+                // クリックで選ぶ
+                btn.onclick = () => selectWord(item);
+                choiceArea.appendChild(btn);
+            }
+        });
+
+        // --- 3. ボタンの表示制御 ---
+        // 全部の言葉を選んだら「決定ボタン」を出す
+        if (userAns.length === currentProblem.length) {
+            document.getElementById('check-btn').style.display = 'inline-block';
+        } else {
+            document.getElementById('check-btn').style.display = 'none';
+        }
+    }
+
+    // 言葉を選ぶ（下から上へ）
+    function selectWord(item) {
+        if(document.getElementById('next-area').style.display === 'block') return;
+        userAns.push(item);
+        renderArea();
+    }
+
+    // 言葉を戻す（上から下へ）
+    function returnWord(index) {
+        if(document.getElementById('next-area').style.display === 'block') return;
+        userAns.splice(index, 1); 
+        renderArea();
+    }
+
+    // 答え合わせ
+    function checkAnswer() {
+        const msg = document.getElementById('result-msg');
+        
+        let isCorrect = true;
+        for(let i=0; i<currentProblem.length; i++) {
+            if(userAns[i].text !== currentProblem[i]) {
+                isCorrect = false;
+                break;
+            }
+        }
+
+        if (isCorrect) {
+            msg.textContent = "⭕ だいせいかい！";
+            msg.style.color = "#e91e63";
+            document.getElementById('answer-area').classList.add('correct-anim');
+            
+            document.getElementById('check-btn').style.display = 'none';
+            document.getElementById('next-area').style.display = 'block';
+            document.getElementById('quit-btn').style.display = 'none'; 
+        } else {
+            msg.textContent = "❌ あれれ？ ちょっとちがうかも";
+            msg.style.color = "#555";
+        }
+    }
+
+    function nextProblem() {
+        document.getElementById('answer-area').classList.remove('correct-anim');
+        currentProblemIndex++;
+        loadProblem();
+    }
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ローマ字 虫くいクイズ</title>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #fff3e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 95%;
+            max-width: 500px;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        h1 { color: #ef6c00; font-size: 24px; margin: 10px 0; }
+
+        /* 情報バー（タイム・進捗） */
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+            color: #ef6c00;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        /* 問題表示エリア */
+        .question-box {
+            background: #fff8e1;
+            border: 4px solid #ffcc80;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 10px 0 20px 0;
+        }
+
+        .hiragana-display {
+            font-size: 80px;
+            font-weight: bold;
+            color: #333;
+            line-height: 1.2;
+        }
+
+        .romaji-display {
+            font-size: 60px;
+            font-weight: bold;
+            color: #ef6c00;
+            font-family: 'Courier New', monospace;
+            margin-top: 10px;
+            letter-spacing: 5px;
+        }
+
+        .hole {
+            color: #e91e63;
+            text-decoration: underline;
+        }
+
+        /* 選択肢ボタン */
+        #choices-area {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .choice-btn {
+            background: white;
+            border: 3px solid #ffb74d;
+            color: #ef6c00;
+            font-size: 40px;
+            font-weight: bold;
+            padding: 15px 0;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 4px #ffe0b2;
+            font-family: 'Courier New', monospace;
+            transition: transform 0.1s;
+        }
+        .choice-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        /* ナビゲーション */
+        .start-btn {
+            font-size: 24px; padding: 15px 40px;
+            background: #ef6c00; color: white;
+            border: none; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px #e65100;
+            margin: 10px; font-weight: bold;
+        }
+        .start-btn:active { transform: scale(0.95); box-shadow: none; }
+
+        .back-btn {
+            background: #90a4ae; font-size: 14px; padding: 8px 20px;
+            color: white; border-radius: 20px; text-decoration: none;
+            display: inline-block; margin-top: 20px;
+        }
+
+        /* 結果アニメーション */
+        #result-overlay {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 120px;
+            display: none;
+            pointer-events: none;
+            text-shadow: 2px 2px 0 white;
+            z-index: 100;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="result-overlay">⭕</div>
+
+    <div id="home-screen" class="screen active">
+        <h1>ローマ字 虫くい</h1>
+        <div style="font-size: 80px; margin: 20px;">🔤</div>
+        <p>ひらがなを ローマ字にしよう。<br>ぬけている 文字は どれかな？</p>
+        <p style="color:#ef6c00; font-weight:bold;">ぜんぶで 10もん</p>
+        <button class="start-btn" onclick="startGame()">スタート！</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 もどる</a>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div class="info-bar">
+            <span id="timer-display">0.0びょう</span>
+            <span id="progress-display">1 / 10</span>
+        </div>
+
+        <div class="question-box">
+            <div id="hira-disp" class="hiragana-display">か</div>
+            <div id="roma-disp" class="romaji-display">k<span class="hole">?</span></div>
+        </div>
+
+        <div id="choices-area">
+            </div>
+
+        <a href="index.html" class="back-btn">🏠 やめる</a>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h1>🎉 クリア！ 🎉</h1>
+        <div style="font-size: 80px; margin: 20px;">🏆</div>
+        <p>タイムアタック けっか</p>
+        <div id="final-time" style="font-size:40px; color:#ef6c00; font-weight:bold; margin:10px;">0.0びょう</div>
+        
+        <button class="start-btn" onclick="startGame()">もういっかい</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 ホームへ</a>
+    </div>
+
+</div>
+
+<script>
+    // 問題データ（基本のローマ字）
+    const masterData = [
+        {h:'あ', r:'a'}, {h:'い', r:'i'}, {h:'う', r:'u'}, {h:'え', r:'e'}, {h:'お', r:'o'},
+        {h:'か', r:'ka'}, {h:'き', r:'ki'}, {h:'く', r:'ku'}, {h:'け', r:'ke'}, {h:'こ', r:'ko'},
+        {h:'さ', r:'sa'}, {h:'し', r:'shi'}, {h:'す', r:'su'}, {h:'せ', r:'se'}, {h:'そ', r:'so'},
+        {h:'た', r:'ta'}, {h:'ち', r:'chi'}, {h:'つ', r:'tsu'}, {h:'て', r:'te'}, {h:'と', r:'to'},
+        {h:'な', r:'na'}, {h:'に', r:'ni'}, {h:'ぬ', r:'nu'}, {h:'ね', r:'ne'}, {h:'の', r:'no'},
+        {h:'は', r:'ha'}, {h:'ひ', r:'hi'}, {h:'ふ', r:'fu'}, {h:'へ', r:'he'}, {h:'ほ', r:'ho'},
+        {h:'ま', r:'ma'}, {h:'み', r:'mi'}, {h:'む', r:'mu'}, {h:'め', r:'me'}, {h:'も', r:'mo'},
+        {h:'や', r:'ya'}, {h:'ゆ', r:'yu'}, {h:'よ', r:'yo'},
+        {h:'ら', r:'ra'}, {h:'り', r:'ri'}, {h:'る', r:'ru'}, {h:'れ', r:'re'}, {h:'ろ', r:'ro'},
+        {h:'わ', r:'wa'}, {h:'を', r:'wo'}, {h:'ん', r:'n'}
+    ];
+
+    const vowels = ['a', 'i', 'u', 'e', 'o'];
+    const consonants = ['k', 's', 't', 'n', 'h', 'm', 'y', 'r', 'w'];
+
+    let questions = [];
+    let currentQIndex = 0;
+    let correctAnswer = ""; 
+    const totalQuestions = 10; // 10問に設定
+
+    // タイマー変数
+    let startTime;
+    let timerInterval;
+
+    function changeScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function startGame() {
+        // ランダムに10問選出
+        questions = [];
+        const copyData = [...masterData];
+        for(let i=0; i<totalQuestions; i++){
+            if(copyData.length === 0) break;
+            const r = Math.floor(Math.random() * copyData.length);
+            questions.push(copyData[r]);
+            copyData.splice(r, 1);
+        }
+
+        currentQIndex = 0;
+        changeScreen('game-screen');
+        startTimer(); // タイマースタート
+        nextProblem();
+    }
+
+    function startTimer() {
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+            const t = ((Date.now() - startTime) / 1000).toFixed(1);
+            document.getElementById('timer-display').textContent = t + "びょう";
+        }, 100);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+        return ((Date.now() - startTime) / 1000).toFixed(1);
+    }
+
+    function nextProblem() {
+        if(currentQIndex >= questions.length) {
+            // ゲーム終了
+            const finalTime = stopTimer();
+            document.getElementById('final-time').textContent = finalTime + "びょう";
+            changeScreen('result-screen');
+            return;
+        }
+
+        document.getElementById('progress-display').textContent = (currentQIndex + 1) + " / " + totalQuestions;
+        const q = questions[currentQIndex];
+        
+        // ローマ字のどこを隠すかランダム
+        const hiddenIndex = Math.floor(Math.random() * q.r.length);
+        correctAnswer = q.r[hiddenIndex];
+
+        document.getElementById('hira-disp').textContent = q.h;
+        
+        let displayHtml = "";
+        for(let i=0; i<q.r.length; i++) {
+            if(i === hiddenIndex) {
+                displayHtml += '<span class="hole">?</span>';
+            } else {
+                displayHtml += q.r[i];
+            }
+        }
+        document.getElementById('roma-disp').innerHTML = displayHtml;
+
+        // 選択肢作成
+        let choices = [correctAnswer];
+        let pool = vowels.includes(correctAnswer) ? vowels : consonants;
+        if(!pool.includes(correctAnswer)) {
+            pool = "abcdefghijklmnopqrstuvwxyz".split('');
+        }
+
+        while(choices.length < 4) {
+            const r = pool[Math.floor(Math.random() * pool.length)];
+            if(!choices.includes(r)) {
+                choices.push(r);
+            }
+        }
+        choices.sort(() => Math.random() - 0.5);
+
+        const area = document.getElementById('choices-area');
+        area.innerHTML = "";
+        choices.forEach(char => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.textContent = char;
+            btn.onclick = () => checkAnswer(char);
+            area.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(ans) {
+        const overlay = document.getElementById('result-overlay');
+        
+        if(ans === correctAnswer) {
+            overlay.textContent = "⭕";
+            overlay.style.display = "block";
+            overlay.style.color = "#ef6c00";
+            
+            setTimeout(() => {
+                overlay.style.display = "none";
+                currentQIndex++;
+                nextProblem();
+            }, 500); // テンポよく進むよう少し短くしました
+        } else {
+            overlay.textContent = "❌";
+            overlay.style.display = "block";
+            overlay.style.color = "#555";
+            
+            setTimeout(() => {
+                overlay.style.display = "none";
+            }, 500);
+        }
+    }
+
+</script>
+
+</body>
+</html>
