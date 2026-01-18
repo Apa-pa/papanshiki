@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三角形の角はなんど？</title>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #e0f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 95%;
+            max-width: 500px;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        h1 { color: #0097a7; font-size: 24px; margin: 10px 0; }
+
+        /* 情報バー（タイム・進捗） */
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+            color: #555;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        canvas {
+            background-color: #ffffff;
+            border-radius: 15px;
+            margin: 5px auto;
+            display: block;
+            border: 2px solid #b2ebf2;
+        }
+
+        #input-display {
+            font-size: 40px;
+            font-weight: bold;
+            color: #006064;
+            background: #e0f2f1;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin: 10px auto;
+            min-height: 60px;
+            width: 80%;
+            letter-spacing: 2px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .placeholder { color: #aaa; font-size: 20px; font-weight: normal; }
+
+        #keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .key-btn {
+            font-size: 28px;
+            padding: 15px 0;
+            background: #fff;
+            border: 2px solid #80deea;
+            border-radius: 15px;
+            color: #00838f;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px #4dd0e1;
+        }
+        .key-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        .btn-clear { background: #ffccbc; border-color: #ffab91; color: #d84315; }
+        .btn-enter { background: #4dd0e1; border-color: #26c6da; color: white; }
+
+        /* ボタン共通 */
+        .start-btn, .back-btn {
+            border: none; border-radius: 50px; cursor: pointer; text-decoration: none; display: inline-block;
+        }
+        .start-btn {
+            font-size: 24px; padding: 15px 40px; background: #00bcd4; color: white;
+            box-shadow: 0 5px #0097a7; margin: 20px 0; font-weight: bold;
+        }
+        .start-btn:active { transform: scale(0.95); box-shadow: none; }
+        
+        .back-btn {
+            background: #90a4ae; font-size: 14px; padding: 8px 20px; color: white; margin-top: 20px;
+        }
+
+        /* 正解アニメーション */
+        .correct-flash { animation: flash 0.3s; }
+        @keyframes flash {
+            0% { background-color: white; }
+            50% { background-color: #c8e6c9; }
+            100% { background-color: white; }
+        }
+        
+        #feedback {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 150px;
+            display: none;
+            z-index: 100;
+            text-shadow: 2px 2px 0 white;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="feedback">⭕</div>
+
+    <div id="home-screen" class="screen active">
+        <h1>三角形の角（かく）</h1>
+        <div style="font-size: 80px; margin: 20px;">📐</div>
+        <p>「x」は なんど かな？<br>ぜんぶで 5もん あるよ！</p>
+        <button class="start-btn" onclick="startGame()">スタート！</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 もどる</a>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <div class="info-bar">
+            <span id="timer-display">0.0びょう</span>
+            <span id="progress-display">1 / 5</span>
+        </div>
+
+        <canvas id="triCanvas" width="320" height="250"></canvas>
+
+        <div id="input-display"><span class="placeholder">?</span></div>
+
+        <div id="keypad">
+            <button class="key-btn" onclick="inputNum(7)">7</button>
+            <button class="key-btn" onclick="inputNum(8)">8</button>
+            <button class="key-btn" onclick="inputNum(9)">9</button>
+            <button class="key-btn" onclick="inputNum(4)">4</button>
+            <button class="key-btn" onclick="inputNum(5)">5</button>
+            <button class="key-btn" onclick="inputNum(6)">6</button>
+            <button class="key-btn" onclick="inputNum(1)">1</button>
+            <button class="key-btn" onclick="inputNum(2)">2</button>
+            <button class="key-btn" onclick="inputNum(3)">3</button>
+            <button class="key-btn btn-clear" onclick="inputNum('C')">C</button>
+            <button class="key-btn" onclick="inputNum(0)">0</button>
+            <button class="key-btn btn-enter" onclick="checkAnswer()">決定</button>
+        </div>
+        
+        <a href="index.html" class="back-btn" style="background:#cfd8dc; color:#555;">🏠 やめる</a>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h1>✨ クリア！ ✨</h1>
+        <div style="font-size: 60px;">🏆</div>
+        <p>きみの タイムは...</p>
+        <div id="final-time" style="font-size:36px; color:#0097a7; font-weight:bold; margin:10px;">0.0びょう</div>
+        <button class="start-btn" onclick="startGame()">もういっかい</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 もどる</a>
+    </div>
+
+</div>
+
+<script>
+    const canvas = document.getElementById('triCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    let angles = {};
+    let targetKey = ''; 
+    let currentInput = "";
+    
+    // ゲーム進行用変数
+    let currentQuestion = 0;
+    const totalQuestions = 5; // 5問設定
+    let startTime;
+    let timerInterval;
+
+    function changeScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    // ゲーム開始
+    function startGame() {
+        currentQuestion = 0;
+        changeScreen('quiz-screen');
+        startTimer();
+        nextProblem();
+    }
+
+    function startTimer() {
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+            const t = ((Date.now() - startTime) / 1000).toFixed(1);
+            document.getElementById('timer-display').textContent = t + "びょう";
+        }, 100);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+        return ((Date.now() - startTime) / 1000).toFixed(1);
+    }
+
+    function nextProblem() {
+        // 問題数チェック
+        if (currentQuestion >= totalQuestions) {
+            const finalTime = stopTimer();
+            document.getElementById('final-time').textContent = finalTime + "びょう";
+            changeScreen('result-screen');
+            return;
+        }
+
+        currentQuestion++;
+        document.getElementById('progress-display').textContent = `${currentQuestion} / ${totalQuestions}`;
+
+        currentInput = "";
+        updateDisplay();
+        
+        // 5度刻みで角度生成
+        let a = Math.floor(Math.random() * 17) * 5 + 20; 
+        let maxB = 160 - a;
+        let steps = Math.floor((maxB - 20) / 5);
+        let b = Math.floor(Math.random() * (steps + 1)) * 5 + 20;
+        let c = 180 - a - b;
+        
+        angles = { A: a, B: b, C: c };
+
+        const keys = ['A', 'B', 'C'];
+        targetKey = keys[Math.floor(Math.random() * keys.length)];
+
+        drawTriangle(angles, targetKey);
+    }
+
+    // 三角形描画（オートスケール付き）
+    function drawTriangle(angles, hideKey) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 基準サイズでの座標計算
+        const tempBase = 100; 
+        const radA = angles.A * Math.PI / 180;
+        const radB = angles.B * Math.PI / 180;
+        const radC = angles.C * Math.PI / 180;
+
+        const sideB = tempBase * Math.sin(radB) / Math.sin(radC);
+        
+        let Ax = 0, Ay = 0;
+        let Bx = tempBase, By = 0;
+        let Cx = sideB * Math.cos(radA);
+        let Cy = sideB * Math.sin(radA); 
+
+        // バウンディングボックス計算
+        const minX = Math.min(Ax, Bx, Cx);
+        const maxX = Math.max(Ax, Bx, Cx);
+        const minY = Math.min(Ay, By, Cy);
+        const maxY = Math.max(Ay, By, Cy);
+
+        const triW = maxX - minX;
+        const triH = maxY - minY;
+
+        // スケール計算（キャンバスの80%に収める）
+        const padding = 40; 
+        const availableW = canvas.width - padding * 2;
+        const availableH = canvas.height - padding * 2;
+
+        const scaleW = availableW / triW;
+        const scaleH = availableH / triH;
+        const scale = Math.min(scaleW, scaleH); 
+
+        // 配置計算
+        const offsetX = (canvas.width - triW * scale) / 2 - minX * scale;
+        const offsetY = (canvas.height - triH * scale) / 2 + maxY * scale; 
+
+        const tx = (x) => x * scale + offsetX;
+        const ty = (y) => offsetY - y * scale;
+
+        const pA = { x: tx(Ax), y: ty(Ay) };
+        const pB = { x: tx(Bx), y: ty(By) };
+        const pC = { x: tx(Cx), y: ty(Cy) };
+
+        // 描画
+        ctx.beginPath();
+        ctx.moveTo(pA.x, pA.y);
+        ctx.lineTo(pB.x, pB.y);
+        ctx.lineTo(pC.x, pC.y);
+        ctx.closePath();
+        
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#00838f';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+
+        drawAngleMark(ctx, pA, pC, pB, angles.A, hideKey === 'A');
+        drawAngleMark(ctx, pB, pA, pC, angles.B, hideKey === 'B');
+        drawAngleMark(ctx, pC, pB, pA, angles.C, hideKey === 'C');
+    }
+
+    function drawAngleMark(ctx, center, p1, p2, angleVal, isHidden) {
+        const radius = 25; 
+        
+        const ang1 = Math.atan2(p1.y - center.y, p1.x - center.x);
+        const ang2 = Math.atan2(p2.y - center.y, p2.x - center.x);
+
+        ctx.beginPath();
+        ctx.arc(center.x, center.y, radius, ang1, ang2, false);
+        ctx.fillStyle = isHidden ? '#ffcdd2' : '#e0f7fa';
+        ctx.fill();
+        ctx.strokeStyle = '#006064';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        let midAng = (ang1 + ang2) / 2; 
+        if (Math.abs(ang1 - ang2) > Math.PI) {
+            midAng += Math.PI;
+        }
+
+        const textDist = 40;
+        const tx = center.x + Math.cos(midAng) * textDist;
+        const ty = center.y + Math.sin(midAng) * textDist;
+
+        ctx.fillStyle = isHidden ? '#d84315' : '#006064';
+        ctx.font = 'bold 18px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        const text = isHidden ? "x" : angleVal + "°";
+        ctx.fillText(text, tx, ty);
+    }
+
+    function inputNum(val) {
+        if (val === 'C') {
+            currentInput = "";
+        } else {
+            if (currentInput.length < 3) {
+                currentInput += val;
+            }
+        }
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        const display = document.getElementById('input-display');
+        if (currentInput === "") {
+            display.innerHTML = '<span class="placeholder">?</span>';
+        } else {
+            display.textContent = currentInput + "°";
+        }
+    }
+
+    function checkAnswer() {
+        if (currentInput === "") return;
+        
+        const userAns = parseInt(currentInput);
+        const correctAns = angles[targetKey];
+        const feedback = document.getElementById('feedback');
+
+        if (userAns === correctAns) {
+            feedback.textContent = '⭕';
+            feedback.style.color = '#ff3d00';
+            feedback.style.display = 'block';
+            document.body.classList.add('correct-flash');
+            
+            setTimeout(() => {
+                feedback.style.display = 'none';
+                document.body.classList.remove('correct-flash');
+                nextProblem();
+            }, 1000);
+        } else {
+            feedback.textContent = '❌';
+            feedback.style.color = '#555';
+            feedback.style.display = 'block';
+            setTimeout(() => {
+                feedback.style.display = 'none';
+                currentInput = "";
+                updateDisplay();
+            }, 600);
+        }
+    }
+</script>
+
+</body>
+</html>
