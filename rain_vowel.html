@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>あめふり算数</title>
+    <title>あめふり母音</title>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
@@ -12,17 +12,16 @@
             padding: 0;
             overflow: hidden;
             display: flex;
-            justify-content: center; /* 画面中央に配置 */
-            height: 100vh; /* フォールバック */
-            height: 100dvh; /* モバイルブラウザのアドレスバー対策 */
+            justify-content: center;
+            height: 100vh;
+            height: 100dvh;
             color: white;
             touch-action: manipulation;
         }
 
-        /* スマホサイズに枠を制限するコンテナ */
         #app-container {
             width: 100%;
-            max-width: 500px; /* 横幅を制限 */
+            max-width: 500px;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -33,123 +32,104 @@
 
         /* ゲーム画面 */
         #game-area {
-            flex: 1; /* 残りのスペースを全て使う */
+            flex: 1;
             position: relative;
-            background: linear-gradient(to bottom, #37474f, #455a64);
+            background: linear-gradient(to bottom, #004d40, #00695c); /* 母音版は深緑の空 */
             overflow: hidden;
-            border-bottom: 2px solid #546e7a;
+            border-bottom: 2px solid #4db6ac;
         }
 
         /* スコア・ライフ表示 */
         .hud {
             position: absolute;
-            top: 10px;
-            left: 15px;
-            font-size: 20px;
-            font-weight: bold;
-            text-shadow: 2px 2px 0 #000;
-            z-index: 10;
+            top: 10px; left: 15px;
+            font-size: 20px; font-weight: bold;
+            text-shadow: 2px 2px 0 #000; z-index: 10;
         }
         .life-area {
             position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 24px;
-            z-index: 10;
+            top: 10px; right: 15px;
+            font-size: 24px; z-index: 10;
         }
 
         /* 落ちてくる雫 */
         .drop {
             position: absolute;
-            width: 60px;
-            height: 70px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            font-size: 20px;
-            color: #0d47a1;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'%3E%3Cpath d='M50 0 C50 0 5 40 5 75 C5 100 25 120 50 120 C75 120 95 100 95 75 C95 40 50 0 50 0 Z' fill='%23e3f2fd' stroke='%2390caf9' stroke-width='2'/%3E%3C/svg%3E");
-            background-size: contain;
-            background-repeat: no-repeat;
+            width: 60px; height: 70px;
+            display: flex; justify-content: center; align-items: center;
+            font-weight: bold; font-size: 24px;
+            color: #004d40;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120'%3E%3Cpath d='M50 0 C50 0 5 40 5 75 C5 100 25 120 50 120 C75 120 95 100 95 75 C95 40 50 0 50 0 Z' fill='%23e0f2f1' stroke='%2380cbc4' stroke-width='2'/%3E%3C/svg%3E");
+            background-size: contain; background-repeat: no-repeat;
             text-shadow: 0 0 2px white;
-            padding-top: 15px;
-            box-sizing: border-box;
-            will-change: top; /* パフォーマンス向上 */
+            padding-top: 15px; box-sizing: border-box;
+            will-change: top;
         }
         .drop.hit {
-            transform: scale(1.5);
-            opacity: 0;
-            transition: all 0.2s;
+            transform: scale(1.5); opacity: 0; transition: all 0.2s;
         }
 
         /* 操作パネル */
         #controls {
-            /* 固定高さではなく、内容に合わせて最小限の高さを確保 */
-            flex-shrink: 0; 
+            flex-shrink: 0;
             background: #fff;
-            padding: 10px 10px 20px 10px; /* 下に少し余白 */
+            padding: 20px;
             box-sizing: border-box;
-            display: flex;
-            justify-content: center;
+            display: flex; justify-content: center;
             z-index: 20;
         }
 
-        /* キーパッド */
+        /* キーパッド（母音用レイアウト） */
         #keypad {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
+            grid-template-columns: repeat(3, 1fr); /* 3列 */
+            gap: 15px;
             width: 100%;
-            height: 180px; /* 高さを指定してレイアウト崩れ防止 */
+            max-width: 400px;
+            height: auto;
         }
 
         .key-btn {
             background: white;
-            border: 2px solid #cfd8dc;
+            border: 2px solid #b0bec5;
             border-radius: 12px;
-            font-size: 28px;
+            font-size: 36px;
+            font-family: 'Courier New', monospace;
             font-weight: bold;
             color: #455a64;
             cursor: pointer;
-            box-shadow: 0 4px #b0bec5;
+            box-shadow: 0 4px #90a4ae;
+            padding: 15px 0;
             touch-action: manipulation;
             transition: 0.1s;
-            /* タップ時の青いハイライトを消す（スマホ用） */
             -webkit-tap-highlight-color: transparent;
         }
         .key-btn:active {
-            background: #e3f2fd;
+            background: #e0f2f1;
             transform: translateY(3px);
-            box-shadow: 0 1px #b0bec5;
-            border-color: #2196f3;
-            color: #2196f3;
+            box-shadow: 0 1px #90a4ae;
+            border-color: #009688;
+            color: #009688;
         }
 
         /* スタート・結果画面 */
         .overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(38, 50, 56, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            text-align: center;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 77, 64, 0.9);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 100; text-align: center;
         }
-        .title-logo { font-size: 40px; margin-bottom: 20px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .title-logo { font-size: 40px; margin-bottom: 20px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); color: white; }
         .start-btn {
             font-size: 24px; padding: 15px 50px;
-            background: #ff9800; color: white;
+            background: #ffca28; color: #3e2723;
             border: none; border-radius: 50px;
             font-weight: bold; cursor: pointer;
-            box-shadow: 0 5px #e65100;
-            margin-top: 20px;
+            box-shadow: 0 5px #ff6f00; margin-top: 20px;
         }
         .start-btn:active { transform: scale(0.95); box-shadow: none; }
 
-        /* ダメージ演出 */
         .damage-effect {
             animation: shake 0.3s;
             box-shadow: inset 0 0 50px rgba(255, 82, 82, 0.8) !important;
@@ -161,49 +141,46 @@
             75% { transform: translateX(-5px); }
             100% { transform: translateX(0); }
         }
-
     </style>
 </head>
 <body>
 
 <div id="app-container">
     <div id="game-area">
-        <div class="hud">とくてん: <span id="score">0</span></div>
+        <div class="hud">スコア: <span id="score">0</span></div>
         <div class="life-area" id="life-icons">❤️❤️❤️❤️❤️</div>
         <div id="drops-container"></div>
     </div>
 
     <div id="controls">
         <div id="keypad">
-            <button class="key-btn" onclick="checkInput(1)">1</button>
-            <button class="key-btn" onclick="checkInput(2)">2</button>
-            <button class="key-btn" onclick="checkInput(3)">3</button>
-            <button class="key-btn" onclick="checkInput(4)">4</button>
-            <button class="key-btn" onclick="checkInput(5)">5</button>
-            <button class="key-btn" onclick="checkInput(6)">6</button>
-            <button class="key-btn" onclick="checkInput(7)">7</button>
-            <button class="key-btn" onclick="checkInput(8)">8</button>
-            <button class="key-btn" onclick="checkInput(9)">9</button>
-            <button class="key-btn" onclick="checkInput(0)">0</button>
+            <button class="key-btn" onclick="checkInput('a')">a</button>
+            <button class="key-btn" onclick="checkInput('i')">i</button>
+            <button class="key-btn" onclick="checkInput('u')">u</button>
+            
+            <button class="key-btn" onclick="checkInput('e')">e</button>
+            <button class="key-btn" onclick="checkInput('o')">o</button>
+            <div style="pointer-events: none;"></div>
         </div>
     </div>
 
     <div id="start-screen" class="overlay">
-        <div style="font-size:60px;">☔</div>
-        <div class="title-logo">あめふり<br>さんすう</div>
-        <p style="color:#cfd8dc;">こたえは ぜんぶ 1けた！<br>すうじを おして げきついせよ！</p>
+        <div style="font-size:60px;">🗣️</div>
+        <div class="title-logo">あめふり<br>母音(ぼいん)</div>
+        <p style="color:#b2dfdb;">ひらがなの 母音(ぼいん)を おしてね！</p>
+        <p style="color:#80cbc4; font-size: 14px;">（れい： か → a 、 き → i ）</p>
         <button class="start-btn" onclick="gameStart()">スタート</button>
         <br>
-        <a href="index.html" style="color:#b0bec5; margin-top:20px; text-decoration: underline;">🏠 もどる</a>
+        <a href="index.html" style="color:#80cbc4; margin-top:20px; text-decoration: underline;">🏠 もどる</a>
     </div>
 
     <div id="gameover-screen" class="overlay" style="display:none;">
         <h1 style="color:#ff5252;">おしまい！</h1>
         <div style="font-size: 80px; margin: 10px;">😭</div>
-        <p style="font-size:24px;">とくてん: <span id="final-score">0</span> てん</p>
+        <p style="font-size:24px; color: white;">スコア: <span id="final-score">0</span></p>
         <button class="start-btn" onclick="location.reload()">もういっかい</button>
         <br>
-        <a href="index.html" style="color:#b0bec5; margin-top:20px; text-decoration: underline;">🏠 ホームへ</a>
+        <a href="index.html" style="color:#80cbc4; margin-top:20px; text-decoration: underline;">🏠 ホームへ</a>
     </div>
 </div>
 
@@ -211,34 +188,37 @@
     const gameArea = document.getElementById('game-area');
     const dropsContainer = document.getElementById('drops-container');
     
+    // データ: 母音ごとのひらがなリスト
+    const vowelMap = {
+        'a': ['あ','か','さ','た','な','は','ま','や','ら','わ'],
+        'i': ['い','き','し','ち','に','ひ','み','り'],
+        'u': ['う','く','す','つ','ぬ','ふ','む','ゆ','る'],
+        'e': ['え','け','せ','て','ね','へ','め','れ'],
+        'o': ['お','こ','そ','と','の','ほ','も','よ','ろ','を']
+    };
+    const keys = Object.keys(vowelMap);
+
     let score = 0;
     let life = 5;
     let isPlaying = false;
     let drops = []; 
     let frameCount = 0;
     let spawnRate = 120;
-    
-    // 落下速度管理用
-    let baseFallSpeed = 0.003; // 画面高さに対する割合（0.3%/フレーム）
-    let currentFallSpeedPx = 0; // 実際のピクセル速度
+    let baseFallSpeed = 0.003; 
+    let currentFallSpeedPx = 0;
     let gameHeight = 0;
-
     let animationId;
 
-    // 初期化とリサイズ対応
     function resizeGame() {
         gameHeight = gameArea.clientHeight;
-        // 画面の高さが変わっても、到達時間が同じになるように速度を調整
-        // 例: 高さ600pxなら 1.8px/frame, 高さ1000pxなら 3.0px/frame
         currentFallSpeedPx = gameHeight * baseFallSpeed;
     }
     
     window.addEventListener('resize', resizeGame);
-    // 起動時にも実行
     resizeGame();
 
     function gameStart() {
-        resizeGame(); // 開始前にも念のためサイズ取得
+        resizeGame();
         document.getElementById('start-screen').style.display = 'none';
         score = 0;
         life = 5;
@@ -249,13 +229,10 @@
 
     function gameLoop() {
         if (!isPlaying) return;
-
         frameCount++;
 
-        // 難易度上昇
         if (frameCount % 600 === 0) { 
             spawnRate = Math.max(30, spawnRate - 5);
-            // 速度も少しずつ上げる（割合を増やす）
             baseFallSpeed += 0.0002;
             currentFallSpeedPx = gameHeight * baseFallSpeed;
         }
@@ -265,7 +242,6 @@
         }
 
         moveDrops();
-
         animationId = requestAnimationFrame(gameLoop);
     }
 
@@ -273,31 +249,18 @@
         const dropEl = document.createElement('div');
         dropEl.className = 'drop';
         
-        let num1, num2, answer, symbol;
-        
-        if (Math.random() > 0.5) {
-            // 足し算 (9以下)
-            num1 = Math.floor(Math.random() * 10);
-            num2 = Math.floor(Math.random() * (10 - num1));
-            answer = num1 + num2;
-            symbol = "+";
-        } else {
-            // 引き算 (答えが0-9)
-            answer = Math.floor(Math.random() * 10);
-            num2 = Math.floor(Math.random() * 10);
-            num1 = answer + num2;
-            symbol = "-";
-        }
+        // ランダムな母音キーを選ぶ
+        const targetKey = keys[Math.floor(Math.random() * keys.length)];
+        // その行からランダムなひらがなを選ぶ
+        const chars = vowelMap[targetKey];
+        const targetChar = chars[Math.floor(Math.random() * chars.length)];
 
-        dropEl.textContent = `${num1}${symbol}${num2}`;
+        dropEl.textContent = targetChar;
         
-        // 横位置ランダム
         const maxLeft = gameArea.clientWidth - 70;
         const x = Math.random() * maxLeft;
         
         dropEl.style.left = x + 'px';
-        // スタート位置は画面上部外側
-        // DOM配置後に移動開始
         dropEl.style.top = '-80px'; 
 
         dropsContainer.appendChild(dropEl);
@@ -305,21 +268,17 @@
         drops.push({
             el: dropEl,
             y: -80,
-            ans: answer
+            key: targetKey // 正解キーを保存
         });
     }
 
     function moveDrops() {
-        // 下にある（配列の古い方）から処理
         for (let i = drops.length - 1; i >= 0; i--) {
             const drop = drops[i];
-            
-            // 計算した速度で移動
             drop.y += currentFallSpeedPx;
             drop.el.style.top = drop.y + 'px';
 
-            // 画面下到達判定
-            if (drop.y > gameHeight - 60) { // 60pxは少し余裕を持たせて
+            if (drop.y > gameHeight - 60) {
                 takeDamage();
                 drop.el.remove();
                 drops.splice(i, 1);
@@ -327,15 +286,14 @@
         }
     }
 
-    function checkInput(num) {
+    function checkInput(inputKey) {
         if (!isPlaying) return;
         
-        // 最も下にある（yが大きい）正解の雫を探す
         let targetIndex = -1;
         let maxY = -9999;
 
         for (let i = 0; i < drops.length; i++) {
-            if (drops[i].ans === num) {
+            if (drops[i].key === inputKey) {
                 if (drops[i].y > maxY) {
                     maxY = drops[i].y;
                     targetIndex = i;
@@ -344,12 +302,9 @@
         }
 
         if (targetIndex !== -1) {
-            // 正解
             const target = drops[targetIndex];
-            
-            // エフェクト
             target.el.classList.add('hit');
-            target.el.textContent = "✨"; 
+            target.el.textContent = "✨";
             
             setTimeout(() => {
                 if(target.el.parentNode) target.el.remove();
@@ -358,9 +313,8 @@
             drops.splice(targetIndex, 1);
             score += 10;
         } else {
-            // 不正解演出
             const bg = document.getElementById('app-container');
-            bg.style.boxShadow = "inset 0 0 50px rgba(255, 255, 0, 0.5)"; // 黄色く点滅
+            bg.style.boxShadow = "inset 0 0 50px rgba(255, 255, 0, 0.3)";
             setTimeout(() => bg.style.boxShadow = "none", 100);
         }
 
@@ -370,7 +324,6 @@
     function takeDamage() {
         life--;
         updateUI();
-        
         const app = document.getElementById('app-container');
         app.classList.add('damage-effect');
         setTimeout(() => app.classList.remove('damage-effect'), 300);
