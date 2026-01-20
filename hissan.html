@@ -41,28 +41,30 @@
         .btn-print { background-color: #444; color: white; }
         button:hover { opacity: 0.7; transform: translateY(-2px); }
 
-	.home-btn { background-color: #ff9d00; color: white; 
-	 padding: 10px 20px; 
+        .home-btn { 
+            background-color: #ff9d00; color: white; 
+            padding: 10px 20px; 
             font-size: 16px; 
             cursor: pointer;
             border: none; 
             border-radius: 5px;
             text-decoration: none;
-            font-weight: bold;}
+            font-weight: bold;
+        }
         .home-btn:hover { background-color: #e68a00; }
 
 
-        /* A4用紙設定 */
+        /* A4用紙設定（レイアウト変更：3列x4段） */
         .sheet {
             width: 210mm;
-            height: 297mm;
+            min-height: 297mm;
             background: white;
-            padding: 25mm 20mm;
+            padding: 20mm; /* 余白を適度に戻す */
             box-sizing: border-box;
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            gap: 20px;
+            grid-template-columns: repeat(3, 1fr); /* 横3列 */
+            grid-template-rows: repeat(4, 1fr);    /* 縦4段 */
+            gap: 20px; /* 間隔を広めに */
             box-shadow: 0 0 15px rgba(0,0,0,0.1);
         }
 
@@ -71,58 +73,56 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
-            border: 1px dashed #ccc; /* 切り取り目安（不要なら消せます） */
-            border-radius: 10px;
-            padding: 20px;
+            justify-content: center;
+            border-radius: 5px;
+            padding: 5px;
             position: relative;
         }
         .problem-number {
             position: absolute;
-            top: 10px;
-            left: 15px;
-            font-size: 20px;
+            top: 5px;
+            left: 5px;
+            font-size: 16px;
             color: #888;
         }
         
         .hissan-box {
-            font-size: 60px; /* 数字をより大きく */
-            line-height: 1.1;
-            margin-top: 20px;
+            font-size: 48px; /* 文字サイズを大きく（36px -> 48px） */
+            line-height: 1.2;
+            margin-top: 15px;
             display: inline-block;
             text-align: right;
             position: relative;
-            letter-spacing: 8px;
+            letter-spacing: 6px; /* 文字間隔も広げる */
         }
 
-        /* 演算子（＋－）を数字の左側に配置 */
+        /* 演算子（＋－）の位置調整 */
         .operator {
             position: absolute;
-            left: -60px; /* 左側に十分な距離をとる */
-            bottom: 0px;
+            left: -50px; /* 距離調整 */
+            bottom: 5px;
+            font-size: 40px;
         }
 
         /* ひっ算の横線 */
         .hissan-line {
             border-bottom: 4px solid #333;
-            width: 140%; /* 線を少し長めに */
-            margin-left: -30%; /* 線を左側に突き出させる */
+            width: 140%;
+            margin-left: -30%;
             margin-top: 5px;
-            margin-bottom: 15px;
-        }
-
-        /* 答えを書くスペース */
-        .answer-space {
-            height: 80px;
-            width: 100%;
+            margin-bottom: 50px; /* 答えの書き込みスペースを広く */
         }
 
         /* 印刷設定 */
         @media print {
             body { background: white; padding: 0; }
             .controls { display: none; }
-            .sheet { box-shadow: none; border: none; }
+            .sheet { box-shadow: none; border: none; margin: 0 auto; }
             .problem-outer { border: none; }
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
         }
     </style>
 </head>
@@ -133,7 +133,7 @@
         <button class="btn-add" onclick="generate('add')">＋ たし算をつくる</button>
         <button class="btn-sub" onclick="generate('sub')">－ ひき算をつくる</button>
         <button class="btn-print" onclick="window.print()">🖨️ いんさつする</button>
-	<a href="index.html" class="btn home-btn">🏠 ホームにもどる</a>
+        <a href="index.html" class="btn home-btn">🏠 ホームにもどる</a>
     </div>
 
     <div class="sheet" id="sheet"></div>
@@ -143,7 +143,8 @@
             const sheet = document.getElementById('sheet');
             sheet.innerHTML = '';
 
-            for (let i = 1; i <= 6; i++) {
+            // 問題数を12問に変更
+            for (let i = 1; i <= 12; i++) {
                 let num1, num2, symbol;
 
                 if (type === 'add') {
@@ -165,7 +166,6 @@
                                 <span class="operator">${symbol}</span>${num2}
                             </div>
                             <div class="hissan-line"></div>
-                            <div class="answer-space"></div>
                         </div>
                     </div>
                 `;
