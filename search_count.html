@@ -24,6 +24,8 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
             width: 95%;
             max-width: 600px;
+            position: relative;
+            overflow: hidden;
         }
 
         .screen { display: none; }
@@ -53,6 +55,14 @@
         .btn-emoji { background: #66bb6a; }  /* 緑 */
 
         /* ゲーム画面 */
+        .progress-info {
+            text-align: right;
+            font-size: 16px;
+            color: #7986cb;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
         .instruction {
             font-size: 20px;
             margin-bottom: 10px;
@@ -162,6 +172,7 @@
         <h1>かぞえて！さがして！</h1>
         <div style="font-size: 80px; margin: 20px;">🔎</div>
         <p>にている文字がまざっているよ。<br>ただしい数をかぞえてね！</p>
+        <p style="color:#7986cb; font-weight:bold;">ぜんぶで 3もん！</p>
         
         <button class="course-btn btn-alpha" onclick="startGame('alpha')">🔤 アルファベット</button>
         <button class="course-btn btn-kata" onclick="startGame('kata')">🈂 カタカナ</button>
@@ -171,6 +182,7 @@
     </div>
 
     <div id="game-screen" class="screen">
+        <div class="progress-info">もんだい <span id="current-q">1</span> / 3</div>
         <div id="timer-bar-container"><div id="timer-bar"></div></div>
         
         <div class="instruction">
@@ -204,7 +216,7 @@
             正解は <strong>5</strong> こ でした
         </div>
 
-        <button class="course-btn" style="background:#4caf50;" onclick="restartGame()">つぎのもんだい</button>
+        <button id="next-btn" class="course-btn" style="background:#4caf50;" onclick="handleNext()">つぎのもんだい</button>
         <br>
         <a href="index.html" class="back-btn" onclick="location.reload()">🏠 ホームへ</a>
     </div>
@@ -212,7 +224,7 @@
 </div>
 
 <script>
-    // 問題データ（似ている文字のセット）
+    // 問題データ
     const problemSets = {
         alpha: [
             { target: 'G', distractors: ['C', 'O', 'Q'] },
@@ -247,8 +259,12 @@
     let currentCourse = 'alpha';
     let currentTarget = '';
     let correctCount = 0;
-    let timeLimit = 15; // 秒
+    let timeLimit = 15; 
     let timerInterval;
+
+    // ゲーム進行管理用
+    let currentQuestionCount = 0;
+    const MAX_QUESTIONS = 3;
 
     function changeScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -257,10 +273,14 @@
 
     function startGame(course) {
         currentCourse = course;
+        currentQuestionCount = 0; // カウントリセット
         restartGame();
     }
 
     function restartGame() {
+        currentQuestionCount++; // 問題数を進める
+        document.getElementById('current-q').textContent = currentQuestionCount;
+
         // 問題を作成
         generateProblem();
         
@@ -284,36 +304,30 @@
     }
 
     function generateProblem() {
-        // コースからランダムにセットを選ぶ
         const set = problemSets[currentCourse];
         const problem = set[Math.floor(Math.random() * set.length)];
         
         currentTarget = problem.target;
         document.getElementById('target-display').textContent = currentTarget;
 
-        // 正解の数（1〜10個）
-        correctCount = Math.floor(Math.random() * 8) + 2; // 2〜9個くらいにする
+        // 正解の数（2〜9個くらい）
+        correctCount = Math.floor(Math.random() * 8) + 2;
         
-        // 全体のアイテム数（正解 + 間違い）
-        const totalItems = Math.floor(Math.random() * 8) + 12; // 12〜20個くらい
+        // 全体のアイテム数（12〜20個くらい）
+        const totalItems = Math.floor(Math.random() * 8) + 12; 
         const distractorCount = totalItems - correctCount;
 
-        // 配列を作る
         let items = [];
-        // 正解を入れる
         for(let i=0; i<correctCount; i++) {
             items.push({ char: currentTarget, isTarget: true });
         }
-        // 間違いを入れる
         for(let i=0; i<distractorCount; i++) {
             const dist = problem.distractors[Math.floor(Math.random() * problem.distractors.length)];
             items.push({ char: dist, isTarget: false });
         }
 
-        // シャッフル
         items.sort(() => Math.random() - 0.5);
 
-        // 画面に配置
         const field = document.getElementById('field');
         field.innerHTML = '';
         items.forEach(item => {
@@ -321,19 +335,19 @@
             div.className = 'item';
             div.textContent = item.char;
             if(item.isTarget) {
-                div.dataset.target = "true"; // 後で正解表示に使う
+                div.dataset.target = "true"; 
             }
             field.appendChild(div);
         });
     }
 
     function checkAnswer(userNum) {
-        clearTimeout(timerInterval); // タイマーとめる
+        clearTimeout(timerInterval); 
         showResult(userNum === correctCount);
     }
 
     function timeUp() {
-        showResult(false, true); // 時間切れ
+        showResult(false, true); 
     }
 
     function showResult(isCorrect, isTimeout = false) {
@@ -342,6 +356,7 @@
         const icon = document.getElementById('result-icon');
         const msg = document.getElementById('result-msg');
         const info = document.getElementById('actual-count-display');
+        const nextBtn = document.getElementById('next-btn');
 
         if(isCorrect) {
             icon.textContent = "⭕";
@@ -355,8 +370,25 @@
 
         info.innerHTML = `正解は <span style="font-size:30px; color:#e91e63; font-weight:bold;">${correctCount}</span> こ でした`;
         
-        // 背景で正解の場所を光らせる演出（ゲーム画面を一瞬見せるなど）も可能ですが
-        // 今回はシンプルに結果画面で正解数を伝えます
+        // 3問終わったら「おしまい」ボタンにする
+        if (currentQuestionCount >= MAX_QUESTIONS) {
+            nextBtn.textContent = "おしまい！";
+            nextBtn.style.background = "#e91e63"; // ピンク色
+        } else {
+            nextBtn.textContent = "つぎのもんだい";
+            nextBtn.style.background = "#4caf50"; // 緑色
+        }
+    }
+
+    // 次の処理
+    function handleNext() {
+        if (currentQuestionCount >= MAX_QUESTIONS) {
+            // 全問終了したらホームへ戻る
+            location.href = 'index.html';
+        } else {
+            // 次の問題へ
+            restartGame();
+        }
     }
 </script>
 

@@ -25,25 +25,58 @@
     /* ヘッダー画像の設定 */
     .hero-header {
         width: 100%;
-        /* 画像の元サイズ (1578x458) のアスペクト比を維持 */
-        /* 高さ ÷ 幅 × 100 = 458 ÷ 1578 × 100 ≒ 29.02% */
         padding-top: 29.02%;
         background-image: url('header01.png'); 
         background-position: center;
-        background-size: cover; /* コンテナ全体を埋める */
+        background-size: cover;
         background-repeat: no-repeat;
         background-color: #f0f9ff;
         border-radius: 0 0 20px 20px;
-        /* 高さを明示的に指定しないことで、幅に応じて高さが自動調整されます */
     }
 
-    /* PCなど大画面でヘッダーが巨大になりすぎるのを防ぐための上限設定（任意） */
     @media (min-width: 1578px) {
         .hero-header {
             padding-top: 0;
-            height: 458px; /* 元画像の高さを上限とする */
+            height: 458px;
         }
     }
+
+    /* ▼▼▼ フィルターボタンエリアのスタイル ▼▼▼ */
+    .filter-container {
+        text-align: center;
+        margin: 20px auto;
+        padding: 0 10px;
+    }
+    
+    .filter-label {
+        font-weight: bold;
+        color: #6b4e3d;
+        margin-bottom: 10px;
+        display: block;
+        font-size: 0.9rem;
+    }
+
+    .filter-btn {
+        background: #fff;
+        border: 2px solid #ffad60;
+        color: #ffad60;
+        border-radius: 20px;
+        padding: 8px 16px;
+        margin: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.2s;
+        font-family: inherit;
+        font-size: 0.9rem;
+        -webkit-tap-highlight-color: transparent; /* スマホタップ時のハイライト消去 */
+    }
+
+    /* 選択中のボタンのデザイン */
+    .filter-btn.active, .filter-btn:hover {
+        background: #ffad60;
+        color: white;
+    }
+    /* ▲▲▲ フィルタースタイルここまで ▲▲▲ */
 
     main {
         max-width: 900px;
@@ -58,14 +91,13 @@
         letter-spacing: 0.05em;
         border-left: 8px solid #ffad60;
         padding-left: 15px;
-        margin: 50px 0 20px 0; /* 少し間隔を広げました */
+        margin: 50px 0 20px 0;
         font-size: 1.5rem;
         display: flex;
         align-items: center;
         gap: 10px;
     }
 
-    /* カテゴリごとに色を変えるアクセント（オプション） */
     .title-math { border-color: #4dd0e1; }
     .title-jp { border-color: #ff8a65; }
     .title-brain { border-color: #aed581; }
@@ -91,8 +123,8 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        height: 100%; /* 高さを揃える */
-        box-sizing: border-box; /* 枠線を含めて計算 */
+        height: 100%;
+        box-sizing: border-box;
     }
 
     .card:hover {
@@ -140,6 +172,17 @@
 
 <main>
 
+    <div class="filter-container">
+        <span class="filter-label">ねんれいでさがす</span>
+        <button class="filter-btn active" onclick="filterByAge('all', this)">ぜんぶ</button>
+        <button class="filter-btn" onclick="filterByAge('4', this)">3,4さい</button>
+        <button class="filter-btn" onclick="filterByAge('5', this)">5さい</button>
+        <button class="filter-btn" onclick="filterByAge('6', this)">6さい</button>
+        <button class="filter-btn" onclick="filterByAge('7', this)">7さい</button>
+        <button class="filter-btn" onclick="filterByAge('8', this)">8さい</button>
+        <button class="filter-btn" onclick="filterByAge('9', this)">9さい</button>
+        <button class="filter-btn" onclick="filterByAge('10', this)">10さい〜</button>
+    </div>
     <h2 class="section-title title-math">🔢 さんすう・けいさん</h2>
     <div class="grid">
         <a href="sansuu.html" class="card" data-age="5,6,7,8,9,10,11,12">
@@ -156,7 +199,7 @@
             <p>空からおちてくるもんだいを、キーパッドでうってけそう！</p>
         </a>
 
-        <a href="make10.html" class="card" data-age="5,6,7,8">
+        <a href="make10.html" class="card" data-age="4,5,6,7,8">
             <span class="label label-quiz">クイズ</span>
             <div class="icon">🔟</div>
             <h3>あわせて10（メイクテン）</h3>
@@ -170,7 +213,7 @@
             <p>じゅんばんに出る数字をたそう！1けた〜3けたまで</p>
         </a>
 
-        <a href="99.html" class="card" data-age="6,7,8,9,10,11,12">
+        <a href="99.html" class="card" data-age="6,7,8">
             <span class="label label-quiz">クイズ</span>
             <div class="icon">✖</div>
             <h3>かけざん九九チャレンジ</h3>
@@ -209,7 +252,7 @@
             <p>ひらがなをカタカナになおす特訓！ぜんぶわかるかな？</p>
         </a>
 
-        <a href="1gradekanji.html" class="card" data-age="7,8,9,10,11,12">
+        <a href="1gradekanji.html" class="card" data-age="6,7,8">
             <span class="label label-quiz">クイズ</span>
             <div class="icon">✏️</div>
             <h3>1年生のかんじクイズ</h3>
@@ -296,12 +339,10 @@
         <p>にているもじがまざっているよ。せいかいのもじはいくつあるかな？</p>
         </a>
 
-       
-
         <a href="count30.html" class="card" data-age="6,7,8,9,10,11,12">
             <span class="label label-quiz">ゲーム</span>
             <div class="icon">🗣️</div>
-            <h3>30を言わせろ！</h3>
+            <h3>30をいわせろ！</h3>
             <p>じゅんばんに数字を言うゲーム。「30」を言ったら負けだよ！必勝法（ひっしょうほう）わかるかな？</p>
         </a>
 
@@ -316,7 +357,14 @@
             <span class="label label-quiz">ゲーム</span>
             <div class="icon">🚃</div>
             <h3>つなげて！トロッコ</h3>
-            <p>バラバラのレールを回転させて、ゴールまでの道をつくろう！脳トレ！</p>
+            <p>バラバラのレールを回転させて、エゾリスのヒーが乗るゴールまでの道をつくろう！脳トレ！</p>
+        </a>
+
+        <a href="detective.html" class="card" data-age="6,7,8,9,10,11,12">
+            <span class="label label-quiz">パズル</span>
+            <div class="icon">🕵️‍♂️</div>
+            <h3>名探偵ぱぱん</h3>
+            <p>ウソをついている「はんにん」はだれだ！？証言（しょうげん）を読んで推理しよう！全3問</p>
         </a>
         
     </div>
@@ -331,42 +379,46 @@
             <p>絵の具をまぜて色をつくろう！あか＋きいろ は なに色？</p>
         </a>
     
-        <a href="pitch.html" class="card" data-age="4,5,6,7,8">
+        <a href="pitch.html" class="card" data-age="4,5,6,7,8,9,10,11,12">
             <span class="label label-quiz">クイズ</span>
             <div class="icon">🎹</div>
             <h3>おとあてクイズ</h3>
             <p>ながれてきた音はドレミのどれ？目指せ絶対音感（ぜったいおんかん）！</p>
         </a>
-    
+
+        <a href="rhythm.html" class="card" data-age="4,5,6,7,8,9,10,11,12">
+            <span class="label label-quiz">リズム</span>
+            <div class="icon">🎵</div>
+            <h3>アンのリズム教室</h3>
+            <p>ハリネズミのアン先生のマネをして、リズムよくボタンをたたこう！</p>
+        </a>
     
     </div>
 
-
-
     <h2 class="section-title">🖨️ プリントしてべんきょう</h2>
     <div class="grid">
-        <a href="math100.html" class="card">
+        <a href="math100.html" class="card" data-age="5,6,7,8,9,10,11,12">
             <span class="label label-print">プリント</span>
             <div class="icon">➕</div>
             <h3>ひゃくますけいさん表</h3>
             <p>ひゃくますけいさんは最強のトレーニング！たしざん、ひきざん、かけざんに対応！</p>
         </a>
 
-        <a href="hissan.html" class="card">
+        <a href="hissan.html" class="card" data-age="5,6,7,8,9">
             <span class="label label-print">プリント</span>
             <div class="icon">➖</div>
             <h3>２けたのひっさん</h3>
             <p>ひっさんもんだいメーカー！たしざんとひきざんに対応してます</p>
         </a>
 
-        <a href="print_alphabet.html" class="card">
+        <a href="print_alphabet.html" class="card" data-age="5,6,7,8,9">
             <span class="label label-print">プリント</span>
             <div class="icon">🔤</div>
             <h3>アルファベット表</h3>
             <p>A4サイズで印刷！へやにはっておぼえよう！</p>
         </a>
 
-        <a href="print_kana.html" class="card">
+        <a href="print_kana.html" class="card" data-age="3,4,5,6">
             <span class="label label-print">プリント</span>
             <div class="icon">あア</div>
             <h3>あいうえお・カタカナ表</h3>
@@ -412,6 +464,55 @@
 </footer>
 
 <script>
+  // ▼▼▼ フィルター機能のスクリプト ▼▼▼
+  function filterByAge(age, btn) {
+    // 1. ボタンの見た目を切り替える
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // 2. カードの表示・非表示を切り替える
+    const cards = document.querySelectorAll('.card');
+    
+    cards.forEach(card => {
+      const targetAges = card.getAttribute('data-age');
+      
+      // プリント教材などはdata-ageがない場合があるので、その場合はallの時だけ表示
+      // または、data-ageがないものは常に表示したい場合はロジックを調整します
+      // 今回は「data-ageがあるもの」を対象にフィルタリングします
+      
+      if (age === 'all') {
+        card.style.display = 'flex';
+      } else {
+        if (targetAges && targetAges.split(',').includes(age)) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      }
+    });
+
+    // 3. 中身がなくなったセクション見出しを隠す
+    const sections = document.querySelectorAll('.grid');
+    sections.forEach(grid => {
+      // inline styleでdisplay: flexになっているもの（表示中）を探す
+      // ※filterByAge関数内で style.display = 'flex' をセットしているため
+      const visibleCards = Array.from(grid.querySelectorAll('.card')).filter(c => c.style.display !== 'none');
+      
+      const title = grid.previousElementSibling;
+      
+      if (title && title.classList.contains('section-title')) {
+        if (visibleCards.length > 0) {
+          title.style.display = 'flex'; 
+          grid.style.display = 'grid';
+        } else {
+          title.style.display = 'none';
+          grid.style.display = 'none';
+        }
+      }
+    });
+  }
+  // ▲▲▲ スクリプトここまで ▲▲▲
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
       navigator.serviceWorker.register('./service-worker.js').then(function(registration) {

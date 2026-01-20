@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>名探偵ぱぱん</title>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background-color: #5d4037;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 600px;
+            background: #fff8e1;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+            min-height: 100vh; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px dashed #8d6e63;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        h1 { margin: 0; color: #e65100; font-size: 28px; }
+        .rule-box {
+            background: #ffe0b2;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 10px;
+            color: #5d4037;
+            text-align: left;
+        }
+
+        .progress-bar {
+            text-align: right;
+            font-size: 14px;
+            color: #8d6e63;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .suspect-list {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .suspect-row {
+            display: flex;
+            align-items: flex-start;
+            background: white;
+            padding: 10px;
+            border-radius: 15px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: transform 0.1s, border-color 0.1s;
+        }
+        .suspect-row:active { transform: scale(0.98); }
+        .suspect-row.selected {
+            border-color: #e65100;
+            background-color: #fff3e0;
+        }
+
+        .icon-box {
+            width: 70px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .char-icon { font-size: 50px; display: block; }
+        .char-name { font-size: 12px; font-weight: bold; color: #555; }
+
+        .bubble {
+            position: relative;
+            background: #e1f5fe;
+            border-radius: 15px;
+            padding: 15px;
+            margin-left: 15px;
+            flex: 1;
+            font-size: 16px;
+            color: #01579b;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+        .bubble::after {
+            content: '';
+            position: absolute;
+            left: -10px; top: 20px;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-right: 10px solid #e1f5fe;
+        }
+
+        .footer-area {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .btn {
+            background: #e65100;
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px #bf360c;
+            font-weight: bold;
+            width: 100%;
+            max-width: 300px;
+        }
+        .btn:active { transform: translateY(2px); box-shadow: none; }
+        .btn:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
+
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(93, 64, 55, 0.98);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            text-align: center;
+            color: white;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .result-title { font-size: 40px; font-weight: bold; margin-bottom: 20px; }
+        .correct-col { color: #00e676; }
+        .wrong-col { color: #ff5252; }
+
+        .explanation {
+            background: white;
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            text-align: left;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            max-width: 100%;
+            width: 100%;
+        }
+
+        .back-link {
+            color: #ffcc80;
+            text-decoration: underline;
+            margin-top: 20px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <header>
+        <h1>🕵️‍♂️ 名探偵ぱぱん</h1>
+        <div class="progress-bar">じけん <span id="current-q">1</span> / 3</div>
+        <div class="rule-box">
+            <strong>【じけん】</strong> プリンを たべたのは だれ？<br>
+            <strong>【ルール】</strong> <span style="color:#d32f2f;">はんにんは ウソをつく。</span><br>
+            はんにん じゃなければ ほんとうを 言うよ。
+        </div>
+    </header>
+
+    <div class="suspect-list" id="suspect-list">
+        </div>
+
+    <div class="footer-area">
+        <p style="font-size:14px; color:#666;">はんにんだと おもう人を タップしてね</p>
+        <button id="decide-btn" class="btn" onclick="checkAnswer()" disabled>こいつが はんにんだ！</button>
+    </div>
+
+    <div id="result-screen" class="overlay" style="display:none;">
+        <div id="result-icon" style="font-size: 80px;"></div>
+        <div id="result-title" class="result-title"></div>
+        
+        <div class="explanation" id="explanation-text"></div>
+
+        <button id="next-btn" class="btn" onclick="handleNext()">つぎのじけんへ</button>
+    </div>
+
+    <div id="finish-screen" class="overlay" style="display:none;">
+        <h1 style="color:#ffcc80;">事件解決！</h1>
+        <div style="font-size: 80px; margin: 20px;">🕵️‍♂️✨</div>
+        <p style="font-size:20px; line-height:1.8;">
+            すべての ナゾが とけたね！<br>きみは 名探偵だ！
+        </p>
+        <button class="btn" onclick="location.reload()">さいしょから やる</button>
+        <br>
+        <a href="index.html" class="back-link">🏠 ホームへ</a>
+    </div>
+
+    <div id="start-screen" class="overlay">
+        <div style="font-size:80px;">🍮</div>
+        <h1>名探偵ぱぱん</h1>
+        <p>「プリンをたべた はんにん」をさがせ！<br><br>はんにんは 1人だけ。<br>はんにんは 必ずウソをつくよ。</p>
+        <button class="btn" onclick="gameStart()">ちょうさを かいし</button>
+        <br>
+        <a href="index.html" class="back-link">🏠 ホームへ</a>
+    </div>
+
+</div>
+
+<script>
+    const chars = [
+        { id: 'rabbit', name: 'ウサギ', icon: '🐰' },
+        { id: 'bear', name: 'クマ', icon: '🐻' },
+        { id: 'fox', name: 'キツネ', icon: '🦊' }
+    ];
+
+    const problems = [
+        {
+            // パターンA: 犯人が「自分じゃない」と言う（キツネ犯人）
+            culprit: 'fox', 
+            statements: {
+                rabbit: 'ぼくは たべてないよ。',
+                bear: 'ウサギくんは たべてないね。',
+                fox: 'クマくんが たべたんだ！' 
+            },
+            explanation: `
+                <strong>解説：</strong><br>
+                もし ウサギや クマが はんにん だとすると、<br>
+                キツネの言っていることが 本当になってしまうね。<br>
+                （はんにんは ウソをつくルールだよ）<br><br>
+                キツネが はんにんなら、「クマがたべた」というウソをついていることになるから、つじつまが合うね！
+            `
+        },
+        {
+            // パターンB: 犯人を名指しする（クマ犯人）
+            culprit: 'bear',
+            statements: {
+                rabbit: 'クマくんが たべたのを見たよ。',
+                bear: 'ぼくは たべてない！',
+                fox: 'ウサギくんは ウソをついてないよ。'
+            },
+            explanation: `
+                <strong>解説：</strong><br>
+                ウサギが「クマがたべた」と言っているね。<br>
+                もしウサギがウソつき（はんにん）なら、自分でたべたことになるけど...<br>
+                キツネも「ウサギは本当」と言っているから、ウサギは正しいんだ。<br><br>
+                だから、ウソをついている クマが はんにんだ！
+            `
+        },
+        {
+            // パターンC: 修正版（ウサギ犯人）
+            culprit: 'rabbit',
+            statements: {
+                rabbit: 'キツネくんが たべたんだよ。',
+                bear: 'キツネくんは たべてないよ。', // ここを変更しました！
+                fox: 'ぼくも たべてないよ。'
+            },
+            explanation: `
+                <strong>解説：</strong><br>
+                クマと キツネが「キツネはたべてない」と言っているね。<br>
+                もし クマかキツネが はんにんだとしたら、正直者がウソを言っていることになって矛盾しちゃう。<br><br>
+                ウサギが はんにんで、「キツネがたべた」というウソをついているなら、みんなの話がつながるね！
+            `
+        }
+    ];
+
+    let currentProblemIndex = 0;
+    let selectedSuspectId = null;
+    let shuffledProblems = [];
+
+    function gameStart() {
+        document.getElementById('start-screen').style.display = 'none';
+        shuffledProblems = [...problems].sort(() => Math.random() - 0.5);
+        currentProblemIndex = 0;
+        loadProblem();
+    }
+
+    function loadProblem() {
+        document.getElementById('result-screen').style.display = 'none';
+        selectedSuspectId = null;
+        document.getElementById('decide-btn').disabled = true;
+        
+        document.getElementById('current-q').textContent = currentProblemIndex + 1;
+
+        const problem = shuffledProblems[currentProblemIndex];
+        const listEl = document.getElementById('suspect-list');
+        listEl.innerHTML = '';
+
+        chars.forEach(char => {
+            const row = document.createElement('div');
+            row.className = 'suspect-row';
+            row.onclick = () => selectSuspect(char.id, row);
+            
+            const iconBox = document.createElement('div');
+            iconBox.className = 'icon-box';
+            iconBox.innerHTML = `<span class="char-icon">${char.icon}</span><span class="char-name">${char.name}</span>`;
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            bubble.textContent = problem.statements[char.id];
+
+            row.appendChild(iconBox);
+            row.appendChild(bubble);
+            listEl.appendChild(row);
+        });
+    }
+
+    function selectSuspect(id, element) {
+        selectedSuspectId = id;
+        document.querySelectorAll('.suspect-row').forEach(el => el.classList.remove('selected'));
+        element.classList.add('selected');
+        document.getElementById('decide-btn').disabled = false;
+    }
+
+    function checkAnswer() {
+        if (!selectedSuspectId) return;
+
+        const problem = shuffledProblems[currentProblemIndex];
+        const isCorrect = (selectedSuspectId === problem.culprit);
+        
+        const resultScreen = document.getElementById('result-screen');
+        const icon = document.getElementById('result-icon');
+        const title = document.getElementById('result-title');
+        const text = document.getElementById('explanation-text');
+        const nextBtn = document.getElementById('next-btn');
+
+        resultScreen.style.display = 'flex';
+
+        if (currentProblemIndex >= shuffledProblems.length - 1) {
+            nextBtn.textContent = "ぜんぶおわり！";
+        } else {
+            nextBtn.textContent = "つぎのじけんへ";
+        }
+
+        if (isCorrect) {
+            icon.textContent = "🕵️‍♂️✨";
+            title.textContent = "名推理！";
+            title.className = "result-title correct-col";
+            text.innerHTML = `<strong>正解！</strong><br>${problem.explanation}`;
+            
+            nextBtn.onclick = handleNext;
+            nextBtn.style.display = 'block';
+
+        } else {
+            icon.textContent = "💦";
+            title.textContent = "ちがうみたい...";
+            title.className = "result-title wrong-col";
+            text.innerHTML = `ざんねん、その人は はんにん じゃないよ。<br>もういちど 推理してみよう！<br><br>ヒント：はんにんだけが ウソをつくよ。`;
+            
+            nextBtn.textContent = "もういちど 考える";
+            nextBtn.onclick = () => {
+                resultScreen.style.display = 'none';
+            };
+        }
+    }
+
+    function handleNext() {
+        currentProblemIndex++;
+        if (currentProblemIndex >= shuffledProblems.length) {
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('finish-screen').style.display = 'flex';
+        } else {
+            loadProblem();
+        }
+    }
+
+</script>
+</body>
+</html>
