@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アルファベット読み方クイズ</title>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #fff3e0; /* やさしいオレンジ */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            touch-action: manipulation;
+            color: #444;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        h1 { color: #ef6c00; margin-bottom: 10px; font-size: 24px; }
+        .sub-text { color: #888; font-size: 16px; margin-bottom: 20px; }
+
+        /* 問題表示エリア */
+        #question-area {
+            background: #e3f2fd;
+            border: 4px solid #90caf9;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        #question-text {
+            font-size: 80px;
+            font-weight: bold;
+            line-height: 1;
+            color: #1565c0;
+        }
+        
+        #question-label {
+            font-size: 14px;
+            color: #1565c0;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* 選択肢ボタン */
+        #choices {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .choice-btn {
+            background: #fff;
+            border: 3px solid #ffcc80;
+            border-radius: 15px;
+            padding: 15px 5px;
+            font-size: 32px; /* 文字サイズ大きめ */
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+            font-family: inherit;
+            transition: transform 0.1s, background 0.2s;
+        }
+        
+        .choice-btn:active { transform: scale(0.96); background: #fff3e0; }
+
+        /* 正解・不正解のスタイル */
+        .correct-bg { background-color: #c8e6c9 !important; border-color: #4caf50 !important; color: #2e7d32 !important; }
+        .wrong-bg { background-color: #ffcdd2 !important; border-color: #ef5350 !important; }
+
+        /* ボタン類 */
+        .action-btn {
+            font-size: 20px;
+            padding: 15px 40px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px #e65100;
+            font-weight: bold;
+            font-family: inherit;
+        }
+        .action-btn:active { transform: translateY(2px); box-shadow: 0 2px #e65100; }
+
+        .home-btn {
+            display: inline-block;
+            margin-top: 20px;
+            color: #8d6e63;
+            text-decoration: underline;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* まる・ばつアニメーション */
+        #feedback-mark {
+            position: absolute;
+            top: 40%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 180px;
+            font-weight: bold;
+            display: none;
+            z-index: 100;
+            pointer-events: none;
+            text-shadow: 3px 3px 0px white;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="feedback-mark">⭕</div>
+
+    <div id="start-screen" class="screen active">
+        <h1>ABC よみかたクイズ</h1>
+        <div style="font-size: 80px; margin: 20px;">🔤</div>
+        <p class="sub-text">アルファベットの よみかたを<br>あててみよう！</p>
+        <button class="action-btn" onclick="startGame()">スタート！</button>
+        <br>
+        <a href="index.html" class="home-btn">🏠 ホームへもどる</a>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <div style="display: flex; justify-content: space-between; padding: 0 10px; color: #777; font-weight: bold;">
+            <span>もんだい</span>
+            <span id="progress">1 / 10</span>
+        </div>
+
+        <div id="question-area">
+            <div id="question-text">A</div>
+            <div id="question-label">この よみかたは？</div>
+        </div>
+
+        <div id="choices"></div>
+
+        <a href="index.html" class="home-btn">🏠 やめる</a>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h1 style="color: #4caf50;">おつかれさま！</h1>
+        <div style="font-size: 80px; margin: 20px;">💮</div>
+        <p style="font-size: 18px;">ぜんぶで 10もん<br>よくがんばったね！</p>
+        
+        <button class="action-btn" onclick="startGame()">もういちど</button>
+        <br>
+        <a href="index.html" class="home-btn">🏠 ホームへもどる</a>
+    </div>
+</div>
+
+<script>
+    // アルファベットデータ
+    const alphabetData = [
+        { char: 'A', read: 'エー' }, { char: 'B', read: 'ビー' }, { char: 'C', read: 'シー' },
+        { char: 'D', read: 'ディー' }, { char: 'E', read: 'イー' }, { char: 'F', read: 'エフ' },
+        { char: 'G', read: 'ジー' }, { char: 'H', read: 'エイチ' }, { char: 'I', read: 'アイ' },
+        { char: 'J', read: 'ジェー' }, { char: 'K', read: 'ケー' }, { char: 'L', read: 'エル' },
+        { char: 'M', read: 'エム' }, { char: 'N', read: 'エヌ' }, { char: 'O', read: 'オー' },
+        { char: 'P', read: 'ピー' }, { char: 'Q', read: 'キュー' }, { char: 'R', read: 'アール' },
+        { char: 'S', read: 'エス' }, { char: 'T', read: 'ティー' }, { char: 'U', read: 'ユー' },
+        { char: 'V', read: 'ブイ' }, { char: 'W', read: 'ダブリュー' }, { char: 'X', read: 'エックス' },
+        { char: 'Y', read: 'ワイ' }, { char: 'Z', read: 'ズィー' }
+    ];
+
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let isAnswering = false; // 連打防止
+
+    function changeScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function startGame() {
+        // 全データからランダムに10問選ぶ
+        // 配列をコピーしてシャッフルし、先頭10個を取る
+        const shuffled = shuffle([...alphabetData]);
+        currentQuestions = shuffled.slice(0, 10);
+        
+        // 各問題ごとに「どっちを問うか」をランダムに決めるフラグを追加
+        // type: 0 = 「A」を見て「エー」を当てる
+        // type: 1 = 「エー」を見て「A」を当てる
+        currentQuestions.forEach(q => {
+            q.type = Math.random() < 0.5 ? 0 : 1;
+        });
+
+        currentIndex = 0;
+        changeScreen('quiz-screen');
+        showQuestion();
+    }
+
+    function showQuestion() {
+        isAnswering = true;
+        const q = currentQuestions[currentIndex];
+        const qText = document.getElementById('question-text');
+        const qLabel = document.getElementById('question-label');
+        const progress = document.getElementById('progress');
+
+        progress.innerText = `${currentIndex + 1} / 10`;
+
+        // 問題の表示
+        if (q.type === 0) {
+            // 文字 → 読み
+            qText.innerText = q.char;
+            qLabel.innerText = "この よみかたは？";
+            qText.style.fontSize = "80px";
+        } else {
+            // 読み → 文字
+            qText.innerText = q.read;
+            qLabel.innerText = "これは どのアルファベット？";
+            qText.style.fontSize = "50px"; // カタカナなので少し小さく
+        }
+
+        // 選択肢の生成
+        makeChoices(q);
+    }
+
+    function makeChoices(q) {
+        const choicesDiv = document.getElementById('choices');
+        choicesDiv.innerHTML = '';
+
+        // 正解
+        let correctVal = (q.type === 0) ? q.read : q.char;
+        
+        // ダミー（正解以外のものから3つ選ぶ）
+        let others = alphabetData.filter(d => d.char !== q.char);
+        let distractors = shuffle(others).slice(0, 3);
+        
+        // 選択肢リスト作成
+        let options = [q, ...distractors];
+        options = shuffle(options);
+
+        options.forEach(opt => {
+            let val = (q.type === 0) ? opt.read : opt.char;
+            
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerText = val;
+            
+            btn.onclick = () => {
+                if (!isAnswering) return;
+
+                if (val === correctVal) {
+                    // 正解！
+                    isAnswering = false;
+                    btn.classList.add('correct-bg');
+                    showFeedback(true);
+                    
+                    setTimeout(() => {
+                        currentIndex++;
+                        if (currentIndex >= 10) {
+                            changeScreen('result-screen');
+                        } else {
+                            showQuestion();
+                        }
+                    }, 1000);
+                } else {
+                    // 不正解
+                    btn.classList.add('wrong-bg');
+                    // ボタンを揺らすなどの演出を入れても良いが、今回は色変化のみ
+                    showFeedback(false);
+                }
+            };
+            choicesDiv.appendChild(btn);
+        });
+    }
+
+    function showFeedback(isCorrect) {
+        const mark = document.getElementById('feedback-mark');
+        if (isCorrect) {
+            mark.innerText = '⭕';
+            mark.style.color = '#ff3d00';
+        } else {
+            mark.innerText = '❌';
+            mark.style.color = '#555';
+        }
+        mark.style.display = 'block';
+        setTimeout(() => {
+            mark.style.display = 'none';
+        }, 500);
+    }
+
+</script>
+
+</body>
+</html>
