@@ -2,6 +2,7 @@
 
 // ゲームIDリスト（ここにあるゲームだけが記録されます）
 const GAME_LIST = {
+    'make10': { name: 'あわせて10', type: 'time', unit: '秒' },
     'math_add_easy':  { name: 'たしざん', type: 'time', unit: '秒' },
     'math_add_hard':  { name: 'たしざん(くりあがり)', type: 'time', unit: '秒' },
     'math_sub_easy':  { name: 'ひきざん', type: 'time', unit: '秒' },

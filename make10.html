@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>あわせて10（テン）</title>
+    <script src="ranking.js"></script>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
@@ -229,6 +230,9 @@
             const time = stopTimer();
             document.getElementById('final-time').textContent = time + "びょう";
             changeScreen('result-screen');
+            if(typeof showSaveDialog === 'function') {
+                showSaveDialog('make10', time);
+            }
             return;
         }
 
