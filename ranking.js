@@ -16,7 +16,8 @@ const GAME_LIST = {
     'romaji_hole':    { name: 'ローマ字虫くい',     type: 'time', unit: '秒' },
     'rain_vowel':     { name: 'あめふりローマ字(母音)', type: 'score', unit: '点' },
     'rain_consonant': { name: 'あめふりローマ字(子音)', type: 'score', unit: '点' },
-    'touch25':        { name: '1から25までタッチ',  type: 'time',  unit: '秒' }
+    'touch25':        { name: '1から25までタッチ',  type: 'time',  unit: '秒' },
+    'tsumitsumi': { name: '漢字つみつみ', type: 'score', unit: 'こ' },
 };
 
 // データの保存場所キー
