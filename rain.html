@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>あめふり算数</title>
+    <script src="ranking.js"></script>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
@@ -392,6 +393,10 @@
         cancelAnimationFrame(animationId);
         document.getElementById('final-score').textContent = score;
         document.getElementById('gameover-screen').style.display = 'flex';
+        // 'rain_math' は ranking.js で決めたID、 score はこのゲームの得点変数
+        if(typeof showSaveDialog === 'function') {
+            showSaveDialog('rain_math', score);
+        }
     }
 
 </script>

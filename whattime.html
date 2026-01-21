@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>いまなんじ？ とけいクイズ</title>
+    <script src="ranking.js"></script>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", "UD Digital Kyokasho-tai", "Hiragino Kaku Gothic ProN", sans-serif;
@@ -239,6 +240,11 @@
             const time = stopTimer();
             document.getElementById('final-time').textContent = time + "びょう";
             changeScreen('result-screen');
+            // IDは 'clock_read'、記録は time (秒数) です
+            if(typeof showSaveDialog === 'function') {
+                showSaveDialog('clock_read', time);
+            }
+
             return;
         }
 
@@ -246,7 +252,6 @@
         document.getElementById('progress').textContent = `${currentQuestion} / ${totalQuestions}`;
 
         // 問題作成：5分刻みでランダムな時間を生成
-        // (0, 15, 30, 45分が出やすくする調整も可能ですが、一旦5分刻みで)
         let h = Math.floor(Math.random() * 12) + 1; // 1~12
         let m = Math.floor(Math.random() * 12) * 5; // 0, 5, 10...55
         correctTime = { h, m };
@@ -258,7 +263,6 @@
     function generateChoices(h, m) {
         // 正解の文字列
         const correctStr = `${h}じ ${m}ふん`.replace(' 0ふん', ' はん').replace('0ふん', ''); 
-        // ※「3じ0ふん」を「3じ」に、「30ふん」を「はん」にする処理はお好みで調整
         // 今回はシンプルに「3じ 00ふん」形式で表示統一します
         
         const formatTime = (hh, mm) => `${hh}じ ${mm.toString().padStart(2, '0')}ふん`;

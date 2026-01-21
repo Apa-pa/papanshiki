@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>三角形の角はなんど？</title>
+    <script src="ranking.js"></script>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
@@ -224,6 +225,10 @@
             const finalTime = stopTimer();
             document.getElementById('final-time').textContent = finalTime + "びょう";
             changeScreen('result-screen');
+        
+            if(typeof showSaveDialog === 'function') {
+                showSaveDialog('triangle_angle', finalTime);
+            }
             return;
         }
 

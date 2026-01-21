@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>がんばったきろく</title>
+    <script src="ranking.js"></script>
+    <style>
+        body { 
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif; 
+            background: #e0f7fa; 
+            text-align: center; 
+            padding: 20px; 
+            margin: 0;
+            color: #37474f;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 { color: #0097a7; margin-bottom: 30px; }
+        
+        .user-select-area {
+            background: #fff9c4;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        select { 
+            padding: 12px; 
+            font-size: 20px; 
+            border-radius: 10px; 
+            border: 2px solid #fbc02d; 
+            width: 80%; 
+            background: white;
+            font-weight: bold;
+            color: #333;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { 
+            border-bottom: 1px solid #eee; 
+            padding: 15px 10px; 
+            text-align: left; 
+            font-size: 16px;
+        }
+        th { color: #777; font-size: 12px; }
+        td.score { 
+            text-align: right; 
+            font-weight: bold; 
+            color: #d84315; 
+            font-size: 20px; 
+        }
+        .game-name { font-weight: bold; }
+        
+        .back-link { 
+            display: inline-block; 
+            margin-top: 30px; 
+            padding: 15px 40px;
+            background: #78909c;
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+        }
+        .empty-msg { color: #aaa; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🏆 がんばったきろく</h1>
+        
+        <div class="user-select-area">
+            <p style="margin-top:0; font-weight:bold;">だれの記録をみる？</p>
+            <select id="user-select" onchange="showRecords()">
+                <option value="">(えらんでね)</option>
+            </select>
+        </div>
+
+        <div id="record-display" style="display:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ゲーム</th>
+                        <th style="text-align:right;">ベスト</th>
+                    </tr>
+                </thead>
+                <tbody id="score-list">
+                    </tbody>
+            </table>
+        </div>
+        
+        <div id="empty-msg" class="empty-msg">
+            まだ 記録が ありません。<br>ゲームで遊んで 保存してね！
+        </div>
+    </div>
+
+    <br>
+    <a href="index.html" class="back-link">🏠 ホームへもどる</a>
+
+    <script>
+        // 起動時にユーザーリストを読み込む
+        window.onload = function() {
+            const users = getUserNames(); // ranking.jsの関数
+            const select = document.getElementById('user-select');
+            
+            if (users.length > 0) {
+                document.getElementById('empty-msg').style.display = 'none';
+                users.forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u;
+                    opt.innerText = u;
+                    select.appendChild(opt);
+                });
+            }
+        };
+
+        function showRecords() {
+            const userName = document.getElementById('user-select').value;
+            const display = document.getElementById('record-display');
+            const list = document.getElementById('score-list');
+            
+            if (!userName) {
+                display.style.display = 'none';
+                return;
+            }
+
+            display.style.display = 'block';
+            list.innerHTML = '';
+            
+            const allData = getAllRecords(); // ranking.jsの関数
+            const userData = allData[userName] || {};
+
+            // GAME_LISTの順番通りに表示
+            for (const [key, info] of Object.entries(GAME_LIST)) {
+                const val = userData[key];
+                
+                // 記録がある場合だけ表示、なければ「-」
+                const displayVal = (val !== undefined) ? `${val} <span style="font-size:14px">${info.unit}</span>` : '<span style="color:#ddd; font-size:14px;">-</span>';
+                const rowColor = (val !== undefined) ? '#333' : '#ccc';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="game-name" style="color:${rowColor}">${info.name}</td>
+                    <td class="score">${displayVal}</td>
+                `;
+                list.appendChild(tr);
+            }
+        }
+    </script>
+</body>
+</html>

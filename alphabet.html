@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>アルファベット タイムアタック</title>
+    <script src="ranking.js"></script>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
@@ -220,6 +221,12 @@
             const finalTime = stopTimer();
             document.getElementById('final-time-display').textContent = finalTime + "びょう";
             changeScreen('result-screen');
+
+            if(typeof showSaveDialog === 'function') {
+                showSaveDialog('alphabet', finalTime);
+            }
+
+
             return;
         }
 

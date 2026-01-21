@@ -243,6 +243,11 @@
             const finalTime = stopTimer();
             document.getElementById('final-time-display').textContent = finalTime + "びょう";
             changeScreen('result-screen');
+
+            if(typeof showSaveDialog === 'function') {
+                showSaveDialog('katakana', finalTime);
+            }
+            
             return;
         }
 

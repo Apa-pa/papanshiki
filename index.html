@@ -44,7 +44,7 @@
     /* ▼▼▼ フィルターボタンエリアのスタイル ▼▼▼ */
     .filter-container {
         text-align: center;
-        margin: 20px auto;
+        margin: 5px auto;
         padding: 0 10px;
     }
     
@@ -171,7 +171,6 @@
 <header class="hero-header"></header>
 
 <main>
-
     <div class="filter-container">
         <span class="filter-label">ねんれいでさがす</span>
         <button class="filter-btn active" onclick="filterByAge('all', this)">ぜんぶ</button>
@@ -182,6 +181,23 @@
         <button class="filter-btn" onclick="filterByAge('8', this)">8さい</button>
         <button class="filter-btn" onclick="filterByAge('9', this)">9さい</button>
         <button class="filter-btn" onclick="filterByAge('10', this)">10さい〜</button>
+        <div style="margin-top: 10px;">
+            <a href="record.html" style="
+                display: inline-block;
+                background: #fff;
+                color: #ff9800;
+                text-decoration: none;
+                padding: 8px 25px;     
+                border-radius: 50px;
+                font-weight: bold;
+                font-size: 0.95rem;      
+                border: 2px solid #ff9800;
+                box-shadow: 0 2px 5px rgba(255, 152, 0, 0.2);
+                transition: transform 0.2s;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                🏆 きろくをみる
+            </a>
+        </div>
     </div>
     <h2 class="section-title title-math">🔢 さんすう・けいさん</h2>
     <div class="grid">
@@ -432,6 +448,24 @@
             <p>A4横サイズ。がぎぐげご、ぱぴぷぺぽまで入った完ぺきな表です！</p>
         </a>
 
+    </div>
+
+    <div style="text-align: center; margin-bottom: 30px;">
+        <a href="record.html" style="
+            display: inline-block;
+            background: #fff;
+            color: #ff9800;
+            text-decoration: none;
+            padding: 5px 40px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+            border: 3px solid #ff9800;
+            transition: transform 0.2s;
+        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            🏆 きろくをみる
+        </a>
     </div>
 
 </main>
