@@ -16,9 +16,13 @@
             align-items: center;
             height: 100vh;
             height: 100dvh;
-            touch-action: manipulation;
+            
+            /* ▼▼▼ ここを修正（強力な設定に変更） ▼▼▼ */
+            touch-action: none;       /* 画面全体のズーム・スクロールを禁止 */
+            -webkit-user-select: none; /* 文字選択を禁止 */
             user-select: none;
-            overflow: hidden;
+            overflow: hidden;         /* はみ出しを禁止 */
+            /* ▲▲▲ ここまで ▲▲▲ */
         }
 
         #game-container {
@@ -46,12 +50,13 @@
 
         /* アン先生の画像 */
         .char-teacher {
-            width: 160px; /* サイズ調整 */
+            width: 160px;
             height: auto;
             transition: transform 0.1s;
+            pointer-events: none; /* 画像を長押しできないようにする */
         }
         .char-teacher.playing {
-            transform: scale(1.1) rotate(-5deg); /* 音に合わせて動く */
+            transform: scale(1.1) rotate(-5deg);
         }
 
         .bubble {
@@ -92,11 +97,10 @@
             font-size: 60px;
             color: white;
             transition: transform 0.05s, background 0.1s;
-            -webkit-tap-highlight-color: transparent; /* タップ時の灰色ハイライトを消す */
-            touch-action: none;        /* 【重要】ダブルタップズームやスクロールを完全に無効化 */
-            user-select: none;         /* テキスト選択を無効化 */
-            -webkit-user-select: none; /* Safari用 */
-            -webkit-touch-callout: none; /* 長押しメニューを無効化 */
+            
+            /*念のための設定*/
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
         }
         .rhythm-btn:active, .rhythm-btn.active {
             transform: scale(0.95) translateY(4px);
@@ -157,14 +161,12 @@
         }
         .start-btn:active { transform: scale(0.95); box-shadow: none; }
 
-        /* ゲームオーバー画像のサイズ */
         .result-img {
             width: 180px;
             height: auto;
             margin-bottom: 20px;
         }
 
-        /* ゲージ */
         .progress-bar {
             position: absolute;
             bottom: 0; left: 0;
@@ -172,6 +174,14 @@
             background: #4caf50;
             width: 0%;
             transition: width 0.1s linear;
+        }
+
+        /* ポイントボタン用 */
+        .btn {
+            font-size: 20px; padding: 10px 30px; 
+            background: #ff9800; color: white; 
+            border: none; border-radius: 30px; 
+            margin: 10px; font-weight: bold; cursor: pointer;
         }
 
     </style>
@@ -233,6 +243,15 @@
 </div>
 
 <script>
+    // ▼▼▼ iPad/iPhone用の強力なズーム防止スクリプト ▼▼▼
+    document.addEventListener('gesturestart', function(e) {
+        e.preventDefault();
+    });
+    document.addEventListener('dblclick', function(e) {
+        e.preventDefault();
+    }, { passive: false });
+    // ▲▲▲ 追加ここまで ▲▲▲
+
     let audioCtx;
     
     function initAudioAndStart() {
@@ -289,29 +308,22 @@
         }
     }
 
-    // 全問題パターン（難易度順）
-    // 数字はミリ秒。0は最初の音、500は0.5秒後...
     const allLevels = [
-        // レベル1-3: シンプル
-        [0, 1000],                    // タン・・・タン (超かんたん)
-        [0, 500, 1000],               // タン・タン・タン
-        [0, 1000, 1500],              // タン・・・タン・タン
-        [0, 500, 1000, 1500],         // タン・タン・タン・タン (基本4拍子)
-        
-        // レベル4-6: ちょっと変化
-        [0, 500, 1000, 1250],         // タン・タン・タタ
-        [0, 250, 1000, 1500],         // タタ・・・タン・タン (冒頭変化)
-        [0, 250, 500, 1000],          // タタ・タン・・・タン
-        [0, 500, 750, 1250],          // タン・タタ・・・タッ (裏拍)
-        
-        // レベル7-10: むずかしい
-        [0, 250, 500, 750, 1000],     // タタ・タタ・タン
-        [0, 250, 750, 1000, 1250],    // タタ・・タタ・タタ
-        [0, 500, 750, 1250, 1500],    // タン・タタ・・・タタ
-        [0, 250, 500, 750, 1000, 1250, 1500, 1750] // タタタタタタタタ (連打)
+        [0, 1000],
+        [0, 500, 1000],
+        [0, 1000, 1500],
+        [0, 500, 1000, 1500],
+        [0, 500, 1000, 1250],
+        [0, 250, 1000, 1500],
+        [0, 250, 500, 1000],
+        [0, 500, 750, 1250],
+        [0, 250, 500, 750, 1000],
+        [0, 250, 750, 1000, 1250],
+        [0, 500, 750, 1250, 1500],
+        [0, 250, 500, 750, 1000, 1250, 1500, 1750]
     ];
 
-    let gameLevels = []; // 今回遊ぶ5ステージ
+    let gameLevels = [];
     let currentLevelIndex = 0;
     
     let targetRhythm = [];
@@ -329,7 +341,6 @@
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('clear-screen').style.display = 'none';
         
-        // 毎回ランダムに5問選ぶロジック
         selectRandomLevels();
 
         currentLevelIndex = 0;
@@ -337,24 +348,14 @@
         startRound();
     }
 
-    // 全レベルからランダムに5つ選び、かつ難易度順（元の順番）に並べる
     function selectRandomLevels() {
-        // 0からallLevels.length-1 までのインデックス配列を作る [0, 1, 2, ... 11]
         let indices = [];
         for(let i=0; i<allLevels.length; i++) {
             indices.push(i);
         }
-
-        // シャッフル
         indices.sort(() => Math.random() - 0.5);
-
-        // 先頭5個を取り出す
         let selectedIndices = indices.slice(0, 5);
-
-        // 小さい順（難易度順）に並べ直す
         selectedIndices.sort((a, b) => a - b);
-
-        // そのインデックスの問題をセット
         gameLevels = selectedIndices.map(i => allLevels[i]);
     }
 
