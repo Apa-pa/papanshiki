@@ -92,7 +92,11 @@
             font-size: 60px;
             color: white;
             transition: transform 0.05s, background 0.1s;
-            -webkit-tap-highlight-color: transparent;
+            -webkit-tap-highlight-color: transparent; /* タップ時の灰色ハイライトを消す */
+            touch-action: none;        /* 【重要】ダブルタップズームやスクロールを完全に無効化 */
+            user-select: none;         /* テキスト選択を無効化 */
+            -webkit-user-select: none; /* Safari用 */
+            -webkit-touch-callout: none; /* 長押しメニューを無効化 */
         }
         .rhythm-btn:active, .rhythm-btn.active {
             transform: scale(0.95) translateY(4px);
@@ -218,8 +222,9 @@
         <div style="font-size: 80px;">💮</div>
         <h1 style="color:#e65100;">たいへん<br>よくできました！</h1>
         <p>リズム感 バッチリだね！</p>
-        <button onclick="showPointGetDialog(30)" style="font-size:20px; padding:10px 30px; background:#ff9800; color:white; border:none; border-radius:30px; margin:10px; font-weight:bold; cursor:pointer;">
-        🎁 30ポイントをもらう
+        <button class="btn" 
+            onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; if(typeof showPointGetDialog==='function'){showPointGetDialog(30)}else{alert('ranking.jsを更新してね')}">
+            🎁 ポイントをもらう
         </button>
         <button class="start-btn" onclick="startGame()">さいしょから</button>
         <br>
