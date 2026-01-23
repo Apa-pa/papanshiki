@@ -83,7 +83,7 @@
         }
 
         .goal-input {
-            width: 80px;
+            width: 70px;
             padding: 8px;
             border: 2px solid #ddd;
             border-radius: 8px;
@@ -91,13 +91,29 @@
             text-align: center;
             font-family: inherit;
             color: #555;
-            /* iPadでの入力しやすさ改善 */
-            -webkit-appearance: none;
+            -webkit-appearance: none; /* iOSでの見た目調整 */
         }
         .goal-input:focus {
             border-color: #2196f3;
             outline: none;
-            background: #e3f2fd; /* 入力中は少し色をつける */
+            background: #e3f2fd;
+        }
+
+        /* OKボタン */
+        .ok-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 10px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px #2e7d32;
+        }
+        .ok-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
         }
 
         /* 目標達成時のスタイル */
@@ -230,7 +246,7 @@
             const userRecords = allRecords[userName] || {};
             const userGoals = allGoals[userName] || {};
 
-            // ポイントを表示するだけ（計算はしない）
+            // ポイントを表示するだけ
             pointDisplay.innerText = getUserPoints(userName);
 
             // リスト表示
@@ -240,7 +256,7 @@
 
                 const tr = document.createElement('tr');
 
-                // --- 達成判定（色変え演出のみ） ---
+                // --- 達成判定 ---
                 let isAchieved = false;
                 if (recordVal !== undefined && goalVal !== '') {
                     const r = parseFloat(recordVal);
@@ -257,27 +273,38 @@
 
                 const displayVal = (recordVal !== undefined) ? `${recordVal} <span style="font-size:14px">${info.unit}</span>` : '<span style="color:#ddd; font-size:14px;">-</span>';
 
-                // ▼▼▼ 修正箇所：onchange を onblur に変更しました ▼▼▼
+                // ▼▼▼ 修正箇所：OKボタンとEnterキー対応 ▼▼▼
+                const inputId = `goal-${gameId}`;
                 tr.innerHTML = `
                     <td class="game-name">${info.name}</td>
                     <td class="score">${displayVal}</td>
                     <td style="text-align:center;">
-                        <input type="number" class="goal-input" 
-                            value="${goalVal}" 
-                            placeholder="-" 
-                            step="0.1"
-                            onblur="updateGoal('${userName}', '${gameId}', this.value)">
-                        <span style="font-size:12px; color:#999;">${info.unit}</span>
+                        <div style="display:flex; align-items:center; justify-content:center; gap:5px;">
+                            <input type="number" id="${inputId}" class="goal-input" 
+                                value="${goalVal}" 
+                                placeholder="-" 
+                                step="0.1"
+                                onblur="updateGoal('${userName}', '${gameId}', this.value)"
+                                onkeydown="if(event.key==='Enter')this.blur()">
+                            <button class="ok-btn" onclick="updateGoal('${userName}', '${gameId}', document.getElementById('${inputId}').value)">OK</button>
+                        </div>
+                        <span style="font-size:10px; color:#999; display:block; margin-top:2px;">${info.unit}</span>
                     </td>
                 `;
                 list.appendChild(tr);
             }
         }
 
-        // 目標が変更されたら保存するだけ（ポイント計算はしない）
+        // 目標が変更されたら保存する
         function updateGoal(userName, gameId, value) {
+            // 安全装置：ranking.jsが古い場合の対策
+            if(typeof saveGoal !== 'function') {
+                alert('エラー：ranking.jsが古いため保存できません。\nranking.jsを最新にしてください。');
+                return;
+            }
+
             saveGoal(userName, gameId, value);
-            showRecords(); // 色の更新のために再描画
+            showRecords(); // 再描画
         }
 
         // ポイントリセット処理
