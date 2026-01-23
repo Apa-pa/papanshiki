@@ -217,10 +217,12 @@
     <h1 id="result-title">かち！</h1>
     <div id="result-icon" style="font-size: 80px; margin: 20px;">🎉</div>
     <p id="result-msg">すごい！作戦どおりだね！</p>
+    
     <button class="btn" 
             onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; if(typeof showPointGetDialog==='function'){showPointGetDialog(30)}else{alert('ranking.jsを更新してね')}">
             🎁 ポイントをもらう
     </button>
+    
     <button class="level-btn lvl-normal" onclick="location.reload()">もういっかい</button>
     <a href="index.html" class="back-link">🏠 ホームへ</a>
 </div>
@@ -231,7 +233,11 @@
     let isPlayerTurn = true;
     const targetNumber = 30;
     const chatArea = document.getElementById('chat-area');
-    const btns = document.querySelectorAll('.btn');
+    
+    // ▼▼▼ ここを修正しました！ ▼▼▼
+    // 「#controls」の中にあるボタンだけを選ぶように変更
+    const btns = document.querySelectorAll('#controls .btn');
+    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
     function startGame(level) {
         difficulty = level;
@@ -245,12 +251,10 @@
     function playerMove(count) {
         if (!isPlayerTurn) return;
 
-        // 入力が正しいかチェック（30を超える場合はボタンを押せなくする制御も可だが、今回はシンプルに）
         if (currentCount + count > targetNumber) {
-            count = targetNumber - currentCount; // 強制的に30で止める
+            count = targetNumber - currentCount; 
         }
 
-        // 数字を進める
         let nums = [];
         for (let i = 1; i <= count; i++) {
             currentCount++;
@@ -265,7 +269,6 @@
             setButtonsEnabled(false);
             document.getElementById('turn-msg').textContent = 'ハリネズミが かんがえ中...';
             
-            // コンピューターのターン（少し待つ）
             setTimeout(computerMove, 1000);
         }
     }
@@ -273,23 +276,11 @@
     // コンピューターの思考
     function computerMove() {
         let moveCount = 1;
-
-        // 残りいくつか？
         const remaining = targetNumber - currentCount;
 
-        // 戦略ロジック
         if (remaining <= 1) {
-            // 負け確定の場面（30を言うしかない）
             moveCount = 1; 
         } else {
-            // 勝つための数字（targetNumber-1 = 29, 25, 21... に着地したい）
-            // 必勝パターン: (現在の数 - 1) を 4 で割った余りに注目
-            // 相手に (4n + 1) を言わせたい。
-            // つまり、自分が言い終わった数字を 4n + 1 にしたい。
-            // 例: 1, 5, 9, 13, 17, 21, 25, 29
-            
-            // 次に自分が着地すべき「目標の数字」を探す
-            // 現在地より大きく、かつ 4n+1 の数字
             let targetPos = -1;
             for (let i = 1; i < 30; i += 4) {
                 if (i > currentCount && i <= currentCount + 3) {
@@ -299,19 +290,15 @@
             }
 
             if (targetPos !== -1) {
-                // 必勝手が見つかった場合
                 if (difficulty === 'hard') {
-                    // 最強：必ず必勝手を打つ
                     moveCount = targetPos - currentCount;
                 } else if (difficulty === 'normal') {
-                    // 普通：50%の確率で必勝手、ミスもする
                     if (Math.random() > 0.5) {
                         moveCount = targetPos - currentCount;
                     } else {
                         moveCount = Math.floor(Math.random() * 3) + 1;
                     }
                 } else {
-                    // 弱い：ほぼランダム
                     if (Math.random() > 0.8) {
                         moveCount = targetPos - currentCount;
                     } else {
@@ -319,20 +306,16 @@
                     }
                 }
             } else {
-                // 自分が「4n+1」にいて、どうやっても相手にチャンスを与える場合
-                // または計算が面倒な場合 -> ランダム
                 moveCount = Math.floor(Math.random() * 3) + 1;
             }
         }
 
-        // ルール違反防止（30を超えない、1以上）
         if (currentCount + moveCount > targetNumber) {
             moveCount = targetNumber - currentCount;
         }
         if (moveCount < 1) moveCount = 1;
         if (moveCount > 3) moveCount = 3;
 
-        // 実行
         let nums = [];
         for (let i = 1; i <= moveCount; i++) {
             currentCount++;
@@ -352,7 +335,7 @@
     function checkWin() {
         if (currentCount >= targetNumber) {
             setTimeout(() => {
-                showResult(!isPlayerTurn); // ターンが終わった人が30を言った人＝負け
+                showResult(!isPlayerTurn); 
             }, 500);
         }
     }
@@ -382,16 +365,13 @@
         const div = document.createElement('div');
         div.className = `message msg-${who}`;
         
-        // アイコン
         const icon = document.createElement('div');
         icon.className = 'icon';
         icon.textContent = who === 'player' ? '🐿️' : '🦔';
         
-        // ふきだし
         const bubble = document.createElement('div');
         bubble.className = 'bubble';
         
-        // 数字の装飾
         if (text.includes(targetNumber.toString())) {
              text = text.replace(targetNumber.toString(), `<span class="last-num">${targetNumber}</span>`);
         }
@@ -401,7 +381,6 @@
         div.appendChild(bubble);
         chatArea.appendChild(div);
 
-        // 自動スクロール
         chatArea.scrollTop = chatArea.scrollHeight;
     }
 
