@@ -9,15 +9,15 @@ const GAME_LIST = {
     'math_multi':     { name: 'かけざん九九',       type: 'time',  unit: '秒' },
     'rain_math':      { name: 'あめふり算数',       type: 'score', unit: '点' },
     'clock_read':     { name: 'とけいの読み方',     type: 'time',  unit: '秒' },
-    'triangle_angle': { name: '三角形の内角',       type: 'time', unit: '秒' },
+    'triangle_angle': { name: '三角形の内角',       type: 'time',  unit: '秒' },
     'katakana':       { name: 'カタカナ変換',       type: 'time',  unit: '秒' },
-    'alphabet':       { name: 'a-zアルファベット',     type: 'time', unit: '秒' },
-    'romaji_hole':    { name: 'ローマ字虫くい',     type: 'time', unit: '秒' },
+    'alphabet':       { name: 'a-zアルファベット',  type: 'time',  unit: '秒' },
+    'romaji_hole':    { name: 'ローマ字虫くい',     type: 'time',  unit: '秒' },
     'rain_vowel':     { name: 'あめふりローマ字(母)', type: 'score', unit: '点' },
     'rain_consonant': { name: 'あめふりローマ字(子)', type: 'score', unit: '点' },
     'touch25':        { name: '1から25までタッチ',  type: 'time',  unit: '秒' },
     'tsumitsumi':     { name: '漢字つみつみ',       type: 'score', unit: 'こ' },
-    'eawase':     { name: 'えあわせ',       type: 'time', unit: '秒' }
+    'eawase':         { name: 'えあわせ',           type: 'time',  unit: '秒' }
 };
 
 // 保存キー定義
@@ -36,6 +36,17 @@ function getAllRecords() {
 function getAllGoals() {
     return JSON.parse(localStorage.getItem(GOAL_KEY) || '{}');
 }
+
+// ▼▼▼ 今回追加した部分（目標の保存） ▼▼▼
+function saveGoal(userName, gameId, value) {
+    const goals = getAllGoals();
+    if (!goals[userName]) goals[userName] = {};
+    
+    goals[userName][gameId] = value;
+    localStorage.setItem(GOAL_KEY, JSON.stringify(goals));
+}
+// ▲▲▲ ここまで ▲▲▲
+
 function getAllStamps() {
     return JSON.parse(localStorage.getItem(STAMP_KEY) || '{}');
 }
