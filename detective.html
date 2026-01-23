@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>名探偵ぱぱん</title>
+    <script src="ranking.js"></script>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
@@ -162,6 +163,8 @@
             line-height: 1.6;
             max-width: 100%;
             width: 100%;
+            overflow-y: auto;
+            max-height: 40vh;
         }
 
         .back-link {
@@ -208,6 +211,9 @@
         <p style="font-size:20px; line-height:1.8;">
             すべての ナゾが とけたね！<br>きみは 名探偵だ！
         </p>
+        <button onclick="showPointGetDialog(30)" style="font-size:20px; padding:10px 30px; background:#ff9800; color:white; border:none; border-radius:30px; margin:10px; font-weight:bold; cursor:pointer;">
+    🎁 30ポイントをもらう
+</button>
         <button class="btn" onclick="location.reload()">さいしょから やる</button>
         <br>
         <a href="index.html" class="back-link">🏠 ホームへ</a>
@@ -231,9 +237,10 @@
         { id: 'fox', name: 'キツネ', icon: '🦊' }
     ];
 
+    // 問題データ：全6問
     const problems = [
         {
-            // パターンA: 犯人が「自分じゃない」と言う（キツネ犯人）
+            // パターン1: キツネ犯人 (自分じゃない)
             culprit: 'fox', 
             statements: {
                 rabbit: 'ぼくは たべてないよ。',
@@ -242,14 +249,12 @@
             },
             explanation: `
                 <strong>解説：</strong><br>
-                もし ウサギや クマが はんにん だとすると、<br>
-                キツネの言っていることが 本当になってしまうね。<br>
-                （はんにんは ウソをつくルールだよ）<br><br>
-                キツネが はんにんなら、「クマがたべた」というウソをついていることになるから、つじつまが合うね！
+                キツネがはんにんだと考えると、「クマがたべた」というウソをついていることになるね。<br>
+                ほかの二人は「たべてない」と本当のことを言っているから、つじつまが合うよ。
             `
         },
         {
-            // パターンB: 犯人を名指しする（クマ犯人）
+            // パターン2: クマ犯人 (名指し)
             culprit: 'bear',
             statements: {
                 rabbit: 'クマくんが たべたのを見たよ。',
@@ -258,36 +263,85 @@
             },
             explanation: `
                 <strong>解説：</strong><br>
-                ウサギが「クマがたべた」と言っているね。<br>
-                もしウサギがウソつき（はんにん）なら、自分でたべたことになるけど...<br>
-                キツネも「ウサギは本当」と言っているから、ウサギは正しいんだ。<br><br>
-                だから、ウソをついている クマが はんにんだ！
+                キツネが「ウサギは正しい」と言っているね。<br>
+                もしウサギがウソつきなら、キツネもウソつきになって、はんにんが2人になっちゃう。<br>
+                だからウサギの「クマがたべた」は本当なんだ。
             `
         },
         {
-            // パターンC: 修正版（ウサギ犯人）
+            // パターン3: ウサギ犯人 (消去法)
             culprit: 'rabbit',
             statements: {
                 rabbit: 'キツネくんが たべたんだよ。',
-                bear: 'キツネくんは たべてないよ。', // ここを変更しました！
+                bear: 'キツネくんは たべてないよ。',
                 fox: 'ぼくも たべてないよ。'
             },
             explanation: `
                 <strong>解説：</strong><br>
                 クマと キツネが「キツネはたべてない」と言っているね。<br>
-                もし クマかキツネが はんにんだとしたら、正直者がウソを言っていることになって矛盾しちゃう。<br><br>
-                ウサギが はんにんで、「キツネがたべた」というウソをついているなら、みんなの話がつながるね！
+                もし クマかキツネが はんにんだとしたら、正直者がウソを言っていることになって矛盾しちゃう。<br>
+                だから、ウソをついているウサギがはんにんだ！
+            `
+        },
+        {
+            // パターン4 (追加): キツネ犯人 (証言の否定)
+            culprit: 'fox',
+            statements: {
+                rabbit: 'キツネくんが やったんだ。',
+                bear: 'ウサギくんの 言うとおりだよ。',
+                fox: 'ウサギくんは ウソをついてる！'
+            },
+            explanation: `
+                <strong>解説：</strong><br>
+                ウサギとクマが、二人とも「キツネがはんにん」と言っているようなものだね。<br>
+                もしキツネがはんにんなら、「ウサギはウソつき（＝キツネはやってない）」というウソをついていることになるから、ピッタリ合うね！
+            `
+        },
+        {
+            // パターン5 (追加): クマ犯人 (アリバイ証言)
+            culprit: 'bear',
+            statements: {
+                rabbit: 'キツネくんは やってないよ。',
+                bear: 'ウサギくんが やったんだ！',
+                fox: 'ウサギくんは やってないよ。'
+            },
+            explanation: `
+                <strong>解説：</strong><br>
+                ウサギとキツネが、おたがいをかばっているね。<br>
+                もしウサギがはんにんなら、キツネ（正直者）が「ウサギはやってない」とウソを言うことになってしまう。<br>
+                だから、ウソをついているのはクマだ！
+            `
+        },
+        {
+            // パターン6 (追加): ウサギ犯人 (ウソつき呼ばわり)
+            culprit: 'rabbit',
+            statements: {
+                rabbit: 'クマくんは ウソをついている！',
+                bear: 'ぼくは やってないよ。',
+                fox: 'ウサギくんが たべたのを見たよ。'
+            },
+            explanation: `
+                <strong>解説：</strong><br>
+                もしウサギが正しい（犯人じゃない）なら、クマはウソをついている（犯人）ことになるね。<br>
+                でもそうすると、キツネ（正直者）が「ウサギがたべた」とウソを言うことになって おかしくなる。<br>
+                だから、ウサギがはんにんだ！
             `
         }
     ];
 
     let currentProblemIndex = 0;
     let selectedSuspectId = null;
-    let shuffledProblems = [];
+    let gameProblems = []; // 今回出題する3問
 
     function gameStart() {
         document.getElementById('start-screen').style.display = 'none';
-        shuffledProblems = [...problems].sort(() => Math.random() - 0.5);
+        
+        // 全問題からランダムに3問選ぶ処理
+        // 1. まず全部シャッフルする
+        const shuffled = [...problems].sort(() => Math.random() - 0.5);
+        // 2. 先頭の3つだけを取り出す
+        gameProblems = shuffled.slice(0, 3);
+
         currentProblemIndex = 0;
         loadProblem();
     }
@@ -297,9 +351,10 @@
         selectedSuspectId = null;
         document.getElementById('decide-btn').disabled = true;
         
+        // 分母は「3」固定でOK
         document.getElementById('current-q').textContent = currentProblemIndex + 1;
 
-        const problem = shuffledProblems[currentProblemIndex];
+        const problem = gameProblems[currentProblemIndex];
         const listEl = document.getElementById('suspect-list');
         listEl.innerHTML = '';
 
@@ -332,7 +387,7 @@
     function checkAnswer() {
         if (!selectedSuspectId) return;
 
-        const problem = shuffledProblems[currentProblemIndex];
+        const problem = gameProblems[currentProblemIndex];
         const isCorrect = (selectedSuspectId === problem.culprit);
         
         const resultScreen = document.getElementById('result-screen');
@@ -343,7 +398,7 @@
 
         resultScreen.style.display = 'flex';
 
-        if (currentProblemIndex >= shuffledProblems.length - 1) {
+        if (currentProblemIndex >= gameProblems.length - 1) {
             nextBtn.textContent = "ぜんぶおわり！";
         } else {
             nextBtn.textContent = "つぎのじけんへ";
@@ -373,7 +428,7 @@
 
     function handleNext() {
         currentProblemIndex++;
-        if (currentProblemIndex >= shuffledProblems.length) {
+        if (currentProblemIndex >= gameProblems.length) {
             document.getElementById('result-screen').style.display = 'none';
             document.getElementById('finish-screen').style.display = 'flex';
         } else {

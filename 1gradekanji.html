@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>1ねんせい かんじクイズ</title>
+    <script src="ranking.js"></script>
     <style>
         /* --- デザイン設定 --- */
         body {
@@ -158,6 +159,9 @@
         <div id="end-screen">
             <h2>おしまい！</h2>
             <p class="score-text" id="result-msg">よくがんばったね！</p>
+            <button onclick="showPointGetDialog(30)" style="font-size:20px; padding:10px 30px; background:#ff9800; color:white; border:none; border-radius:30px; margin:10px; font-weight:bold; cursor:pointer;">
+    🎁 30ポイントをもらう
+</button>
             <button class="restart-btn" onclick="location.reload()">もういちど やる</button>
             <br><br>
             <a href="index.html" class="home-btn" style="position:static; display:inline-block;">トップへもどる</a>
@@ -177,6 +181,8 @@
     { q: "きれいな<span class='blank'>__</span> が さく。", a: "花", dummy: ["草", "竹"] },
     { q: "<span class='blank'>__</span> のくまさん。", a: "森", dummy: ["林", "木"] },
     { q: "<span class='blank'>__</span> やけこやけ。", a: "夕", dummy: ["名", "多"] },
+    { q: "にわの<span class='blank'>__</span> をぬく。", a: "草", dummy: ["早", "音"] },
+    { q: "あしたの<span class='blank'>__</span> き。", a: "天", dummy: ["大", "人"] },
     
     // --- 学校・勉強 ---
     { q: "学校の<span class='blank'>__</span> せい。", a: "先", dummy: ["失", "矢"] },
@@ -211,14 +217,18 @@
     { q: "<span class='blank'>__</span> さい アリ。", a: "小", dummy: ["少", "山"] },
     { q: "<span class='blank'>__</span> くて まるい。", a: "白", dummy: ["百", "日"] },
     { q: "とまれは<span class='blank'>__</span> しんごう。", a: "赤", dummy: ["青", "走"] },
+    { q: "テーブルのうえに<span class='blank'>__</span> つのはダメ。", a: "立", dummy: ["六", "音"] },
+    { q: "パスタにはいった<span class='blank'>__</span> をたべる。", a: "貝", dummy: ["目", "六"] },
     
     // --- 位置・その他 ---
     { q: "とけいで３があるのは<span class='blank'>__</span> がわ。", a: "右", dummy: ["左", "石"] },
+    { q: "とけいで９があるのは<span class='blank'>__</span> がわ。", a: "左", dummy: ["右", "石"] },
     { q: "そらをみるために<span class='blank'>__</span> を むく。", a: "上", dummy: ["下", "止"] },
     { q: " <span class='blank'>__</span>にのる 。", a: "車", dummy: ["東", "事"] },
     { q: "<span class='blank'>__</span> さまになる。", a: "王", dummy: ["玉", "主"] },
     { q: "<span class='blank'>__</span> を かう。", a: "犬", dummy: ["大", "太"] },
     { q: "ボーちゃんがすきなのは<span class='blank'>__</span> 。", a: "石", dummy: ["右", "岩"] },
+    { q: "ドラえもんの<span class='blank'>__</span>がくがすき 。", a: "音", dummy: ["日", "岩"] },
     { q: "林で<span class='blank'>__</span> を とる。", a: "虫", dummy: ["中", "忠"] }
         ];
 

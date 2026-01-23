@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>アルファベット読み方クイズ</title>
+    <script src="ranking.js"></script>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
@@ -75,7 +76,7 @@
             border: 3px solid #ffcc80;
             border-radius: 15px;
             padding: 15px 5px;
-            font-size: 32px; /* 文字サイズ大きめ */
+            font-size: 32px;
             font-weight: bold;
             color: #555;
             cursor: pointer;
@@ -90,9 +91,16 @@
         .wrong-bg { background-color: #ffcdd2 !important; border-color: #ef5350 !important; }
 
         /* ボタン類 */
+        .btn-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
         .action-btn {
-            font-size: 20px;
-            padding: 15px 40px;
+            font-size: 18px;
+            padding: 15px 20px;
             background: #ff9800;
             color: white;
             border: none;
@@ -101,8 +109,14 @@
             box-shadow: 0 4px #e65100;
             font-weight: bold;
             font-family: inherit;
+            width: 100%;
         }
         .action-btn:active { transform: translateY(2px); box-shadow: 0 2px #e65100; }
+        
+        /* コースごとの色変え（お好みで） */
+        .btn-char { background: #ff9800; }
+        .btn-read { background: #ff7043; }
+        .btn-mix  { background: #8d6e63; }
 
         .home-btn {
             display: inline-block;
@@ -135,10 +149,21 @@
 
     <div id="start-screen" class="screen active">
         <h1>ABC よみかたクイズ</h1>
-        <div style="font-size: 80px; margin: 20px;">🔤</div>
-        <p class="sub-text">アルファベットの よみかたを<br>あててみよう！</p>
-        <button class="action-btn" onclick="startGame()">スタート！</button>
-        <br>
+        <div style="font-size: 80px; margin: 10px;">🔤</div>
+        <p class="sub-text">コースを えらんでね</p>
+        
+        <div class="btn-grid">
+            <button class="action-btn btn-char" onclick="startGame('char')">
+                A 👉 エー<br><span style="font-size:14px">「A」をみて よみかたをえらぶ</span>
+            </button>
+            <button class="action-btn btn-read" onclick="startGame('read')">
+                エー 👉 A<br><span style="font-size:14px">「エー」をみて 文字をえらぶ</span>
+            </button>
+            <button class="action-btn btn-mix" onclick="startGame('mix')">
+                🌀 まぜまぜ<br><span style="font-size:14px">どっちも ランダムに出るよ</span>
+            </button>
+        </div>
+
         <a href="index.html" class="home-btn">🏠 ホームへもどる</a>
     </div>
 
@@ -162,8 +187,10 @@
         <h1 style="color: #4caf50;">おつかれさま！</h1>
         <div style="font-size: 80px; margin: 20px;">💮</div>
         <p style="font-size: 18px;">ぜんぶで 10もん<br>よくがんばったね！</p>
-        
-        <button class="action-btn" onclick="startGame()">もういちど</button>
+        <button onclick="showPointGetDialog(30)" style="font-size:20px; padding:10px 30px; background:#ff9800; color:white; border:none; border-radius:30px; margin:10px; font-weight:bold; cursor:pointer;">
+    🎁 30ポイントをもらう
+</button>
+        <button class="action-btn" onclick="startGame(currentMode)">もういちど</button>
         <br>
         <a href="index.html" class="home-btn">🏠 ホームへもどる</a>
     </div>
@@ -185,7 +212,8 @@
 
     let currentQuestions = [];
     let currentIndex = 0;
-    let isAnswering = false; // 連打防止
+    let isAnswering = false;
+    let currentMode = 'mix'; // 現在のモードを記憶
 
     function changeScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -196,17 +224,26 @@
         return array.sort(() => Math.random() - 0.5);
     }
 
-    function startGame() {
+    // mode: 'char' (A->エー), 'read' (エー->A), 'mix' (ランダム)
+    function startGame(mode) {
+        if (mode) currentMode = mode;
+
         // 全データからランダムに10問選ぶ
-        // 配列をコピーしてシャッフルし、先頭10個を取る
         const shuffled = shuffle([...alphabetData]);
         currentQuestions = shuffled.slice(0, 10);
         
-        // 各問題ごとに「どっちを問うか」をランダムに決めるフラグを追加
+        // モードに合わせて出題タイプを設定
         // type: 0 = 「A」を見て「エー」を当てる
         // type: 1 = 「エー」を見て「A」を当てる
         currentQuestions.forEach(q => {
-            q.type = Math.random() < 0.5 ? 0 : 1;
+            if (currentMode === 'char') {
+                q.type = 0;
+            } else if (currentMode === 'read') {
+                q.type = 1;
+            } else {
+                // mix
+                q.type = Math.random() < 0.5 ? 0 : 1;
+            }
         });
 
         currentIndex = 0;
@@ -233,7 +270,7 @@
             // 読み → 文字
             qText.innerText = q.read;
             qLabel.innerText = "これは どのアルファベット？";
-            qText.style.fontSize = "50px"; // カタカナなので少し小さく
+            qText.style.fontSize = "50px"; 
         }
 
         // 選択肢の生成
@@ -247,11 +284,11 @@
         // 正解
         let correctVal = (q.type === 0) ? q.read : q.char;
         
-        // ダミー（正解以外のものから3つ選ぶ）
+        // ダミー
         let others = alphabetData.filter(d => d.char !== q.char);
         let distractors = shuffle(others).slice(0, 3);
         
-        // 選択肢リスト作成
+        // 選択肢リスト
         let options = [q, ...distractors];
         options = shuffle(options);
 
@@ -282,7 +319,6 @@
                 } else {
                     // 不正解
                     btn.classList.add('wrong-bg');
-                    // ボタンを揺らすなどの演出を入れても良いが、今回は色変化のみ
                     showFeedback(false);
                 }
             };

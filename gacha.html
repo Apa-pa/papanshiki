@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ぱぱんガチャ</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background-color: #f3e5f5; /* 薄いむらさき */
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            color: #4a148c;
+            touch-action: manipulation;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 { margin: 0 0 20px 0; color: #7b1fa2; }
+
+        /* ユーザー・ポイント表示 */
+        .status-bar {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 20px;
+            border: 2px solid #ffb74d;
+            margin-bottom: 20px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .point-box { font-size: 24px; color: #e65100; }
+
+        /* ガチャマシン */
+        .machine-area {
+            position: relative;
+            height: 300px;
+            background: #e1bee7;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            border: 4px solid #ba68c8;
+        }
+
+        .machine-img { font-size: 150px; line-height: 1; z-index: 2; transition: transform 0.1s; }
+        
+        /* ガチャを回すボタン */
+        .spin-btn {
+            background: linear-gradient(to bottom, #ff4081, #c51162);
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px #880e4f;
+            font-weight: bold;
+            font-family: inherit;
+            position: relative;
+            top: -20px; /* マシンの下にかぶせる */
+            z-index: 10;
+        }
+        .spin-btn:active { transform: translateY(4px); box-shadow: 0 2px #880e4f; }
+        .spin-btn:disabled { background: #bdbdbd; box-shadow: none; cursor: not-allowed; }
+
+        /* コレクションリスト */
+        .collection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 15px;
+        }
+        .item-card {
+            background: white;
+            border-radius: 10px;
+            padding: 5px;
+            border: 2px solid #ddd;
+            aspect-ratio: 1/1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .item-card img { width: 100%; height: 100%; object-fit: contain; }
+        .unknown { font-size: 40px; color: #ccc; }
+        .item-card.has-item { border-color: #ffca28; background: #fffde7; }
+
+        /* 結果画面（オーバーレイ） */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            animation: fadeIn 0.3s;
+        }
+        
+        .capsule {
+            font-size: 100px;
+            animation: bounce 0.5s infinite alternate;
+        }
+
+        .result-content {
+            text-align: center;
+            display: none; /* 最初は隠す */
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .result-img {
+            width: 200px; height: 200px; object-fit: contain;
+            background: white; border-radius: 20px; padding: 10px;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+        .result-name { font-size: 28px; font-weight: bold; margin: 15px 0; }
+        .result-rarity { font-size: 18px; color: #ffd54f; margin-bottom: 20px; }
+        .new-badge {
+            background: #f50057; color: white; padding: 5px 15px;
+            border-radius: 20px; font-weight: bold; font-size: 14px;
+            position: absolute; top: -10px; right: -10px;
+            animation: pulse 1s infinite;
+        }
+
+        .close-btn {
+            background: white; color: #333; border: none;
+            padding: 10px 30px; font-size: 18px; border-radius: 30px;
+            cursor: pointer; font-weight: bold;
+        }
+
+        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(5deg); } 75% { transform: rotate(-5deg); } 100% { transform: rotate(0deg); } }
+        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-20px); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        .shaking { animation: shake 0.1s infinite; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>💊 ぱぱんガチャ</h1>
+    
+    <select id="user-select" onchange="updateStatus()" style="padding: 10px; font-size: 16px; margin-bottom: 10px;">
+        <option value="">(なまえをえらんでね)</option>
+    </select>
+
+    <div class="status-bar">
+        <div>💎 もってるポイント</div>
+        <div class="point-box"><span id="current-points">0</span> pt</div>
+    </div>
+
+    <div class="machine-area">
+        <div id="machine-body" class="machine-img">🔮</div>
+    </div>
+
+    <button id="spin-btn" class="spin-btn" onclick="spinGacha()" disabled>
+        まわす (50pt)
+    </button>
+
+    <div style="text-align: left; margin-top: 30px; font-weight: bold; color: #555;">
+        📖 ずかん (<span id="collect-count">0</span> / 5)
+    </div>
+    <div class="collection-grid" id="collection-list">
+        </div>
+    
+    <div style="margin-top: 30px;">
+        <a href="index.html" style="color: #8d6e63; text-decoration: underline;">🏠 ホームへもどる</a>
+    </div>
+</div>
+
+<div id="result-overlay" class="overlay">
+    <div id="capsule-anim" class="capsule">💊</div>
+
+    <div id="result-view" class="result-content" style="position: relative;">
+        <div id="new-badge" class="new-badge" style="display:none;">NEW!</div>
+        <img id="res-img" class="result-img" src="">
+        <div id="res-rarity" class="result-rarity">★★★★</div>
+        <div id="res-name" class="result-name">キャラ名</div>
+        <button class="close-btn" onclick="closeResult()">OK</button>
+    </div>
+</div>
+
+<script>
+    // ガチャの中身リスト（提供割合などは簡易的に均等または重み付け可能）
+    const gachaItems = [
+        { id: 'hi-an', name: 'ヒー＆アン', img: 'hi-an-192.png', rarity: '★★★' },
+        { id: 'hi-an-s', name: '水彩ヒー＆アン', img: 'hi-an-suisai-192.png', rarity: '★★★★★' }, // レア！
+        { id: 'pippi', name: 'くまのピッピ', img: 'pippi192.png', rarity: '★★★' },
+        { id: 'an', name: 'ハリネズミのアン', img: 'an192.png', rarity: '★★★★' },
+        { id: 'hi', name: 'エゾリスのヒー', img: 'hi-192.png', rarity: '★★★★' }
+    ];
+
+    const GACHA_COST = 50;
+
+    window.onload = function() {
+        const users = getUserNames();
+        const select = document.getElementById('user-select');
+        users.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u;
+            opt.innerText = u;
+            select.appendChild(opt);
+        });
+        renderCollection();
+    };
+
+    function updateStatus() {
+        const userName = document.getElementById('user-select').value;
+        const ptSpan = document.getElementById('current-points');
+        const btn = document.getElementById('spin-btn');
+
+        if (!userName) {
+            ptSpan.innerText = 0;
+            btn.disabled = true;
+            btn.innerText = `まわす (${GACHA_COST}pt)`;
+            renderCollection();
+            return;
+        }
+
+        const pts = getUserPoints(userName);
+        ptSpan.innerText = pts;
+
+        if (pts >= GACHA_COST) {
+            btn.disabled = false;
+            btn.innerText = `まわす (${GACHA_COST}pt)`;
+            btn.style.background = "linear-gradient(to bottom, #ff4081, #c51162)";
+        } else {
+            btn.disabled = true;
+            btn.innerText = "ポイントが足りないよ";
+            btn.style.background = "#bdbdbd";
+        }
+
+        renderCollection();
+    }
+
+    function spinGacha() {
+        const userName = document.getElementById('user-select').value;
+        if (!userName) return;
+
+        // ポイント消費
+        const success = spendPoints(userName, GACHA_COST);
+        if (!success) {
+            alert("ポイントが足りません！");
+            return;
+        }
+
+        updateStatus(); // 表示更新
+
+        // 演出開始
+        const machine = document.getElementById('machine-body');
+        machine.classList.add('shaking'); // ガタガタ揺らす
+
+        // 抽選（ランダム）
+        const picked = gachaItems[Math.floor(Math.random() * gachaItems.length)];
+
+        // 1.5秒後に結果表示
+        setTimeout(() => {
+            machine.classList.remove('shaking');
+            showResult(userName, picked);
+        }, 1500);
+    }
+
+    function showResult(userName, item) {
+        const overlay = document.getElementById('result-overlay');
+        const capsule = document.getElementById('capsule-anim');
+        const view = document.getElementById('result-view');
+        
+        overlay.style.display = 'flex';
+        capsule.style.display = 'block';
+        view.style.display = 'none';
+
+        // コレクション保存
+        const isNew = addToCollection(userName, item.id);
+
+        // カプセルが開く演出（1秒後）
+        setTimeout(() => {
+            capsule.style.display = 'none';
+            view.style.display = 'block';
+
+            document.getElementById('res-img').src = item.img;
+            document.getElementById('res-name').innerText = item.name;
+            document.getElementById('res-rarity').innerText = item.rarity;
+            
+            const badge = document.getElementById('new-badge');
+            if (isNew) {
+                badge.style.display = 'block';
+                // キラキラ効果音などを鳴らしても楽しい
+            } else {
+                badge.style.display = 'none';
+            }
+        }, 1000);
+    }
+
+    function closeResult() {
+        document.getElementById('result-overlay').style.display = 'none';
+        renderCollection(); // 図鑑更新
+    }
+
+    // 図鑑の描画
+    function renderCollection() {
+        const userName = document.getElementById('user-select').value;
+        const list = document.getElementById('collection-list');
+        const countSpan = document.getElementById('collect-count');
+        list.innerHTML = '';
+
+        if (!userName) {
+            countSpan.innerText = "0";
+            return;
+        }
+
+        const myCollection = getCollection(userName);
+        countSpan.innerText = myCollection.length;
+
+        gachaItems.forEach(item => {
+            const hasIt = myCollection.includes(item.id);
+            
+            const div = document.createElement('div');
+            div.className = `item-card ${hasIt ? 'has-item' : ''}`;
+            
+            if (hasIt) {
+                div.innerHTML = `<img src="${item.img}">`;
+            } else {
+                div.innerHTML = `<span class="unknown">?</span>`;
+            }
+            list.appendChild(div);
+        });
+    }
+</script>
+
+</body>
+</html>

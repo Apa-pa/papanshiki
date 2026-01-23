@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>つなげて！トロッコ</title>
+    <script src="ranking.js"></script>
     <style>
         body {
             margin: 0;
@@ -157,11 +158,14 @@
 
     <div id="all-clear-screen" class="overlay" style="display:none;">
         <h1 style="color:#ffeb3b; text-shadow:0 0 10px #f57f17;">かんぜん<br>クリア！</h1>
-        <div style="font-size:80px;">🐿️🎊🦔</div>
+        <div style="font-size:100px;">🎊</div>
         <p style="font-size:20px;">さいごまで ありがとう！<br>きみは 線路マスターだ！</p>
         <div style="font-size:24px; font-weight:bold; margin:20px;">
             スコア: <span id="final-score">0</span>
         </div>
+        <button onclick="showPointGetDialog(30)" style="font-size:20px; padding:10px 30px; background:#ff9800; color:white; border:none; border-radius:30px; margin:10px; font-weight:bold; cursor:pointer;">
+    🎁 30ポイントをもらう
+</button>
         <button class="btn" onclick="location.reload()">さいしょから</button>
         <br>
         <a href="index.html" style="color:#fff; text-decoration:underline;">🏠 ホームへ</a>

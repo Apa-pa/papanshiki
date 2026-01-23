@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>まなびカレンダー</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background: #fff8e1;
+            text-align: center;
+            padding: 20px;
+            color: #5d4037;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 { color: #ff6f00; margin-bottom: 20px; }
+
+        select {
+            padding: 10px; font-size: 18px; border-radius: 10px;
+            border: 2px solid #ffca28; background: white; width: 80%;
+            margin-bottom: 20px; font-weight: bold; color: #555;
+        }
+
+        .calendar-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; font-size: 20px; font-weight: bold;
+        }
+        .nav-btn {
+            background: #ffecb3; border: none; padding: 5px 15px;
+            border-radius: 10px; cursor: pointer; font-size: 18px;
+            color: #ff6f00;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        .day-cell {
+            aspect-ratio: 1 / 1;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding-top: 5px;
+            position: relative;
+            cursor: pointer;
+            background: #fafafa;
+        }
+        .day-header {
+            font-size: 12px; font-weight: bold; color: #888;
+            padding-bottom: 5px;
+        }
+        
+        .day-cell:nth-child(7n+1) { background: #ffebee; color: #c62828; }
+        .day-cell:nth-child(7n)   { background: #e3f2fd; color: #1565c0; }
+
+        .date-num { font-size: 14px; z-index: 2; }
+
+        /* スタンプ画像のスタイル */
+        .stamp-mark {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-10deg); /* 少し傾ける */
+            width: 85%; /* セルいっぱいに表示 */
+            height: auto;
+            pointer-events: none;
+            opacity: 0.9;
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2)); /* 影をつけて浮き上がらせる */
+            animation: stampIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes stampIn {
+            from { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+            to { transform: translate(-50%, -50%) rotate(-10deg) scale(1); opacity: 0.9; }
+        }
+
+        .back-link {
+            display: inline-block; margin-top: 30px; padding: 15px 40px;
+            background: #8d6e63; color: white; text-decoration: none;
+            border-radius: 30px; font-weight: bold;
+        }
+
+        /* --- スタンプ選択メニュー（モーダル） --- */
+        #stamp-modal {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: white; padding: 20px; border-radius: 20px;
+            width: 90%; max-width: 350px; text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            animation: popUp 0.2s ease-out;
+        }
+        @keyframes popUp { from {transform: scale(0.8);} to {transform: scale(1);} }
+
+        .stamp-list {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 15px;
+            margin: 20px 0;
+        }
+        .stamp-btn {
+            width: 70px; height: 70px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            background: #fff;
+            cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            padding: 5px;
+        }
+        .stamp-btn:active { background: #fff3e0; transform: scale(0.95); border-color: #ffca28; }
+        
+        .stamp-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .delete-btn {
+            background: #eceff1; color: #546e7a; border: none;
+            padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer;
+            width: 100%; margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📅 まなびカレンダー</h1>
+    
+    <select id="user-select" onchange="renderCalendar()">
+        <option value="">(なまえをえらんでね)</option>
+    </select>
+
+    <div class="calendar-header">
+        <button class="nav-btn" onclick="moveMonth(-1)">◀ 前</button>
+        <span id="current-month">--年 --月</span>
+        <button class="nav-btn" onclick="moveMonth(1)">次 ▶</button>
+    </div>
+
+    <div class="calendar-grid" style="margin-bottom: 10px;">
+        <div class="day-header" style="color:#c62828">日</div>
+        <div class="day-header">月</div>
+        <div class="day-header">火</div>
+        <div class="day-header">水</div>
+        <div class="day-header">木</div>
+        <div class="day-header">金</div>
+        <div class="day-header" style="color:#1565c0">土</div>
+    </div>
+
+    <div id="calendar-body" class="calendar-grid"></div>
+</div>
+
+<a href="index.html" class="back-link">🏠 ホームへもどる</a>
+
+<div id="stamp-modal" onclick="closeModal(event)">
+    <div class="modal-content">
+        <h3 style="margin:0; color:#555;">スタンプをえらんでね</h3>
+        <div class="stamp-list">
+            <button class="stamp-btn" onclick="selectStamp('hi-an-192.png')">
+                <img src="hi-an-192.png" alt="自動スタンプ">
+            </button>
+            <button class="stamp-btn" onclick="selectStamp('hi-an-suisai-192.png')">
+                <img src="hi-an-suisai-192.png" alt="スタンプ2">
+            </button>
+            <button class="stamp-btn" onclick="selectStamp('pippi192.png')">
+                <img src="pippi192.png" alt="スタンプ3">
+            </button>
+            <button class="stamp-btn" onclick="selectStamp('an192.png')">
+                <img src="an192.png" alt="スタンプ4">
+            </button>
+            <button class="stamp-btn" onclick="selectStamp('hi-192.png')">
+                <img src="hi-192.png" alt="スタンプ5">
+            </button>
+        </div>
+        <button class="delete-btn" onclick="selectStamp(null)">🗑️ スタンプを消す</button>
+        <div style="margin-top:10px; font-size:12px; color:#aaa;">まわりを押すととじるよ</div>
+    </div>
+</div>
+
+<script>
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth();
+    let selectedDate = null; 
+
+    window.onload = function() {
+        const users = getUserNames();
+        const select = document.getElementById('user-select');
+        users.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u;
+            opt.innerText = u;
+            select.appendChild(opt);
+        });
+        renderCalendar();
+    };
+
+    function moveMonth(diff) {
+        currentMonth += diff;
+        const d = new Date(currentYear, currentMonth, 1);
+        currentYear = d.getFullYear();
+        currentMonth = d.getMonth();
+        renderCalendar();
+    }
+
+    function renderCalendar() {
+        const body = document.getElementById('calendar-body');
+        const monthLabel = document.getElementById('current-month');
+        const userName = document.getElementById('user-select').value;
+        
+        body.innerHTML = '';
+        monthLabel.innerText = `${currentYear}年 ${currentMonth + 1}月`;
+
+        if (!userName) {
+            body.innerHTML = '<div style="grid-column:1/8; padding:30px; color:#aaa;">なまえを えらんでね</div>';
+            return;
+        }
+
+        const allStamps = getAllStamps();
+        const userStamps = allStamps[userName] || {};
+
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        const lastDay = new Date(currentYear, currentMonth + 1, 0);
+        const startDayOfWeek = firstDay.getDay();
+        const endDate = lastDay.getDate();
+
+        for (let i = 0; i < startDayOfWeek; i++) {
+            body.appendChild(document.createElement('div'));
+        }
+
+        for (let d = 1; d <= endDate; d++) {
+            const cell = document.createElement('div');
+            cell.className = 'day-cell';
+            
+            const num = document.createElement('span');
+            num.className = 'date-num';
+            num.innerText = d;
+            cell.appendChild(num);
+
+            const mStr = ('0' + (currentMonth + 1)).slice(-2);
+            const dStr = ('0' + d).slice(-2);
+            const dateStr = `${currentYear}-${mStr}-${dStr}`;
+
+            // 保存されているスタンプ(画像ファイル名)を表示
+            const stampImage = userStamps[dateStr];
+            if (stampImage) {
+                const img = document.createElement('img');
+                img.src = stampImage;
+                img.className = 'stamp-mark';
+                cell.appendChild(img);
+            }
+
+            cell.onclick = () => {
+                openModal(dateStr);
+            };
+
+            body.appendChild(cell);
+        }
+    }
+
+    function openModal(dateStr) {
+        const userName = document.getElementById('user-select').value;
+        if(!userName) return;
+
+        selectedDate = dateStr;
+        document.getElementById('stamp-modal').style.display = 'flex';
+    }
+
+    function closeModal(e) {
+        if(e.target.id === 'stamp-modal') {
+            document.getElementById('stamp-modal').style.display = 'none';
+        }
+    }
+
+    function selectStamp(imageName) {
+        const userName = document.getElementById('user-select').value;
+        if(!userName || !selectedDate) return;
+
+        if (imageName === null) {
+            removeStamp(userName, selectedDate);
+        } else {
+            setStamp(userName, selectedDate, imageName);
+        }
+
+        document.getElementById('stamp-modal').style.display = 'none';
+        renderCalendar(); 
+    }
+</script>
+
+</body>
+</html>
