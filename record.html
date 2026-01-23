@@ -91,10 +91,13 @@
             text-align: center;
             font-family: inherit;
             color: #555;
+            /* iPadでの入力しやすさ改善 */
+            -webkit-appearance: none;
         }
         .goal-input:focus {
             border-color: #2196f3;
             outline: none;
+            background: #e3f2fd; /* 入力中は少し色をつける */
         }
 
         /* 目標達成時のスタイル */
@@ -227,7 +230,7 @@
             const userRecords = allRecords[userName] || {};
             const userGoals = allGoals[userName] || {};
 
-            // ポイントを表示
+            // ポイントを表示するだけ（計算はしない）
             pointDisplay.innerText = getUserPoints(userName);
 
             // リスト表示
@@ -237,7 +240,7 @@
 
                 const tr = document.createElement('tr');
 
-                // --- 達成判定 ---
+                // --- 達成判定（色変え演出のみ） ---
                 let isAchieved = false;
                 if (recordVal !== undefined && goalVal !== '') {
                     const r = parseFloat(recordVal);
@@ -254,6 +257,7 @@
 
                 const displayVal = (recordVal !== undefined) ? `${recordVal} <span style="font-size:14px">${info.unit}</span>` : '<span style="color:#ddd; font-size:14px;">-</span>';
 
+                // ▼▼▼ 修正箇所：onchange を onblur に変更しました ▼▼▼
                 tr.innerHTML = `
                     <td class="game-name">${info.name}</td>
                     <td class="score">${displayVal}</td>
@@ -262,7 +266,7 @@
                             value="${goalVal}" 
                             placeholder="-" 
                             step="0.1"
-                            onchange="updateGoal('${userName}', '${gameId}', this.value)">
+                            onblur="updateGoal('${userName}', '${gameId}', this.value)">
                         <span style="font-size:12px; color:#999;">${info.unit}</span>
                     </td>
                 `;
@@ -270,10 +274,10 @@
             }
         }
 
-        // 目標が変更されたら保存する
+        // 目標が変更されたら保存するだけ（ポイント計算はしない）
         function updateGoal(userName, gameId, value) {
             saveGoal(userName, gameId, value);
-            showRecords(); 
+            showRecords(); // 色の更新のために再描画
         }
 
         // ポイントリセット処理
@@ -281,7 +285,6 @@
             const userName = document.getElementById('user-select').value;
             if(!userName) return;
 
-            // 確認ダイアログ
             const isConfirmed = confirm(
                 `${userName}さんの ポイントを 0 にリセットします。\n` +
                 `（ゲームのきろくは 消えません）\n\n` +
@@ -289,10 +292,9 @@
             );
 
             if (isConfirmed) {
-                // ranking.jsに追加したリセット関数を呼ぶ
                 if(typeof resetUserPoints === 'function') {
                     resetUserPoints(userName);
-                    showRecords(); // 画面更新（0ポイントになる）
+                    showRecords(); 
                     alert(`${userName}さんの ポイントを リセットしました。`);
                 } else {
                     alert("エラー：ranking.jsが更新されていません");
