@@ -262,9 +262,10 @@
         <h1 style="color:#e65100;">ぜんぶできた！</h1>
         <div style="font-size: 80px; margin: 20px;">👨‍🎨👩‍🎨</div>
         <p style="font-size: 20px;">すごい！<br>きみは 色のハカセだ！</p>
-        <button onclick="showPointGetDialog(30)" style="font-size:20px; padding:10px 30px; background:#ff9800; color:white; border:none; border-radius:30px; margin:10px; font-weight:bold; cursor:pointer;">
-    🎁 30ポイントをもらう
-</button>
+        <button class="start-btn" 
+            onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; if(typeof showPointGetDialog==='function'){showPointGetDialog(30)}else{alert('ranking.jsを更新してね')}">
+            🎁 ポイントをもらう
+        </button>
         <button class="start-btn" onclick="location.reload()">もういっかい</button>
         <br>
         <a href="index.html" style="color:#8e24aa; margin-top:20px; text-decoration: underline;">🏠 ホームへ</a>

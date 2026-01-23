@@ -178,9 +178,10 @@
         <h1>🎉 ぜんぶできた！ 🎉</h1>
         <div style="font-size: 80px; margin: 20px;">💮</div>
         <p>すごい！ こくごマスターだね！</p>
-        <button onclick="showPointGetDialog(30)" style="font-size:20px; padding:10px 30px; background:#ff9800; color:white; border:none; border-radius:30px; margin:10px; font-weight:bold; cursor:pointer;">
-    🎁 30ポイントをもらう
-</button>
+        <button class="start-btn" 
+            onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; if(typeof showPointGetDialog==='function'){showPointGetDialog(30)}else{alert('ranking.jsを更新してね')}">
+            🎁 ポイントをもらう
+        </button>
         <button class="start-btn" onclick="startGame()">もういっかい</button>
         <br>
         <a href="index.html" class="back-btn">🏠 ホームへ</a>
