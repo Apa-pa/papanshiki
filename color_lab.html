@@ -148,7 +148,7 @@
         }
 
         .btn {
-            padding: 12px 30px;
+            padding: 15px 30px;
             font-size: 18px;
             font-weight: bold;
             color: white;
@@ -157,6 +157,7 @@
             cursor: pointer;
             box-shadow: 0 4px rgba(0,0,0,0.2);
         }
+
         .btn-reset { background: #90a4ae; }
         .btn-check { background: #8e24aa; }
         .btn:active { transform: translateY(2px); box-shadow: none; }
@@ -179,6 +180,20 @@
             border: none; border-radius: 50px;
             font-weight: bold; cursor: pointer;
             box-shadow: 0 5px #e65100;
+        }
+
+        .pt-btn {
+            background: #e65100;
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px #bf360c;
+            font-weight: bold;
+            width: 100%;
+            max-width: 300px;
         }
         
         /* エフェクト */
@@ -262,7 +277,7 @@
         <h1 style="color:#e65100;">ぜんぶできた！</h1>
         <div style="font-size: 80px; margin: 20px;">👨‍🎨👩‍🎨</div>
         <p style="font-size: 20px;">すごい！<br>きみは 色のハカセだ！</p>
-        <button class="start-btn" 
+        <button class="pt-btn" style="background: #ff9800;"
             onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; if(typeof showPointGetDialog==='function'){showPointGetDialog(30)}else{alert('ranking.jsを更新してね')}">
             🎁 ポイントをもらう
         </button>

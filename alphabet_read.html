@@ -118,6 +118,13 @@
         .btn-read { background: #ff7043; }
         .btn-mix  { background: #8d6e63; }
 
+        .btn {
+            font-size: 20px; padding: 10px 30px; 
+            background: #ff9800; color: white; 
+            border: none; border-radius: 30px; 
+            margin: 10px; font-weight: bold; cursor: pointer;
+        }
+
         .home-btn {
             display: inline-block;
             margin-top: 20px;
@@ -187,7 +194,7 @@
         <h1 style="color: #4caf50;">おつかれさま！</h1>
         <div style="font-size: 80px; margin: 20px;">💮</div>
         <p style="font-size: 18px;">ぜんぶで 10もん<br>よくがんばったね！</p>
-        <button class="start-btn" 
+        <button class="btn" 
             onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; if(typeof showPointGetDialog==='function'){showPointGetDialog(30)}else{alert('ranking.jsを更新してね')}">
             🎁 ポイントをもらう
         </button>
