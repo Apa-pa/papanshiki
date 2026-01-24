@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ぱぱん銀行</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background-color: #e8f5e9; /* 銀行っぽい落ち着いた緑 */
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            color: #1b5e20;
+            touch-action: manipulation;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 { margin: 0 0 10px 0; color: #2e7d32; font-size: 24px; }
+
+        /* 説明ボックス */
+        .desc-box {
+            background: #fff9c4;
+            border: 2px dashed #fbc02d;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #555;
+            text-align: left;
+            line-height: 1.6;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .desc-box:active {
+            background: #fff59d;
+            transform: translateY(2px);
+        }
+        .desc-header {
+            font-weight: bold;
+            color: #f57f17;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .desc-content {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #f9a825;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* レート表示ボード */
+        .rate-board {
+            background: #263238;
+            color: #4caf50;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 20px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            border: 4px solid #555;
+            position: relative;
+        }
+        .rate-val { color: #ffff00; font-weight: bold; font-size: 28px; }
+
+        /* 隠しボタン */
+        .secret-key {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            font-size: 16px;
+            text-decoration: none;
+            opacity: 0.3;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .secret-key:hover { opacity: 1; }
+
+        /* 財布エリア */
+        .wallet-area {
+            display: flex;
+            justify-content: space-around;
+            background: #f1f8e9;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 2px solid #c5e1a5;
+        }
+        .wallet-item { flex: 1; }
+        .w-label { font-size: 12px; color: #558b2f; font-weight: bold; }
+        .w-val { font-size: 22px; font-weight: bold; color: #33691e; }
+
+        /* タブ切り替え */
+        .tab-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px 10px 0 0;
+            background: #ccc;
+            color: #555;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .tab-btn.active {
+            background: #fff;
+            color: #2e7d32;
+            border-top: 3px solid #2e7d32;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+        }
+        .tab-buy.active { color: #e65100; border-color: #e65100; } 
+        
+        /* 取引フォーム */
+        .trade-box {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 0 0 15px 15px;
+            padding: 20px;
+            margin-top: -10px;
+        }
+        .trade-box.buy-mode { border-color: #ffe0b2; background: #fff3e0; }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .input-label { font-weight: bold; width: 60px; text-align: right; }
+        
+        input[type="number"] {
+            width: 100px;
+            padding: 10px;
+            font-size: 20px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            text-align: right;
+        }
+        input:focus { outline: none; border-color: #4caf50; }
+
+        .trade-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px rgba(0,0,0,0.2);
+        }
+        .btn-buy { background: #e65100; }
+        .btn-sell { background: #2e7d32; }
+        .trade-btn:active { transform: translateY(2px); box-shadow: none; }
+        .trade-btn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+
+        .note { font-size: 12px; color: #777; margin-top: 10px; }
+
+        /* ▼▼▼ 追加：リンクボタンのスタイル ▼▼▼ */
+        .link-area {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+        }
+        .btn-link {
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 14px;
+            transition: 0.2s;
+            display: inline-block;
+        }
+        .to-stock {
+            background: #fff;
+            color: #1565c0;
+            border: 2px solid #1565c0;
+            box-shadow: 0 2px 5px rgba(21, 101, 192, 0.2);
+        }
+        .to-home {
+            color: #2e7d32;
+            text-decoration: underline;
+        }
+        /* ▲▲▲ ここまで ▲▲▲ */
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🏦 ぱぱん銀行</h1>
+
+    <div class="desc-box" onclick="toggleDesc()">
+        <div class="desc-header">
+            <span>ℹ️ ここは ポイントと 「どんぐり」 を こうかんする 銀行（ぎんこう）です。</span>
+            <span id="desc-arrow">▼</span>
+        </div>
+        
+        <div id="desc-content" class="desc-content">
+            <br>
+            どんぐりの おねだん（レート）は、毎日 かわります。<br>
+            安（やす）いときに 買って、高（たか）いときに 売（う）ると、ポイントが ふえるかも！？<br>
+            ぎゃくに 減（へ）っちゃうことも あるから 気をつけてね。<br>
+            <span style="font-size:12px; color:#795548;">（これは 本物の 「ドルと円」 の動きと おなじだよ。 パパや ママに きいてみよう）</span>
+            <br><br>
+            ……あ！ そういえば。<br>
+            この銀行の どこかに <span style="font-weight:bold; color:#e65100;">「秘密（ひみつ）の部屋（へや）」</span> への カギが おちているみたいだよ。<br>
+            さがしてみてね。
+        </div>
+    </div>
+    
+    <select id="user-select" onchange="updateWallet()" style="padding: 10px; font-size: 16px; margin-bottom: 20px;">
+        <option value="">(なまえをえらんでね)</option>
+    </select>
+
+    <div class="rate-board">
+        <div>げんざいのレート</div>
+        <div>1 🌰 = <span id="rate-display" class="rate-val">---</span> pt</div>
+        
+        <a href="ura/secret_home.html" class="secret-key">🗝️</a>
+    </div>
+
+    <div class="wallet-area">
+        <div class="wallet-item">
+            <div class="w-label">もってるポイント</div>
+            <div class="w-val"><span id="my-points">0</span> pt</div>
+        </div>
+        <div style="border-right: 2px solid #c5e1a5;"></div>
+        <div class="wallet-item">
+            <div class="w-label">もってるどんぐり</div>
+            <div class="w-val">🌰 <span id="my-donguri">0</span></div>
+        </div>
+    </div>
+
+    <div class="tab-area">
+        <button id="tab-buy" class="tab-btn tab-buy active" onclick="setMode('buy')">どんぐりを 買う</button>
+        <button id="tab-sell" class="tab-btn" onclick="setMode('sell')">どんぐりを 売る</button>
+    </div>
+
+    <div id="trade-box" class="trade-box buy-mode">
+        <div id="mode-desc" style="margin-bottom:15px; font-weight:bold; color:#e65100;">
+            ポイントを使って、どんぐりを買います
+        </div>
+
+        <div class="input-group">
+            <span class="input-label">🌰</span>
+            <input type="number" id="input-donguri" placeholder="0" oninput="calcFromDonguri()">
+            <span style="font-size:14px;">こ</span>
+        </div>
+
+        <div style="font-size:20px; font-weight:bold; margin: 5px;">⇅</div>
+
+        <div class="input-group">
+            <span class="input-label">pt</span>
+            <input type="number" id="input-point" placeholder="0" oninput="calcFromPoint()">
+            <span style="font-size:14px;">pt</span>
+        </div>
+
+        <button id="action-btn" class="trade-btn btn-buy" onclick="executeTrade()" disabled>
+            こうかんする
+        </button>
+        <p class="note">※手数料なし（スプレッドなし）</p>
+    </div>
+
+    <div class="link-area">
+        <a href="index.html" class="btn-link to-home">🏠 ホームへもどる</a>
+        <a href="stock.html" class="btn-link to-stock">📈 ぱぱん証券へいく</a>
+    </div>
+    </div>
+
+<script>
+    let currentRate = 150; 
+    let currentMode = 'buy'; 
+
+    window.onload = function() {
+        const users = getUserNames();
+        const select = document.getElementById('user-select');
+        users.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u;
+            opt.innerText = u;
+            select.appendChild(opt);
+        });
+
+        fetchRate();
+    };
+
+    function toggleDesc() {
+        const content = document.getElementById('desc-content');
+        const arrow = document.getElementById('desc-arrow');
+        if (content.style.display === 'block') {
+            content.style.display = 'none';
+            arrow.innerText = '▼';
+        } else {
+            content.style.display = 'block';
+            arrow.innerText = '▲';
+        }
+    }
+
+    async function fetchRate() {
+        const display = document.getElementById('rate-display');
+        try {
+            const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+            const data = await res.json();
+            const rawRate = data.rates.JPY;
+            currentRate = Math.round(rawRate);
+            display.innerText = currentRate;
+            calcFromDonguri();
+        } catch (e) {
+            console.error("Rate fetch failed", e);
+            display.innerText = currentRate + "(仮)";
+            alert("通信エラー：レートがとれませんでした。仮のレート(150)をつかいます。");
+        }
+    }
+
+    function updateWallet() {
+        const userName = document.getElementById('user-select').value;
+        if (!userName) {
+            document.getElementById('my-points').innerText = 0;
+            document.getElementById('my-donguri').innerText = 0;
+            document.getElementById('action-btn').disabled = true;
+            return;
+        }
+        const pts = getUserPoints(userName);
+        const don = getUserDonguri(userName);
+        document.getElementById('my-points').innerText = pts;
+        document.getElementById('my-donguri').innerText = don;
+        validateTrade();
+    }
+
+    function setMode(mode) {
+        currentMode = mode;
+        const box = document.getElementById('trade-box');
+        const desc = document.getElementById('mode-desc');
+        const btn = document.getElementById('action-btn');
+        const tabBuy = document.getElementById('tab-buy');
+        const tabSell = document.getElementById('tab-sell');
+
+        if (mode === 'buy') {
+            box.className = 'trade-box buy-mode';
+            desc.innerText = "ポイントを使って、どんぐりを買います";
+            desc.style.color = "#e65100";
+            btn.className = "trade-btn btn-buy";
+            btn.innerText = "どんぐりを 買う";
+            tabBuy.classList.add('active');
+            tabSell.classList.remove('active');
+        } else {
+            box.className = 'trade-box';
+            desc.innerText = "どんぐりを売って、ポイントに戻します";
+            desc.style.color = "#2e7d32";
+            btn.className = "trade-btn btn-sell";
+            btn.innerText = "どんぐりを 売る";
+            tabBuy.classList.remove('active');
+            tabSell.classList.add('active');
+        }
+        validateTrade();
+    }
+
+    function calcFromDonguri() {
+        const dVal = document.getElementById('input-donguri').value;
+        const pInput = document.getElementById('input-point');
+        if (dVal === '') {
+            pInput.value = '';
+        } else {
+            pInput.value = Math.floor(dVal * currentRate);
+        }
+        validateTrade();
+    }
+
+    function calcFromPoint() {
+        const pVal = document.getElementById('input-point').value;
+        const dInput = document.getElementById('input-donguri').value;
+        if (pVal === '') {
+            dInput.value = '';
+        } else {
+            dInput.value = Math.floor(pVal / currentRate);
+        }
+        validateTrade();
+    }
+
+    function validateTrade() {
+        const userName = document.getElementById('user-select').value;
+        const btn = document.getElementById('action-btn');
+        
+        if (!userName) {
+            btn.disabled = true;
+            return;
+        }
+
+        const dVal = parseInt(document.getElementById('input-donguri').value);
+        const pVal = parseInt(document.getElementById('input-point').value);
+
+        if (isNaN(dVal) || dVal <= 0 || isNaN(pVal) || pVal <= 0) {
+            btn.disabled = true;
+            return;
+        }
+
+        const currentPts = getUserPoints(userName);
+        const currentDon = getUserDonguri(userName);
+
+        if (currentMode === 'buy') {
+            if (currentPts >= pVal) {
+                btn.disabled = false;
+                btn.innerText = `どんぐりを 買う (${pVal}pt)`;
+            } else {
+                btn.disabled = true;
+                btn.innerText = "ポイントが足りないよ";
+            }
+        } else {
+            if (currentDon >= dVal) {
+                btn.disabled = false;
+                btn.innerText = `どんぐりを 売る (+${pVal}pt)`;
+            } else {
+                btn.disabled = true;
+                btn.innerText = "どんぐりが足りないよ";
+            }
+        }
+    }
+
+    function executeTrade() {
+        const userName = document.getElementById('user-select').value;
+        const dVal = parseInt(document.getElementById('input-donguri').value);
+        const pVal = parseInt(document.getElementById('input-point').value);
+
+        if (currentMode === 'buy') {
+            spendPoints(userName, pVal);
+            addDonguri(userName, dVal);
+            alert(`【とりひき成功】\n🌰 ${dVal}こ を買いました！\n(-${pVal} ポイント)`);
+        } else {
+            spendDonguri(userName, dVal);
+            addPoints(userName, pVal);
+            alert(`【とりひき成功】\n🌰 ${dVal}こ を売りました！\n(+${pVal} ポイント)`);
+        }
+        updateWallet();
+        document.getElementById('input-donguri').value = '';
+        document.getElementById('input-point').value = '';
+        validateTrade();
+    }
+</script>
+
+</body>
+</html>
