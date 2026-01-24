@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHIN-CHIRO | ぱぱんべガス</title>
+    <script src="../ranking.js"></script>
+    <style>
+        /* ▼▼▼ ぱぱんべガス共通デザイン ▼▼▼ */
+        body {
+            font-family: 'Arial Black', 'Impact', sans-serif;
+            background: linear-gradient(135deg, #2c003e, #51007a, #000046);
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            touch-action: manipulation;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 5px), radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 3px);
+            background-size: 550px 550px, 350px 350px; background-position: 0 0, 40px 60px;
+            opacity: 0.3; z-index: -1;
+        }
+
+        .container {
+            width: 95%; max-width: 600px; margin: 20px auto;
+            border: 3px solid #ffd700; padding: 20px 10px; border-radius: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            box-shadow: 0 0 15px #ffd700, 0 0 30px rgba(255, 215, 0, 0.5), inset 0 0 30px rgba(255, 0, 100, 0.3);
+            position: relative;
+        }
+
+        h1 { 
+            color: #ffd700; font-size: 28px; margin-bottom: 5px; letter-spacing: 2px;
+            text-shadow: 2px 2px 0 #b8860b, 0 0 10px #ffd700, 0 0 20px #ff00de;
+        }
+        
+        /* ルールボタン */
+        .rule-btn {
+            background: transparent; border: 1px solid #00e5ff; color: #00e5ff;
+            font-size: 14px; padding: 5px 15px; border-radius: 20px; cursor: pointer;
+            margin-bottom: 10px; transition: 0.2s;
+        }
+        .rule-btn:hover { background: #00e5ff; color: #000; }
+
+        /* どんぶり（サイコロエリア） */
+        .bowl-area {
+            background: radial-gradient(circle, #424242 30%, #212121 70%);
+            border: 5px solid #8d6e63;
+            border-radius: 50%;
+            width: 280px; height: 280px;
+            margin: 10px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: inset 0 0 20px #000, 0 10px 20px rgba(0,0,0,0.5);
+        }
+        
+        /* サイコロ */
+        .dice-container {
+            display: flex; gap: 15px;
+        }
+        .dice {
+            width: 50px; height: 50px;
+            background: #fff;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            padding: 4px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            transition: transform 0.2s;
+        }
+        .dot {
+            background: #000;
+            border-radius: 50%;
+            align-self: center;
+            justify-self: center;
+            width: 10px; height: 10px;
+            visibility: hidden; /* デフォルトは非表示 */
+        }
+        /* 1の目は赤く大きく */
+        .dice[data-val="1"] .dot:nth-child(5) { background: #f44336; width: 14px; height: 14px; }
+
+        /* サイコロの目のパターン定義 */
+        .dice[data-val="1"] .dot:nth-child(5), .dice[data-val="3"] .dot:nth-child(5), .dice[data-val="5"] .dot:nth-child(5) { visibility: visible; }
+        .dice[data-val="2"] .dot:nth-child(1), .dice[data-val="2"] .dot:nth-child(9), .dice[data-val="3"] .dot:nth-child(1), .dice[data-val="3"] .dot:nth-child(9), .dice[data-val="4"] .dot:nth-child(1), .dice[data-val="4"] .dot:nth-child(9), .dice[data-val="5"] .dot:nth-child(1), .dice[data-val="5"] .dot:nth-child(9), .dice[data-val="6"] .dot:nth-child(1), .dice[data-val="6"] .dot:nth-child(9) { visibility: visible; }
+        .dice[data-val="4"] .dot:nth-child(3), .dice[data-val="4"] .dot:nth-child(7), .dice[data-val="5"] .dot:nth-child(3), .dice[data-val="5"] .dot:nth-child(7), .dice[data-val="6"] .dot:nth-child(3), .dice[data-val="6"] .dot:nth-child(7) { visibility: visible; }
+        .dice[data-val="6"] .dot:nth-child(4), .dice[data-val="6"] .dot:nth-child(6) { visibility: visible; }
+
+        @keyframes shake {
+            0% { transform: translate(0,0) rotate(0deg); }
+            25% { transform: translate(5px,5px) rotate(90deg); }
+            50% { transform: translate(-5px,10px) rotate(180deg); }
+            75% { transform: translate(5px,-5px) rotate(270deg); }
+            100% { transform: translate(0,0) rotate(360deg); }
+        }
+        .rolling { animation: shake 0.3s infinite linear; }
+
+        /* ステータス表示 */
+        .status-bar {
+            background: rgba(255,255,255,0.1);
+            padding: 10px; border-radius: 10px;
+            margin: 10px 0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .turn-indicator {
+            font-size: 20px; font-weight: bold; padding: 5px 15px; border-radius: 20px;
+        }
+        .turn-you { background: #00e5ff; color: #000; box-shadow: 0 0 10px #00e5ff; }
+        .turn-enemy { background: #ff5252; color: #fff; box-shadow: 0 0 10px #ff5252; }
+        .turn-wait { background: #555; color: #aaa; }
+
+        .yaku-disp {
+            font-size: 24px; font-weight: bold; color: #ffd700; text-shadow: 0 0 5px #b8860b;
+            height: 35px;
+        }
+
+        /* 履歴・結果 */
+        .info-area {
+            display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;
+        }
+        .info-box {
+            background: rgba(0,0,0,0.5); border: 1px solid #777;
+            padding: 10px; border-radius: 10px; width: 45%;
+        }
+        .info-title { font-size: 12px; color: #ccc; border-bottom: 1px solid #555; margin-bottom: 5px; }
+        .info-val { font-size: 18px; font-weight: bold; }
+
+        /* 操作エリア */
+        .control-area {
+            background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px;
+        }
+        
+        .bet-input {
+            background: rgba(0,0,0,0.5); border: 2px solid #ffd700;
+            color: #ffd700; padding: 10px; font-size: 24px; font-weight: bold;
+            width: 100px; text-align: right; border-radius: 8px; margin-right: 10px;
+        }
+        
+        .action-btn {
+            padding: 15px 40px; font-size: 22px; font-weight: bold;
+            border: none; border-radius: 50px; cursor: pointer; color: #000;
+            background: linear-gradient(to bottom, #ffd700, #ffa000);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            transition: 0.1s;
+        }
+        .action-btn:active { transform: translateY(2px); box-shadow: none; }
+        .action-btn:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; }
+
+        .roll-count { font-size: 12px; color: #aaa; margin-top: 5px; }
+
+        .back-link {
+            margin-top: 30px; color: #00e5ff; text-decoration: none; font-size: 14px;
+            font-weight: bold; text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
+        }
+
+        /* ▼▼▼ ルールモーダル ▼▼▼ */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 9999;
+            display: none; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: #212121; border: 2px solid #ffd700;
+            padding: 20px; border-radius: 15px; max-width: 90%; width: 400px;
+            color: #fff; text-align: center;
+            box-shadow: 0 0 20px #ffd700;
+        }
+        .rule-table {
+            width: 100%; border-collapse: collapse; margin: 15px 0;
+            font-size: 14px;
+        }
+        .rule-table th, .rule-table td {
+            border: 1px solid #555; padding: 8px;
+        }
+        .rule-table th { background: #333; color: #ffd700; }
+        .strong { color: #00e676; font-weight: bold; }
+        .weak { color: #ff5252; font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎲 CHIN-CHIRO 🎲</h1>
+    <button class="rule-btn" onclick="openRules()">📜 ルールを見る</button>
+
+    <select id="user-select" onchange="updateInfo()" style="padding: 8px; margin-bottom: 10px; background:rgba(0,0,0,0.5); color:white; border:1px solid #ffd700; border-radius:5px; font-size:16px;">
+        <option value="">(プレイヤーを選択)</option>
+    </select>
+
+    <div class="status-bar">
+        <div id="turn-badge" class="turn-indicator turn-wait">待機中</div>
+        <div style="text-align:right;">
+            所持: 🌰 <span id="my-donguri" style="color:#ffd700; font-weight:bold;">0</span>
+        </div>
+    </div>
+
+    <div class="bowl-area">
+        <div class="dice-container">
+            <div id="dice1" class="dice" data-val="1">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+            <div id="dice2" class="dice" data-val="2">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+            <div id="dice3" class="dice" data-val="3">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="yaku-display" class="yaku-disp"></div>
+
+    <div class="info-area">
+        <div class="info-box" style="border-color: #00e5ff;">
+            <div class="info-title">YOU</div>
+            <div id="res-you" class="info-val">-</div>
+        </div>
+        <div class="info-box" style="border-color: #ff5252;">
+            <div class="info-title">ENEMY</div>
+            <div id="res-enemy" class="info-val">-</div>
+        </div>
+    </div>
+
+    <div class="control-area">
+        <div id="bet-phase">
+            <span style="font-size:18px;">BET:</span>
+            <input type="number" id="bet-amount" class="bet-input" placeholder="0"> 🌰
+            <button class="action-btn" onclick="startPlayerTurn()">勝負！</button>
+        </div>
+        
+        <div id="roll-phase" style="display:none;">
+            <button id="roll-btn" class="action-btn" onclick="rollDice()">サイコロを振る</button>
+            <div id="roll-counter" class="roll-count">残り 3 回</div>
+        </div>
+        
+        <div id="next-phase" style="display:none;">
+            <button class="action-btn" onclick="resetGame()">次の勝負へ</button>
+        </div>
+    </div>
+</div>
+
+<a href="secret_home.html" class="back-link">◀ ぱぱんべガス ロビーへ戻る</a>
+
+<div id="rule-modal" class="modal-overlay" onclick="closeRules()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h2 style="color:#ffd700; margin-top:0;">役と倍率</h2>
+        <table class="rule-table">
+            <tr>
+                <th>役名</th>
+                <th>目</th>
+                <th>倍率</th>
+            </tr>
+            <tr>
+                <td class="strong">ピンゾロ</td>
+                <td>[1][1][1]</td>
+                <td>勝 x5</td>
+            </tr>
+            <tr>
+                <td class="strong">アラシ</td>
+                <td>[2][2][2] 等</td>
+                <td>勝 x3</td>
+            </tr>
+            <tr>
+                <td class="strong">シゴロ</td>
+                <td>[4][5][6]</td>
+                <td>勝 x2</td>
+            </tr>
+            <tr>
+                <td>通常の目</td>
+                <td>[6][6][3] 等</td>
+                <td>勝 x1</td>
+            </tr>
+            <tr>
+                <td>目なし</td>
+                <td>バラバラ</td>
+                <td>弱 (0)</td>
+            </tr>
+            <tr>
+                <td class="weak">ヒフミ</td>
+                <td>[1][2][3]</td>
+                <td>負 x2</td>
+            </tr>
+        </table>
+        <div style="font-size:12px; text-align:left; color:#ccc; margin-top:10px;">
+            ※通常の目は、揃っていない1つの数字が大きいほど強い。<br>
+            ※相手がヒフミ(x2)で、自分がピンゾロ(x5)なら、<br>
+            　<span style="color:#ffd700; font-weight:bold;">合わせて 10倍 の勝利！！</span>
+        </div>
+        <button onclick="closeRules()" style="margin-top:20px; padding:10px 30px; border-radius:20px; background:#555; color:white; border:none; cursor:pointer;">とじる</button>
+    </div>
+</div>
+
+<script>
+    const MAX_ROLLS = 3;
+    let gameState = 'idle';
+    let currentBet = 0;
+    let rollCount = 0;
+    let playerHand = null;
+    let enemyHand = null;
+
+    function openRules() { document.getElementById('rule-modal').style.display = 'flex'; }
+    function closeRules() { document.getElementById('rule-modal').style.display = 'none'; }
+
+    window.onload = function() {
+        const users = getUserNames();
+        const select = document.getElementById('user-select');
+        users.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u;
+            opt.innerText = u;
+            select.appendChild(opt);
+        });
+    };
+
+    function updateInfo() {
+        const userName = document.getElementById('user-select').value;
+        if(userName) {
+            document.getElementById('my-donguri').innerText = getUserDonguri(userName);
+        } else {
+            document.getElementById('my-donguri').innerText = 0;
+        }
+    }
+
+    function startPlayerTurn() {
+        const userName = document.getElementById('user-select').value;
+        const betInput = document.getElementById('bet-amount');
+        currentBet = parseInt(betInput.value);
+        const currentDonguri = getUserDonguri(userName);
+
+        if (!userName || isNaN(currentBet) || currentBet <= 0) {
+            alert("賭けるどんぐりを入力しろ...");
+            return;
+        }
+        if (currentBet > currentDonguri) {
+            alert("どんぐりが足りないようだ...");
+            return;
+        }
+        
+        gameState = 'player_roll';
+        rollCount = MAX_ROLLS;
+        playerHand = null;
+        enemyHand = null;
+
+        document.getElementById('bet-phase').style.display = 'none';
+        document.getElementById('roll-phase').style.display = 'block';
+        document.getElementById('next-phase').style.display = 'none';
+        
+        document.getElementById('turn-badge').className = 'turn-indicator turn-you';
+        document.getElementById('turn-badge').innerText = 'あなたの番';
+        document.getElementById('res-you').innerText = '...';
+        document.getElementById('res-enemy').innerText = '-';
+        document.getElementById('yaku-display').innerText = '';
+        
+        updateRollCount();
+    }
+
+    async function rollDice() {
+        if(gameState !== 'player_roll') return;
+
+        const btn = document.getElementById('roll-btn');
+        btn.disabled = true;
+
+        const dices = [document.getElementById('dice1'), document.getElementById('dice2'), document.getElementById('dice3')];
+        dices.forEach(d => d.classList.add('rolling'));
+        
+        await new Promise(r => setTimeout(r, 800));
+
+        const res = [
+            Math.floor(Math.random() * 6) + 1,
+            Math.floor(Math.random() * 6) + 1,
+            Math.floor(Math.random() * 6) + 1
+        ];
+
+        dices.forEach((d, i) => {
+            d.classList.remove('rolling');
+            d.setAttribute('data-val', res[i]);
+        });
+
+        const hand = checkYaku(res);
+        rollCount--;
+        updateRollCount();
+
+        if (hand.type !== 'menashi' || rollCount === 0) {
+            playerHand = hand;
+            document.getElementById('yaku-display').innerText = hand.name;
+            document.getElementById('res-you').innerText = hand.name;
+            setTimeout(startEnemyTurn, 1500);
+        } else {
+            document.getElementById('yaku-display').innerText = "目なし...";
+            btn.disabled = false;
+            btn.innerText = "もう一回！";
+        }
+    }
+
+    function updateRollCount() {
+        document.getElementById('roll-counter').innerText = `残り ${rollCount} 回`;
+    }
+
+    async function startEnemyTurn() {
+        gameState = 'enemy_roll';
+        document.getElementById('roll-phase').style.display = 'none';
+        document.getElementById('turn-badge').className = 'turn-indicator turn-enemy';
+        document.getElementById('turn-badge').innerText = '相手の番';
+        document.getElementById('yaku-display').innerText = '';
+        document.getElementById('res-enemy').innerText = '...';
+
+        let enRolls = 3;
+        let finalHand = null;
+
+        while (enRolls > 0) {
+            const dices = [document.getElementById('dice1'), document.getElementById('dice2'), document.getElementById('dice3')];
+            dices.forEach(d => d.classList.add('rolling'));
+            await new Promise(r => setTimeout(r, 800));
+
+            const res = [
+                Math.floor(Math.random() * 6) + 1,
+                Math.floor(Math.random() * 6) + 1,
+                Math.floor(Math.random() * 6) + 1
+            ];
+            dices.forEach((d, i) => {
+                d.classList.remove('rolling');
+                d.setAttribute('data-val', res[i]);
+            });
+
+            const hand = checkYaku(res);
+            enRolls--;
+
+            if (hand.type !== 'menashi' || enRolls === 0) {
+                finalHand = hand;
+                document.getElementById('yaku-display').innerText = hand.name;
+                document.getElementById('res-enemy').innerText = hand.name;
+                break;
+            }
+            document.getElementById('yaku-display').innerText = "目なし...";
+            await new Promise(r => setTimeout(r, 1000));
+        }
+
+        enemyHand = finalHand;
+        setTimeout(showResult, 1000);
+    }
+
+    function showResult() {
+        gameState = 'result';
+        document.getElementById('turn-badge').className = 'turn-indicator turn-wait';
+        document.getElementById('turn-badge').innerText = '決着';
+
+        const userName = document.getElementById('user-select').value;
+        const msg = document.getElementById('yaku-display');
+        
+        const myStr = playerHand.strength;
+        const enStr = enemyHand.strength;
+
+        if (myStr > enStr) {
+            let multiplier = playerHand.payout;
+            if (enemyHand.type === 'hifumi') multiplier *= 2;
+
+            const winAmount = currentBet * multiplier;
+            addDonguri(userName, winAmount);
+            
+            msg.innerHTML = `YOU WIN !! (+${winAmount}🌰)`;
+            msg.style.color = "#00e676";
+        } else if (myStr < enStr) {
+            let multiplier = enemyHand.payout;
+            if (playerHand.type === 'hifumi') multiplier *= 2;
+
+            const loseAmount = currentBet * multiplier;
+            const current = getUserDonguri(userName);
+            const actualLoss = Math.min(loseAmount, current);
+            
+            spendDonguri(userName, actualLoss);
+
+            msg.innerHTML = `YOU LOSE ... (-${actualLoss}🌰)`;
+            msg.style.color = "#ff1744";
+        } else {
+            msg.innerText = "DRAW (返金)";
+            msg.style.color = "#aaa";
+        }
+
+        updateInfo();
+        document.getElementById('next-phase').style.display = 'block';
+    }
+
+    function resetGame() {
+        document.getElementById('bet-phase').style.display = 'block';
+        document.getElementById('roll-phase').style.display = 'none';
+        document.getElementById('next-phase').style.display = 'none';
+        
+        document.getElementById('yaku-display').innerText = "";
+        document.getElementById('res-you').innerText = "-";
+        document.getElementById('res-enemy').innerText = "-";
+        document.getElementById('turn-badge').innerText = "待機中";
+        
+        document.getElementById('roll-btn').disabled = false;
+        document.getElementById('roll-btn').innerText = "サイコロを振る";
+        document.getElementById('bet-amount').value = "";
+    }
+
+    function checkYaku(d) {
+        const s = [...d].sort((a,b) => a-b);
+        if (s[0]===1 && s[1]===1 && s[2]===1) {
+            return { type:'pinzoro', name:'ピンゾロ!!', strength:100, payout:5 };
+        }
+        if (s[0]===s[1] && s[1]===s[2]) {
+            return { type:'arashi', name:`${s[0]}のアラシ`, strength:50+s[0], payout:3 };
+        }
+        if (s[0]===1 && s[1]===2 && s[2]===3) {
+            return { type:'hifumi', name:'ヒフミ...', strength:-1, payout:1 };
+        }
+        if (s[0]===4 && s[1]===5 && s[2]===6) {
+            return { type:'shigoro', name:'シゴロ!!', strength:40, payout:2 };
+        }
+        if (s[0]===s[1]) {
+            return { type:'normal', name:`${s[2]}の目`, strength:s[2], payout:1 };
+        }
+        if (s[1]===s[2]) {
+            return { type:'normal', name:`${s[0]}の目`, strength:s[0], payout:1 };
+        }
+        return { type:'menashi', name:'目なし', strength:0, payout:1 };
+    }
+</script>
+
+</body>
+</html>

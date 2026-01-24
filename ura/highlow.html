@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIGH CARD BATTLE | ぱぱんべガス</title>
+    <script src="../ranking.js"></script>
+    <style>
+        /* ▼▼▼ ぱぱんべガス共通デザイン ▼▼▼ */
+        body {
+            font-family: 'Arial Black', 'Impact', sans-serif;
+            background: linear-gradient(135deg, #2c003e, #51007a, #000046);
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            touch-action: manipulation;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 5px), radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 3px);
+            background-size: 550px 550px, 350px 350px; background-position: 0 0, 40px 60px;
+            opacity: 0.3; z-index: -1;
+        }
+
+        .container {
+            width: 90%; max-width: 500px; margin: 20px auto;
+            border: 3px solid #ffd700; padding: 30px 20px; border-radius: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            box-shadow: 0 0 15px #ffd700, 0 0 30px rgba(255, 215, 0, 0.5), inset 0 0 30px rgba(255, 0, 100, 0.3);
+        }
+
+        h1 { 
+            color: #ffd700; font-size: 28px; margin-bottom: 10px; letter-spacing: 2px;
+            text-shadow: 2px 2px 0 #b8860b, 0 0 10px #ffd700, 0 0 20px #ff00de;
+        }
+
+        /* バトルエリア */
+        .battle-area {
+            display: flex; justify-content: center; align-items: center; gap: 15px; margin: 20px 0;
+        }
+        
+        .card-box {
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .card-label {
+            font-size: 14px; color: #aaa; margin-bottom: 5px; font-weight: normal;
+        }
+        .card-label.you { color: #00e5ff; text-shadow: 0 0 5px #00e5ff; }
+        .card-label.enemy { color: #ff5252; text-shadow: 0 0 5px #ff5252; }
+
+        .card {
+            width: 100px; height: 140px;
+            background: white; color: black; border-radius: 12px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 60px; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); position: relative;
+            border: 4px solid #fff; transition: transform 0.3s;
+        }
+        .card.winner {
+            transform: scale(1.1); box-shadow: 0 0 20px #ffd700; border-color: #ffd700; z-index: 10;
+        }
+        .card.loser {
+            opacity: 0.6; transform: scale(0.9); filter: grayscale(100%);
+        }
+
+        .card.hidden {
+            background: repeating-linear-gradient(45deg, #1a237e, #1a237e 10px, #304ffe 10px, #304ffe 20px);
+            color: #fff; border-color: #fff;
+        }
+        .card.enemy-hidden {
+            background: repeating-linear-gradient(45deg, #b71c1c, #b71c1c 10px, #d32f2f 10px, #d32f2f 20px);
+        }
+
+        .vs-text {
+            font-size: 40px; font-weight: bold; font-style: italic;
+            color: #ffd700; text-shadow: 0 0 10px #ff00de;
+        }
+
+        /* ベット入力 */
+        .bet-area {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px; border-radius: 15px; margin-bottom: 25px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+        input {
+            background: rgba(0,0,0,0.5); border: 2px solid #ffd700;
+            color: #ffd700; padding: 10px; font-size: 24px; font-weight: bold;
+            width: 120px; text-align: right; border-radius: 8px;
+        }
+        input:focus { outline: none; box-shadow: 0 0 10px #ffd700; }
+
+        /* バトルボタン */
+        .battle-btn {
+            width: 100%; padding: 20px; font-size: 28px; font-weight: bold;
+            border: none; border-radius: 50px; cursor: pointer; color: #000;
+            background: linear-gradient(to bottom, #ffd700, #ffa000);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            transition: 0.1s; text-transform: uppercase;
+        }
+        .battle-btn:active { transform: translateY(4px); box-shadow: none; }
+        .battle-btn:disabled {
+            background: #555; color: #888; cursor: not-allowed; box-shadow: none;
+        }
+
+        /* メッセージ */
+        #message {
+            min-height: 40px; font-weight: bold; margin: 15px 0; font-size: 20px;
+            color: #fff; text-shadow: 0 0 5px #000; display: flex; align-items: center; justify-content: center;
+        }
+
+        .back-link {
+            margin-top: 40px; color: #00e5ff; text-decoration: none; font-size: 14px;
+            font-weight: bold; text-shadow: 0 0 5px rgba(0, 229, 255, 0.5); transition: 0.3s;
+        }
+        .back-link:hover { color: #fff; text-shadow: 0 0 10px #00e5ff; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🃏 HIGH CARD BATTLE 🃏</h1>
+    <p style="color:#ccc; font-size:12px; margin-top:-5px;">大きい数字を出したほうが勝ち！ (Aは最強)</p>
+    
+    <select id="user-select" onchange="updateInfo()" style="padding: 8px; margin-bottom: 15px; background:rgba(0,0,0,0.5); color:white; border:1px solid #ffd700; border-radius:5px; font-size:16px;">
+        <option value="">(プレイヤーを選択)</option>
+    </select>
+
+    <div style="text-align:right; font-size:16px; font-weight:bold;">
+        所持: 🌰 <span id="my-donguri" style="color:#ffd700;">0</span>
+    </div>
+
+    <div class="battle-area">
+        <div class="card-box">
+            <div class="card-label you">YOU</div>
+            <div id="card-you" class="card hidden">?</div>
+        </div>
+        
+        <div class="vs-text">VS</div>
+        
+        <div class="card-box">
+            <div class="card-label enemy">ENEMY</div>
+            <div id="card-enemy" class="card enemy-hidden">?</div>
+        </div>
+    </div>
+    
+    <div id="message">ベットして勝負！</div>
+
+    <div class="bet-area">
+        <span style="font-size:18px;">BET:</span>
+        <input type="number" id="bet-amount" placeholder="0"> 🌰
+    </div>
+
+    <button id="battle-btn" class="battle-btn" onclick="startBattle()" disabled>BATTLE !</button>
+</div>
+
+<a href="secret_home.html" class="back-link">◀ ぱぱんべガス ロビーへ戻る</a>
+
+<script>
+    // 数字の強さ定義 (1(A) > 13(K) > 12 > ... > 2)
+    function getStrength(num) {
+        if (num === 1) return 14; // Aは最強
+        return num;
+    }
+
+    function cardDisplay(num) {
+        if(num === 1) return 'A';
+        if(num === 11) return 'J';
+        if(num === 12) return 'Q';
+        if(num === 13) return 'K';
+        return num;
+    }
+
+    window.onload = function() {
+        const users = getUserNames();
+        const select = document.getElementById('user-select');
+        users.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u;
+            opt.innerText = u;
+            select.appendChild(opt);
+        });
+    };
+
+    function updateInfo() {
+        const userName = document.getElementById('user-select').value;
+        const btn = document.getElementById('battle-btn');
+        
+        if (!userName) {
+            document.getElementById('my-donguri').innerText = 0;
+            btn.disabled = true;
+            return;
+        }
+        
+        document.getElementById('my-donguri').innerText = getUserDonguri(userName);
+        btn.disabled = false;
+        
+        // リセット
+        resetCards();
+    }
+
+    function resetCards() {
+        const myCard = document.getElementById('card-you');
+        const enCard = document.getElementById('card-enemy');
+        myCard.className = 'card hidden';
+        myCard.innerText = '?';
+        enCard.className = 'card enemy-hidden';
+        enCard.innerText = '?';
+        document.getElementById('message').innerText = "ベットして勝負！";
+        document.getElementById('message').style.color = "#fff";
+    }
+
+    function startBattle() {
+        const userName = document.getElementById('user-select').value;
+        const betInput = document.getElementById('bet-amount');
+        let bet = parseInt(betInput.value);
+        const currentDonguri = getUserDonguri(userName);
+
+        // バリデーション
+        if (!userName || isNaN(bet) || bet <= 0) {
+            alert("賭けるどんぐりを入力しろ...");
+            return;
+        }
+        if (bet > currentDonguri) {
+            alert("どんぐりが足りないようだ...");
+            return;
+        }
+
+        // まず賭け金を徴収
+        spendDonguri(userName, bet);
+        updateInfo();
+
+        // 抽選 (1~13)
+        const myNum = Math.floor(Math.random() * 13) + 1;
+        const enNum = Math.floor(Math.random() * 13) + 1;
+
+        // オープン演出
+        const myCardEl = document.getElementById('card-you');
+        const enCardEl = document.getElementById('card-enemy');
+        const msg = document.getElementById('message');
+
+        myCardEl.className = 'card';
+        myCardEl.innerText = cardDisplay(myNum);
+        
+        enCardEl.className = 'card';
+        enCardEl.innerText = cardDisplay(enNum);
+
+        // 勝敗判定 (A > K > Q ... > 2)
+        const myStr = getStrength(myNum);
+        const enStr = getStrength(enNum);
+
+        if (myStr > enStr) {
+            // 勝ち
+            const reward = bet * 2;
+            addDonguri(userName, reward);
+            msg.innerHTML = `YOU WIN !! <br><span style="color:#00e676; font-size:16px;">(+${reward} 🌰)</span>`;
+            msg.style.color = "#ffd700";
+            myCardEl.classList.add('winner');
+            enCardEl.classList.add('loser');
+        } else if (myStr < enStr) {
+            // 負け
+            msg.innerText = "YOU LOSE...";
+            msg.style.color = "#ff1744";
+            myCardEl.classList.add('loser');
+            enCardEl.classList.add('winner');
+        } else {
+            // 引き分け (賭け金返還)
+            addDonguri(userName, bet);
+            msg.innerText = "DRAW (返金)";
+            msg.style.color = "#aaa";
+        }
+        
+        // どんぐり表示更新
+        document.getElementById('my-donguri').innerText = getUserDonguri(userName);
+    }
+</script>
+
+</body>
+</html>
