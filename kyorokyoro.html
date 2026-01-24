@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>どこにきえた？動体視力ゲーム</title>
+    <script src="ranking.js"></script>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
@@ -159,6 +160,10 @@
 
         <a href="index.html" class="back-btn" id="giveup-btn">🏠 やめる</a>
         <div id="result-area" style="display:none;">
+            <button onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; showPointGetDialog(5)" 
+    style="padding:10px 20px; font-size:16px; background:#4CAF50; color:white; border:none; border-radius:30px; font-weight:bold; cursor:pointer; margin-top:10px; box-shadow: 0 4px #2e7d32;">
+    🎁 5ポイントをもらう
+</button>
              <button class="retry-btn" onclick="startGame()">もういっかい</button>
              <br><a href="index.html" class="back-btn">🏠 もどる</a>
         </div>

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>おとあてクイズ</title>
+    <script src="ranking.js"></script>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
@@ -188,6 +189,10 @@
         <p style="font-size:24px; font-weight:bold; color:#e91e63;">
             <span id="score-display">0</span> / 10 もん
         </p>
+        <button onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; showPointGetDialog(30)" 
+    style="padding:15px 30px; font-size:18px; background:#ff9800; color:white; border:none; border-radius:30px; font-weight:bold; cursor:pointer; margin-top:10px; box-shadow: 0 4px #e65100;">
+    🎁 30ポイントをもらう
+</button>
         <button class="level-btn" onclick="location.reload()">もういっかい</button>
         <br>
         <a href="index.html" class="back-btn">🏠 ホームへ</a>
