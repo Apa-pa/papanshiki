@@ -160,11 +160,11 @@
 
         <a href="index.html" class="back-btn" id="giveup-btn">🏠 やめる</a>
         <div id="result-area" style="display:none;">
-            <button onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; showPointGetDialog(5)" 
-    style="padding:10px 20px; font-size:16px; background:#4CAF50; color:white; border:none; border-radius:30px; font-weight:bold; cursor:pointer; margin-top:10px; box-shadow: 0 4px #2e7d32;">
-    🎁 5ポイントをもらう
-</button>
-             <button class="retry-btn" onclick="startGame()">もういっかい</button>
+            <button id="reward-btn" onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; showPointGetDialog(5)" 
+                style="padding:10px 20px; font-size:16px; background:#4CAF50; color:white; border:none; border-radius:30px; font-weight:bold; cursor:pointer; margin-top:10px; box-shadow: 0 4px #2e7d32;">
+                🎁 5ポイントをもらう
+            </button>
+            <button class="retry-btn" onclick="startGame()">もういっかい</button>
              <br><a href="index.html" class="back-btn">🏠 もどる</a>
         </div>
     </div>
@@ -202,6 +202,15 @@
         document.getElementById('giveup-btn').style.display = 'inline-block';
         document.getElementById('result-area').style.display = 'none';
         boxes.forEach(b => b.className = 'box'); // 箱の色を戻す
+
+        // ▼▼▼ 追加: ポイントボタンを復活させる ▼▼▼
+        const rewardBtn = document.getElementById('reward-btn');
+        if (rewardBtn) {
+            rewardBtn.disabled = false;
+            rewardBtn.innerText = '🎁 5ポイントをもらう';
+            rewardBtn.style.background = '#4CAF50';
+        }
+        // ▲▲▲ ここまで ▲▲▲
 
         // キャラをランダムに決定
         mover.textContent = chars[Math.floor(Math.random() * chars.length)];

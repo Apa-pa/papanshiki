@@ -40,6 +40,11 @@
             background-color: #c8e6c9;
             display: block;
             z-index: 0;
+            /* ▼▼▼ 修正：タッチ操作によるズーム・スクロールを無効化 ▼▼▼ */
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            /* ▲▲▲ ここまで ▲▲▲ */
         }
 
         /* ヘッダー */
@@ -58,6 +63,7 @@
             justify-content: space-around;
             z-index: 10;
             box-sizing: border-box;
+            pointer-events: none; /* UIの下のレールも触れるように */
         }
 
         /* スピードボタン */
@@ -379,7 +385,9 @@
         return all.find(t => t.c[0] == req[0] && t.c[1] == req[1] && t.c[2] == req[2] && t.c[3] == req[3]);
     }
 
+    // ▼▼▼ 修正：ブラウザのデフォルト動作（スクロール/ズーム）を防ぐ ▼▼▼
     canvas.addEventListener('pointerdown', (e) => {
+        e.preventDefault(); // ここでブロック！
         if(!isPlaying) return;
         const rect = canvas.getBoundingClientRect();
         const clickX = e.clientX - rect.left - offsetX;
@@ -391,6 +399,7 @@
             rotateTile(c, r);
         }
     });
+    // ▲▲▲ ここまで ▲▲▲
 
     function rotateTile(c, r) {
         const cell = grid[r][c];
@@ -607,15 +616,8 @@
         ctx.fillRect(cartSize/2 - wheelSize + 2, cartSize/2 - wheelSize, wheelSize, wheelSize);
 
         // --- 3. 画像(player.png)を重ねる ---
-        // 箱の上に乗っているように見せるため、少し上(-cartSize/2付近)に描画
-        // 画像サイズはマスの8割
         const imgSize = tileSize * 0.8;
-        
-        // 画像の下端が、箱の上端より少し重なるくらいの位置
-        // drawImage(image, x, y, width, height)
-        // 中心座標(0,0)からの相対位置
         const imgY = -cartSize/2 - imgSize/2 + (tileSize * 0.1); 
-        
         ctx.drawImage(playerImg, -imgSize/2, imgY, imgSize, imgSize);
         
         ctx.restore();

@@ -272,6 +272,13 @@
             <p>あといくつで10になる？くりあがりのきほん！</p>
         </a>
 
+        <a href="dungeon.html" class="card" data-age="6,7,8,9,10">
+        <span class="label label-quiz">RPG</span>
+        <div class="icon">🗡️</div>
+        <h3>計算ダンジョン</h3>
+        <p>もんだいを解いてモンスターをたおそう！どこまで進めるかな？</p>
+        </a>
+
         <a href="flash_anzan.html" class="card" data-age="6,7,8,9,10,11,12">
             <span class="label label-quiz">クイズ</span>
             <div class="icon">🧮</div>
@@ -291,6 +298,13 @@
             <div class="icon">🕒</div>
             <h3>とけいの読み方</h3>
             <p>いまなんじ？とけいをみて正しいじかんをえらぼう！</p>
+        </a>
+
+        <a href="water.html" class="card" data-age="8,9,10,11,12">
+            <span class="label label-quiz">パズル</span>
+            <div class="icon">💧</div>
+            <h3>分数少数水槽パズル</h3>
+            <p>コップの水を入れて目盛りをあわせよう。「分数」と「小数」の変換を体感！</p>
         </a>
 
         <a href="triangle.html" class="card" data-age="8,9,10,11,12">
@@ -481,7 +495,7 @@
             <span class="label label-quiz">たいけん</span>
             <div class="icon">💱</div>
             <h3>ぱぱん銀行（ぎんこう）</h3>
-            <p>べんきょうでためたポイントをどんぐりとこうかん！かわせ体験！（なにやらひみつがあるらしい）</p>
+            <p>べんきょうでためたポイントをどんぐりとこうかん！為替を学べる！ひみつがあるらしい・・</p>
         </a>
     
         <a href="stock.html" class="card" data-age="9,10,11,12">
@@ -489,6 +503,13 @@
             <div class="icon">💴</div>
             <h3>ぱぱん証券（しょうけん）</h3>
             <p>ポイントやどんぐりをつかって株をかうことができるよ！ためておくよりおトクかも！</p>
+        </a>
+
+        <a href="interest.html" class="card" data-age="9,10,11,12">
+        <span class="label label-quiz">シミュ</span>
+        <div class="icon">💰</div>
+        <h3>単利と複利（ふくり）</h3>
+        <p>雪だるま式に増えるってどういうこと？グラフで違いを見てみよう！</p>
         </a>
 
     </div>
@@ -555,7 +576,7 @@
 <section style="margin-top: 60px; padding: 20px; background-color: #f0f9ff; border-radius: 10px;">
     
     <h2 style="color: #333; border-bottom: 2px solid #88cdf6; padding-bottom: 10px;">
-        📝 コラム
+        📝 コラム <span style="font-size: 16px; color: #555; font-weight: normal;">（パパとママにおしえてね）</span>
     </h2>
     <p style="font-size: 0.9em; color: #666;">
         学習に役立つ情報や、家族で遊べる製品、サイトの紹介をしています。
@@ -610,10 +631,6 @@
     
     cards.forEach(card => {
       const targetAges = card.getAttribute('data-age');
-      
-      // プリント教材などはdata-ageがない場合があるので、その場合はallの時だけ表示
-      // または、data-ageがないものは常に表示したい場合はロジックを調整します
-      // 今回は「data-ageがあるもの」を対象にフィルタリングします
       
       if (age === 'all') {
         card.style.display = 'flex';

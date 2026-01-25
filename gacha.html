@@ -41,10 +41,10 @@
         }
         .point-box { font-size: 24px; color: #e65100; }
 
-        /* ガチャマシン */
+        /* ガチャマシンエリア */
         .machine-area {
             position: relative;
-            height: 300px;
+            height: 350px; /* 画像に合わせて少し高くしました */
             background: #e1bee7;
             border-radius: 20px;
             margin-bottom: 20px;
@@ -55,7 +55,15 @@
             border: 4px solid #ba68c8;
         }
 
-        .machine-img { font-size: 150px; line-height: 1; z-index: 2; transition: transform 0.1s; }
+        /* ▼▼▼ 画像用のスタイルに変更 ▼▼▼ */
+        .machine-img { 
+            height: 90%;      /* 枠の高さの90%に合わせる */
+            width: auto;      /* 横幅は自動調整（比率を保つ） */
+            object-fit: contain; 
+            z-index: 2; 
+            transition: transform 0.1s; 
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2));
+        }
         
         /* ガチャを回すボタン */
         .spin-btn {
@@ -70,7 +78,7 @@
             font-weight: bold;
             font-family: inherit;
             position: relative;
-            top: -20px; /* マシンの下にかぶせる */
+            top: -30px; /* マシンの下にかぶせる */
             z-index: 10;
         }
         .spin-btn:active { transform: translateY(4px); box-shadow: 0 2px #880e4f; }
@@ -144,7 +152,7 @@
             cursor: pointer; font-weight: bold;
         }
 
-        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(5deg); } 75% { transform: rotate(-5deg); } 100% { transform: rotate(0deg); } }
+        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(2deg); } 75% { transform: rotate(-2deg); } 100% { transform: rotate(0deg); } }
         @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-20px); } }
@@ -169,8 +177,8 @@
     </div>
 
     <div class="machine-area">
-        <div id="machine-body" class="machine-img">🔮</div>
-    </div>
+        <img id="machine-body" class="machine-img" src="gacha_machine.png" alt="ガチャマシン">
+        </div>
 
     <button id="spin-btn" class="spin-btn" onclick="spinGacha()" disabled>
         まわす (50pt)
@@ -200,7 +208,7 @@
 </div>
 
 <script>
-    // ガチャの中身リスト（提供割合などは簡易的に均等または重み付け可能）
+    // ガチャの中身リスト
     const gachaItems = [
         { id: 'hi-an', name: 'ヒー＆アン', img: 'hi-an-192.png', rarity: '★★★' },
         { id: 'hi-an-s', name: '水彩ヒー＆アン', img: 'hi-an-suisai-192.png', rarity: '★★★★★' }, // レア！

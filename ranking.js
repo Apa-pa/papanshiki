@@ -18,7 +18,8 @@ const GAME_LIST = {
     'touch25':        { name: '1から25までタッチ',  type: 'time',  unit: '秒' },
     'tsumitsumi':     { name: '漢字つみつみ',       type: 'score', unit: 'こ' },
     'eawase':         { name: 'えあわせ',           type: 'time',  unit: '秒' },
-    'shopping':       { name: 'ぴったりしはらい',         type: 'time',  unit: '秒' }
+    'shopping':       { name: 'ぴったりしはらい',         type: 'time',  unit: '秒' },
+    'water':          { name: '水槽パズル',         type: 'time',  unit: '秒' }
 };
 
 // --- 株の銘柄定義 ---

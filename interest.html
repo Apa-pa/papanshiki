@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>単利と複利のシミュレーター | ぱぱん式</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background-color: #e0f2f1; /* お金っぽい薄緑 */
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            color: #004d40;
+            touch-action: manipulation;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 { margin: 0 0 20px 0; color: #00897b; font-size: 28px; }
+        h2 { font-size: 20px; margin-top: 30px; color: #00695c; border-bottom: 2px solid #b2dfdb; padding-bottom: 5px; display: inline-block;}
+
+        /* 解説エリア */
+        .explanation-grid {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .card {
+            flex: 1;
+            min-width: 280px;
+            background: #f1f8e9;
+            padding: 15px;
+            border-radius: 15px;
+            border: 2px solid #c5e1a5;
+            text-align: left;
+        }
+        .card-title {
+            font-weight: bold; font-size: 18px; color: #33691e; margin-bottom: 10px; text-align: center;
+        }
+        .card p { font-size: 14px; line-height: 1.6; margin: 0; }
+        .keyword { font-weight: bold; color: #e65100; }
+
+        /* シミュレーターエリア */
+        .simulator-box {
+            background: #e0f7fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 2px solid #80deea;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        label { font-weight: bold; }
+        
+        input[type="number"] {
+            font-size: 18px; padding: 8px; border-radius: 8px;
+            border: 2px solid #00acc1; width: 120px; text-align: right;
+            font-family: inherit;
+        }
+
+        .range-wrap {
+            width: 100%; max-width: 400px; margin: 0 auto 10px;
+        }
+        input[type="range"] { width: 100%; cursor: pointer; }
+
+        /* グラフ表示エリア */
+        .graph-area {
+            margin-top: 50px;
+            position: relative;
+            height: 300px;
+            border-left: 2px solid #555;
+            border-bottom: 2px solid #555;
+            display: flex;
+            justify-content: space-around;
+            padding-bottom: 0;
+        }
+
+        .bar-group {
+            width: 30%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            position: relative;
+        }
+
+        /* 棒グラフ全体枠 */
+        .bar-wrapper {
+            width: 100%;
+            border-radius: 5px 5px 0 0;
+            transition: height 0.5s ease-out;
+            min-height: 2px;
+            display: flex;
+            flex-direction: column-reverse; /* 下から積み上げ */
+            overflow: hidden; /* 角丸のため */
+        }
+
+        /* 棒グラフの中身（元本・利益） */
+        .part-principal {
+            width: 100%;
+            background: #a5d6a7; /* 元本の色（緑） */
+            border-top: 1px solid rgba(255,255,255,0.5);
+            transition: height 0.5s ease-out;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 12px; color: #1b5e20;
+        }
+        
+        .part-interest {
+            width: 100%;
+            transition: height 0.5s ease-out;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 12px; color: rgba(0,0,0,0.6);
+        }
+        
+        .simple-interest { background: #90a4ae; } /* 単利の利益（グレー青） */
+        .compound-interest { background: #ffca28; box-shadow: 0 0 15px rgba(255, 202, 40, 0.4); } /* 複利の利益（オレンジ） */
+
+        .bar-label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 16px;
+            width: 200%;
+            text-align: center;
+        }
+
+        .bar-name {
+            margin-top: 10px; font-weight: bold; height: 20px;
+        }
+
+        /* 結果テキスト */
+        .result-text {
+            font-size: 18px; margin-top: 20px; font-weight: bold;
+        }
+        .diff { color: #e65100; font-size: 22px; }
+
+        /* コラムエリア */
+        .column-box {
+            margin-top: 40px;
+            background: #fff3e0;
+            border: 2px dashed #ffb74d;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: left;
+        }
+        .column-title {
+            font-weight: bold; color: #ef6c00; font-size: 18px; margin-bottom: 10px;
+        }
+        .column-content {
+            font-size: 15px; line-height: 1.8;
+        }
+
+        .back-link { display: inline-block; margin-top: 40px; color: #00897b; text-decoration: underline; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>💰 単利と複利（たんりとふくり）</h1>
+
+    <div class="explanation-grid">
+        <div class="card">
+            <div class="card-title">😐 単利（たんり）とは？</div>
+            <p>
+                さいしょに預けたお金（元本）にだけ、利子がつきます。<br>
+                元本はずっと変わらないので、増え方は一定です。<br>
+                <span style="color:#1b5e20; font-weight:bold;">■ 緑色の部分</span> ＝ 元本<br>
+                <span style="color:#546e7a; font-weight:bold;">■ 青色の部分</span> ＝ 増えた分
+            </p>
+        </div>
+        <div class="card" style="background:#fff8e1; border-color:#ffe082;">
+            <div class="card-title">🤩 複利（ふくり）とは？</div>
+            <p>
+                増えたお金も合体して、さらに利子を生みます。<br>
+                「お金が子どもを産んで、その子どもも子どもを産む」イメージです。<br>
+                <span style="color:#f57f17; font-weight:bold;">■ 黄色の部分</span> がどんどん育ちます！
+            </p>
+        </div>
+    </div>
+
+    <h2>📈 シミュレーター</h2>
+    <p>数字を変えて、どれくらい差が出るか見てみよう！<br>(追加投資なし・税金は考えない)</p>
+
+    <div class="simulator-box">
+        <div class="input-group">
+            <label>さいしょのお金：</label>
+            <input type="number" id="principal" value="1000000" step="10000" oninput="calc()"> 円
+        </div>
+
+        <div class="input-group">
+            <label>利回り（％）：</label>
+            <input type="number" id="rate" value="5" step="0.1" min="0.1" max="20" oninput="updateRange('rate', this.value); calc()"> %
+        </div>
+        <div class="range-wrap">
+            <input type="range" id="rate-range" min="0.1" max="20" step="0.1" value="5" oninput="updateInput('rate', this.value); calc()">
+        </div>
+
+        <div class="input-group">
+            <label>期間（年）：</label>
+            <input type="number" id="years" value="20" min="1" max="50" oninput="updateRange('years', this.value); calc()"> 年
+        </div>
+        <div class="range-wrap">
+            <input type="range" id="years-range" min="1" max="50" step="1" value="20" oninput="updateInput('years', this.value); calc()">
+        </div>
+
+        <div class="graph-area" id="graph-area">
+            <div class="bar-group">
+                <div class="bar-label" id="val-simple">0円</div>
+                <div class="bar-wrapper" id="bar-simple-wrapper" style="height: 50%;">
+                    <div class="part-interest simple-interest" id="part-simple-interest">利子</div>
+                    <div class="part-principal" id="part-simple-principal">元本</div>
+                </div>
+                <div class="bar-name">単利</div>
+            </div>
+
+            <div class="bar-group">
+                <div class="bar-label" id="val-compound" style="color:#e65100;">0円</div>
+                <div class="bar-wrapper" id="bar-compound-wrapper" style="height: 80%;">
+                    <div class="part-interest compound-interest" id="part-compound-interest">利子</div>
+                    <div class="part-principal" id="part-compound-principal">元本</div>
+                </div>
+                <div class="bar-name" style="color:#e65100;">複利</div>
+            </div>
+        </div>
+
+        <div class="result-text">
+            差額（さがく）： <span id="val-diff" class="diff">0</span> 円
+            <div style="font-size:14px; font-weight:normal; margin-top:5px;">
+                複利のほうが、こんなにおトク！
+            </div>
+        </div>
+    </div>
+
+    <div class="column-box">
+        <div class="column-title">💡 ぱぱん証券のヒミツ</div>
+        <div class="column-content">
+            <p>
+                現実の世界では年に数%の利回りだけど、<strong>ぱぱん証券</strong>の株は一日に1回配当（はいとう）がもらえるよ！
+            </p>
+            <p>
+                たとえば、<strong>500ポイント</strong>で「毎日配当3%」の株を１つ買っておくと、<br>
+                100日で <strong style="color:#e65100; font-size:1.2em;">1,500ポイント</strong> も配当がもらえるんだよ。
+                <br><span style="font-size:0.9em; color:#666;">（※もらったポイントを使わずに貯めた場合）</span>
+            </p>
+            <p>
+                もし、その増えたポイントで<strong>「また株を買ったら」</strong>・・・？<br>
+                それが<strong>複利（ふくり）の力</strong>で、雪だるま式にどんどん増えていくんだよ！
+            </p>
+            <p>
+                実はこれ、高校生のお兄さん・お姉さんが習うことなんだよ。それを今知ってるキミはすごい！
+            </p>
+        </div>
+    </div>
+
+    <a href="index.html" class="back-link">🏠 ホームへもどる</a>
+</div>
+
+<script>
+    function updateInput(id, val) {
+        document.getElementById(id).value = val;
+    }
+    function updateRange(id, val) {
+        document.getElementById(id + '-range').value = val;
+    }
+
+    function calc() {
+        const principal = parseFloat(document.getElementById('principal').value);
+        const rate = parseFloat(document.getElementById('rate').value) / 100;
+        const years = parseFloat(document.getElementById('years').value);
+
+        if (isNaN(principal) || isNaN(rate) || isNaN(years)) return;
+
+        // 計算
+        // 単利: 元本 * (1 + 年利 * 年数)
+        const simpleTotal = Math.floor(principal * (1 + rate * years));
+        
+        // 複利: 元本 * (1 + 年利)^年数
+        const compoundTotal = Math.floor(principal * Math.pow((1 + rate), years));
+
+        const diff = compoundTotal - simpleTotal;
+
+        // 表示更新
+        document.getElementById('val-simple').innerText = simpleTotal.toLocaleString();
+        document.getElementById('val-compound').innerText = compoundTotal.toLocaleString();
+        document.getElementById('val-diff').innerText = diff.toLocaleString();
+
+        // グラフの高さ計算
+        // compoundTotalを基準(90%)にして高さを決める
+        let maxVal = compoundTotal;
+        if (maxVal === 0) maxVal = 1;
+
+        const hSimpleTotal = Math.max((simpleTotal / maxVal) * 90, 2); 
+        const hCompoundTotal = Math.max((compoundTotal / maxVal) * 90, 2);
+
+        document.getElementById('bar-simple-wrapper').style.height = hSimpleTotal + '%';
+        document.getElementById('bar-compound-wrapper').style.height = hCompoundTotal + '%';
+
+        // 内部の比率計算（元本 vs 利益）
+        // 単利バーの中身
+        const simpleInterestVal = simpleTotal - principal;
+        const simplePrincipalRate = (principal / simpleTotal) * 100;
+        const simpleInterestRate = (simpleInterestVal / simpleTotal) * 100;
+        
+        document.getElementById('part-simple-principal').style.height = simplePrincipalRate + '%';
+        document.getElementById('part-simple-interest').style.height = simpleInterestRate + '%';
+        
+        // 複利バーの中身
+        const compoundInterestVal = compoundTotal - principal;
+        const compoundPrincipalRate = (principal / compoundTotal) * 100;
+        const compoundInterestRate = (compoundInterestVal / compoundTotal) * 100;
+
+        document.getElementById('part-compound-principal').style.height = compoundPrincipalRate + '%';
+        document.getElementById('part-compound-interest').style.height = compoundInterestRate + '%';
+
+        // 文字を入れるかどうかの調整（狭すぎると文字がはみ出るので消す）
+        const hideTextThreshold = 10; // 10%以下なら文字消す
+        document.getElementById('part-simple-interest').innerText = simpleInterestRate > hideTextThreshold ? '利子' : '';
+        document.getElementById('part-compound-interest').innerText = compoundInterestRate > hideTextThreshold ? '利子' : '';
+    }
+
+    // 初期表示
+    window.onload = calc;
+</script>
+
+</body>
+</html>

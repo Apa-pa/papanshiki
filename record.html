@@ -56,6 +56,28 @@
             min-width: 200px;
         }
 
+        /* おまかせボタンエリア */
+        .auto-set-area {
+            margin: 10px 0 20px 0;
+        }
+        .auto-btn {
+            background: #29b6f6;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px #0288d1;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .auto-btn:active { transform: translateY(2px); box-shadow: none; }
+        .auto-btn:hover { background: #03a9f4; }
+
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         
         th { 
@@ -93,6 +115,7 @@
             color: #555;
             -webkit-appearance: none; /* iOSでの見た目調整 */
         }
+        
         .goal-input:focus {
             border-color: #2196f3;
             outline: none;
@@ -128,28 +151,6 @@
             content: '🎉 ';
         }
         
-        /* リセットボタン */
-        .reset-area {
-            margin-top: 40px;
-            border-top: 1px dashed #ddd;
-            padding-top: 20px;
-            text-align: right;
-        }
-        .reset-btn {
-            background: #eceff1;
-            color: #90a4ae;
-            border: 1px solid #cfd8dc;
-            padding: 8px 15px;
-            border-radius: 5px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-        .reset-btn:hover {
-            background: #ffebee;
-            color: #ef5350;
-            border-color: #ef5350;
-        }
-
         .back-link { 
             display: inline-block; 
             margin-top: 30px; 
@@ -181,6 +182,12 @@
                 <span id="total-points">0</span> pt
             </div>
 
+            <div class="auto-set-area">
+                <button class="auto-btn" onclick="autoSetGoals()">
+                    🤖 目標を「おまかせ」で設定する
+                </button>
+            </div>
+
             <table>
                 <thead>
                     <tr>
@@ -192,10 +199,6 @@
                 <tbody id="score-list">
                     </tbody>
             </table>
-
-            <div class="reset-area">
-                <button class="reset-btn" onclick="resetPointsClick()">🗑️ ポイントをリセットする</button>
-            </div>
         </div>
         
         <div id="empty-msg" class="empty-msg">
@@ -207,6 +210,41 @@
     <a href="index.html" class="back-link">🏠 ホームへもどる</a>
 
     <script>
+        // ゲームごとのデフォルト目標値（初心者向け）
+        const DEFAULT_GOALS = {
+            'sansuu': 50,      // 2分
+            'rain': 200,         // 50点
+            'make10': 50,      // 2分
+            'flash_anzan': 50,  // 50点
+            '99': 100,          // 1分40秒くらい
+            'whattime': 120,
+            'triangle': 120,
+            'bunsho': 100,
+            'katakana': 60,
+            '1gradekanji': 100,
+            'alphabet': 90,
+            'alphabet_read': 60,
+            'romaji_quiz': 60,
+            'rain_romaji': 100,
+            'rain_vowel': 100,
+            '100home': 100,
+            'memory': 60,       // 1分
+            'flash': 50,
+            'numbers': 60,      // 1分
+            'youji': 60,
+            'kyorokyoro': 50,
+            'search_count': 100,
+            'count30': 50,      // 勝ち点?
+            'tsumitsumi': 50,
+            'rail': 100,
+            'detective': 100,
+            'color_lab': 50,
+            'pitch': 50,
+            'rhythm': 50,
+            'shopping': 90,     // 1分
+            'water': 90         // 1分
+        };
+
         window.onload = function() {
             if(typeof getUserNames !== 'function') {
                 alert('ranking.js が正しく読み込まれていません');
@@ -246,7 +284,7 @@
             const userRecords = allRecords[userName] || {};
             const userGoals = allGoals[userName] || {};
 
-            // ポイントを表示するだけ
+            // ポイント表示
             pointDisplay.innerText = getUserPoints(userName);
 
             // リスト表示
@@ -273,7 +311,6 @@
 
                 const displayVal = (recordVal !== undefined) ? `${recordVal} <span style="font-size:14px">${info.unit}</span>` : '<span style="color:#ddd; font-size:14px;">-</span>';
 
-                // ▼▼▼ 修正箇所：OKボタンとEnterキー対応 ▼▼▼
                 const inputId = `goal-${gameId}`;
                 tr.innerHTML = `
                     <td class="game-name">${info.name}</td>
@@ -295,37 +332,77 @@
             }
         }
 
-        // 目標が変更されたら保存する
         function updateGoal(userName, gameId, value) {
-            // 安全装置：ranking.jsが古い場合の対策
-            if(typeof saveGoal !== 'function') {
-                alert('エラー：ranking.jsが古いため保存できません。\nranking.jsを最新にしてください。');
-                return;
-            }
-
+            if(typeof saveGoal !== 'function') return;
             saveGoal(userName, gameId, value);
-            showRecords(); // 再描画
+            showRecords(); 
         }
 
-        // ポイントリセット処理
-        function resetPointsClick() {
+        // ▼▼▼ おまかせ設定ロジック ▼▼▼
+        function autoSetGoals() {
             const userName = document.getElementById('user-select').value;
             if(!userName) return;
 
-            const isConfirmed = confirm(
-                `${userName}さんの ポイントを 0 にリセットします。\n` +
-                `（ゲームのきろくは 消えません）\n\n` +
-                `ほんとうに よろしいですか？`
-            );
+            const confirmMsg = "目標を「おまかせ」で設定しますか？\n\n・達成したものは、ベスト記録より1%高く\n・未達成のものはそのまま\n・記録がないものは標準レベルに\n\n設定されます。";
+            if(!confirm(confirmMsg)) return;
 
-            if (isConfirmed) {
-                if(typeof resetUserPoints === 'function') {
-                    resetUserPoints(userName);
-                    showRecords(); 
-                    alert(`${userName}さんの ポイントを リセットしました。`);
-                } else {
-                    alert("エラー：ranking.jsが更新されていません");
+            const userRecords = getAllRecords()[userName] || {};
+            const userGoals = getAllGoals()[userName] || {};
+            let isChanged = false;
+
+            for (const [gameId, info] of Object.entries(GAME_LIST)) {
+                const record = parseFloat(userRecords[gameId]);
+                const goal = parseFloat(userGoals[gameId]);
+                const hasRecord = !isNaN(record);
+                const hasGoal = !isNaN(goal);
+
+                let newGoal = null;
+
+                // 1. 達成済み判定（または記録あるのに目標がない場合）
+                let isAchieved = false;
+                if (hasRecord) {
+                    if (!hasGoal) {
+                        isAchieved = true; // 目標がないなら達成扱い（ベスト基準で設定する）
+                    } else {
+                        if (info.type === 'score' && record >= goal) isAchieved = true;
+                        if (info.type === 'time' && record <= goal) isAchieved = true;
+                    }
                 }
+
+                // ロジック分岐
+                if (isAchieved) {
+                    // ★ 1%だけ高く設定（単位未満は繰り上げ）
+                    if (info.type === 'score') {
+                        // スコア：1%増やす
+                        let increase = record * 0.01;
+                        if (increase < 1) increase = 1; // 最小1点は上げる
+                        newGoal = Math.ceil(record + increase); 
+                    } else {
+                        // タイム：1%減らす（速くする）
+                        let decrease = record * 0.01;
+                        if (decrease < 0.1) decrease = 0.1; // 最小0.1秒は速くする
+                        newGoal = parseFloat((record - decrease).toFixed(1));
+                        if (newGoal < 0) newGoal = 0;
+                    }
+
+                } else if (!hasRecord && !hasGoal) {
+                    // ★ 記録も目標もない → デフォルト設定
+                    newGoal = DEFAULT_GOALS[gameId] || (info.type === 'time' ? 60 : 50);
+                }
+                // ※ 未達成の場合は何もしない（今の目標を維持）
+
+                // 保存
+                if (newGoal !== null) {
+                    saveGoal(userName, gameId, newGoal);
+                    isChanged = true;
+                }
+            }
+
+            if (isChanged) {
+                showRecords();
+                alert("目標を設定しました！\nがんばって記録更新を目指してね！");
+            } else {
+                alert("変更が必要な目標はありませんでした。\n今の目標に向かってがんばろう！");
             }
         }
     </script>
