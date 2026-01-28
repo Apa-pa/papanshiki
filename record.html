@@ -151,16 +151,30 @@
             content: '🎉 ';
         }
         
-        .back-link { 
+        /* ボタン共通スタイル */
+        .nav-link { 
             display: inline-block; 
-            margin-top: 30px; 
-            padding: 15px 40px;
-            background: #78909c;
+            margin: 10px 5px; 
+            padding: 15px 30px;
             color: white;
             text-decoration: none;
             border-radius: 30px;
             font-weight: bold;
+            transition: transform 0.1s;
         }
+        .nav-link:active { transform: translateY(2px); box-shadow: none; }
+
+        .back-link { 
+            background: #78909c;
+            box-shadow: 0 4px #546e7a;
+        }
+
+        /* 追加：全国ランキングボタン */
+        .ranking-link {
+            background: #e91e63;
+            box-shadow: 0 4px #c2185b;
+        }
+
         .empty-msg { color: #aaa; margin-top: 20px; }
     </style>
 </head>
@@ -207,7 +221,10 @@
     </div>
 
     <br>
-    <a href="index.html" class="back-link">🏠 ホームへもどる</a>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+        <a href="open_record.html" class="nav-link ranking-link">🌏 ぜんこくランキングをみる</a>
+        <a href="index.html" class="nav-link back-link">🏠 ホームへもどる</a>
+    </div>
 
     <script>
         // ゲームごとのデフォルト目標値（初心者向け）
