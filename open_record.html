@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ぜんこくランキング - ぱぱん式</title>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        h1 { color: #1976d2; font-size: 24px; }
+        .game-select {
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: 2px solid #bbdefb;
+            width: 100%;
+        }
+        .ranking-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .ranking-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            font-size: 18px;
+        }
+        .ranking-item:nth-child(1) { background-color: #fff9c4; font-weight: bold; } /* 1位は金色っぽく */
+        .rank { width: 40px; font-size: 20px; }
+        .name { flex-grow: 1; text-align: left; margin-left: 10px; }
+        .score { color: #e91e63; font-weight: bold; }
+        
+        .loading { padding: 20px; color: #888; }
+        .back-btn {
+            margin-top: 20px;
+            display: inline-block;
+            padding: 10px 20px;
+            background: #90a4ae;
+            color: white;
+            text-decoration: none;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🏆 ぜんこくランキング</h1>
+    
+    <select id="game-selector" class="game-select" onchange="loadRanking()">
+        <option value="touch25">1から25までタッチ</option>
+        </select>
+
+    <div id="ranking-container">
+        <div class="loading">データを よみこみ中...</div>
+    </div>
+
+    <a href="index.html" class="back-btn">🏠 もどる</a>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+    import { getFirestore, collection, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+    // Firebase設定 (firebase-ranking.jsと同じものを使用)
+     const firebaseConfig = {
+    apiKey: "AIzaSyCYHfZ5ya_HuhutF6eI5vtbXugYb4zKC9g",
+    authDomain: "papan-shiki.firebaseapp.com",
+    projectId: "papan-shiki",
+    storageBucket: "papan-shiki.firebasestorage.app",
+    messagingSenderId: "157576103115",
+    appId: "1:157576103115:web:1278e7167cbb60ee71c74e"
+  };
+
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ランキング読み込み関数
+    async function loadRanking() {
+        const gameId = document.getElementById('game-selector').value;
+        const container = document.getElementById('ranking-container');
+        container.innerHTML = '<div class="loading">データを よみこみ中...</div>';
+
+        try {
+            // クエリの作成 (gameIdで絞り込み、scoreの昇順(Timeなら早い順)で上位10件)
+            // ※スコア形式のゲームなら 'desc' に変える必要があります
+            const q = query(
+                collection(db, "world_rankings"),
+                where("gameId", "==", gameId),
+                orderBy("score", "asc"), 
+                limit(10)
+            );
+
+            const querySnapshot = await getDocs(q);
+            let html = '<ul class="ranking-list">';
+            let rank = 1;
+
+            if (querySnapshot.empty) {
+                html += '<li class="loading">まだ きろくが ありません。</li>';
+            } else {
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+                    html += `
+                        <li class="ranking-item">
+                            <span class="rank">${medal}</span>
+                            <span class="name">${data.name}</span>
+                            <span class="score">${data.score} <small>秒</small></span>
+                        </li>
+                    `;
+                    rank++;
+                });
+            }
+            html += '</ul>';
+            container.innerHTML = html;
+
+        } catch (e) {
+            console.error("読み込みエラー: ", e);
+            container.innerHTML = '<div class="loading" style="color:red;">エラーが おきました。</div>';
+        }
+    }
+
+    // 初回読み込み
+    window.loadRanking = loadRanking;
+    loadRanking();
+</script>
+
+</body>
+</html>

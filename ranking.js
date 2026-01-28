@@ -1,4 +1,4 @@
-/* ranking.js - 記録・目標・ポイント・スタンプ・どんぐり・株 管理 */
+/* ranking.js - 記録・目標・ポイント・スタンプ・どんぐり・株 管理 (全国ランキングUI改善版) */
 
 const GAME_LIST = {
     'make10':         { name: 'あわせて10',         type: 'time',  unit: '秒' },
@@ -18,42 +18,16 @@ const GAME_LIST = {
     'touch25':        { name: '1から25までタッチ',  type: 'time',  unit: '秒' },
     'tsumitsumi':     { name: '漢字つみつみ',       type: 'score', unit: 'こ' },
     'eawase':         { name: 'えあわせ',           type: 'time',  unit: '秒' },
-    'shopping':       { name: 'ぴったりしはらい',         type: 'time',  unit: '秒' },
+    'shopping':       { name: 'ぴったりしはらい',   type: 'time',  unit: '秒' },
     'water':          { name: '水槽パズル',         type: 'time',  unit: '秒' }
 };
 
-// --- 株の銘柄定義 ---
 const STOCK_MASTER = {
-    'motor': { 
-        name: 'ぱぱん自動車', 
-        currency: 'point', 
-        initPrice: 500, 
-        volatility: 0.02, 
-        dividendRate: 0.01, 
-        bias: 0.002, 
-        desc: 'あんぜん運転で 人気の会社' 
-    },
-    'food':  { 
-        name: 'どんぐり食品', 
-        currency: 'point', 
-        initPrice: 500, 
-        volatility: 0.05, 
-        dividendRate: 0.03, 
-        bias: 0.0, 
-        desc: '配当(はいとう)が 多いよ' 
-    },
-    'tech':  { 
-        name: 'ギャラクシーIT', 
-        currency: 'donguri', 
-        initPrice: 10, 
-        volatility: 0.20, 
-        dividendRate: 0.0, 
-        bias: 0.0, 
-        desc: 'あがったり さがったり' 
-    }
+    'motor': { name: 'ぱぱん自動車', currency: 'point', initPrice: 500, volatility: 0.02, dividendRate: 0.01, bias: 0.002, desc: 'あんぜん運転で 人気の会社' },
+    'food':  { name: 'どんぐり食品', currency: 'point', initPrice: 500, volatility: 0.05, dividendRate: 0.03, bias: 0.0, desc: '配当(はいとう)が 多いよ' },
+    'tech':  { name: 'ギャラクシーIT', currency: 'donguri', initPrice: 10, volatility: 0.20, dividendRate: 0.0, bias: 0.0, desc: 'あがったり さがったり' }
 };
 
-// 保存キー定義
 const STORAGE_KEY = 'papan_records_v1';
 const GOAL_KEY = 'papan_goals_v1';
 const POINT_KEY = 'papan_points_v1';
@@ -65,7 +39,6 @@ const STOCK_KEY = 'papan_stocks_v1';
 const MARKET_KEY = 'papan_market_v3'; 
 
 // --- データ取得・保存系 ---
-
 function getAllRecords() { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
 function getAllGoals() { return JSON.parse(localStorage.getItem(GOAL_KEY) || '{}'); }
 function saveGoal(userName, gameId, value) {
@@ -82,9 +55,7 @@ function getUserNames() {
     const s = getAllStamps();
     const d = JSON.parse(localStorage.getItem(DONGURI_KEY) || '{}');
     const st = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
-    const names = new Set([
-        ...Object.keys(r), ...Object.keys(p), ...Object.keys(s), ...Object.keys(d), ...Object.keys(st)
-    ]);
+    const names = new Set([...Object.keys(r), ...Object.keys(p), ...Object.keys(s), ...Object.keys(d), ...Object.keys(st)]);
     return Array.from(names);
 }
 
@@ -132,8 +103,7 @@ function spendDonguri(userName, amount) {
     return false;
 }
 
-// --- 株・市場関連 ---
-
+// --- 市場関連・日付計算 ---
 function getMarketData() {
     let market = JSON.parse(localStorage.getItem(MARKET_KEY));
     if (!market) {
@@ -143,64 +113,12 @@ function getMarketData() {
             initialPrices[key] = STOCK_MASTER[key].initPrice;
             initialLastPrices[key] = STOCK_MASTER[key].initPrice;
         }
-        market = {
-            prices: initialPrices,
-            lastPrices: initialLastPrices,
-            news: "ぱぱん証券、本日オープン！",
-            trend: { 'motor': 0, 'food': 0, 'tech': 0 },
-            lastUpdate: ""
-        };
+        market = { prices: initialPrices, lastPrices: initialLastPrices, news: "ぱぱん証券、本日オープン！", trend: { 'motor': 0, 'food': 0, 'tech': 0 }, lastUpdate: "" };
         localStorage.setItem(MARKET_KEY, JSON.stringify(market));
     }
     return market;
 }
 
-function getUserStocks(userName) {
-    const allStocks = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
-    return allStocks[userName] || { 'motor': 0, 'food': 0, 'tech': 0 };
-}
-
-function buyStock(userName, stockId, amount) {
-    const market = getMarketData();
-    const currentPrice = market.prices[stockId];
-    const cost = Math.floor(currentPrice * amount);
-    const stockInfo = STOCK_MASTER[stockId];
-    
-    if (stockInfo.currency === 'point') {
-        if (!spendPoints(userName, cost)) return false;
-    } else {
-        if (!spendDonguri(userName, cost)) return false;
-    }
-
-    const allStocks = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
-    if (!allStocks[userName]) allStocks[userName] = { 'motor': 0, 'food': 0, 'tech': 0 };
-    
-    allStocks[userName][stockId] = (allStocks[userName][stockId] || 0) + amount;
-    localStorage.setItem(STOCK_KEY, JSON.stringify(allStocks));
-    return true;
-}
-
-function sellStock(userName, stockId, amount) {
-    const allStocks = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
-    if (!allStocks[userName] || (allStocks[userName][stockId] || 0) < amount) return false;
-
-    const market = getMarketData();
-    const currentPrice = market.prices[stockId];
-    const gain = Math.floor(currentPrice * amount);
-    const stockInfo = STOCK_MASTER[stockId];
-
-    allStocks[userName][stockId] -= amount;
-    localStorage.setItem(STOCK_KEY, JSON.stringify(allStocks));
-
-    if (stockInfo.currency === 'point') {
-        addPoints(userName, gain);
-    } else {
-        addDonguri(userName, gain);
-    }
-    return true;
-}
-
-// ▼▼▼ 日付差分計算（新機能） ▼▼▼
 function getDaysDiff(dateStr1, dateStr2) {
     const d1 = new Date(dateStr1);
     const d2 = new Date(dateStr2);
@@ -212,136 +130,59 @@ function getDaysDiff(dateStr1, dateStr2) {
 function checkAndAdvanceDate() {
     const today = getTodayString();
     const market = getMarketData();
-
     if (market.lastUpdate !== today) {
-        let daysElapsed = 0;
-        
-        if (market.lastUpdate) {
-            // 前回の更新があれば、何日空いたか計算
-            daysElapsed = getDaysDiff(market.lastUpdate, today);
-            // ※もし日付がおかしい（未来から戻った等）場合は1日とする
-            if (daysElapsed < 1) daysElapsed = 1;
-        } else {
-            // 初回起動時は配当なし
-            daysElapsed = 0;
-        }
-        
+        let daysElapsed = market.lastUpdate ? getDaysDiff(market.lastUpdate, today) : 0;
+        if (daysElapsed < 0) daysElapsed = 1;
         return updateMarketDay(today, daysElapsed);
     }
     return null; 
 }
 
-// updateMarketDay に「経過日数 (daysElapsed)」を渡すように変更
 function updateMarketDay(todayStr, daysElapsed) {
     const market = getMarketData();
     market.lastPrices = { ...market.prices };
-
     const eventRoll = Math.random();
-    let newsText = "";
-    
-    if (eventRoll < 0.1) {
-        newsText = "【特報】新型エンジンが大発明！自動車株が急上昇！";
-        market.trend['motor'] = 0.1; 
-    } else if (eventRoll < 0.2) {
-        newsText = "【悲報】どんぐりが不作... 食品株に影響か";
-        market.trend['food'] = -0.1;
-    } else if (eventRoll < 0.3) {
-        newsText = "【IT】次世代ゲーム機が大コケ。IT株が暴落の危機";
-        market.trend['tech'] = -0.3; 
-    } else if (eventRoll < 0.4) {
-        newsText = "【IT】AIがすごい発明！IT株に買い注文殺到！";
-        market.trend['tech'] = 0.4; 
-    } else {
-        newsText = "本日は穏やかな市場です。";
-        market.trend = { 'motor': 0, 'food': 0, 'tech': 0 };
-    }
-    market.news = newsText;
+    if (eventRoll < 0.1) { market.news = "【特報】新型エンジンが大発明！自動車株が急上昇！"; market.trend['motor'] = 0.1; }
+    else if (eventRoll < 0.2) { market.news = "【悲報】どんぐりが不作... 食品株に影響か"; market.trend['food'] = -0.1; }
+    else if (eventRoll < 0.3) { market.news = "【IT】次世代ゲーム機が大コケ。IT株が暴落の危機"; market.trend['tech'] = -0.3; }
+    else if (eventRoll < 0.4) { market.news = "【IT】AIがすごい発明！IT株に買い注文殺到！"; market.trend['tech'] = 0.4; }
+    else { market.news = "本日は穏やかな市場です。"; market.trend = { 'motor': 0, 'food': 0, 'tech': 0 }; }
     market.lastUpdate = todayStr;
-
     for (let id in STOCK_MASTER) {
-        const info = STOCK_MASTER[id];
-        let volatility = info.volatility;
-        let trend = market.trend[id] || 0;
-        let bias = info.bias || 0; 
-
-        let changeRate = trend + bias + ((Math.random() * volatility * 2) - volatility);
-        
+        let changeRate = (market.trend[id] || 0) + (STOCK_MASTER[id].bias || 0) + ((Math.random() * STOCK_MASTER[id].volatility * 2) - STOCK_MASTER[id].volatility);
         let newPrice = Math.floor(market.prices[id] * (1 + changeRate));
-        if (newPrice < 1) newPrice = 1;
-        market.prices[id] = newPrice;
+        market.prices[id] = newPrice < 1 ? 1 : newPrice;
     }
-
     localStorage.setItem(MARKET_KEY, JSON.stringify(market));
-    
-    // 経過日数が1日以上なら、その分まとめて配当を配る
-    if (daysElapsed > 0) {
-        return distributeDividends(daysElapsed);
-    } else {
-        return [];
-    }
+    return daysElapsed > 0 ? distributeDividends(daysElapsed) : [];
 }
 
-// 配当配布（日数倍する）
 function distributeDividends(days) {
     const market = getMarketData();
     const allStocks = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
     let report = [];
-
     for (let user in allStocks) {
-        let totalP = 0;
-        let totalD = 0;
-        const stocks = allStocks[user];
-        for (let id in stocks) {
-            const count = stocks[id];
+        let totalP = 0, totalD = 0;
+        for (let id in allStocks[user]) {
+            const count = allStocks[user][id];
             if (count > 0) {
                 const info = STOCK_MASTER[id];
-                const currentPrice = market.prices[id];
-                // 配当 = 現在価格 * 株数 * 配当率 * 日数
-                const divAmount = Math.floor(currentPrice * count * info.dividendRate * days);
-                
-                if (divAmount > 0) {
-                    if (info.currency === 'point') totalP += divAmount;
-                    else totalD += divAmount;
-                }
+                const div = Math.floor(market.prices[id] * count * info.dividendRate * days);
+                if (div > 0) info.currency === 'point' ? totalP += div : totalD += div;
             }
         }
         if (totalP > 0 || totalD > 0) {
-            if(totalP > 0) addPoints(user, totalP);
-            if(totalD > 0) addDonguri(user, totalD);
-            
-            let msg = `${user}さんに 配当(はいとう): ${totalP}pt / ${totalD}🌰`;
-            if (days > 1) msg += ` (${days}日分!)`;
-            report.push(msg);
+            addPoints(user, totalP); addDonguri(user, totalD);
+            report.push(`${user}さんに 配当: ${totalP}pt / ${totalD}🌰${days > 1 ? ` (${days}日分!)` : ''}`);
         }
     }
     return report;
 }
-// ▲▲▲ ここまで修正 ▲▲▲
 
-
-// --- 以下、既存の共通関数 ---
-
-function getCollection(userName) {
-    const data = JSON.parse(localStorage.getItem(COLLECTION_KEY) || '{}');
-    return data[userName] || [];
-}
-function addToCollection(userName, itemId) {
-    const data = JSON.parse(localStorage.getItem(COLLECTION_KEY) || '{}');
-    if (!data[userName]) data[userName] = [];
-    if (!data[userName].includes(itemId)) {
-        data[userName].push(itemId);
-        localStorage.setItem(COLLECTION_KEY, JSON.stringify(data));
-        return true; 
-    }
-    return false;
-}
-
+// --- スタンプ・レコード ---
 function getTodayString() {
     const d = new Date();
-    const y = d.getFullYear();
-    const m = ('0' + (d.getMonth() + 1)).slice(-2);
-    const day = ('0' + d.getDate()).slice(-2);
-    return `${y}-${m}-${day}`;
+    return `${d.getFullYear()}-${('0' + (d.getMonth() + 1)).slice(-2)}-${('0' + d.getDate()).slice(-2)}`;
 }
 function setStamp(userName, dateStr, imageName) {
     const allStamps = getAllStamps();
@@ -349,207 +190,142 @@ function setStamp(userName, dateStr, imageName) {
     allStamps[userName][dateStr] = imageName; 
     localStorage.setItem(STAMP_KEY, JSON.stringify(allStamps));
 }
-function removeStamp(userName, dateStr) {
-    const allStamps = getAllStamps();
-    if (allStamps[userName] && allStamps[userName][dateStr]) {
-        delete allStamps[userName][dateStr];
-        localStorage.setItem(STAMP_KEY, JSON.stringify(allStamps));
-    }
-}
 function toggleStamp(userName, dateStr, forceAdd = false) {
     const allStamps = getAllStamps();
     const current = allStamps[userName] ? allStamps[userName][dateStr] : null;
-    const defaultStamp = 'hi-an-192.png';
-
-    if (forceAdd) {
-        if (!current) setStamp(userName, dateStr, defaultStamp);
-    } else {
-        if (current) removeStamp(userName, dateStr);
-        else setStamp(userName, dateStr, defaultStamp);
-    }
+    if (forceAdd || !current) setStamp(userName, dateStr, 'hi-an-192.png');
+    else { delete allStamps[userName][dateStr]; localStorage.setItem(STAMP_KEY, JSON.stringify(allStamps)); }
 }
+
 function saveRecord(userName, gameId, value) {
     const records = getAllRecords();
     if (!records[userName]) records[userName] = {};
     const currentBest = records[userName][gameId];
-    const gameType = GAME_LIST[gameId] ? GAME_LIST[gameId].type : 'score';
-    let isNewRecord = false;
-    if (currentBest === undefined) {
-        isNewRecord = true;
-    } else {
-        if (gameType === 'score') {
-            if (parseFloat(value) > parseFloat(currentBest)) isNewRecord = true;
-        } else {
-            if (parseFloat(value) < parseFloat(currentBest)) isNewRecord = true;
-        }
-    }
-    if (isNewRecord) {
-        records[userName][gameId] = value;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-        return true; 
-    }
-    return false;
+    const gameType = GAME_LIST[gameId]?.type || 'score';
+    let isNew = currentBest === undefined || (gameType === 'score' ? parseFloat(value) > parseFloat(currentBest) : parseFloat(value) < parseFloat(currentBest));
+    if (isNew) { records[userName][gameId] = value; localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); }
+    return isNew;
 }
+
 function checkAndAwardPoints(userName, gameId, currentRecord) {
     const goals = getAllGoals();
-    const userGoal = goals[userName] ? goals[userName][gameId] : null;
-    if (userGoal === null || userGoal === undefined || userGoal === "") return false;
+    const userGoal = goals[userName]?.[gameId];
+    if (!userGoal) return false;
     const allPoints = JSON.parse(localStorage.getItem(POINT_KEY) || '{}');
     const allHistory = JSON.parse(localStorage.getItem(REWARDED_KEY) || '{}');
-    if (!allPoints[userName]) allPoints[userName] = 0;
-    if (!allHistory[userName]) allHistory[userName] = {};
-    const recordVal = parseFloat(currentRecord);
-    const goalVal = parseFloat(userGoal);
     const info = GAME_LIST[gameId];
-    if (isNaN(recordVal) || isNaN(goalVal) || !info) return false;
-    let isAchieved = false;
-    if (info.type === 'score') {
-        if (recordVal >= goalVal) isAchieved = true;
-    } else {
-        if (recordVal <= goalVal) isAchieved = true;
-    }
-    if (!isAchieved) return false;
-    const lastRewardedGoal = allHistory[userName][gameId];
-    if (lastRewardedGoal !== goalVal) {
-        allPoints[userName] += 100;
-        allHistory[userName][gameId] = goalVal;
+    let isAchieved = info.type === 'score' ? parseFloat(currentRecord) >= parseFloat(userGoal) : parseFloat(currentRecord) <= parseFloat(userGoal);
+    if (isAchieved && allHistory[userName]?.[gameId] !== parseFloat(userGoal)) {
+        allPoints[userName] = (allPoints[userName] || 0) + 100;
+        if (!allHistory[userName]) allHistory[userName] = {};
+        allHistory[userName][gameId] = parseFloat(userGoal);
         localStorage.setItem(POINT_KEY, JSON.stringify(allPoints));
         localStorage.setItem(REWARDED_KEY, JSON.stringify(allHistory));
-        return true; 
+        return true;
     }
     return false;
 }
-function resetUserPoints(userName) {
-    const allPoints = JSON.parse(localStorage.getItem(POINT_KEY) || '{}');
-    if (allPoints[userName]) {
-        allPoints[userName] = 0;
-        localStorage.setItem(POINT_KEY, JSON.stringify(allPoints));
-    }
-    const allHistory = JSON.parse(localStorage.getItem(REWARDED_KEY) || '{}');
-    if (allHistory[userName]) {
-        allHistory[userName] = {};
-        localStorage.setItem(REWARDED_KEY, JSON.stringify(allHistory));
-    }
-}
+
+// ★★★ セーブダイアログ (UI改善＆空欄送信防止版) ★★★
 function showSaveDialog(gameId, resultValue) {
     const old = document.getElementById('ranking-overlay');
     if(old) old.remove();
+    
     const gameInfo = GAME_LIST[gameId] || { name: 'このゲーム', unit: '' };
     const users = getUserNames();
+    const isGlobalRankingEnabled = (typeof window.uploadToWorldRanking === 'function');
+
     let usersHtml = '';
     if (users.length > 0) {
-        usersHtml += '<p style="margin:10px 0; font-size:14px; color:#ccc;">きろくする人を選んでね</p>';
+        usersHtml += '<p style="margin:10px 0; font-size:14px; color:#666;">きろくする人を選んでね</p>';
         users.forEach(u => {
             usersHtml += `<button onclick="Ranking.selectUser('${u}')" style="margin:5px; padding:12px 20px; font-size:18px; cursor:pointer; background:#4CAF50; color:white; border:none; border-radius:30px; font-weight:bold;">${u}</button>`;
         });
     }
+
     const overlay = document.createElement('div');
     overlay.id = 'ranking-overlay';
-    overlay.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.85); z-index: 99999;
-        display: flex; flex-direction: column; justify-content: center; align-items: center;
-        color: white; font-family: sans-serif; text-align: center;
-    `;
+    overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: sans-serif; text-align: center;`;
+    
+    const globalNameHtml = isGlobalRankingEnabled ? `
+        <div style="background:#e3f2fd; border-radius:10px; padding:10px; margin: 15px 0; border: 1px solid #bbdefb;">
+            <p style="margin:0 0 5px 0; font-size:14px; color:#1976d2; font-weight:bold;">🌏 ランキングに のせる？</p>
+            <input type="text" id="public-username" maxlength="6" placeholder="みんなにみえるなまえ（6文字まで）" style="padding:8px; font-size:14px; width:90%; border:2px solid #90caf9; border-radius:5px; text-align:center;">
+            <p style="margin:5px 0 0 0; font-size:11px; color:#666;">※かかないと 自分だけのきろくになるよ</p>
+        </div>
+    ` : '';
+
     overlay.innerHTML = `
         <div style="background:white; color:#333; padding:25px; border-radius:20px; width:90%; max-width:400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
             <h2 style="margin:0 0 10px 0; color:#555; font-size:20px;">${gameInfo.name}</h2>
-            <div style="background:#fce4ec; border-radius:10px; padding:15px; margin-bottom:20px;">
+            <div style="background:#fce4ec; border-radius:10px; padding:15px; margin-bottom:15px;">
                 <div style="font-size:14px; color:#880e4f;">今回のきろく</div>
-                <div style="font-size:36px; font-weight:bold; color:#e91e63;">
-                    ${resultValue} <span style="font-size:16px;">${gameInfo.unit}</span>
-                </div>
+                <div style="font-size:36px; font-weight:bold; color:#e91e63;">${resultValue} <span style="font-size:16px;">${gameInfo.unit}</span></div>
             </div>
+            ${globalNameHtml}
             <div id="user-list" style="margin-bottom:20px;">${usersHtml}</div>
-            <div style="border-top:2px dashed #eee; padding-top:20px; margin-top:10px;">
+            <div style="border-top:2px dashed #eee; padding-top:20px;">
                 <p style="margin:0 0 10px 0; font-size:14px; font-weight:bold;">あたらしく 登録する</p>
                 <div style="display:flex; justify-content:center; gap:5px;">
                     <input type="text" id="new-username" placeholder="おなまえ" style="padding:10px; font-size:16px; width:60%; border:2px solid #ddd; border-radius:5px;">
                     <button onclick="Ranking.registerNew()" style="padding:10px 20px; font-size:16px; background:#2196F3; color:white; border:none; border-radius:5px; font-weight:bold;">OK</button>
                 </div>
             </div>
-            <button onclick="document.getElementById('ranking-overlay').remove()" style="margin-top:25px; background:none; border:none; color:#999; text-decoration:underline; cursor:pointer;">保存しないで とじる</button>
+            <button onclick="document.getElementById('ranking-overlay').remove()" style="margin-top:25px; background:none; border:none; color:#999; text-decoration:underline; cursor:pointer;">とじる</button>
         </div>
     `;
     document.body.appendChild(overlay);
+
     window.Ranking = {
-        selectUser: (name) => {
-            addPoints(name, 30);
-            const isNew = saveRecord(name, gameId, resultValue);
-            const earnedPoints = checkAndAwardPoints(name, gameId, resultValue);
-            if(typeof toggleStamp === 'function') toggleStamp(name, getTodayString(), true);
+        selectUser: (localName) => {
+            // ローカル保存
+            addPoints(localName, 30);
+            const isNew = saveRecord(localName, gameId, resultValue);
+            const earnedPoints = checkAndAwardPoints(localName, gameId, resultValue);
+            if(typeof toggleStamp === 'function') toggleStamp(localName, getTodayString(), true);
+            
+            // 全国ランキング送信 (空欄なら送らない)
+            let sentToRanking = false;
+            if (isGlobalRankingEnabled) {
+                const publicInput = document.getElementById('public-username').value.trim();
+                if (publicInput !== "") {
+                    window.uploadToWorldRanking(gameId, localName, resultValue, publicInput);
+                    sentToRanking = true;
+                }
+            }
+
             document.getElementById('ranking-overlay').remove();
             setTimeout(() => {
-                let msg = `${name}さんの記録として保存しました。\n\n💰 参加賞 30ポイント GET!`;
-                if (isNew) msg = `すごい！ ${name}さんの\nじこベスト更新！🎉\n\n💰 参加賞 30ポイント GET!`;
-                if (earnedPoints) msg += `\n\n🎁 目標クリア！\nさらに 100ポイント ゲット！！\n(合計 130ポイント)`;
+                let msg = `${localName}さんの記録として保存しました。\n💰 参加賞 30ポイント GET!`;
+                if (isNew) msg = `すごい！ ${localName}さんの\nじこベスト更新！🎉\n💰 参加賞 30ポイント GET!`;
+                if (earnedPoints) msg += `\n🎁 目標クリア！さらに 100ポイント！`;
+                
+                if (sentToRanking) {
+                    msg += `\n🌏 全国ランキングに 送信したよ！`;
+                } else if (isGlobalRankingEnabled) {
+                    msg += `\n🔒 ランキングには 送らなかったよ（ひみつ）`;
+                }
+
                 alert(msg);
             }, 100);
         },
         registerNew: () => {
             const name = document.getElementById('new-username').value.trim();
-            if(!name) { alert("なまえを入れてね"); return; }
+            if(!name) return;
             Ranking.selectUser(name);
         }
     };
 }
+
 function showPointGetDialog(amount) {
     const old = document.getElementById('ranking-overlay');
     if(old) old.remove();
     const users = getUserNames();
-    let usersHtml = '';
-    if (users.length > 0) {
-        usersHtml += '<p style="margin:10px 0; font-size:14px; color:#ccc;">だれが ポイントをもらう？</p>';
-        users.forEach(u => {
-            usersHtml += `<button onclick="RankingPoint.selectUser('${u}', ${amount})" style="margin:5px; padding:12px 20px; font-size:18px; cursor:pointer; background:#ff9800; color:white; border:none; border-radius:30px; font-weight:bold;">${u}</button>`;
-        });
-    } else {
-        usersHtml = '<p style="color:#aaa;">まだ ユーザーがいません</p>';
-    }
+    let usersHtml = users.length > 0 ? users.map(u => `<button onclick="RankingPoint.selectUser('${u}', ${amount})" style="margin:5px; padding:12px 20px; font-size:18px; cursor:pointer; background:#ff9800; color:white; border:none; border-radius:30px; font-weight:bold;">${u}</button>`).join('') : '<p style="color:#aaa;">まだ ユーザーがいません</p>';
     const overlay = document.createElement('div');
     overlay.id = 'ranking-overlay';
-    overlay.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.85); z-index: 99999;
-        display: flex; flex-direction: column; justify-content: center; align-items: center;
-        color: white; font-family: sans-serif; text-align: center;
-    `;
-    overlay.innerHTML = `
-        <div style="background:white; color:#333; padding:25px; border-radius:20px; width:90%; max-width:400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
-            <div style="font-size:60px; margin-bottom:10px;">🎁</div>
-            <h2 style="margin:0 0 10px 0; color:#e65100; font-size:24px;">クリアおめでとう！</h2>
-            <div style="background:#fff3e0; border-radius:10px; padding:15px; margin-bottom:20px;">
-                <div style="font-size:14px; color:#ef6c00;">ごほうび</div>
-                <div style="font-size:36px; font-weight:bold; color:#d84315;">
-                    ${amount} <span style="font-size:16px;">ポイント</span>
-                </div>
-            </div>
-            <div id="user-list" style="margin-bottom:10px;">${usersHtml}</div>
-            <div style="border-top:2px dashed #eee; padding-top:20px; margin-top:10px;">
-                <p style="margin:0 0 10px 0; font-size:14px; font-weight:bold;">あたらしく 登録してGET</p>
-                <div style="display:flex; justify-content:center; gap:5px;">
-                    <input type="text" id="point-new-user" placeholder="おなまえ" style="padding:10px; font-size:16px; width:60%; border:2px solid #ddd; border-radius:5px;">
-                    <button onclick="RankingPoint.registerNew(${amount})" style="padding:10px 20px; font-size:16px; background:#2196F3; color:white; border:none; border-radius:5px; font-weight:bold;">OK</button>
-                </div>
-            </div>
-            <button onclick="document.getElementById('ranking-overlay').remove()" style="margin-top:20px; background:none; border:none; color:#999; text-decoration:underline; cursor:pointer;">とじる</button>
-        </div>
-        <style>@keyframes popIn { from {transform:scale(0.8); opacity:0;} to {transform:scale(1); opacity:1;} }</style>
-    `;
+    overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: sans-serif; text-align: center;`;
+    overlay.innerHTML = `<div style="background:white; color:#333; padding:25px; border-radius:20px; width:90%; max-width:400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);"><h2>🎁 クリアおめでとう！</h2><div style="background:#fff3e0; border-radius:10px; padding:15px; margin-bottom:20px;"><div>ごほうび</div><div style="font-size:36px; font-weight:bold;">${amount} ポイント</div></div>${usersHtml}<button onclick="document.getElementById('ranking-overlay').remove()" style="margin-top:20px; background:none; border:none; color:#999; text-decoration:underline; cursor:pointer;">とじる</button></div>`;
     document.body.appendChild(overlay);
-    window.RankingPoint = {
-        selectUser: (name, pts) => {
-            const total = addPoints(name, pts);
-            if(typeof toggleStamp === 'function') toggleStamp(name, getTodayString(), true);
-            document.getElementById('ranking-overlay').remove();
-            setTimeout(() => {
-                alert(`${name}さんに ${pts}ポイント！\n(ごうけい: ${total}ポイント)`);
-            }, 100);
-        },
-        registerNew: (pts) => {
-            const name = document.getElementById('point-new-user').value.trim();
-            if(!name) { alert("なまえを入れてね"); return; }
-            RankingPoint.selectUser(name, pts);
-        }
-    };
+    window.RankingPoint = { selectUser: (name, pts) => { addPoints(name, pts); if(typeof toggleStamp === 'function') toggleStamp(name, getTodayString(), true); document.getElementById('ranking-overlay').remove(); alert(`${name}さんに ${pts}ポイント！`); } };
 }

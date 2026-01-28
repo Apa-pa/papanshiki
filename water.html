@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>水槽パズル | ぱぱん式</title>
     <script src="ranking.js"></script>
     <style>
@@ -220,9 +220,15 @@
     <h2 style="color:#00bcd4; font-size:32px; margin:10px 0;">全もんクリア！</h2>
     <p style="font-size:24px; font-weight:bold; color:#e91e63;">タイム: <span id="final-time">0.0</span>秒</p>
     
-    <button onclick="location.reload()" style="padding:10px 20px; font-size:16px; background:#4dd0e1; color:white; border:none; border-radius:30px; font-weight:bold; cursor:pointer; margin-top:10px;">
-        もういっかい
-    </button>
+    <div style="margin-top:20px; display:flex; gap:10px;">
+        <button onclick="location.reload()" style="padding:10px 20px; font-size:16px; background:#4dd0e1; color:white; border:none; border-radius:30px; font-weight:bold; cursor:pointer;">
+            もういっかい
+        </button>
+        
+        <a href="index.html" style="padding:10px 20px; font-size:16px; background:#90a4ae; color:white; text-decoration:none; border-radius:30px; font-weight:bold; display:inline-block;">
+            🏠 ホームへ
+        </a>
+        </div>
 </div>
 
 <script>
@@ -260,7 +266,6 @@
     };
 
     function initGame() {
-        // ▼▼▼ 修正：問題の候補を増やしました ▼▼▼
         const allTargets = [];
         // 0.1, 0.2 ... 1.0 (10〜100)
         for (let i = 1; i <= 10; i++) {

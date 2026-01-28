@@ -103,7 +103,7 @@
         }
         .enemy-hp-fill { height: 100%; background: #e91e63; width: 100%; transition: width 0.2s; }
         
-        /* ▼▼▼ 修正: ダメージ表示位置を調整 ▼▼▼ */
+        /* ダメージ表示位置 */
         .damage-popup {
             position: absolute; 
             top: 50%; left: 50%; /* 親要素のど真ん中 */
@@ -113,7 +113,6 @@
             text-shadow: 3px 3px 0 #fff;
             opacity: 0; pointer-events: none; z-index: 20;
         }
-        /* ▲▲▲ ここまで ▲▲▲ */
 
         /* 問題表示 */
         .question-box {
@@ -125,7 +124,7 @@
             flex-shrink: 0;
         }
         
-        /* ▼▼▼ 修正: 入力エリアの高さを確保 ▼▼▼ */
+        /* 入力エリア */
         .answer-area {
             font-size: 32px; 
             height: 50px;       /* 高さを固定で確保 */
@@ -136,7 +135,6 @@
             margin: 0 auto 10px auto; /* 下に少し隙間 */
             flex-shrink: 0;
         }
-        /* ▲▲▲ ここまで ▲▲▲ */
 
         /* キーパッド */
         .numpad {
@@ -186,14 +184,12 @@
         @keyframes shake { 0% { transform: translate(0,0); } 25% { transform: translate(-5px, 0); } 75% { transform: translate(5px, 0); } 100% { transform: translate(0,0); } }
         .shaking { animation: shake 0.2s; }
         
-        /* ▼▼▼ 修正: ダメージアニメーション（少しだけ上に浮く） ▼▼▼ */
         @keyframes popUp { 
             0% { opacity: 1; transform:translate(-50%, -50%) scale(0.5); } 
-            50% { transform:translate(-50%, -100%) scale(1.2); } /* 真ん中から少し上へ */
+            50% { transform:translate(-50%, -100%) scale(1.2); } 
             100% { opacity: 0; transform:translate(-50%, -120%) scale(1); } 
         }
         .pop-anim { animation: popUp 0.8s ease-out forwards; }
-        /* ▲▲▲ ここまで ▲▲▲ */
         
         /* エンディング用 */
         #ending-screen {
@@ -276,7 +272,8 @@
 
             <p style="font-size:14px; color:#888;">HPが少し回復したよ</p>
             <button class="btn btn-start" onclick="nextFloor()">次の階へ進む</button>
-            <button class="btn btn-home" onclick="saveAndQuit()">セーブしてやめる</button>
+            
+            <button class="btn btn-home" onclick="saveAndQuitNext()">セーブしてやめる</button>
         </div>
     </div>
 
@@ -316,6 +313,27 @@
     let currentReward = 30;
 
     const ENEMIES = ['👾', '🦇', '🐍', '🐺', '💀', '👻', '👺', '👹', '🐉', '👿'];
+
+    // ▼▼▼ 追加：効果音の準備 ▼▼▼
+    // ファイルがなくてもエラーにならないよう、再生時にチェックします
+    const SE = {
+        attack: new Audio('se/attack.mp3'),
+        damage: new Audio('se/damage.mp3'),
+        clear:  new Audio('se/clear.mp3')
+    };
+
+    function playSe(type) {
+        try {
+            const audio = SE[type];
+            if (audio) {
+                audio.currentTime = 0; // 連続再生用
+                audio.play().catch(e => { /* ファイルがない場合などはここに来るが無視 */ });
+            }
+        } catch(e) {
+            // エラー無視
+        }
+    }
+    // ▲▲▲ ここまで ▲▲▲
 
     window.onload = function() {
         const users = getUserNames();
@@ -400,8 +418,28 @@
         location.href = "index.html";
     }
 
+    function saveAndQuitNext() {
+        if(!currentUser) return;
+        
+        gameState.floor++;
+        gameState.maxHp += 5;
+        gameState.currentHp += 20;
+        if(gameState.currentHp > gameState.maxHp) gameState.currentHp = gameState.maxHp;
+
+        if(gameState.floor > 100) gameState.floor = 101;
+
+        saveGameData(currentUser, gameState);
+        alert("セーブしました。つぎは " + gameState.floor + "階 から冒険再開です！");
+        location.href = "index.html";
+    }
+
     // --- フロア初期化 ---
     function initFloor() {
+        if (gameState.floor > 100) {
+             document.getElementById('ending-screen').style.display = 'flex';
+             return;
+        }
+
         document.getElementById('floor-disp').innerText = gameState.floor;
         updateHeroHpUI();
 
@@ -412,7 +450,7 @@
         let hpVal = 0;
 
         if (gameState.floor % 10 === 0) {
-            // ボス階：約15回攻撃分
+            // ボス階
             enemy.isBoss = true;
             const avgDmg = 12 + Math.floor(gameState.floor / 2);
             hpVal = avgDmg * 15;
@@ -430,7 +468,7 @@
             field.classList.remove('boss-floor');
             
         } else {
-            // 通常階：約7回攻撃分
+            // 通常階
             const avgDmg = 12 + Math.floor(gameState.floor / 2);
             hpVal = avgDmg * 7;
             
@@ -513,6 +551,7 @@
             const levelBonus = Math.floor(gameState.floor / 2);
             const damage = baseDmg + levelBonus;
             
+            playSe('attack'); // ▼ 追加
             playEffect('attack');
             enemy.hp -= damage;
             showDamage(damage);
@@ -528,6 +567,7 @@
         } else {
             // 不正解
             const dmg = Math.floor(Math.random() * 5) + 5;
+            playSe('damage'); // ▼ 追加
             playEffect('damage');
             gameState.currentHp -= dmg;
             if(gameState.currentHp < 0) gameState.currentHp = 0;
@@ -579,6 +619,7 @@
 
     // --- 結果画面 ---
     function floorClear() {
+        playSe('clear'); // ▼ 追加
         document.getElementById('clear-screen').style.display = 'flex';
         saveGameData(currentUser, gameState);
 
