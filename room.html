@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マイルーム</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background-color: #e0f2f1;
+            text-align: center;
+            padding: 20px;
+            color: #004d40;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        h1 { color: #00897b; margin-bottom: 10px; }
+
+        .help-btn {
+            position: absolute; top: 15px; right: 15px;
+            width: 40px; height: 40px; background: #80cbc4; color: white;
+            border: none; border-radius: 50%; font-size: 20px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        .help-btn:hover { background: #4db6ac; transform: scale(1.1); }
+
+        .user-select-area {
+            background: #b2dfdb; padding: 15px; border-radius: 15px;
+            margin-bottom: 20px; margin-top: 20px;
+        }
+        select {
+            padding: 10px; font-size: 18px; border-radius: 10px;
+            border: 2px solid #009688; width: 80%; max-width: 300px;
+        }
+
+        /* 🏠 お部屋エリア */
+        .room-stage {
+            width: 100%;
+            max-width: 800px;
+            height: 400px;
+            margin: 0 auto 20px;
+            background-color: #ffffff;
+            background-repeat: no-repeat;
+            background-position: center bottom;
+            background-size: cover;
+            border: 4px dashed #b2dfdb;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* アバター (一番手前: z-index 10) */
+        .my-avatar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 300px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.2));
+            transition: 0.3s;
+            z-index: 10;
+        }
+        .my-avatar:hover { transform: translateX(-50%) scale(1.05); cursor: pointer; }
+
+        /* 🏆 勲章 (z-index 4) */
+        .medal-item {
+            position: absolute;
+            top: 40px;
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+            z-index: 4;
+        }
+        .medal-left { left: 25%; }
+        .medal-right { right: 25%; }
+
+        /* 🪑 家具の配置設定 (z-index 5) */
+        .furniture-item {
+            position: absolute;
+            bottom: -5px;       /* 地面に密着するように下げました */
+            width: 310px;      /* 横幅を大きくしました */
+            height: auto;
+            max-height: 310px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+            z-index: 5;        /* アバターの後ろ */
+        }
+        .furniture-left { left: 2%; }
+        .furniture-right { right: 2%; transform: scaleX(-1); }
+
+        .nav-btn {
+            display: inline-block; margin: 5px; padding: 15px 30px;
+            text-decoration: none; border-radius: 30px; font-weight: bold;
+            color: white; box-shadow: 0 4px rgba(0,0,0,0.2); transition: transform 0.1s;
+        }
+        .nav-btn:active { transform: translateY(2px); box-shadow: none; }
+        .btn-shop { background: #ff9800; box-shadow: 0 4px #e65100; }
+        .btn-interior { background: #4caf50; box-shadow: 0 4px #2e7d32; }
+        .btn-home { background: #78909c; box-shadow: 0 4px #546e7a; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <button class="help-btn" onclick="showHelp()">？</button>
+    <h1>🏠 マイルーム</h1>
+    
+    <div class="user-select-area">
+        <label>だれのお部屋？</label><br>
+        <select id="user-select" onchange="loadRoom()">
+            <option value="">(えらんでね)</option>
+        </select>
+    </div>
+
+    <div id="room-content" style="display:none;">
+        <div class="room-stage" id="my-room-bg">
+            <img id="medal-left" class="medal-item medal-left" style="display:none;">
+            <img id="medal-right" class="medal-item medal-right" style="display:none;">
+            <img id="furn-left" class="furniture-item furniture-left" style="display:none;">
+            <img id="furn-right" class="furniture-item furniture-right" style="display:none;">
+
+            <img id="avatar-img" src="" class="my-avatar">
+        </div>
+        <p id="welcome-msg" style="font-weight:bold; font-size:18px;">ようこそ！</p>
+    </div>
+
+    <div style="margin-top:30px;">
+        <a href="room_shop.html" class="nav-btn btn-interior">🪑 インテリアショップ</a>
+        <a href="avatar_shop.html" class="nav-btn btn-shop">👕 アバターショップ</a>
+        <br>
+        <a href="index.html" class="nav-btn btn-home">🏠 ホームへもどる</a>
+    </div>
+</div>
+
+<script>
+    const DATA_KEY = 'papan_avatar_v1';
+
+    function getUserData() { return JSON.parse(localStorage.getItem(DATA_KEY) || '{}'); }
+
+    window.onload = function() {
+        if(typeof getUserNames !== 'function') { return; }
+        const users = getUserNames();
+        const select = document.getElementById('user-select');
+        users.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u; opt.innerText = u;
+            select.appendChild(opt);
+        });
+    };
+
+    function loadRoom() {
+        const userName = document.getElementById('user-select').value;
+        const roomContent = document.getElementById('room-content');
+        const roomBg = document.getElementById('my-room-bg');
+        const avatarImg = document.getElementById('avatar-img');
+        const furnLeft = document.getElementById('furn-left');
+        const furnRight = document.getElementById('furn-right');
+        const medalLeft = document.getElementById('medal-left');
+        const medalRight = document.getElementById('medal-right');
+        const msg = document.getElementById('welcome-msg');
+
+        if(!userName) {
+            roomContent.style.display = 'none';
+            return;
+        }
+        roomContent.style.display = 'block';
+
+        const allData = getUserData();
+        const userData = allData[userName] || {};
+        
+        // --- アバター ---
+        avatarImg.src = `avatar/${userData.current || 'none'}.png`;
+
+        // --- お部屋(壁紙) ---
+        const currentRoomId = userData.currentRoom || 'none';
+        if (currentRoomId === 'none') {
+            roomBg.style.backgroundImage = 'none';
+        } else {
+            roomBg.style.backgroundImage = `url('room/${currentRoomId}.jpg')`;
+        }
+        
+        // --- 家具の配置処理 ---
+        const furniture = userData.furniture || {};
+        
+        if(furniture.left) {
+            furnLeft.src = `room/${furniture.left}.png`;
+            furnLeft.style.display = 'block';
+        } else {
+            furnLeft.style.display = 'none';
+        }
+
+        if(furniture.right) {
+            furnRight.src = `room/${furniture.right}.png`;
+            furnRight.style.display = 'block';
+        } else {
+            furnRight.style.display = 'none';
+        }
+
+        // --- 勲章の配置処理 ---
+        const medals = userData.medals || {};
+        
+        if(medals.left) {
+            medalLeft.src = `room/${medals.left}.png`;
+            medalLeft.style.display = 'block';
+        } else {
+            medalLeft.style.display = 'none';
+        }
+
+        if(medals.right) {
+            medalRight.src = `room/${medals.right}.png`;
+            medalRight.style.display = 'block';
+        } else {
+            medalRight.style.display = 'none';
+        }
+
+        msg.innerText = `${userName}さんの お部屋です！`;
+    }
+
+    function showHelp() {
+        const old = document.getElementById('help-overlay');
+        if(old) { old.remove(); return; }
+        const overlay = document.createElement('div');
+        overlay.id = 'help-overlay';
+        overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; justify-content: center; align-items: center;`;
+        overlay.innerHTML = `
+            <div style="background:white; padding:25px; border-radius:20px; max-width:90%; width:400px; text-align:center; position:relative; box-shadow:0 0 20px rgba(255,255,255,0.2);">
+                <button onclick="document.getElementById('help-overlay').remove()" style="position:absolute; top:10px; right:10px; background:#ddd; border:none; border-radius:50%; width:30px; height:30px; font-weight:bold; cursor:pointer;">×</button>
+                <h2 style="color:#00897b; margin-top:0;">マイルームの つかいかた</h2>
+                <div style="text-align:left; font-size:16px; line-height:1.8; color:#333; background:#e0f2f1; padding:15px; border-radius:10px;">
+                    <p style="margin:0 0 10px 0;"><b>💰 ポイントを ためよう！</b><br>ゲームや お勉強を がんばると、ポイントが たまるよ。</p>
+                    <p style="margin:0 0 10px 0;"><b>👕 アバターを かおう！</b><br>ポイントで、すきな お洋服(ようふく)に 着がえられるよ。</p>
+                    <p style="margin:0; border-top:2px dashed #00897b; padding-top:10px;">
+                        <b>🏆 勲章(くんしょう)を かざろう！</b><br>
+                        インテリアショップで買った勲章は、壁の上の方に飾れるよ！
+                    </p>
+                </div>
+                <button onclick="document.getElementById('help-overlay').remove()" style="margin-top:20px; padding:10px 30px; background:#009688; color:white; border:none; border-radius:30px; font-weight:bold; cursor:pointer; font-size:16px;">わかった！</button>
+            </div>
+        `;
+        overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
+        document.body.appendChild(overlay);
+    }
+</script>
+
+</body>
+</html>

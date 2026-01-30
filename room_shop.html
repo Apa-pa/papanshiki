@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>インテリアショップ</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background-color: #e8f5e9;
+            text-align: center;
+            padding: 20px;
+            color: #2e7d32;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2e7d32; margin-bottom: 10px; }
+
+        .user-select-area {
+            background: #c8e6c9;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        select {
+            padding: 10px; font-size: 18px; border-radius: 10px;
+            border: 2px solid #81c784; width: 80%; max-width: 300px;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: #1b5e20;
+            color: white;
+            padding: 10px;
+            border-radius: 50px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .point-box { font-size: 20px; }
+
+        .item-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .item-card {
+            border: 2px solid #eee;
+            border-radius: 15px;
+            padding: 10px;
+            transition: 0.2s;
+            position: relative;
+            background: #fff;
+        }
+        .item-card.owned { border-color: #81c784; background: #f1f8e9; }
+        
+        .badge-equipped {
+            position: absolute; top: 5px; right: 5px;
+            background: #ffca28; color: #5d4037;
+            padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold;
+        }
+
+        .item-img {
+            width: 100%;
+            height: 120px;
+            object-fit: contain;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            background: #fff;
+        }
+
+        .section-title {
+            text-align: left;
+            border-bottom: 2px solid #a5d6a7;
+            padding-bottom: 5px;
+            margin: 30px 0 15px 0;
+            font-size: 20px;
+            font-weight: bold;
+            color: #388e3c;
+        }
+
+        .action-btn {
+            width: 100%; padding: 8px; margin-top: 5px;
+            border: none; border-radius: 20px; font-weight: bold; cursor: pointer;
+        }
+        .btn-buy { background: #ff7043; color: white; }
+        .btn-equip { background: #66bb6a; color: white; margin-top: 2px; font-size: 12px;}
+        .btn-disabled { background: #ccc; color: #666; cursor: not-allowed; }
+
+        .back-link {
+            display: inline-block; margin-top: 10px; padding: 10px 30px;
+            background: #bcaaa4; color: white; text-decoration: none;
+            border-radius: 30px; font-weight: bold;
+        }
+        .room-link {
+            display: inline-block; padding: 12px 30px;
+            background: #26a69a; color: white; text-decoration: none;
+            border-radius: 30px; font-weight: bold;
+            box-shadow: 0 4px #00796b;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🪑 インテリアショップ</h1>
+    <p>お部屋を すてきに もようがえ！</p>
+
+    <div class="user-select-area">
+        <label>だれのお買い物？</label><br>
+        <select id="user-select" onchange="loadShop()">
+            <option value="">(えらんでね)</option>
+        </select>
+    </div>
+
+    <div id="shop-content" style="display:none;">
+        <div class="status-bar">
+            <div class="point-box">💰 <span id="current-points">0</span> pt</div>
+        </div>
+
+        <div class="section-title">🏠 お部屋 (壁と床)</div>
+        <div id="room-list" class="item-grid"></div>
+
+        <div class="section-title">🏆 勲章 (くんしょう)</div>
+        <div id="medal-list" class="item-grid"></div>
+        
+        <div class="section-title">🪑 家具 (かぐ)</div>
+        <div id="furniture-list" class="item-grid"></div>
+    </div>
+
+    <div style="margin-top: 40px; display: flex; flex-direction: column; align-items: center;">
+        <a href="room.html" class="room-link">🏠 マイルームへもどる</a>
+        <a href="index.html" class="back-link">🏠 ホームへもどる</a>
+    </div>
+</div>
+
+<script>
+    const ROOMS = [
+        { id: 'none', name: 'シンプルなお部屋', src: '', price: 0, desc: 'まっしろな お部屋' },
+        { id: 'room_01', name: 'ひまわりのかべがみの部屋', src: 'room/room_01.jpg', price: 500, desc: 'フローリングにかわいい花の壁紙' },
+        { id: 'room_02', name: 'さわやか勉強部屋', src: 'room/room_02.jpg', price: 10, desc: '水色のさわやかなへや' },
+        { id: 'room_03', name: '木のおうち', src: 'room/room_03.jpg', price: 10, desc: '木漏れ日がさすすてきな木のへや' },
+    ];
+
+    const MEDALS = [
+        { id: 'shield_silver', name: 'シルバーのたて', src: 'room/shield_silver.png', price: 1000, desc: '1000ポイントの 証！' },
+        { id: 'shield_gold', name: 'ゴールドのたて', src: 'room/shield_gold.png', price: 5000, desc: 'すごすぎる！ 達人の証' }
+    ];
+
+    // ★追加: 家具データ (テスト価格 10pt)
+    const FURNITURE = [
+        { id: 'table_01', name: '木の勉強机', src: 'room/table_01.png', price: 10, desc: 'あたたかみのある 木製の勉強づくえ' },
+        { id: 'table_02', name: 'ふかふかベッド', src: 'room/table_02.png', price: 10, desc: 'あたたかそうな掛布団のベッド' }
+    ];
+
+    const DATA_KEY = 'papan_avatar_v1';
+
+    function getUserData() { return JSON.parse(localStorage.getItem(DATA_KEY) || '{}'); }
+    function saveUserData(data) { localStorage.setItem(DATA_KEY, JSON.stringify(data)); }
+
+    window.onload = function() {
+        if(typeof getUserNames !== 'function') { alert('ranking.js が読み込まれていません'); return; }
+        const users = getUserNames();
+        const select = document.getElementById('user-select');
+        users.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u; opt.innerText = u;
+            select.appendChild(opt);
+        });
+    };
+
+    function loadShop() {
+        const userName = document.getElementById('user-select').value;
+        const shopContent = document.getElementById('shop-content');
+        
+        if(!userName) {
+            shopContent.style.display = 'none';
+            return;
+        }
+        shopContent.style.display = 'block';
+
+        const currentPoints = getUserPoints(userName);
+        document.getElementById('current-points').innerText = currentPoints;
+
+        const allData = getUserData();
+        const userData = allData[userName] || {};
+        
+        if (!userData.ownedRooms) userData.ownedRooms = ['none'];
+        if (!userData.currentRoom) userData.currentRoom = 'none';
+        if (!userData.ownedMedals) userData.ownedMedals = [];
+        if (!userData.medals) userData.medals = { left: null, right: null };
+        if (!userData.ownedFurniture) userData.ownedFurniture = []; // 家具所持リスト
+        if (!userData.furniture) userData.furniture = { left: null, right: null }; // 家具配置場所
+
+        // 1. お部屋
+        const roomContainer = document.getElementById('room-list');
+        roomContainer.innerHTML = '';
+        ROOMS.forEach(item => {
+            const isOwned = userData.ownedRooms.includes(item.id);
+            const isEquipped = (userData.currentRoom === item.id);
+            const canBuy = (currentPoints >= item.price);
+            const card = document.createElement('div');
+            card.className = `item-card ${isOwned ? 'owned' : ''}`;
+            let btnHtml = isOwned ? (isEquipped ? `<button class="action-btn btn-equipped">使用中</button>` : `<button class="action-btn btn-equip" onclick="equipRoom('${userName}', '${item.id}')">もようがえ</button>`) : (canBuy ? `<button class="action-btn btn-buy" onclick="buyRoom('${userName}', '${item.id}', ${item.price})">${item.price}ptで購入</button>` : `<button class="action-btn btn-disabled">${item.price}pt (不足)</button>`);
+            card.innerHTML = `<img src="${item.src || 'https://placehold.jp/300x200.png?text=Simple'}" class="item-img"><div style="font-weight:bold;">${item.name}</div>${btnHtml}`;
+            roomContainer.appendChild(card);
+        });
+
+        // 2. 勲章
+        const medalContainer = document.getElementById('medal-list');
+        medalContainer.innerHTML = '';
+        MEDALS.forEach(item => {
+            const isOwned = userData.ownedMedals.includes(item.id);
+            const isEqLeft = (userData.medals.left === item.id);
+            const isEqRight = (userData.medals.right === item.id);
+            const canBuy = (currentPoints >= item.price);
+            const card = document.createElement('div');
+            card.className = `item-card ${isOwned ? 'owned' : ''}`;
+            let badge = isEqLeft ? `<div class="badge-equipped">左に展示中</div>` : (isEqRight ? `<div class="badge-equipped">右に展示中</div>` : '');
+            let btnHtml = isOwned ? `<div style="display:flex; gap:5px;"><button class="action-btn btn-equip" onclick="equipMedal('${userName}', '${item.id}', 'left')">左</button><button class="action-btn btn-equip" onclick="equipMedal('${userName}', '${item.id}', 'right')">右</button></div>` : (canBuy ? `<button class="action-btn btn-buy" onclick="buyMedal('${userName}', '${item.id}', ${item.price})">${item.price}pt購入</button>` : `<button class="action-btn btn-disabled">${item.price}pt (不足)</button>`);
+            card.innerHTML = `${badge}<img src="${item.src}" class="item-img"><div style="font-weight:bold;">${item.name}</div>${btnHtml}`;
+            medalContainer.appendChild(card);
+        });
+
+        // 3. 家具リスト生成 (NEW)
+        const furnContainer = document.getElementById('furniture-list');
+        furnContainer.innerHTML = '';
+        FURNITURE.forEach(item => {
+            const isOwned = userData.ownedFurniture.includes(item.id);
+            const isEqLeft = (userData.furniture.left === item.id);
+            const isEqRight = (userData.furniture.right === item.id);
+            const canBuy = (currentPoints >= item.price);
+
+            const card = document.createElement('div');
+            card.className = `item-card ${isOwned ? 'owned' : ''}`;
+            
+            let badge = isEqLeft ? `<div class="badge-equipped">左におき中</div>` : (isEqRight ? `<div class="badge-equipped">右におき中</div>` : '');
+            let btnHtml = isOwned ? 
+                `<div style="display:flex; gap:5px;"><button class="action-btn btn-equip" onclick="equipFurniture('${userName}', '${item.id}', 'left')">左におく</button><button class="action-btn btn-equip" onclick="equipFurniture('${userName}', '${item.id}', 'right')">右におく</button></div>` : 
+                (canBuy ? `<button class="action-btn btn-buy" onclick="buyFurniture('${userName}', '${item.id}', ${item.price})">${item.price}pt購入</button>` : `<button class="action-btn btn-disabled">${item.price}pt (不足)</button>`);
+
+            card.innerHTML = `${badge}<img src="${item.src}" class="item-img" onerror="this.src='https://placehold.jp/150x150.png?text=Furniture'"><div style="font-weight:bold; margin-top:5px;">${item.name}</div>${btnHtml}`;
+            furnContainer.appendChild(card);
+        });
+    }
+
+    // --- 処理関数 ---
+    function buyRoom(u, i, p) { if(confirm(`${p}ptで購入？`)) if(spendPoints(u,p)){ let d=getUserData(); if(!d[u]) d[u]={}; if(!d[u].ownedRooms) d[u].ownedRooms=['none']; d[u].ownedRooms.push(i); saveUserData(d); loadShop(); } }
+    function equipRoom(u, i) { let d=getUserData(); d[u].currentRoom=i; saveUserData(d); loadShop(); }
+    function buyMedal(u, i, p) { if(confirm(`${p}ptで購入？`)) if(spendPoints(u,p)){ let d=getUserData(); if(!d[u]) d[u]={}; if(!d[u].ownedMedals) d[u].ownedMedals=[]; d[u].ownedMedals.push(i); saveUserData(d); loadShop(); } }
+    function equipMedal(u, i, s) { let d=getUserData(); if(!d[u].medals) d[u].medals={left:null,right:null}; d[u].medals[s]=i; saveUserData(d); loadShop(); }
+
+    // ★追加: 家具の購入
+    function buyFurniture(userName, itemId, price) {
+        if(!confirm(`${price}ポイントで 購入しますか？`)) return;
+        if (spendPoints(userName, price)) {
+            const allData = getUserData();
+            if (!allData[userName]) allData[userName] = {};
+            if (!allData[userName].ownedFurniture) allData[userName].ownedFurniture = [];
+            allData[userName].ownedFurniture.push(itemId);
+            saveUserData(allData);
+            alert('購入しました！✨');
+            loadShop(); 
+        } else { alert('ポイントが足りないようです…'); }
+    }
+
+    // ★追加: 家具の配置
+    function equipFurniture(userName, itemId, side) {
+        const allData = getUserData();
+        if (!allData[userName].furniture) allData[userName].furniture = { left: null, right: null };
+        allData[userName].furniture[side] = itemId;
+        saveUserData(allData);
+        alert(`${side === 'left' ? '左' : '右'}に おきました！🪑`);
+        loadShop();
+    }
+</script>
+
+</body>
+</html>

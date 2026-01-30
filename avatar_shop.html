@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アバターショップ</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background-color: #fff3e0;
+            text-align: center;
+            padding: 20px;
+            color: #4e342e;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 { color: #ff6f00; margin-bottom: 10px; }
+
+        /* ユーザー選択エリア */
+        .user-select-area {
+            background: #ffe0b2;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        select {
+            padding: 10px; font-size: 18px; border-radius: 10px;
+            border: 2px solid #ffb74d; width: 80%; max-width: 300px;
+        }
+
+        /* ポイント表示 */
+        .status-bar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: #5d4037;
+            color: white;
+            padding: 10px;
+            border-radius: 50px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .point-box { font-size: 20px; }
+
+        /* アバター一覧グリッド */
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+        }
+
+        /* アバターカード */
+        .avatar-card {
+            border: 2px solid #eee;
+            border-radius: 15px;
+            padding: 10px;
+            transition: 0.2s;
+            position: relative;
+            background: #fff;
+        }
+        .avatar-card.owned { border-color: #81c784; background: #f1f8e9; }
+        .avatar-card.equipped { border-color: #ffca28; background: #fff8e1; box-shadow: 0 0 10px #ffca28; }
+        
+        .avatar-img {
+            width: 100%;           
+            aspect-ratio: 1 / 1;   
+            object-fit: contain;   
+            background-color: transparent; 
+            border-radius: 10px;
+        }
+
+        /* ボタン */
+        .action-btn {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: none;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-buy { background: #ff7043; color: white; }
+        .btn-equip { background: #66bb6a; color: white; }
+        .btn-equipped { background: #ffca28; color: #5d4037; cursor: default; }
+        .btn-disabled { background: #ccc; color: #666; cursor: not-allowed; }
+
+        .back-link {
+            display: inline-block; margin-top: 30px; padding: 10px 30px;
+            background: #bcaaa4; color: white; text-decoration: none;
+            border-radius: 30px; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>👕 アバターショップ</h1>
+    <p>ポイントで アバターをゲットしよう！</p>
+
+    <div class="user-select-area">
+        <label>だれのアバター？</label><br>
+        <select id="user-select" onchange="loadShop()">
+            <option value="">(えらんでね)</option>
+        </select>
+    </div>
+
+    <div id="shop-content" style="display:none;">
+        <div class="status-bar">
+            <div class="point-box">💰 <span id="current-points">0</span> pt</div>
+            <div style="font-size:14px;">現在の姿</div>
+        </div>
+
+        <div id="avatar-list" class="avatar-grid">
+            </div>
+    </div>
+
+    <div style="margin-top: 30px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+        <a href="room.html" style="
+            display: inline-block; padding: 12px 30px;
+            background: #26a69a; color: white; text-decoration: none;
+            border-radius: 30px; font-weight: bold;
+            box-shadow: 0 4px #00796b;
+        ">🏠 マイルームで確認する</a>
+
+        <a href="index.html" class="back-link">🏠 ホームへもどる</a>
+    </div>
+</div>
+
+<script>
+    // --- 1. アバターデータの定義 ---
+    const AVATARS = [];
+    
+    // ★追加: シルエット(none)
+    // これをリストに入れておくと、いつでも「影」に戻せます
+    AVATARS.push({ 
+        id: 'none', 
+        src: 'avatar/none.png', 
+        price: 0 
+    });
+
+    // 男の子 
+    for(let i=1; i<=9; i++) {
+        const num = ('0' + i).slice(-2);
+        AVATARS.push({ 
+            id: `boy_${num}`, 
+            src: `avatar/boy_${num}.png`, 
+            price: 500 // 
+        });
+    }
+    // 女の子 ショート (300pt)
+    for(let i=1; i<=5; i++) {
+        const num = ('0' + i).slice(-2);
+        AVATARS.push({ 
+            id: `girl_short_${num}`, 
+            src: `avatar/girl_short_${num}.png`, 
+            price: 500 
+        });
+    }
+    // 女の子 ロング (300pt)
+    for(let i=1; i<=7; i++) {
+        const num = ('0' + i).slice(-2);
+        AVATARS.push({ 
+            id: `girl_long_${num}`, 
+            src: `avatar/girl_long_${num}.png`, 
+            price: 500 
+        });
+    }
+
+    const AVATAR_KEY = 'papan_avatar_v1';
+
+    // --- 2. データ読み書き関数 ---
+    function getAvatarData() {
+        return JSON.parse(localStorage.getItem(AVATAR_KEY) || '{}');
+    }
+    function saveAvatarData(data) {
+        localStorage.setItem(AVATAR_KEY, JSON.stringify(data));
+    }
+
+    // 初期化
+    window.onload = function() {
+        if(typeof getUserNames !== 'function') { alert('ranking.js が読み込まれていません'); return; }
+        
+        const users = getUserNames();
+        const select = document.getElementById('user-select');
+        users.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u;
+            opt.innerText = u;
+            select.appendChild(opt);
+        });
+    };
+
+    // --- 3. ショップ画面の表示 ---
+    function loadShop() {
+        const userName = document.getElementById('user-select').value;
+        const shopContent = document.getElementById('shop-content');
+        
+        if(!userName) {
+            shopContent.style.display = 'none';
+            return;
+        }
+        shopContent.style.display = 'block';
+
+        const currentPoints = getUserPoints(userName);
+        document.getElementById('current-points').innerText = currentPoints;
+
+        // ★変更点: 初期データを none に設定
+        const allData = getAvatarData();
+        const userData = allData[userName] || { current: 'none', owned: ['none'] };
+        
+        // ★変更点: none は必ず持っていることにする
+        if(!userData.owned.includes('none')) userData.owned.push('none');
+
+        const listContainer = document.getElementById('avatar-list');
+        listContainer.innerHTML = '';
+
+        // リスト生成
+        AVATARS.forEach(avatar => {
+            const isOwned = userData.owned.includes(avatar.id);
+            const isEquipped = (userData.current === avatar.id);
+            const canBuy = (currentPoints >= avatar.price);
+
+            const card = document.createElement('div');
+            card.className = `avatar-card ${isEquipped ? 'equipped' : ''} ${isOwned ? 'owned' : ''}`;
+
+            let btnHtml = '';
+            if (isEquipped) {
+                btnHtml = `<button class="action-btn btn-equipped">装備中</button>`;
+            } else if (isOwned) {
+                btnHtml = `<button class="action-btn btn-equip" onclick="equipAvatar('${userName}', '${avatar.id}')">着替える</button>`;
+            } else {
+                if (canBuy) {
+                    btnHtml = `<button class="action-btn btn-buy" onclick="buyAvatar('${userName}', '${avatar.id}', ${avatar.price})">${avatar.price}ptで購入</button>`;
+                } else {
+                    btnHtml = `<button class="action-btn btn-disabled">${avatar.price}pt (足りない)</button>`;
+                }
+            }
+
+            card.innerHTML = `
+                <img src="${avatar.src}" class="avatar-img" onerror="this.src='https://placehold.jp/150x150.png?text=NoImage'">
+                ${btnHtml}
+            `;
+            listContainer.appendChild(card);
+        });
+    }
+
+    // --- 4. 購入処理 ---
+    function buyAvatar(userName, avatarId, price) {
+        if(!confirm(`${price}ポイントを使って 購入しますか？`)) return;
+
+        if (spendPoints(userName, price)) {
+            const allData = getAvatarData();
+            // データがない場合の初期化も none に合わせる
+            if (!allData[userName]) allData[userName] = { current: 'none', owned: ['none'] };
+            
+            allData[userName].owned.push(avatarId);
+            saveAvatarData(allData);
+
+            alert('購入しました！✨');
+            loadShop(); 
+        } else {
+            alert('ポイントが足りないようです…');
+        }
+    }
+
+    // --- 5. 着替え処理 ---
+    function equipAvatar(userName, avatarId) {
+        const allData = getAvatarData();
+        if (!allData[userName]) return;
+
+        allData[userName].current = avatarId;
+        saveAvatarData(allData);
+
+        alert('着替えました！👕');
+        loadShop(); 
+    }
+</script>
+
+</body>
+</html>
