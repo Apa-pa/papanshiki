@@ -393,3 +393,35 @@ function showPointGetDialog(amount) {
     document.body.appendChild(overlay);
     window.RankingPoint = { selectUser: (name, pts) => { addPoints(name, pts); if(typeof toggleStamp === 'function') toggleStamp(name, getTodayString(), true); document.getElementById('ranking-overlay').remove(); alert(`${name}さんに ${pts}ポイント！`); } };
 }
+
+// --- ガチャ・コレクション管理 ---
+
+// ユーザーの持っているコレクション（IDのリスト）を取得する
+function getCollection(userName) {
+    // COLLECTION_KEY は ranking.js の最初の方で定義されています
+    // もし見つからない場合は 'papan_collection_v1' を使います
+    const key = (typeof COLLECTION_KEY !== 'undefined') ? COLLECTION_KEY : 'papan_collection_v1';
+    const allCollections = JSON.parse(localStorage.getItem(key) || '{}');
+    return allCollections[userName] || [];
+}
+
+// コレクションに追加する (初めてなら true を返す)
+function addToCollection(userName, itemId) {
+    const key = (typeof COLLECTION_KEY !== 'undefined') ? COLLECTION_KEY : 'papan_collection_v1';
+    const allCollections = JSON.parse(localStorage.getItem(key) || '{}');
+    
+    if (!allCollections[userName]) {
+        allCollections[userName] = [];
+    }
+
+    // すでに持っているかチェック
+    if (allCollections[userName].includes(itemId)) {
+        return false; // すでに持っている
+    }
+
+    // 新しいアイテムを追加
+    allCollections[userName].push(itemId);
+    localStorage.setItem(key, JSON.stringify(allCollections));
+    return true; // 新しくゲットした！
+}
+// ▲▲▲ ここまで ▲▲▲
