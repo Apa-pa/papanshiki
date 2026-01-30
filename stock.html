@@ -208,7 +208,7 @@
             
             let holdings = 0;
             if (userName) {
-                const stocks = getUserStocks(userName);
+                const stocks = getUserStocks(userName) || {};
                 holdings = stocks[key] || 0;
             }
 

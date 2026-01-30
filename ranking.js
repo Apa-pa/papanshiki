@@ -179,6 +179,70 @@ function distributeDividends(days) {
     return report;
 }
 
+// --- 株・取引システム ---
+
+// ユーザーの持っている株のリストを取得する
+function getUserStocks(userName) {
+    const allStocks = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
+    return allStocks[userName] || {};
+}
+
+// 株を買う関数
+function buyStock(userName, stockId, amount) {
+    const market = getMarketData();
+    const info = STOCK_MASTER[stockId];
+    // 今の株価 × 買う数
+    const cost = market.prices[stockId] * amount;
+    
+    // お金（ポイント or どんぐり）が足りるかチェックして支払う
+    let success = false;
+    if (info.currency === 'point') {
+        success = spendPoints(userName, cost);
+    } else {
+        success = spendDonguri(userName, cost);
+    }
+
+    // 支払いができたら、株を増やす
+    if (success) {
+        const allStocks = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
+        if (!allStocks[userName]) allStocks[userName] = {};
+        
+        allStocks[userName][stockId] = (allStocks[userName][stockId] || 0) + amount;
+        localStorage.setItem(STOCK_KEY, JSON.stringify(allStocks));
+        return true;
+    }
+    return false; // お金が足りなかったとき
+}
+
+// 株を売る関数
+function sellStock(userName, stockId, amount) {
+    const allStocks = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
+    const currentHoldings = allStocks[userName]?.[stockId] || 0;
+
+    // 持っている株が、売る数より多いかチェック
+    if (currentHoldings >= amount) {
+        // 株を減らす
+        allStocks[userName][stockId] = currentHoldings - amount;
+        localStorage.setItem(STOCK_KEY, JSON.stringify(allStocks));
+
+        // お金を増やす
+        const market = getMarketData();
+        const price = market.prices[stockId];
+        const gain = price * amount;
+        const info = STOCK_MASTER[stockId];
+        
+        if (info.currency === 'point') {
+            addPoints(userName, gain);
+        } else {
+            addDonguri(userName, gain);
+        }
+        return true;
+    }
+    return false; // 持っている株が足りないとき
+}
+// ▲▲▲ ここまで ▲▲▲
+
+
 // --- スタンプ・レコード ---
 function getTodayString() {
     const d = new Date();
