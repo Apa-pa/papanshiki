@@ -198,6 +198,7 @@
     };
 
     // --- 3. ショップ画面の表示 ---
+    // --- 3. ショップ画面の表示 ---
     function loadShop() {
         const userName = document.getElementById('user-select').value;
         const shopContent = document.getElementById('shop-content');
@@ -211,12 +212,34 @@
         const currentPoints = getUserPoints(userName);
         document.getElementById('current-points').innerText = currentPoints;
 
-        // ★変更点: 初期データを none に設定
         const allData = getAvatarData();
-        const userData = allData[userName] || { current: 'none', owned: ['none'] };
+        // データ取得（なければ初期値）
+        let userData = allData[userName] || { current: 'none', owned: ['none'] };
         
-        // ★変更点: none は必ず持っていることにする
-        if(!userData.owned.includes('none')) userData.owned.push('none');
+        // ★修正ポイント1: データ修復と保存
+        let needSave = false; // 保存が必要かどうかのフラグ
+
+        // 持ち物リストが壊れていたら直す
+        if (!userData.owned || !Array.isArray(userData.owned)) {
+            userData.owned = ['none'];
+            needSave = true;
+        }
+        // noneを持っていない場合は持たせる
+        if(!userData.owned.includes('none')) {
+            userData.owned.push('none');
+            needSave = true;
+        }
+        // 装備データがない場合は直す
+        if (!userData.current) {
+            userData.current = 'none';
+            needSave = true;
+        }
+
+        // データが壊れていた場合は、ここで修理したものを保存してしまう！
+        if (needSave) {
+            allData[userName] = userData;
+            saveAvatarData(allData);
+        }
 
         const listContainer = document.getElementById('avatar-list');
         listContainer.innerHTML = '';
@@ -257,9 +280,16 @@
 
         if (spendPoints(userName, price)) {
             const allData = getAvatarData();
-            // データがない場合の初期化も none に合わせる
+            
+            // データがない場合の初期化
             if (!allData[userName]) allData[userName] = { current: 'none', owned: ['none'] };
             
+            // ★修正ポイント2: ここでも持ち物リストの存在確認をする（念には念を）
+            if (!allData[userName].owned || !Array.isArray(allData[userName].owned)) {
+                allData[userName].owned = ['none'];
+            }
+            
+            // これで安全に push できます
             allData[userName].owned.push(avatarId);
             saveAvatarData(allData);
 
