@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>アンのおんがく教室</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background-color: #fff9c4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            height: 100dvh;
+            touch-action: none;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 600px;
+            height: 100%;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        /* 先生エリア */
+        .teacher-area {
+            flex: 1;
+            background: #ffecb3;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 5px solid #ffca28;
+            position: relative;
+        }
+
+        .char-teacher {
+            width: 140px;
+            transition: transform 0.2s;
+        }
+        .char-teacher.singing { transform: scale(1.1) rotate(-5deg); }
+
+        .bubble {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #5d4037;
+            border: 2px solid #5d4037;
+            position: relative;
+            min-width: 200px;
+            text-align: center;
+        }
+        .bubble::after {
+            content: ''; position: absolute; bottom: -10px; left: 50%;
+            border-width: 10px 10px 0; border-style: solid;
+            border-color: #5d4037 transparent; transform: translateX(-50%);
+        }
+
+        /* 鍵盤エリア */
+        .piano-area {
+            flex: 1.2;
+            background: #e1f5fe;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            position: relative;
+        }
+
+        .keyboard {
+            display: flex;
+            gap: 4px;
+            background: #455a64;
+            padding: 10px 5px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .key {
+            width: 45px;
+            height: 160px;
+            background: white;
+            border-radius: 0 0 5px 5px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: inset 0 -5px 0 #ccc;
+            transition: background-color 0.1s, transform 0.1s; /* アニメーション調整 */
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 10px;
+            font-weight: bold;
+            color: #555;
+            font-size: 18px;
+            touch-action: manipulation; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
+        .key:active, .key.active {
+            background: #ffeb3b !important; 
+            transform: translateY(2px);
+            box-shadow: inset 0 -2px 0 #aaa;
+        }
+        
+        .key.demo {
+            background: #ff9800 !important;
+            color: white;
+            transform: translateY(2px);
+        }
+
+        .key[data-note="C4"] { border-top: 8px solid #e57373; }
+        .key[data-note="D4"] { border-top: 8px solid #ffb74d; }
+        .key[data-note="E4"] { border-top: 8px solid #fff176; }
+        .key[data-note="F4"] { border-top: 8px solid #81c784; }
+        .key[data-note="G4"] { border-top: 8px solid #4fc3f7; }
+        .key[data-note="A4"] { border-top: 8px solid #7986cb; }
+        .key[data-note="B4"] { border-top: 8px solid #ba68c8; }
+        /* C5削除に伴いCSSも削除 */
+
+        /* UIパーツ */
+        .hud {
+            position: absolute; top: 10px; left: 10px;
+            font-weight: bold; color: #5d4037; z-index: 10;
+        }
+        
+        #feedback {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 120px; font-weight: bold;
+            pointer-events: none; z-index: 50;
+            display: none; text-shadow: 0 0 10px white;
+        }
+
+        /* オーバーレイ */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 249, 196, 0.98);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 100; text-align: center;
+        }
+        .start-btn {
+            font-size: 24px; padding: 15px 50px;
+            background: #ff6f00; color: white;
+            border: none; border-radius: 50px;
+            font-weight: bold; cursor: pointer;
+            box-shadow: 0 5px #e65100; margin-top: 20px;
+        }
+        .start-btn:active { transform: scale(0.95); box-shadow: none; }
+
+        .btn-link { color:#8d6e63; margin-top:20px; text-decoration: underline; display:block;}
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="hud">もんだい: <span id="q-num">1</span> / 5</div>
+
+    <div class="teacher-area">
+        <div id="msg-bubble" class="bubble">よく きいてね！</div>
+        <img src="hari-an.png" class="char-teacher" id="teacher-img">
+        <div style="font-weight:bold; color:#f57f17; margin-top:5px;">アン先生</div>
+    </div>
+
+    <div class="piano-area">
+        <div id="feedback"></div>
+        <div class="keyboard" id="keyboard">
+            </div>
+    </div>
+
+    <div id="start-screen" class="overlay">
+        <div style="font-size:60px; margin-bottom:10px;">🎹</div>
+        <h1 style="color:#f57f17; margin:0;">アンの<br>おんがく教室</h1>
+        <p style="color:#5d4037; margin:20px;">
+            アン先生が ひく 曲を<br>
+            おぼえて マネしてね！
+        </p>
+        <button class="start-btn" onclick="initAudioAndStart()">スタート</button>
+        <a href="index.html" class="btn-link">🏠 もどる</a>
+    </div>
+
+    <div id="clear-screen" class="overlay" style="display:none;">
+        <div style="font-size:80px;">🎼</div>
+        <h1 style="color:#e65100;">全もんクリア！</h1>
+        <p>すごい！ ピアニストみたい！</p>
+        
+        <button class="start-btn" 
+            onclick="this.disabled=true; this.innerText='ゲット！'; this.style.background='#ccc'; if(typeof showPointGetDialog==='function'){showPointGetDialog(50)}">
+            🎁 50ポイント
+        </button>
+        
+        <a href="index.html" class="btn-link" style="margin-top:30px;">🏠 ホームへ</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+
+    // ▼▼▼ 高いド(C5)を削除し、ド〜シの7音にしました ▼▼▼
+    const NOTES = [
+        { note: 'C4', name: 'ド', file: 'se/C4.mp3', freq: 261.63 },
+        { note: 'D4', name: 'レ', file: 'se/D4.mp3', freq: 293.66 },
+        { note: 'E4', name: 'ミ', file: 'se/E4.mp3', freq: 329.63 },
+        { note: 'F4', name: 'ファ', file: 'se/F4.mp3', freq: 349.23 },
+        { note: 'G4', name: 'ソ', file: 'se/G4.mp3', freq: 392.00 },
+        { note: 'A4', name: 'ラ', file: 'se/A4.mp3', freq: 440.00 },
+        { note: 'B4', name: 'シ', file: 'se/B4.mp3', freq: 493.88 }
+    ];
+
+    // 問題データの定義（10曲）
+    const ALL_SONGS = [
+        { title: "かえるの がっしょう", seq: [0, 1, 2, 3, 2, 1, 0] }, // ドレミファミレド
+        { title: "メリーさんの ひつじ", seq: [2, 1, 0, 1, 2, 2, 2] }, // ミレドレミミミ
+        { title: "ちょうちょう", seq: [4, 2, 2, 3, 1, 1] }, // ソミミファレレ
+        { title: "きらきらぼし", seq: [0, 0, 4, 4, 5, 5, 4] }, // ドドソソララソ
+        { title: "チューリップ", seq: [0, 1, 2, 0, 1, 2, 4] }, // ドレミドレミソ
+        
+        { title: "ぶんぶんぶん", seq: [4, 3, 2, 3, 2, 1] }, // ソファミ ファミレ
+        { title: "かっこう", seq: [4, 2, 4, 2, 1, 0] }, // ソミ ソミ レド
+        { title: "こぎつね", seq: [0, 1, 2, 3, 4, 4, 5] }, // ドレミファソソラ
+        { title: "ロンドンばし", seq: [4, 5, 4, 3, 2, 3, 4] }, // ソラソファミファソ
+        { title: "せいじゃの こうしん", seq: [0, 2, 3, 4, 0, 2, 3, 4] } // ドミファソ ドミファソ
+    ];
+
+    const audioBuffers = {};
+    let audioCtx;
+    let isUserTurn = false;
+    let questionSequence = []; 
+    let userSequence = [];     
+    let qCount = 1;
+    let currentSongTitle = "";
+    
+    let playlist = [];
+
+    window.onload = function() {
+        const board = document.getElementById('keyboard');
+        
+        NOTES.forEach((n, idx) => {
+            const key = document.createElement('div');
+            key.className = 'key';
+            key.setAttribute('data-note', n.note);
+            key.setAttribute('data-idx', idx);
+            key.innerText = n.name;
+            
+            key.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                if(isUserTurn) handleUserPlay(idx);
+            });
+            board.appendChild(key);
+
+            audioBuffers[idx] = new Audio(n.file);
+            audioBuffers[idx].load();
+        });
+    };
+
+    function initAudioAndStart() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        
+        document.getElementById('start-screen').style.display = 'none';
+        
+        // ランダムに5曲選ぶ
+        let shuffled = ALL_SONGS.slice();
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        playlist = shuffled.slice(0, 5);
+
+        qCount = 1;
+        startLevel();
+    }
+
+    function playNote(idx) {
+        const originalAudio = audioBuffers[idx];
+        const sound = originalAudio.cloneNode();
+        sound.volume = 1.0;
+        const playPromise = sound.play();
+
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                playSynthTone(NOTES[idx].freq);
+            });
+        }
+    }
+
+    function playSynthTone(freq) {
+        if (!audioCtx) return;
+        const t = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle'; 
+        osc.frequency.setValueAtTime(freq, t);
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.5, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 1.0);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 1.0);
+    }
+
+    function startLevel() {
+        document.getElementById('q-num').innerText = qCount;
+        userSequence = [];
+        isUserTurn = false;
+        
+        const songData = playlist[qCount - 1];
+        questionSequence = songData.seq;
+        currentSongTitle = songData.title;
+
+        const bubble = document.getElementById('msg-bubble');
+        bubble.innerText = `♪ ${currentSongTitle}`;
+        bubble.style.color = "#5d4037";
+        bubble.style.borderColor = "#5d4037";
+
+        setTimeout(() => {
+            playSequence(0);
+        }, 1000);
+    }
+
+    function playSequence(idx) {
+        if (idx >= questionSequence.length) {
+            setTimeout(() => {
+                isUserTurn = true;
+                const bubble = document.getElementById('msg-bubble');
+                bubble.innerText = "はい、どうぞ！";
+                bubble.style.color = "#e65100";
+                bubble.style.borderColor = "#e65100";
+            }, 500);
+            return;
+        }
+
+        const noteIdx = questionSequence[idx];
+        const keyEl = document.querySelectorAll('.key')[noteIdx];
+        
+        playNote(noteIdx);
+        keyEl.classList.add('demo');
+        document.getElementById('teacher-img').classList.add('singing');
+
+        setTimeout(() => {
+            keyEl.classList.remove('demo');
+            document.getElementById('teacher-img').classList.remove('singing');
+            
+            setTimeout(() => {
+                playSequence(idx + 1);
+            }, 400); 
+        }, 400); 
+    }
+
+    function handleUserPlay(idx) {
+        playNote(idx);
+        
+        const keyEl = document.querySelectorAll('.key')[idx];
+        
+        // ▼▼▼ 修正: 一度クラスを消して再度つけることでアニメーションをリセット＆タイマーで消す ▼▼▼
+        keyEl.classList.remove('active');
+        void keyEl.offsetWidth; // リフロー
+        keyEl.classList.add('active');
+
+        // 0.2秒後に色を戻す
+        setTimeout(() => {
+            keyEl.classList.remove('active');
+        }, 200);
+        // ▲▲▲ ここまで ▲▲▲
+
+        const currentTargetIdx = userSequence.length;
+        
+        if (idx === questionSequence[currentTargetIdx]) {
+            userSequence.push(idx);
+            
+            if (userSequence.length === questionSequence.length) {
+                isUserTurn = false;
+                showFeedback(true);
+            }
+        } else {
+            isUserTurn = false;
+            showFeedback(false);
+        }
+    }
+
+    function showFeedback(isSuccess) {
+        const fb = document.getElementById('feedback');
+        if (isSuccess) {
+            fb.innerText = "⭕";
+            fb.style.color = "#ff3d00";
+            fb.style.display = "block";
+            
+            setTimeout(() => {
+                fb.style.display = "none";
+                if (qCount < 5) { 
+                    qCount++;
+                    startLevel();
+                } else {
+                    document.getElementById('clear-screen').style.display = "flex";
+                }
+            }, 1000);
+        } else {
+            fb.innerText = "❌";
+            fb.style.color = "#555";
+            fb.style.display = "block";
+            
+            setTimeout(() => {
+                fb.style.display = "none";
+                userSequence = [];
+                startLevel(); 
+            }, 1000);
+        }
+    }
+</script>
+</body>
+</html>
