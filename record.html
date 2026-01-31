@@ -169,6 +169,27 @@
             box-shadow: 0 4px #546e7a;
         }
 
+        /* 削除ボタンのスタイル */
+        .delete-btn {
+            background: #eceff1;
+            color: #b0bec5;
+            border: none;
+            border-radius: 50%;
+            width: 30px; 
+            height: 30px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: 0.2s;
+            vertical-align: middle;
+        }
+        .delete-btn:hover {
+            background: #ffcdd2;
+            color: #d32f2f;
+        }
+
+
+
         /* 追加：全国ランキングボタン */
         .ranking-link {
             background: #e91e63;
@@ -326,13 +347,21 @@
                     tr.classList.add('achieved');
                 }
 
-                const displayVal = (recordVal !== undefined) ? `${recordVal} <span style="font-size:14px">${info.unit}</span>` : '<span style="color:#ddd; font-size:14px;">-</span>';
+                // 表示用のHTML作成（スコアがない時は「-」、ある時は「スコア＋ゴミ箱」）
+                let scoreHtml = '<span style="color:#ddd; font-size:14px;">-</span>';
+                
+                if (recordVal !== undefined) {
+                    scoreHtml = `
+                        ${recordVal} <span style="font-size:14px">${info.unit}</span>
+                        <button class="delete-btn" title="記録を消す" 
+                            onclick="resetRecord('${userName}', '${gameId}', '${info.name}')">🗑️</button>
+                    `;
+                }
 
                 const inputId = `goal-${gameId}`;
                 tr.innerHTML = `
                     <td class="game-name">${info.name}</td>
-                    <td class="score">${displayVal}</td>
-                    <td style="text-align:center;">
+                    <td class="score">${scoreHtml}</td> <td style="text-align:center;">
                         <div style="display:flex; align-items:center; justify-content:center; gap:5px;">
                             <input type="number" id="${inputId}" class="goal-input" 
                                 value="${goalVal}" 
@@ -420,6 +449,26 @@
                 alert("目標を設定しました！\nがんばって記録更新を目指してね！");
             } else {
                 alert("変更が必要な目標はありませんでした。\n今の目標に向かってがんばろう！");
+            }
+        }
+
+        // ▼▼▼ 記録リセット機能 ▼▼▼
+        function resetRecord(userName, gameId, gameName) {
+            if(!confirm(`${userName}さんの\n「${gameName}」の記録を消しますか？\n\n※消すと、もとにはもどりません！`)) return;
+
+            const STORAGE_KEY = 'papan_records_v1';
+            const allRecords = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+            if (allRecords[userName] && allRecords[userName][gameId] !== undefined) {
+                // 記録を削除
+                delete allRecords[userName][gameId];
+                
+                // 保存
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(allRecords));
+                
+                // 画面更新
+                showRecords();
+                alert('記録をリセットしました🗑️');
             }
         }
     </script>
