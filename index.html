@@ -68,15 +68,74 @@
         transition: 0.2s;
         font-family: inherit;
         font-size: 0.9rem;
-        -webkit-tap-highlight-color: transparent; /* スマホタップ時のハイライト消去 */
+        -webkit-tap-highlight-color: transparent;
     }
 
-    /* 選択中のボタンのデザイン */
     .filter-btn.active, .filter-btn:hover {
         background: #ffad60;
         color: white;
     }
-    /* ▲▲▲ フィルタースタイルここまで ▲▲▲ */
+
+    /* ▼▼▼ 共通ボタン・リンクスタイル（新規追加） ▼▼▼ */
+    
+    /* 上部メニューボタン */
+    .menu-btn {
+        display: inline-block;
+        background: #fff;
+        color: #ff9800;
+        text-decoration: none;
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-weight: bold;
+        font-size: 0.9rem;
+        border: 2px solid #ff9800;
+        box-shadow: 0 2px 5px rgba(255, 152, 0, 0.2);
+        transition: transform 0.2s;
+        margin: 5px; /* ボタン同士の間隔 */
+        white-space: nowrap; /* 折り返し防止 */
+    }
+    .menu-btn:hover {
+        transform: scale(1.05);
+    }
+
+    /* 下部アクションボタン（大きめ） */
+    .action-btn {
+        display: inline-block;
+        background: #fff;
+        color: #ff9800;
+        text-decoration: none;
+        padding: 5px 40px;
+        border-radius: 50px;
+        font-weight: bold;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+        border: 3px solid #ff9800;
+        transition: transform 0.2s;
+        margin: 10px;
+    }
+    .action-btn:hover {
+        transform: scale(1.05);
+    }
+
+    /* コラム記事カード */
+    .article-card {
+        text-decoration: none;
+        color: #333;
+        background: #fff;
+        padding: 15px;
+        border-radius: 8px;
+        width: 100%;
+        max-width: 300px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: 0.3s;
+        display: block;
+    }
+    .article-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+    }
+    /* ▲▲▲ 共通スタイルここまで ▲▲▲ */
+
 
     main {
         max-width: 900px;
@@ -181,91 +240,16 @@
         <button class="filter-btn" onclick="filterByAge('8', this)">8さい</button>
         <button class="filter-btn" onclick="filterByAge('9', this)">9さい</button>
         <button class="filter-btn" onclick="filterByAge('10', this)">10さい〜</button>
-        <div style="margin-top: 10px;">
-            <a href="record.html" style="
-                display: inline-block;
-                background: #fff;
-                color: #ff9800;
-                text-decoration: none;
-                padding: 8px 25px;     
-                border-radius: 50px;
-                font-weight: bold;
-                font-size: 0.95rem;      
-                border: 2px solid #ff9800;
-                box-shadow: 0 2px 5px rgba(255, 152, 0, 0.2);
-                transition: transform 0.2s;
-            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                🏆 きろく
-            </a>
-
-            <a href="calendar.html" style="
-                display: inline-block;
-                background: #fff;
-                color: #ff9800;
-                text-decoration: none;
-                padding: 10px 20px;
-                border-radius: 50px;
-                font-weight: bold;
-                font-size: 0.9rem;
-                border: 2px solid #ff9800;
-                box-shadow: 0 2px 5px rgba(141, 110, 99, 0.2);
-                transition: transform 0.2s;
-            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                📅 まなびカレンダー
-            </a>
-
-            <a href="gacha.html" style="
-                display: inline-block;
-                background: #fff;
-                color: #ff9800;
-                text-decoration: none;
-                padding: 10px 20px;
-                border-radius: 50px;
-                font-weight: bold;
-                font-size: 0.9rem;
-                border: 2px solid #ff9800;
-                box-shadow: 0 2px 5px rgba(233, 30, 99, 0.2);
-                transition: transform 0.2s;
-            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                🧸 ガチャ
-            </a>
-
-            <a href="bank.html" style="
-                display: inline-block;
-                background: #fff;
-                color: #ff9800;
-                text-decoration: none;
-                padding: 10px 20px;
-                border-radius: 50px;
-                font-weight: bold;
-                font-size: 0.9rem;
-                border: 2px solid #ff9800;
-                box-shadow: 0 2px 5px rgba(233, 30, 99, 0.2);
-                transition: transform 0.2s;
-                margin-left: 5px;
-            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                🏦 ぱぱん銀行
-            </a>
-
-            <a href="room.html" style="
-                display: inline-block;
-                background: #fff;
-                color: #ff9800;
-                text-decoration: none;
-                padding: 10px 20px;
-                border-radius: 50px;
-                font-weight: bold;
-                font-size: 0.9rem;
-                border: 2px solid #ff9800;
-                box-shadow: 0 2px 5px rgba(233, 30, 99, 0.2);
-                transition: transform 0.2s;
-                margin-left: 5px;
-            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                🏠 ルーム
-            </a>
-
+        
+        <div style="margin-top: 15px; display: flex; flex-wrap: wrap; justify-content: center;">
+            <a href="record.html" class="menu-btn">🏆 きろく</a>
+            <a href="calendar.html" class="menu-btn">📅 まなびカレンダー</a>
+            <a href="gacha.html" class="menu-btn">🧸 ガチャ</a>
+            <a href="bank.html" class="menu-btn">🏦 ぱぱん銀行</a>
+            <a href="room.html" class="menu-btn">🏠 ルーム</a>
         </div>
-    </div>
+        </div>
+
     <h2 class="section-title title-math">🔢 さんすう・けいさん</h2>
     <div class="grid">
         <a href="sansuu.html" class="card" data-age="5,6,7,8,9,10,11,12">
@@ -571,22 +555,9 @@
     </div>
 
     <div style="text-align: center; margin-bottom: 30px;">
-        <a href="record.html" style="
-            display: inline-block;
-            background: #fff;
-            color: #ff9800;
-            text-decoration: none;
-            padding: 5px 40px;
-            border-radius: 50px;
-            font-weight: bold;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
-            border: 3px solid #ff9800;
-            transition: transform 0.2s;
-        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-            🏆 きろくをみる
-        </a>
-    </div>
+        <a href="record.html" class="action-btn">🏆 きろくをみる</a>
+        <a href="backup.html" class="action-btn">🏆 データのバックアップ</a>
+        </div>
 
 </main>
 
@@ -601,7 +572,7 @@
 
     <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px;">
 
-        <a href="blog/article001.html" style="text-decoration: none; color: #333; background: #fff; padding: 15px; border-radius: 8px; width: 100%; max-width: 300px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.3s;">
+        <a href="blog/article001.html" class="article-card">
             <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 5px; color: #007bff;">
                 こどもの学習で大事なこと
             </div>
@@ -613,7 +584,7 @@
             </div>
         </a>
 
-        <a href="blog/article002.html" style="text-decoration: none; color: #333; background: #fff; padding: 15px; border-radius: 8px; width: 100%; max-width: 300px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.3s;">
+        <a href="blog/article002.html" class="article-card">
             <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 5px; color: #007bff;">
                 こどものお金の教育について
             </div>
@@ -624,8 +595,7 @@
                 記事を読む &gt;
             </div>
         </a>
-
-    </div>
+        </div>
 
 </section>
 
@@ -663,10 +633,7 @@
     // 3. 中身がなくなったセクション見出しを隠す
     const sections = document.querySelectorAll('.grid');
     sections.forEach(grid => {
-      // inline styleでdisplay: flexになっているもの（表示中）を探す
-      // ※filterByAge関数内で style.display = 'flex' をセットしているため
       const visibleCards = Array.from(grid.querySelectorAll('.card')).filter(c => c.style.display !== 'none');
-      
       const title = grid.previousElementSibling;
       
       if (title && title.classList.contains('section-title')) {
