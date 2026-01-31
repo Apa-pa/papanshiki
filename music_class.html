@@ -29,6 +29,7 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
         }
 
         /* 先生エリア */
@@ -95,7 +96,7 @@
             position: relative;
             cursor: pointer;
             box-shadow: inset 0 -5px 0 #ccc;
-            transition: background-color 0.1s, transform 0.1s; /* アニメーション調整 */
+            transition: background-color 0.1s, transform 0.1s;
             display: flex;
             justify-content: center;
             align-items: flex-end;
@@ -126,12 +127,35 @@
         .key[data-note="G4"] { border-top: 8px solid #4fc3f7; }
         .key[data-note="A4"] { border-top: 8px solid #7986cb; }
         .key[data-note="B4"] { border-top: 8px solid #ba68c8; }
-        /* C5削除に伴いCSSも削除 */
 
         /* UIパーツ */
         .hud {
             position: absolute; top: 10px; left: 10px;
             font-weight: bold; color: #5d4037; z-index: 10;
+            background: rgba(255,255,255,0.8);
+            padding: 5px 10px; border-radius: 10px;
+        }
+
+        /* ▼▼▼ 追加：やめるボタン ▼▼▼ */
+        .quit-btn {
+            position: absolute; top: 10px; right: 10px;
+            font-weight: bold; color: #fff; z-index: 10;
+            background: #ef5350;
+            padding: 5px 15px; border-radius: 20px;
+            text-decoration: none; font-size: 14px;
+            box-shadow: 0 2px #c62828;
+        }
+        .quit-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        /* ▼▼▼ 追加：自由演奏終了ボタン ▼▼▼ */
+        .free-quit-btn {
+            position: absolute; top: 10px; right: 10px;
+            font-weight: bold; color: #fff; z-index: 20;
+            background: #0277bd;
+            padding: 10px 20px; border-radius: 20px;
+            border: none; cursor: pointer;
+            box-shadow: 0 4px #01579b;
+            display: none; /* 最初は隠す */
         }
         
         #feedback {
@@ -159,6 +183,18 @@
         }
         .start-btn:active { transform: scale(0.95); box-shadow: none; }
 
+        /* ▼▼▼ 追加：クリア画面のボタン群 ▼▼▼ */
+        .clear-btn-group {
+            display: flex; flex-direction: column; gap: 15px; margin-top: 20px; width: 80%; max-width: 300px;
+        }
+        .btn-sub {
+            padding: 12px; font-size: 18px; border-radius: 30px; border:none;
+            cursor: pointer; font-weight: bold; color: white;
+            box-shadow: 0 4px rgba(0,0,0,0.2);
+        }
+        .btn-restart { background: #4caf50; }
+        .btn-free { background: #00bcd4; }
+
         .btn-link { color:#8d6e63; margin-top:20px; text-decoration: underline; display:block;}
 
     </style>
@@ -166,7 +202,11 @@
 <body>
 
 <div id="game-container">
-    <div class="hud">もんだい: <span id="q-num">1</span> / 5</div>
+    <div id="hud-area" class="hud">もんだい: <span id="q-num">1</span> / 5</div>
+    
+    <a href="index.html" class="quit-btn">🏠 やめる</a>
+    
+    <button id="free-quit" class="free-quit-btn" onclick="endFreePlay()">タイトルへ</button>
 
     <div class="teacher-area">
         <div id="msg-bubble" class="bubble">よく きいてね！</div>
@@ -196,12 +236,17 @@
         <h1 style="color:#e65100;">全もんクリア！</h1>
         <p>すごい！ ピアニストみたい！</p>
         
-        <button class="start-btn" 
-            onclick="this.disabled=true; this.innerText='ゲット！'; this.style.background='#ccc'; if(typeof showPointGetDialog==='function'){showPointGetDialog(50)}">
-            🎁 50ポイント
-        </button>
+        <div class="clear-btn-group">
+            <button id="reward-btn" class="start-btn" style="width:100%; font-size:20px;"
+                onclick="getReward()">
+                🎁 50ポイント
+            </button>
+            
+            <button class="btn-sub btn-restart" onclick="resetAndRestart()">🔄 もう1回する</button>
+            <button class="btn-sub btn-free" onclick="startFreePlay()">🎹 自由に弾く</button>
+        </div>
         
-        <a href="index.html" class="btn-link" style="margin-top:30px;">🏠 ホームへ</a>
+        <a href="index.html" class="btn-link">🏠 ホームへ</a>
     </div>
 </div>
 
@@ -209,7 +254,6 @@
     document.addEventListener('gesturestart', e => e.preventDefault());
     document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 
-    // ▼▼▼ 高いド(C5)を削除し、ド〜シの7音にしました ▼▼▼
     const NOTES = [
         { note: 'C4', name: 'ド', file: 'se/C4.mp3', freq: 261.63 },
         { note: 'D4', name: 'レ', file: 'se/D4.mp3', freq: 293.66 },
@@ -220,29 +264,29 @@
         { note: 'B4', name: 'シ', file: 'se/B4.mp3', freq: 493.88 }
     ];
 
-    // 問題データの定義（10曲）
     const ALL_SONGS = [
-        { title: "かえるの がっしょう", seq: [0, 1, 2, 3, 2, 1, 0] }, // ドレミファミレド
-        { title: "メリーさんの ひつじ", seq: [2, 1, 0, 1, 2, 2, 2] }, // ミレドレミミミ
-        { title: "ちょうちょう", seq: [4, 2, 2, 3, 1, 1] }, // ソミミファレレ
-        { title: "きらきらぼし", seq: [0, 0, 4, 4, 5, 5, 4] }, // ドドソソララソ
-        { title: "チューリップ", seq: [0, 1, 2, 0, 1, 2, 4] }, // ドレミドレミソ
-        
-        { title: "ぶんぶんぶん", seq: [4, 3, 2, 3, 2, 1] }, // ソファミ ファミレ
-        { title: "かっこう", seq: [4, 2, 4, 2, 1, 0] }, // ソミ ソミ レド
-        { title: "こぎつね", seq: [0, 1, 2, 3, 4, 4, 5] }, // ドレミファソソラ
-        { title: "ロンドンばし", seq: [4, 5, 4, 3, 2, 3, 4] }, // ソラソファミファソ
-        { title: "せいじゃの こうしん", seq: [0, 2, 3, 4, 0, 2, 3, 4] } // ドミファソ ドミファソ
+        { title: "かえるの がっしょう", seq: [0, 1, 2, 3, 2, 1, 0] },
+        { title: "メリーさんの ひつじ", seq: [2, 1, 0, 1, 2, 2, 2] },
+        { title: "ちょうちょう", seq: [4, 2, 2, 3, 1, 1] },
+        { title: "きらきらぼし", seq: [0, 0, 4, 4, 5, 5, 4] },
+        { title: "チューリップ", seq: [0, 1, 2, 0, 1, 2, 4] },
+        { title: "ぶんぶんぶん", seq: [4, 3, 2, 3, 2, 1] },
+        { title: "かっこう", seq: [4, 2, 4, 2, 1, 0] },
+        { title: "こぎつね", seq: [0, 1, 2, 3, 4, 4, 5] },
+        { title: "ロンドンばし", seq: [4, 5, 4, 3, 2, 3, 4] },
+        { title: "せいじゃの こうしん", seq: [0, 2, 3, 4, 0, 2, 3, 4] }
     ];
 
     const audioBuffers = {};
+    const activeSounds = new Set();
+    
     let audioCtx;
     let isUserTurn = false;
+    let isFreePlay = false; // 自由演奏モードフラグ
     let questionSequence = []; 
     let userSequence = [];     
     let qCount = 1;
     let currentSongTitle = "";
-    
     let playlist = [];
 
     window.onload = function() {
@@ -257,7 +301,8 @@
             
             key.addEventListener('pointerdown', (e) => {
                 e.preventDefault();
-                if(isUserTurn) handleUserPlay(idx);
+                // 自由演奏モードならいつでも弾ける。ゲーム中は自分の番だけ。
+                if(isFreePlay || isUserTurn) handleUserPlay(idx);
             });
             board.appendChild(key);
 
@@ -272,7 +317,7 @@
         
         document.getElementById('start-screen').style.display = 'none';
         
-        // ランダムに5曲選ぶ
+        // ランダム選曲
         let shuffled = ALL_SONGS.slice();
         for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -281,17 +326,78 @@
         playlist = shuffled.slice(0, 5);
 
         qCount = 1;
+        isFreePlay = false;
         startLevel();
+    }
+
+    // ポイント受け取り
+    function getReward() {
+        const btn = document.getElementById('reward-btn');
+        btn.disabled = true;
+        btn.innerText = 'ゲット！';
+        btn.style.background = '#ccc';
+        if(typeof showPointGetDialog==='function'){
+            showPointGetDialog(50);
+        } else {
+            alert("50ポイントゲット！");
+        }
+    }
+
+    // もう1回遊ぶ（リセット）
+    function resetAndRestart() {
+        // 報酬ボタンを復活させる
+        const btn = document.getElementById('reward-btn');
+        btn.disabled = false;
+        btn.innerText = '🎁 50ポイント';
+        btn.style.background = '#ff6f00';
+        
+        document.getElementById('clear-screen').style.display = 'none';
+        initAudioAndStart();
+    }
+
+    // 自由に弾くモード開始
+    function startFreePlay() {
+        document.getElementById('clear-screen').style.display = 'none';
+        
+        isFreePlay = true;
+        isUserTurn = true; // タップ可能にする
+        
+        // 表示切り替え
+        document.getElementById('hud-area').style.display = 'none'; // 問題数隠す
+        document.getElementById('free-quit').style.display = 'block'; // 終了ボタン表示
+        
+        const bubble = document.getElementById('msg-bubble');
+        bubble.innerText = "すきな 曲を ひいてね♪";
+        bubble.style.color = "#e91e63";
+        bubble.style.borderColor = "#e91e63";
+    }
+
+    // 自由演奏モード終了
+    function endFreePlay() {
+        isFreePlay = false;
+        // UI戻す
+        document.getElementById('hud-area').style.display = 'block';
+        document.getElementById('free-quit').style.display = 'none';
+        
+        // タイトル画面へ
+        document.getElementById('start-screen').style.display = 'flex';
     }
 
     function playNote(idx) {
         const originalAudio = audioBuffers[idx];
         const sound = originalAudio.cloneNode();
         sound.volume = 1.0;
+
+        activeSounds.add(sound);
+        sound.onended = () => {
+            activeSounds.delete(sound);
+        };
+
         const playPromise = sound.play();
 
         if (playPromise !== undefined) {
             playPromise.catch(error => {
+                activeSounds.delete(sound);
                 playSynthTone(NOTES[idx].freq);
             });
         }
@@ -366,15 +472,16 @@
         
         const keyEl = document.querySelectorAll('.key')[idx];
         
-        // ▼▼▼ 修正: 一度クラスを消して再度つけることでアニメーションをリセット＆タイマーで消す ▼▼▼
         keyEl.classList.remove('active');
-        void keyEl.offsetWidth; // リフロー
+        void keyEl.offsetWidth; 
         keyEl.classList.add('active');
 
-        // 0.2秒後に色を戻す
         setTimeout(() => {
             keyEl.classList.remove('active');
         }, 200);
+
+        // ▼▼▼ 修正：自由演奏モードならここで終わり（正誤判定しない） ▼▼▼
+        if (isFreePlay) return;
         // ▲▲▲ ここまで ▲▲▲
 
         const currentTargetIdx = userSequence.length;
