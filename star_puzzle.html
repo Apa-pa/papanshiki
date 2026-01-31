@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>星空パズル</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background-color: #0d1b2a;
+            background-image: radial-gradient(white 1px, transparent 1px), radial-gradient(white 1px, transparent 1px);
+            background-size: 50px 50px;
+            background-position: 0 0, 25px 25px;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            height: 100dvh;
+            touch-action: none;
+            user-select: none;
+            overflow: hidden;
+            color: white;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 600px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header-info {
+            position: absolute; top: 10px; left: 10px;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .stage-title {
+            font-size: 24px; font-weight: bold; color: #ffd700;
+            text-shadow: 2px 2px 0 #000;
+            margin-bottom: 5px;
+        }
+        .target-guide {
+            font-size: 18px; font-weight: bold;
+            text-shadow: 1px 1px 0 #000;
+        }
+        
+        .quit-btn {
+            position: absolute; top: 10px; right: 10px;
+            font-weight: bold; color: #fff; z-index: 20;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px; border-radius: 20px;
+            text-decoration: none; font-size: 14px;
+            pointer-events: auto;
+        }
+
+        .canvas-area {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px; 
+            box-sizing: border-box;
+        }
+
+        svg {
+            width: 100%; height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .star {
+            fill: #ffd700;
+            stroke: none;
+            cursor: pointer;
+            transition: r 0.3s;
+        }
+        .star.active { fill: #fff; filter: drop-shadow(0 0 10px #fff); }
+        
+        .star-num {
+            fill: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            pointer-events: none;
+            text-anchor: middle;
+            dominant-baseline: central;
+            text-shadow: 0 0 3px #000; /* 文字を見やすく */
+        }
+
+        .constellation-line {
+            stroke: #ffd700;
+            stroke-width: 4;
+            stroke-linecap: round;
+            opacity: 0.6;
+            filter: drop-shadow(0 0 5px #ffd700);
+        }
+
+        .complete-overlay {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            background: rgba(0,0,0,0.4);
+            opacity: 0;
+            transition: opacity 1s;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 25;
+        }
+        
+        .complete-text {
+            font-size: 40px; font-weight: bold; color: #ffeb3b;
+            text-shadow: 0 0 20px #ff9800;
+            margin-bottom: 20px;
+            transform: scale(0.5);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .next-btn {
+            position: absolute; bottom: 50px; left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 40px; background: #e91e63; color: white;
+            border: none; border-radius: 30px; font-size: 20px;
+            font-weight: bold;
+            display: none; cursor: pointer;
+            box-shadow: 0 4px #ad1457;
+            pointer-events: auto;
+            z-index: 30;
+        }
+        .next-btn:active { transform: translateX(-50%) translateY(2px); box-shadow: none; }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="header-info">
+        <div class="stage-title" id="stage-name">星座名</div>
+        <div class="target-guide">つぎの星: <span id="target-num" style="color:#ff4081; font-size:24px;">1</span></div>
+    </div>
+    
+    <a href="index.html" class="quit-btn">🏠 やめる</a>
+
+    <div class="canvas-area">
+        <svg id="svg-field" viewBox="0 0 400 600" preserveAspectRatio="xMidYMid meet">
+            </svg>
+
+        <div id="complete-overlay" class="complete-overlay">
+            <div style="font-size:80px;">✨</div>
+            <div id="final-text" class="complete-text">かんせい！</div>
+        </div>
+    </div>
+    
+    <button class="next-btn" onclick="nextStage()">つぎの 星座へ</button>
+</div>
+
+<script>
+    // 星座データ
+    const STAGES = [
+        {
+            name: "北斗七星（ほくとしちせい）",
+            stars: [
+                {x:80, y:180}, {x:140, y:210}, {x:190, y:260}, 
+                {x:220, y:320}, {x:280, y:340}, {x:320, y:290}, {x:250, y:270} 
+            ]
+        },
+        {
+            name: "カシオペヤ座",
+            stars: [
+                {x:50, y:250}, {x:120, y:350}, {x:200, y:300}, {x:280, y:350}, {x:350, y:250}
+            ]
+        },
+        {
+            name: "さそり座",
+            stars: [
+                {x:320, y:120}, {x:300, y:150}, {x:280, y:170}, 
+                {x:250, y:220}, {x:220, y:270}, {x:200, y:350}, 
+                {x:180, y:410}, {x:200, y:460}, {x:250, y:480}, {x:280, y:450}, {x:270, y:420} 
+            ]
+        },
+        {
+            name: "しし座",
+            stars: [
+                {x:280, y:180}, {x:230, y:150}, {x:180, y:180}, {x:190, y:250}, 
+                {x:250, y:280}, {x:320, y:280}, 
+                {x:350, y:330}, {x:250, y:350}, {x:130, y:310} 
+            ]
+        },
+        {
+            name: "はくちょう座",
+            // 中央の星(200,280)を3,5,7回目で使います
+            stars: [
+                {x:200, y:480}, {x:200, y:380}, {x:200, y:280}, 
+                {x:100, y:230}, {x:200, y:280}, {x:300, y:230}, 
+                {x:200, y:280}, {x:200, y:130} 
+            ]
+        },
+        {
+            name: "てんびん座",
+            // 1回目と5回目が同じ場所
+            stars: [
+                {x:200, y:200}, {x:100, y:300}, {x:200, y:400}, {x:300, y:300}, {x:200, y:200}
+            ]
+        },
+        {
+            name: "オリオン座",
+            stars: [
+                {x:120, y:150}, {x:280, y:150}, 
+                {x:220, y:300}, {x:200, y:300}, {x:180, y:300}, 
+                {x:120, y:450}, {x:280, y:450} 
+            ]
+        }
+    ];
+
+    let currentStageIdx = 0;
+    let currentTarget = 1;
+    let stars = [];
+
+    window.onload = loadStage;
+
+    function loadStage() {
+        const svg = document.getElementById('svg-field');
+        svg.innerHTML = ''; 
+        
+        const overlay = document.getElementById('complete-overlay');
+        overlay.style.opacity = 0;
+        document.getElementById('final-text').style.transform = "scale(0.5)";
+        document.querySelector('.next-btn').style.display = 'none';
+        
+        const data = STAGES[currentStageIdx];
+        stars = data.stars;
+        
+        document.getElementById('stage-name').innerText = data.name;
+
+        currentTarget = 1;
+        document.getElementById('target-num').innerText = currentTarget;
+
+        // 星を描画
+        stars.forEach((s, i) => {
+            // 円
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", s.x);
+            circle.setAttribute("cy", s.y);
+            circle.setAttribute("r", 15);
+            circle.setAttribute("class", "star");
+            // 座標を直接データとして持たせる（クリック判定用）
+            circle.setAttribute("data-x", s.x);
+            circle.setAttribute("data-y", s.y);
+            circle.addEventListener("pointerdown", handleTap);
+            svg.appendChild(circle);
+        });
+
+        // ラベル（数字）の初期描画
+        updateLabels();
+    }
+
+    // 重なっている場所の数字を制御する関数
+    function updateLabels() {
+        const svg = document.getElementById('svg-field');
+        // 既存の数字を消す
+        const oldTexts = svg.querySelectorAll('.star-num');
+        oldTexts.forEach(t => t.remove());
+
+        // 各座標ごとに、まだ通過していない一番若い番号を表示する
+        // 座標 "x,y" をキーにして管理
+        const map = {};
+
+        stars.forEach((s, i) => {
+            const num = i + 1;
+            // ターゲットより小さい（すでに通過した）番号は表示しない（または★にする）
+            if (num < currentTarget) return;
+
+            const key = `${s.x},${s.y}`;
+            // まだその場所に数字を置いていないなら、この番号が「今のその場所の番号」
+            if (!map[key]) {
+                map[key] = num;
+                
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", s.x);
+                text.setAttribute("y", s.y);
+                text.setAttribute("class", "star-num");
+                text.textContent = num;
+                svg.appendChild(text);
+            }
+        });
+    }
+
+    function handleTap(e) {
+        e.preventDefault();
+        
+        // クリックされた場所の座標を取得
+        const cx = parseInt(e.target.getAttribute("data-x"));
+        const cy = parseInt(e.target.getAttribute("data-y"));
+
+        // 今のターゲットの星の座標と一致するか確認
+        const targetStar = stars[currentTarget - 1];
+
+        if (targetStar.x === cx && targetStar.y === cy) {
+            // 正解！
+            
+            // 光らせる（同じ座標の星ぜんぶ）
+            const allStars = document.querySelectorAll('.star');
+            allStars.forEach(el => {
+                if(parseInt(el.getAttribute("data-x")) === cx && parseInt(el.getAttribute("data-y")) === cy) {
+                    el.setAttribute("class", "star active");
+                }
+            });
+            
+            // 2つ目以降なら線を引く
+            if (currentTarget > 1) {
+                drawLine(stars[currentTarget-2], stars[currentTarget-1]);
+            }
+
+            if (currentTarget === stars.length) {
+                document.getElementById('target-num').innerText = "OK!";
+                // 最後の数字を消すために更新
+                currentTarget++; 
+                updateLabels();
+                
+                setTimeout(stageClear, 500);
+            } else {
+                currentTarget++;
+                document.getElementById('target-num').innerText = currentTarget;
+                // 次の数字を表示
+                updateLabels();
+            }
+        }
+    }
+
+    function drawLine(p1, p2) {
+        const svg = document.getElementById('svg-field');
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", p1.x);
+        line.setAttribute("y1", p1.y);
+        line.setAttribute("x2", p2.x);
+        line.setAttribute("y2", p2.y);
+        line.setAttribute("class", "constellation-line");
+        // 星より奥、でも背景より手前に
+        svg.insertBefore(line, svg.firstChild);
+    }
+
+    function stageClear() {
+        const overlay = document.getElementById('complete-overlay');
+        overlay.style.opacity = 1;
+        
+        const finalText = document.getElementById('final-text');
+        finalText.innerText = STAGES[currentStageIdx].name;
+        finalText.style.transform = "scale(1)";
+        
+        document.querySelector('.next-btn').style.display = 'block';
+        
+        if(typeof showPointGetDialog === 'function'){
+           // showPointGetDialog(10);
+        }
+    }
+
+    function nextStage() {
+        currentStageIdx++;
+        if (currentStageIdx >= STAGES.length) {
+            alert("全ステージクリア！ 夜空の博士だね！");
+            currentStageIdx = 0;
+            if(typeof showPointGetDialog === 'function'){
+                showPointGetDialog(50);
+            }
+        }
+        loadStage();
+    }
+</script>
+</body>
+</html>
