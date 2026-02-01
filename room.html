@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>マイルーム</title>
     <script src="ranking.js"></script>
+    <script type="module" src="firebase-ranking.js"></script>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
@@ -150,68 +151,118 @@
         <a href="room_shop.html" class="nav-btn btn-interior">🪑 インテリアショップ</a>
         <a href="avatar_shop.html" class="nav-btn btn-shop">👕 アバターショップ</a>
         <br>
-        <a href="index.html" class="nav-btn btn-home">🏠 ホームへもどる</a>
+        <button id="upload-btn" onclick="uploadRoom()" class="nav-btn" style="background:#e91e63; border:none; cursor:pointer; font-size:16px;">
+    🌏 みんなにみせる（公開する）
+</button>
+        <br>
+        <a href="index.html" class="nav-btn btn-home">🏠 ホームへもどる</a>        
     </div>
 </div>
 
 <script>
     const DATA_KEY = 'papan_avatar_v1';
+    let isVisitorMode = false; // 訪問モードかどうかのフラグ
 
+    // ローカル保存用
     function getUserData() { return JSON.parse(localStorage.getItem(DATA_KEY) || '{}'); }
+    function saveUserData(data) { localStorage.setItem(DATA_KEY, JSON.stringify(data)); }
+    function generateUuid() { return 'u_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36); }
 
-    window.onload = function() {
-        if(typeof getUserNames !== 'function') { return; }
-        const users = getUserNames();
-        const select = document.getElementById('user-select');
-        users.forEach(u => {
-            const opt = document.createElement('option');
-            opt.value = u; opt.innerText = u;
-            select.appendChild(opt);
-        });
+    window.onload = async function() {
+        // URLのパラメータ(?uid=...)をチェック
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetUid = urlParams.get('uid');
+
+        if (targetUid) {
+            // --- 🌏 訪問モード ---
+            isVisitorMode = true;
+            document.querySelector('.user-select-area').style.display = 'none'; // 選択肢を隠す
+            document.getElementById('upload-btn').style.display = 'none';       // 公開ボタンを隠す
+            
+            // 読み込み中表示
+            document.getElementById('welcome-msg').innerText = "通信中...お部屋にお邪魔しています...";
+            document.getElementById('room-content').style.display = 'block';
+
+            // Firebaseの読み込み待ち
+            setTimeout(async () => {
+                if (typeof window.fetchPublicRoom === 'function') {
+                    const roomData = await window.fetchPublicRoom(targetUid);
+                    if (roomData) {
+                        // 取得したデータで描画
+                        renderRoom(roomData, roomData.name + " (訪問中)");
+                    } else {
+                        document.getElementById('welcome-msg').innerText = "お部屋が見つかりませんでした😢";
+                    }
+                } else {
+                    alert("通信エラー: 再読み込みしてください");
+                }
+            }, 500);
+
+        } else {
+            // --- 🏠 通常モード (自分の部屋) ---
+            if(typeof getUserNames !== 'function') { return; }
+            const users = getUserNames();
+            const select = document.getElementById('user-select');
+            users.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u; opt.innerText = u;
+                select.appendChild(opt);
+            });
+        }
     };
 
+    // ユーザー選択切り替え（通常モード用）
     function loadRoom() {
+        if(isVisitorMode) return; // 訪問中は無視
+
         const userName = document.getElementById('user-select').value;
-        const roomContent = document.getElementById('room-content');
+        if(!userName) {
+            document.getElementById('room-content').style.display = 'none';
+            return;
+        }
+        document.getElementById('room-content').style.display = 'block';
+
+        const allData = getUserData();
+        const userData = allData[userName] || {};
+        
+        // 描画関数を呼ぶ
+        renderRoom(userData, userName);
+    }
+
+    // ★共通の描画関数 (データをもらって画面に表示するだけ)
+    function renderRoom(data, displayName) {
         const roomBg = document.getElementById('my-room-bg');
         const avatarImg = document.getElementById('avatar-img');
         const furnLeft = document.getElementById('furn-left');
         const furnRight = document.getElementById('furn-right');
         const msg = document.getElementById('welcome-msg');
 
-        if(!userName) {
-            roomContent.style.display = 'none';
-            return;
-        }
-        roomContent.style.display = 'block';
+        // 名前表示
+        msg.innerText = `${displayName}さんの お部屋です！`;
 
-        const allData = getUserData();
-        const userData = allData[userName] || {};
-        
-        // --- アバター ---
-        avatarImg.src = `avatar/${userData.current || 'none'}.png`;
+        // アバター (訪問データの場合は data.avatar、ローカルの場合は data.current)
+        // どちらにも対応できるように調整
+        const avatarId = data.avatar || data.current || 'none';
+        avatarImg.src = `avatar/${avatarId}.png`;
 
-        // --- お部屋(壁紙) ---
-        const currentRoomId = userData.currentRoom || 'none';
-        if (currentRoomId === 'none') {
+        // 壁紙
+        const roomId = data.bg || data.currentRoom || 'none';
+        if (roomId === 'none') {
             roomBg.style.backgroundImage = 'none';
         } else {
-            roomBg.style.backgroundImage = `url('room/${currentRoomId}.jpg')`;
+            roomBg.style.backgroundImage = `url('room/${roomId}.jpg')`;
         }
-        
-        // --- 家具の配置処理 ---
-        const furniture = userData.furniture || {};
+
+        // 家具
+        const furniture = data.furniture || {};
         if(furniture.left) { furnLeft.src = `room/${furniture.left}.png`; furnLeft.style.display = 'block'; } else { furnLeft.style.display = 'none'; }
         if(furniture.right) { furnRight.src = `room/${furniture.right}.png`; furnRight.style.display = 'block'; } else { furnRight.style.display = 'none'; }
 
-        // --- 勲章の配置処理 (4か所) ---
-        const medals = userData.medals || {};
-        
-        // ヘルパー関数: IDとキーを指定して表示
-        // fallbackKeyは以前のデータ(left/rightのみ)との互換性用
+        // 勲章
+        const medals = data.medals || {};
         const setMedal = (elementId, key, fallbackKey) => {
             const el = document.getElementById(elementId);
-            const itemId = medals[key] || medals[fallbackKey]; // 新しいキー または 古いキー
+            const itemId = medals[key] || medals[fallbackKey];
             if(itemId) {
                 el.src = `room/${itemId}.png`;
                 el.style.display = 'block';
@@ -220,15 +271,15 @@
             }
         };
 
-        setMedal('medal-left-1', 'left1', 'left');   // 内側（左）
-        setMedal('medal-left-2', 'left2', null);     // 外側（左）
-        setMedal('medal-right-1', 'right1', 'right'); // 内側（右）
-        setMedal('medal-right-2', 'right2', null);    // 外側（右）
-
-        msg.innerText = `${userName}さんの お部屋です！`;
+        setMedal('medal-left-1', 'left1', 'left');
+        setMedal('medal-left-2', 'left2', null);
+        setMedal('medal-right-1', 'right1', 'right');
+        setMedal('medal-right-2', 'right2', null);
     }
 
+    // ヘルプ表示（変更なし）
     function showHelp() {
+        // ... (前のコードと同じなので省略してもOKですが、念のため残してください) ...
         const old = document.getElementById('help-overlay');
         if(old) { old.remove(); return; }
         const overlay = document.createElement('div');
@@ -239,18 +290,45 @@
                 <button onclick="document.getElementById('help-overlay').remove()" style="position:absolute; top:10px; right:10px; background:#ddd; border:none; border-radius:50%; width:30px; height:30px; font-weight:bold; cursor:pointer;">×</button>
                 <h2 style="color:#00897b; margin-top:0;">マイルームの つかいかた</h2>
                 <div style="text-align:left; font-size:16px; line-height:1.8; color:#333; background:#e0f2f1; padding:15px; border-radius:10px;">
-                    <p style="margin:0 0 10px 0;"><b>💰 ポイントを ためよう！</b><br>ゲームや お勉強を がんばると、ポイントが たまるよ。</p>
-                    <p style="margin:0 0 10px 0;"><b>👕 アバターを かおう！</b><br>ポイントで、すきな お洋服(ようふく)に 着がえられるよ。</p>
-                    <p style="margin:0; border-top:2px dashed #00897b; padding-top:10px;">
-                        <b>🏆 勲章(くんしょう)を かざろう！</b><br>
-                        インテリアショップで買った勲章は、壁の上の方に4つまで飾れるよ！
-                    </p>
+                    <p><b>💰 ポイントを ためよう！</b><br>ゲームや勉強でポイントGET。</p>
+                    <p><b>🌏 ネットに公開</b><br>「公開する」ボタンで、みんなにお部屋を見てもらえるよ！</p>
                 </div>
                 <button onclick="document.getElementById('help-overlay').remove()" style="margin-top:20px; padding:10px 30px; background:#009688; color:white; border:none; border-radius:30px; font-weight:bold; cursor:pointer; font-size:16px;">わかった！</button>
             </div>
         `;
         overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
         document.body.appendChild(overlay);
+    }
+
+    // 公開ボタン（ID付与してアップロード）
+    function uploadRoom() {
+        // 訪問モード中は押せないはずですが念のため
+        if(isVisitorMode) return;
+
+        const userName = document.getElementById('user-select').value;
+        if(!userName) { alert("ユーザーを選んでね"); return; }
+        
+        const publicName = prompt("公開する名前を入力してね！", userName);
+        if (publicName === null) return; 
+        if (publicName.trim() === "") { alert("名前を入力してね"); return; }
+
+        if(!confirm(`「${publicName}」という名前で\nインターネットに公開しますか？`)) return;
+
+        const allData = getUserData();
+        const myData = allData[userName] || {};
+
+        if (!myData.uid) {
+            myData.uid = generateUuid();
+            allData[userName] = myData;
+            saveUserData(allData);
+            console.log("新しいIDを発行しました:", myData.uid);
+        }
+
+        if (typeof window.publishMyRoom === 'function') {
+            window.publishMyRoom(myData.uid, myData, publicName);
+        } else {
+            alert("通信の準備中です…少し待ってから押してね");
+        }
     }
 </script>
 
