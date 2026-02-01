@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ひつじプロ・ダービー</title>
+    <script src="../ranking.js"></script>
+    <style>
+        body {
+            font-family: 'Arial Black', sans-serif;
+            background: linear-gradient(135deg, #1a0033, #2c003e);
+            color: #fff;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            user-select: none;
+        }
+
+        .header {
+            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #ffd700;
+        }
+
+        .balance-area { color: #ffd700; font-size: 18px; }
+        .user-name-tag { font-size: 14px; color: #fff; background: #e91e63; padding: 2px 8px; border-radius: 10px; }
+
+        .race-track {
+            flex: 1;
+            position: relative;
+            background: #2e7d32;
+            border-top: 5px solid #fff;
+            border-bottom: 5px solid #fff;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .lane {
+            height: 16.6%;
+            border-bottom: 1px dashed rgba(255,255,255,0.3);
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .finish-line {
+            position: absolute;
+            right: 50px;
+            top: 0;
+            width: 10px;
+            height: 100%;
+            background: repeating-linear-gradient(0deg, #fff, #fff 10px, #000 10px, #000 20px);
+        }
+
+        .sheep {
+            position: absolute;
+            left: 10px;
+            width: 60px;
+            height: 60px;
+            z-index: 10;
+        }
+
+        .sheep-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .betting-panel {
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sheep-selector {
+            display: flex;
+            justify-content: space-around;
+            gap: 5px;
+        }
+
+        .sheep-btn {
+            flex: 1;
+            padding: 8px;
+            background: #444;
+            border: 2px solid #666;
+            color: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        .sheep-btn.selected {
+            background: #ffd700;
+            color: #000;
+            border-color: #fff;
+        }
+        .odds-val { display: block; font-size: 14px; font-weight: bold; }
+
+        .bet-input-area {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        input[type="number"] {
+            width: 80px;
+            padding: 8px;
+            font-size: 18px;
+            border-radius: 5px;
+            border: none;
+            text-align: center;
+        }
+
+        .start-btn {
+            padding: 10px 25px;
+            background: #ff0055;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px #990033;
+        }
+        .start-btn:disabled { background: #666; box-shadow: none; }
+
+        /* 実況ログ */
+        .commentary {
+            height: 34px;
+            background: #000;
+            color: #00ff00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+        }
+
+        /* 共通オーバーレイ */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 100; text-align: center;
+        }
+
+        .user-btn {
+            margin: 5px; padding: 12px 25px; font-size: 18px;
+            background: #4caf50; color: white; border: none;
+            border-radius: 30px; cursor: pointer; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div id="user-display" class="user-name-tag">ゲスト</div>
+    <div class="balance-area">💰 <span id="balance">0</span> 🌰</div>
+</div>
+
+<div class="commentary" id="commentary">どのひつじが勝つか予想してね！</div>
+
+<div class="race-track" id="track">
+    <div class="finish-line"></div>
+    <script>
+        for(let i=0; i<6; i++) {
+            document.write(`
+                <div class="lane">
+                    <div class="sheep" id="sheep-${i}">
+                        <div style="position:absolute; top:-12px; left:50%; transform:translateX(-50%); font-size:10px; background:rgba(0,0,0,0.5); padding:1px 4px; border-radius:4px;">No.${i+1}</div>
+                        <img src="hitsuji_walk.png" class="sheep-img" id="img-${i}">
+                    </div>
+                </div>
+            `);
+        }
+    </script>
+</div>
+
+<div class="betting-panel">
+    <div class="sheep-selector" id="selectors"></div>
+    <div class="bet-input-area">
+        <input type="number" id="bet-amount" value="1" min="1">
+        <button class="start-btn" id="start-btn" onclick="startRace()">勝負（BET）！</button>
+    </div>
+    <a href="secret_home.html" style="color:#aaa; font-size:12px; text-align:center; margin-top:5px;">カジノロビーに戻る</a>
+</div>
+
+<div id="user-selection-screen" class="overlay">
+    <h2 style="color:#ffd700;">だれが あそぶ？</h2>
+    <div id="user-list"></div>
+    <div style="margin-top:20px; border-top:1px dashed #666; padding-top:20px;">
+        <input type="text" id="new-user-input" placeholder="新しいなまえ" style="padding:10px; border-radius:5px; border:none;">
+        <button class="user-btn" style="background:#2196f3; font-size:14px; padding:10px 20px;" onclick="createNewUser()">作成</button>
+    </div>
+</div>
+
+<div id="result-overlay" class="overlay" style="display:none;">
+    <h1 id="result-title" style="font-size:40px; color:#ffd700;">1着: No.1</h1>
+    <p id="result-msg" style="font-size:20px;"></p>
+    <button class="start-btn" onclick="resetRace()">もう一回！</button>
+</div>
+
+<script>
+    let currentUserName = "";
+    let selectedSheep = 0;
+    let raceInProgress = false;
+
+    const SHEEP_CONFIG = [
+        { id: 0, name: "モフスピード", speed: 2.2, stamina: 0.9, odds: 3.5 },
+        { id: 1, name: "メェーじろう", speed: 1.8, stamina: 1.1, odds: 5.5 },
+        { id: 2, name: "ウール100%", speed: 2.0, stamina: 1.0, odds: 4.5 },
+        { id: 3, name: "ドングリ好き", speed: 1.6, stamina: 1.3, odds: 8.0 },
+        { id: 4, name: "レジェンド羊", speed: 2.5, stamina: 0.8, odds: 2.5 },
+        { id: 5, name: "のんびり雲", speed: 1.5, stamina: 1.5, odds: 12.0 }
+    ];
+
+    window.onload = init;
+
+    function init() {
+        showUserSelection();
+        setupSelectors();
+    }
+
+    // ユーザー選択画面を表示
+    function showUserSelection() {
+        const listDiv = document.getElementById('user-list');
+        listDiv.innerHTML = '';
+        const users = (typeof getUserNames === 'function') ? getUserNames() : [];
+        
+        users.forEach(u => {
+            const btn = document.createElement('button');
+            btn.className = 'user-btn';
+            btn.innerText = u;
+            btn.onclick = () => selectUser(u);
+            listDiv.appendChild(btn);
+        });
+        document.getElementById('user-selection-screen').style.display = 'flex';
+    }
+
+    function createNewUser() {
+        const input = document.getElementById('new-user-input');
+        const name = input.value.trim();
+        if(name) selectUser(name);
+    }
+
+    function selectUser(name) {
+        currentUserName = name;
+        document.getElementById('user-selection-screen').style.display = 'none';
+        document.getElementById('user-display').innerText = name;
+        updateBalance();
+    }
+
+    function updateBalance() {
+        const balance = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
+        document.getElementById('balance').innerText = balance;
+    }
+
+    function setupSelectors() {
+        const selectors = document.getElementById('selectors');
+        SHEEP_CONFIG.forEach(s => {
+            const btn = document.createElement('button');
+            btn.className = 'sheep-btn';
+            btn.id = `btn-${s.id}`;
+            btn.innerHTML = `No.${s.id+1}<span class="odds-val">${s.odds}倍</span>`;
+            btn.onclick = () => {
+                if(raceInProgress) return;
+                selectedSheep = s.id;
+                document.querySelectorAll('.sheep-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                document.getElementById('commentary').innerText = `No.${s.id+1} 「${s.name}」に賭けたぞ！`;
+            };
+            selectors.appendChild(btn);
+        });
+        document.getElementById('btn-0').classList.add('selected');
+    }
+
+    function startRace() {
+        const bet = parseInt(document.getElementById('bet-amount').value);
+        const currentBalance = getUserDonguri(currentUserName);
+
+        if(bet > currentBalance) { alert("どんぐりが足りないよ！"); return; }
+        if(bet <= 0) return;
+
+        // 支払い
+        if(typeof spendDonguri === 'function') {
+            spendDonguri(currentUserName, bet);
+        }
+        updateBalance();
+        
+        raceInProgress = true;
+        document.getElementById('start-btn').disabled = true;
+        document.getElementById('commentary').innerText = "各ひつじ、いっせいに出走！！";
+
+        const trackWidth = document.getElementById('track').clientWidth - 110;
+        const positions = [0, 0, 0, 0, 0, 0];
+        const staminas = SHEEP_CONFIG.map(s => 100);
+        let winner = null;
+        let frame = 0;
+
+        const raceInterval = setInterval(() => {
+            frame++;
+            for(let i=0; i<6; i++) {
+                if(winner !== null) continue;
+                const cfg = SHEEP_CONFIG[i];
+                let move = (cfg.speed * (staminas[i]/100)) + (Math.random() * 0.5);
+                staminas[i] -= (Math.random() * cfg.stamina * 0.3);
+                if(staminas[i] < 20) staminas[i] = 20;
+                positions[i] += move;
+                document.getElementById(`sheep-${i}`).style.left = positions[i] + 'px';
+
+                // アニメーション
+                const img = document.getElementById(`img-${i}`);
+                img.src = (frame % 10 < 5) ? "hitsuji_walk.png" : "hitsuji_run1.png";
+
+                if(positions[i] >= trackWidth) winner = i;
+            }
+
+            if(winner !== null) {
+                clearInterval(raceInterval);
+                finishRace(winner, bet);
+            }
+        }, 30);
+    }
+
+    function finishRace(winnerId, betAmount) {
+        raceInProgress = false;
+        const isWin = (winnerId === selectedSheep);
+        const winAmount = Math.floor(betAmount * SHEEP_CONFIG[winnerId].odds);
+        
+        document.getElementById('result-title').innerText = `1着: No.${winnerId + 1}`;
+        const msg = document.getElementById('result-msg');
+
+        if(isWin) {
+            msg.innerHTML = `的中！ 💰 ${winAmount} どんぐり ゲット！`;
+            if(typeof addDonguri === 'function') addDonguri(currentUserName, winAmount);
+            updateBalance();
+        } else {
+            msg.innerText = "はずれ... どんぐり没収だ。";
+        }
+        document.getElementById('result-overlay').style.display = 'flex';
+    }
+
+    function resetRace() {
+        document.getElementById('result-overlay').style.display = 'none';
+        document.getElementById('start-btn').disabled = false;
+        document.getElementById('commentary').innerText = "次の勝負はどうする？";
+        for(let i=0; i<6; i++) {
+            document.getElementById(`sheep-${i}`).style.left = '10px';
+            document.getElementById(`img-${i}`).src = "hitsuji_walk.png";
+        }
+    }
+</script>
+</body>
+</html>
