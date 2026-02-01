@@ -68,6 +68,7 @@
             position: absolute; top: 5px; right: 5px;
             background: #ffca28; color: #5d4037;
             padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold;
+            z-index: 2;
         }
 
         .item-img {
@@ -94,8 +95,14 @@
             border: none; border-radius: 20px; font-weight: bold; cursor: pointer;
         }
         .btn-buy { background: #ff7043; color: white; }
-        .btn-equip { background: #66bb6a; color: white; margin-top: 2px; font-size: 12px;}
+        .btn-equip { background: #66bb6a; color: white; margin-top: 2px; font-size: 11px; padding: 5px 0;}
         .btn-disabled { background: #ccc; color: #666; cursor: not-allowed; }
+
+        .medal-btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
+        }
 
         .back-link {
             display: inline-block; margin-top: 10px; padding: 10px 30px;
@@ -148,21 +155,20 @@
 <script>
     const ROOMS = [
         { id: 'none', name: 'シンプルなお部屋', src: '', price: 0, desc: 'まっしろな お部屋' },
-        { id: 'room_01', name: 'ひまわりのかべがみの部屋', src: 'room/room_01.jpg', price: 500, desc: 'フローリングにかわいい花の壁紙' },
-        { id: 'room_02', name: 'さわやか勉強部屋', src: 'room/room_02.jpg', price: 10, desc: '水色のさわやかなへや' },
-        { id: 'room_03', name: '木のおうち', src: 'room/room_03.jpg', price: 10, desc: '木漏れ日がさすすてきな木のへや' },
+        { id: 'room_01', name: 'ひまわりのかべがみの部屋', src: 'room/room_01.jpg', price: 1000, desc: 'フローリングにかわいい花の壁紙' },
+        { id: 'room_02', name: 'さわやか勉強部屋', src: 'room/room_02.jpg', price: 1500, desc: '水色のさわやかなへや' },
+        { id: 'room_03', name: '木のおうち', src: 'room/room_03.jpg', price: 2000, desc: '木漏れ日がさすすてきな木のへや' },
     ];
 
     const MEDALS = [
-        { id: 'shield_silver', name: 'シルバーのたて', src: 'room/shield_silver.png', price: 10, desc: '銀！10000ポイントの 証！' },
-        { id: 'shield_gold', name: 'ゴールドのたて', src: 'room/shield_gold.png', price: 50, desc: '金！100000ポイントの証！' }
+        { id: 'shield_silver', name: 'シルバーのたて', src: 'room/shield_silver.png', price: 100000, desc: '銀！100000ポイントの 証！' },
+        { id: 'shield_gold', name: 'ゴールドのたて', src: 'room/shield_gold.png', price: 1000000, desc: '金！1000000ポイントの証！' }
     ];
 
-    // ★追加: 家具データ (テスト価格 10pt)
     const FURNITURE = [
-        { id: 'table_01', name: '木の勉強机', src: 'room/table_01.png', price: 10, desc: 'あたたかみのある 木製の勉強づくえ' },
-        { id: 'table_02', name: 'ふかふかベッド', src: 'room/table_02.png', price: 10, desc: 'あたたかそうな掛布団のベッド' },
-        { id: 'table_03', name: 'じょうひんベッド', src: 'room/table_03.png', price: 10, desc: 'レースがついててかわいいベッド' }
+        { id: 'table_01', name: '木の勉強机', src: 'room/table_01.png', price: 1500, desc: 'あたたかみのある 木製の勉強づくえ' },
+        { id: 'table_02', name: 'ふかふかベッド', src: 'room/table_02.png', price: 1500, desc: 'あたたかそうな掛布団のベッド' },
+        { id: 'table_03', name: 'じょうひんベッド', src: 'room/table_03.png', price: 2000, desc: 'レースがついててかわいいベッド' }
     ];
 
     const DATA_KEY = 'papan_avatar_v1';
@@ -200,9 +206,9 @@
         if (!userData.ownedRooms) userData.ownedRooms = ['none'];
         if (!userData.currentRoom) userData.currentRoom = 'none';
         if (!userData.ownedMedals) userData.ownedMedals = [];
-        if (!userData.medals) userData.medals = { left: null, right: null };
-        if (!userData.ownedFurniture) userData.ownedFurniture = []; // 家具所持リスト
-        if (!userData.furniture) userData.furniture = { left: null, right: null }; // 家具配置場所
+        if (!userData.medals) userData.medals = {}; 
+        if (!userData.ownedFurniture) userData.ownedFurniture = []; 
+        if (!userData.furniture) userData.furniture = { left: null, right: null }; 
 
         // 1. お部屋
         const roomContainer = document.getElementById('room-list');
@@ -223,18 +229,43 @@
         medalContainer.innerHTML = '';
         MEDALS.forEach(item => {
             const isOwned = userData.ownedMedals.includes(item.id);
-            const isEqLeft = (userData.medals.left === item.id);
-            const isEqRight = (userData.medals.right === item.id);
             const canBuy = (currentPoints >= item.price);
+            
+            // どこに飾っているかチェック
+            const isEqL1 = (userData.medals.left1 === item.id);
+            const isEqL2 = (userData.medals.left2 === item.id);
+            const isEqR1 = (userData.medals.right1 === item.id);
+            const isEqR2 = (userData.medals.right2 === item.id);
+
+            let badge = '';
+            if (isEqL1) badge = '<div class="badge-equipped">左1</div>';
+            else if (isEqL2) badge = '<div class="badge-equipped">左2</div>';
+            else if (isEqR1) badge = '<div class="badge-equipped">右1</div>';
+            else if (isEqR2) badge = '<div class="badge-equipped">右2</div>';
+
             const card = document.createElement('div');
             card.className = `item-card ${isOwned ? 'owned' : ''}`;
-            let badge = isEqLeft ? `<div class="badge-equipped">左に展示中</div>` : (isEqRight ? `<div class="badge-equipped">右に展示中</div>` : '');
-            let btnHtml = isOwned ? `<div style="display:flex; gap:5px;"><button class="action-btn btn-equip" onclick="equipMedal('${userName}', '${item.id}', 'left')">左</button><button class="action-btn btn-equip" onclick="equipMedal('${userName}', '${item.id}', 'right')">右</button></div>` : (canBuy ? `<button class="action-btn btn-buy" onclick="buyMedal('${userName}', '${item.id}', ${item.price})">${item.price}pt購入</button>` : `<button class="action-btn btn-disabled">${item.price}pt (不足)</button>`);
+            
+            let btnHtml = '';
+            if (isOwned) {
+                btnHtml = `
+                    <div class="medal-btn-group">
+                        <button class="action-btn btn-equip" onclick="equipMedal('${userName}', '${item.id}', 'left2')">左外</button>
+                        <button class="action-btn btn-equip" onclick="equipMedal('${userName}', '${item.id}', 'left1')">左内</button>
+                        <button class="action-btn btn-equip" onclick="equipMedal('${userName}', '${item.id}', 'right1')">右内</button>
+                        <button class="action-btn btn-equip" onclick="equipMedal('${userName}', '${item.id}', 'right2')">右外</button>
+                    </div>`;
+            } else if (canBuy) {
+                btnHtml = `<button class="action-btn btn-buy" onclick="buyMedal('${userName}', '${item.id}', ${item.price})">${item.price}pt購入</button>`;
+            } else {
+                btnHtml = `<button class="action-btn btn-disabled">${item.price}pt (不足)</button>`;
+            }
+
             card.innerHTML = `${badge}<img src="${item.src}" class="item-img"><div style="font-weight:bold;">${item.name}</div>${btnHtml}`;
             medalContainer.appendChild(card);
         });
 
-        // 3. 家具リスト生成 (NEW)
+        // 3. 家具
         const furnContainer = document.getElementById('furniture-list');
         furnContainer.innerHTML = '';
         FURNITURE.forEach(item => {
@@ -260,9 +291,30 @@
     function buyRoom(u, i, p) { if(confirm(`${p}ptで購入？`)) if(spendPoints(u,p)){ let d=getUserData(); if(!d[u]) d[u]={}; if(!d[u].ownedRooms) d[u].ownedRooms=['none']; d[u].ownedRooms.push(i); saveUserData(d); loadShop(); } }
     function equipRoom(u, i) { let d=getUserData(); d[u].currentRoom=i; saveUserData(d); loadShop(); }
     function buyMedal(u, i, p) { if(confirm(`${p}ptで購入？`)) if(spendPoints(u,p)){ let d=getUserData(); if(!d[u]) d[u]={}; if(!d[u].ownedMedals) d[u].ownedMedals=[]; d[u].ownedMedals.push(i); saveUserData(d); loadShop(); } }
-    function equipMedal(u, i, s) { let d=getUserData(); if(!d[u].medals) d[u].medals={left:null,right:null}; d[u].medals[s]=i; saveUserData(d); loadShop(); }
+    
+    // ★修正: 重複バグ対策済みの関数
+    function equipMedal(u, i, s) { 
+        let d = getUserData(); 
+        if(!d[u].medals) d[u].medals = {}; 
+        
+        // 1. 他の場所に同じ勲章があったら消す（移動のため）
+        Object.keys(d[u].medals).forEach(key => {
+            if (d[u].medals[key] === i) {
+                delete d[u].medals[key];
+            }
+        });
 
-    // ★追加: 家具の購入
+        // 2. 指定の場所にセット
+        d[u].medals[s] = i; 
+
+        // 念のため古い互換キーも掃除
+        if(d[u].medals.left === i) delete d[u].medals.left;
+        if(d[u].medals.right === i) delete d[u].medals.right;
+
+        saveUserData(d); 
+        loadShop(); 
+    }
+
     function buyFurniture(userName, itemId, price) {
         if(!confirm(`${price}ポイントで 購入しますか？`)) return;
         if (spendPoints(userName, price)) {
@@ -276,7 +328,6 @@
         } else { alert('ポイントが足りないようです…'); }
     }
 
-    // ★追加: 家具の配置
     function equipFurniture(userName, itemId, side) {
         const allData = getUserData();
         if (!allData[userName].furniture) allData[userName].furniture = { left: null, right: null };

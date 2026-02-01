@@ -84,8 +84,13 @@
             filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
             z-index: 4;
         }
-        .medal-left { left: 25%; }
-        .medal-right { right: 25%; }
+        /* 左側（内・外） */
+        .medal-left-1 { left: 25%; } /* 内側 */
+        .medal-left-2 { left: 8%; }  /* 外側 */
+        
+        /* 右側（内・外） */
+        .medal-right-1 { right: 25%; } /* 内側 */
+        .medal-right-2 { right: 8%; }  /* 外側 */
 
         /* 🪑 家具の配置設定 (z-index 5) */
         .furniture-item {
@@ -128,8 +133,11 @@
 
     <div id="room-content" style="display:none;">
         <div class="room-stage" id="my-room-bg">
-            <img id="medal-left" class="medal-item medal-left" style="display:none;">
-            <img id="medal-right" class="medal-item medal-right" style="display:none;">
+            <img id="medal-left-2" class="medal-item medal-left-2" style="display:none;">
+            <img id="medal-left-1" class="medal-item medal-left-1" style="display:none;">
+            <img id="medal-right-1" class="medal-item medal-right-1" style="display:none;">
+            <img id="medal-right-2" class="medal-item medal-right-2" style="display:none;">
+
             <img id="furn-left" class="furniture-item furniture-left" style="display:none;">
             <img id="furn-right" class="furniture-item furniture-right" style="display:none;">
 
@@ -169,8 +177,6 @@
         const avatarImg = document.getElementById('avatar-img');
         const furnLeft = document.getElementById('furn-left');
         const furnRight = document.getElementById('furn-right');
-        const medalLeft = document.getElementById('medal-left');
-        const medalRight = document.getElementById('medal-right');
         const msg = document.getElementById('welcome-msg');
 
         if(!userName) {
@@ -195,37 +201,29 @@
         
         // --- 家具の配置処理 ---
         const furniture = userData.furniture || {};
-        
-        if(furniture.left) {
-            furnLeft.src = `room/${furniture.left}.png`;
-            furnLeft.style.display = 'block';
-        } else {
-            furnLeft.style.display = 'none';
-        }
+        if(furniture.left) { furnLeft.src = `room/${furniture.left}.png`; furnLeft.style.display = 'block'; } else { furnLeft.style.display = 'none'; }
+        if(furniture.right) { furnRight.src = `room/${furniture.right}.png`; furnRight.style.display = 'block'; } else { furnRight.style.display = 'none'; }
 
-        if(furniture.right) {
-            furnRight.src = `room/${furniture.right}.png`;
-            furnRight.style.display = 'block';
-        } else {
-            furnRight.style.display = 'none';
-        }
-
-        // --- 勲章の配置処理 ---
+        // --- 勲章の配置処理 (4か所) ---
         const medals = userData.medals || {};
         
-        if(medals.left) {
-            medalLeft.src = `room/${medals.left}.png`;
-            medalLeft.style.display = 'block';
-        } else {
-            medalLeft.style.display = 'none';
-        }
+        // ヘルパー関数: IDとキーを指定して表示
+        // fallbackKeyは以前のデータ(left/rightのみ)との互換性用
+        const setMedal = (elementId, key, fallbackKey) => {
+            const el = document.getElementById(elementId);
+            const itemId = medals[key] || medals[fallbackKey]; // 新しいキー または 古いキー
+            if(itemId) {
+                el.src = `room/${itemId}.png`;
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        };
 
-        if(medals.right) {
-            medalRight.src = `room/${medals.right}.png`;
-            medalRight.style.display = 'block';
-        } else {
-            medalRight.style.display = 'none';
-        }
+        setMedal('medal-left-1', 'left1', 'left');   // 内側（左）
+        setMedal('medal-left-2', 'left2', null);     // 外側（左）
+        setMedal('medal-right-1', 'right1', 'right'); // 内側（右）
+        setMedal('medal-right-2', 'right2', null);    // 外側（右）
 
         msg.innerText = `${userName}さんの お部屋です！`;
     }
@@ -245,7 +243,7 @@
                     <p style="margin:0 0 10px 0;"><b>👕 アバターを かおう！</b><br>ポイントで、すきな お洋服(ようふく)に 着がえられるよ。</p>
                     <p style="margin:0; border-top:2px dashed #00897b; padding-top:10px;">
                         <b>🏆 勲章(くんしょう)を かざろう！</b><br>
-                        インテリアショップで買った勲章は、壁の上の方に飾れるよ！
+                        インテリアショップで買った勲章は、壁の上の方に4つまで飾れるよ！
                     </p>
                 </div>
                 <button onclick="document.getElementById('help-overlay').remove()" style="margin-top:20px; padding:10px 30px; background:#009688; color:white; border:none; border-radius:30px; font-weight:bold; cursor:pointer; font-size:16px;">わかった！</button>
