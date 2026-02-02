@@ -6,7 +6,7 @@
     <title>CHIN-CHIRO | ぱぱんべガス</title>
     <script src="../ranking.js"></script>
     <style>
-        /* ▼▼▼ ぱぱんべガス共通デザイン ▼▼▼ */
+        /* ▼▼▼ ぱぱんべガス共通デザイン（ここから元のコード） ▼▼▼ */
         body {
             font-family: 'Arial Black', 'Impact', sans-serif;
             background: linear-gradient(135deg, #2c003e, #51007a, #000046);
@@ -40,7 +40,6 @@
             text-shadow: 2px 2px 0 #b8860b, 0 0 10px #ffd700, 0 0 20px #ff00de;
         }
         
-        /* ルールボタン */
         .rule-btn {
             background: transparent; border: 1px solid #00e5ff; color: #00e5ff;
             font-size: 14px; padding: 5px 15px; border-radius: 20px; cursor: pointer;
@@ -48,7 +47,6 @@
         }
         .rule-btn:hover { background: #00e5ff; color: #000; }
 
-        /* どんぶり（サイコロエリア） */
         .bowl-area {
             background: radial-gradient(circle, #424242 30%, #212121 70%);
             border: 5px solid #8d6e63;
@@ -62,7 +60,6 @@
             box-shadow: inset 0 0 20px #000, 0 10px 20px rgba(0,0,0,0.5);
         }
         
-        /* サイコロ */
         .dice-container {
             display: flex; gap: 15px;
         }
@@ -83,12 +80,9 @@
             align-self: center;
             justify-self: center;
             width: 10px; height: 10px;
-            visibility: hidden; /* デフォルトは非表示 */
+            visibility: hidden;
         }
-        /* 1の目は赤く大きく */
         .dice[data-val="1"] .dot:nth-child(5) { background: #f44336; width: 14px; height: 14px; }
-
-        /* サイコロの目のパターン定義 */
         .dice[data-val="1"] .dot:nth-child(5), .dice[data-val="3"] .dot:nth-child(5), .dice[data-val="5"] .dot:nth-child(5) { visibility: visible; }
         .dice[data-val="2"] .dot:nth-child(1), .dice[data-val="2"] .dot:nth-child(9), .dice[data-val="3"] .dot:nth-child(1), .dice[data-val="3"] .dot:nth-child(9), .dice[data-val="4"] .dot:nth-child(1), .dice[data-val="4"] .dot:nth-child(9), .dice[data-val="5"] .dot:nth-child(1), .dice[data-val="5"] .dot:nth-child(9), .dice[data-val="6"] .dot:nth-child(1), .dice[data-val="6"] .dot:nth-child(9) { visibility: visible; }
         .dice[data-val="4"] .dot:nth-child(3), .dice[data-val="4"] .dot:nth-child(7), .dice[data-val="5"] .dot:nth-child(3), .dice[data-val="5"] .dot:nth-child(7), .dice[data-val="6"] .dot:nth-child(3), .dice[data-val="6"] .dot:nth-child(7) { visibility: visible; }
@@ -103,7 +97,6 @@
         }
         .rolling { animation: shake 0.3s infinite linear; }
 
-        /* ステータス表示 */
         .status-bar {
             background: rgba(255,255,255,0.1);
             padding: 10px; border-radius: 10px;
@@ -122,7 +115,6 @@
             height: 35px;
         }
 
-        /* 履歴・結果 */
         .info-area {
             display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;
         }
@@ -133,7 +125,6 @@
         .info-title { font-size: 12px; color: #ccc; border-bottom: 1px solid #555; margin-bottom: 5px; }
         .info-val { font-size: 18px; font-weight: bold; }
 
-        /* 操作エリア */
         .control-area {
             background: rgba(0,0,0,0.3); padding: 15px; border-radius: 15px;
         }
@@ -161,7 +152,6 @@
             font-weight: bold; text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
         }
 
-        /* ▼▼▼ ルールモーダル ▼▼▼ */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); z-index: 9999;
@@ -185,9 +175,34 @@
         .strong { color: #00e676; font-weight: bold; }
         .weak { color: #ff5252; font-weight: bold; }
 
+        /* --- ★ 追加：ユーザー選択オーバーレイのスタイル --- */
+        #user-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 10000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .user-list-container {
+            background: #424242; padding: 30px; border-radius: 20px; border: 3px solid #ffd700;
+            max-width: 90%; width: 400px; text-align: center;
+        }
+        .user-btn {
+            display: block; width: 100%; padding: 15px; margin: 10px 0;
+            font-size: 20px; font-weight: bold; color: white;
+            background: #212121; border: 2px solid #ffd700; border-radius: 10px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .user-btn:hover { background: #ffd700; color: #000; }
+
     </style>
 </head>
 <body>
+
+<div id="user-overlay">
+    <div class="user-list-container">
+        <h2 style="color:#ffd700; margin-top:0;">だれが あそぶ？</h2>
+        <div id="user-list"></div>
+    </div>
+</div>
 
 <div class="container">
     <h1>🎲 CHIN-CHIRO 🎲</h1>
@@ -317,14 +332,30 @@
     function openRules() { document.getElementById('rule-modal').style.display = 'flex'; }
     function closeRules() { document.getElementById('rule-modal').style.display = 'none'; }
 
+    // --- ★追加：ユーザー決定後の処理 ---
+    function selectUser(name) {
+        document.getElementById('user-select').value = name;
+        document.getElementById('user-overlay').style.display = 'none';
+        updateInfo();
+    }
+
     window.onload = function() {
         const users = getUserNames();
         const select = document.getElementById('user-select');
+        const list = document.getElementById('user-list'); // ★追加
+        
         users.forEach(u => {
             const opt = document.createElement('option');
             opt.value = u;
             opt.innerText = u;
             select.appendChild(opt);
+
+            // ★追加：オーバーレイ用のボタン作成
+            const btn = document.createElement('button');
+            btn.className = 'user-btn';
+            btn.innerText = u;
+            btn.onclick = () => selectUser(u);
+            list.appendChild(btn);
         });
     };
 

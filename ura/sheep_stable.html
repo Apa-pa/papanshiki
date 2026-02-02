@@ -198,6 +198,18 @@
     let currentUserName = "";
     const SHEEP_STORAGE_KEY = "papan_my_sheep_v3";
 
+    // --- ★ 不足していたヘルパー関数を追加 ---
+    function getUserData() { 
+        // 厩舎のデータは専用のキーを使用
+        return JSON.parse(localStorage.getItem(SHEEP_STORAGE_KEY) || "{}"); 
+    }
+    function saveUserData(data) { 
+        localStorage.setItem(SHEEP_STORAGE_KEY, JSON.stringify(data)); 
+    }
+    function generateUuid() {
+        return 'u_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
+    }
+
     const MASTERS = [
         { rank: "Rookie", name: "もふもふ新人", cost: 24, speed: 30, stamina: 30, tenacity: 30, totalMax: 200, desc: "合計限界: 200" },
         { rank: "Pro", name: "ウール・スター", cost: 60, speed: 60, stamina: 60, tenacity: 60, totalMax: 240, desc: "合計限界: 240" },
@@ -227,7 +239,7 @@
     function updateUI() {
         const bal = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
         document.getElementById('balance').innerText = bal;
-        const allData = JSON.parse(localStorage.getItem(SHEEP_STORAGE_KEY) || "{}");
+        const allData = getUserData();
         const s = allData[currentUserName];
         const details = document.getElementById('sheep-details');
         const msg = document.getElementById('no-sheep-msg');
@@ -245,7 +257,6 @@
             const currentTotal = s.speed + s.stamina + s.tenacity;
             document.getElementById('total-status').innerText = `合計能力: ${currentTotal} / ${s.totalMax}`;
             
-            // 残りレース数の更新
             const rem = s.contractRaces !== undefined ? s.contractRaces : 24;
             document.getElementById('remaining-races').innerText = `残り契約レース: ${rem} 回`;
 
@@ -260,7 +271,7 @@
 
     function renderScoutList() {
         const list = document.getElementById('scout-list');
-        list.innerHTML = ""; // リセット
+        list.innerHTML = "";
         MASTERS.forEach(m => {
             const card = document.createElement('div');
             card.className = 'scout-card';
@@ -284,9 +295,8 @@
         if (bal < target.cost) { alert("どんぐりが足りません！"); return; }
         if (!confirm(`${target.name} と契約しますか？ (24レース契約)`)) return;
         if (typeof spendDonguri === 'function') spendDonguri(currentUserName, target.cost);
-        const allData = JSON.parse(localStorage.getItem(SHEEP_STORAGE_KEY) || "{}");
+        const allData = getUserData();
         
-        // contractRaces: 24 を追加
         allData[currentUserName] = { 
             rank: target.rank, 
             name: target.name, 
@@ -298,22 +308,22 @@
             contractRaces: 24 
         };
         
-        localStorage.setItem(SHEEP_STORAGE_KEY, JSON.stringify(allData));
+        saveUserData(allData);
         playActionAnimation("hitsuji_eat.png", "契約完了！");
     }
 
     function renameSheep() {
         const newName = document.getElementById('my-sheep-name').value.trim();
         if(!newName) return;
-        const allData = JSON.parse(localStorage.getItem(SHEEP_STORAGE_KEY) || "{}");
+        const allData = getUserData();
         if(allData[currentUserName]) {
             allData[currentUserName].name = newName;
-            localStorage.setItem(SHEEP_STORAGE_KEY, JSON.stringify(allData));
+            saveUserData(allData);
         }
     }
 
     function trainSheep(type) {
-        const allData = JSON.parse(localStorage.getItem(SHEEP_STORAGE_KEY) || "{}");
+        const allData = getUserData();
         const s = allData[currentUserName];
         if (!s) return;
         const currentTotal = s.speed + s.stamina + s.tenacity;
@@ -330,7 +340,7 @@
         if (newTotal > s.totalMax) { s[type] -= (newTotal - s.totalMax); }
 
         if (typeof spendDonguri === 'function') spendDonguri(currentUserName, 1);
-        localStorage.setItem(SHEEP_STORAGE_KEY, JSON.stringify(allData));
+        saveUserData(allData);
         playActionAnimation(trainImg, "ナイス特訓！");
     }
 
@@ -354,34 +364,95 @@
     }
 
     function startLocalRace() {
-        const allData = JSON.parse(localStorage.getItem(SHEEP_STORAGE_KEY) || "{}");
-        const s = allData[currentUserName];
-        if (!s) return;
         const bal = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
-        
-        // 5どんぐり以上あるかチェック
         if (bal < 5) { alert("出走料が足りません！"); return; }
         
         if (confirm(`出走料 5 🌰 を払って出場しますか？`)) {
-            // 正しい引数の渡し方に修正
             if (typeof spendDonguri === 'function') spendDonguri(currentUserName, 5);
-            
+            const allData = getUserData();
+            const s = allData[currentUserName];
             location.href = `sheep_stable_race.html?user=${encodeURIComponent(currentUserName)}&rank=${encodeURIComponent(s.rank)}`;
         }
     }
 
-    function entryNationalRace() {
-        const allData = JSON.parse(localStorage.getItem(SHEEP_STORAGE_KEY) || "{}");
+    async function entryNationalRace() {
+        const allData = getUserData();
         const s = allData[currentUserName];
         if (!s) return;
-        if (confirm(`「${s.name}」を全国レースに出走登録しますか？`)) {
-            s.entry = true;
-            allData[currentUserName] = s;
-            localStorage.setItem(SHEEP_STORAGE_KEY, JSON.stringify(allData));
-            updateUI();
-            showToast("登録完了！");
+
+        // すでに登録済みかチェック
+        if (s.entry) {
+            alert("すでに今週のレースにはエントリー済みです！");
+            return;
+        }
+
+        const publicName = prompt("全国レースに登録するオーナー名を入力してね", currentUserName);
+        if (!publicName) return;
+
+        // 現在は「無料」であることを明示
+        if (confirm(`「${s.name}」を全国レースに登録しますか？\n（今だけ出走料：無料！ 🌰）`)) {
+            
+            // IDがない場合は発行
+            if (!s.uid) {
+                s.uid = generateUuid();
+            }
+
+            // Firebaseへ送信
+            if (typeof window.registerNationalRaceEntry === 'function') {
+                const success = await window.registerNationalRaceEntry(s.uid, s, publicName);
+                if (success) {
+                    s.entry = true;
+                    allData[currentUserName] = s;
+                    saveUserData(allData);
+                    updateUI();
+                    showToast("全国レースにエントリー完了！🌏");
+                } else {
+                    alert("通信エラーで登録できませんでした。");
+                }
+            }
         }
     }
+
+    async function initNationalRaceSystem() {
+        const allData = getUserData();
+        const s = allData[currentUserName];
+        if (!s) return;
+
+        if (typeof window.checkAndRunNationalRace === 'function') {
+            const res = await window.checkAndRunNationalRace();
+            
+            if (res.status === "new_result" || res.status === "finished") {
+                const data = res.data;
+                if (s.lastAwardedRace === data.raceId) return;
+
+                let myRank = 0;
+                let prize = 0;
+                
+                [...data.rookie, ...data.pro, ...data.legend].forEach(win => {
+                    if (win.uid === s.uid) {
+                        myRank = win.rank;
+                    }
+                });
+
+                if (myRank > 0) {
+                    prize = (myRank === 1) ? 10 : 5;
+                    if (typeof addDonguri === 'function') {
+                        addDonguri(currentUserName, prize);
+                        alert(`🏆全国レース結果発表！\nあなたは第${myRank}位でした！\n賞金 ${prize} 🌰 を受け取りました！`);
+                    }
+                }
+
+                s.lastAwardedRace = data.raceId;
+                s.entry = false; 
+                saveUserData(allData);
+                updateUI();
+            }
+        }
+    }
+
+    window.addEventListener('load', () => {
+        setTimeout(initNationalRaceSystem, 1000);
+    });
 </script>
 </body>
 </html>
