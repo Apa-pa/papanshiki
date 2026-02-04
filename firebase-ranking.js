@@ -17,7 +17,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // ------------------------------------------------
-// 🏆 ランキング機能 (既存のまま)
+// 🏆 ランキング機能 (修正版)
 // ------------------------------------------------
 window.uploadToWorldRanking = async function(gameId, localName, score, publicInput) {
     let finalName = (publicInput || localName).trim();
@@ -27,17 +27,22 @@ window.uploadToWorldRanking = async function(gameId, localName, score, publicInp
     }
 
     try {
-        const colRef = collection(db, "world_rankings_" + gameId);
+        // ▼▼▼ 修正: バラバラのコレクションではなく、共通の "world_rankings" に保存する ▼▼▼
+        const colRef = collection(db, "world_rankings"); 
+        
         await addDoc(colRef, {
+            gameId: gameId,       // ▼▼▼ 重要: これがないと open_record.html で検索できません！
             name: finalName,
             score: Number(score),
             date: serverTimestamp() 
         });
         console.log("ランキング送信完了");
+        alert("ランキングに登録しました！"); // 成功したことがわかるようにアラートを追加
         return true;
     } catch (e) {
         console.error("送信エラー:", e);
-        alert("ランキング送信に失敗しました");
+        // エラー内容を詳しく表示する（デバッグ用）
+        alert("ランキング送信に失敗しました。\n" + e.message);
         return false;
     }
 };
