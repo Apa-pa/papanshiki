@@ -204,7 +204,7 @@ function setDailyMissionCompleted(userName, gameId) {
 // （オプション）トップページ用ウィジェット表示（コンパクト・1行版）
 function showDailyMissionWidget(elementId) {
     const targets = getTodayMissionIds();
-    const BONUS_PT = 200; // 表記用
+    const BONUS_PT = 150; // 表記用
 
     let htmlList = targets.map(id => {
         const info = GAME_LIST[id];
