@@ -212,13 +212,16 @@
     let selectedSheep = 0;
     let raceInProgress = false;
 
+    // 設定：オッズの幅を小さく調整（3.3倍 〜 14.3倍）
+    // winProbの合計は 1.0 (100%) になっています
+    // オッズ = 1 / winProb なので、長期的にはどんぐりは増減しません
     const SHEEP_CONFIG = [
-        { id: 0, name: "モフスピード", speed: 2.2, stamina: 0.9, odds: 3.5 },
-        { id: 1, name: "メェーじろう", speed: 1.8, stamina: 1.1, odds: 5.5 },
-        { id: 2, name: "ウール100%", speed: 2.0, stamina: 1.0, odds: 4.5 },
-        { id: 3, name: "ドングリ好き", speed: 1.6, stamina: 1.3, odds: 8.0 },
-        { id: 4, name: "レジェンド羊", speed: 2.5, stamina: 0.8, odds: 2.5 },
-        { id: 5, name: "のんびり雲", speed: 1.5, stamina: 1.5, odds: 12.0 }
+        { id: 0, name: "モフスピード",   speed: 2.2, stamina: 1.0, winProb: 0.30, odds: 3.3 }, // 30%で勝利
+        { id: 1, name: "メェーじろう",   speed: 2.0, stamina: 1.1, winProb: 0.20, odds: 5.0 }, // 20%で勝利
+        { id: 2, name: "ウール100%",     speed: 1.9, stamina: 1.0, winProb: 0.18, odds: 5.6 }, // 18%で勝利
+        { id: 3, name: "ドングリ好き",   speed: 1.8, stamina: 1.3, winProb: 0.15, odds: 6.7 }, // 15%で勝利
+        { id: 4, name: "レジェンド羊",   speed: 1.7, stamina: 0.8, winProb: 0.10, odds: 10.0 }, // 10%で勝利
+        { id: 5, name: "のんびり雲",     speed: 1.6, stamina: 1.5, winProb: 0.07, odds: 14.3 }  // 7%で勝利
     ];
 
     window.onload = init;
@@ -228,7 +231,6 @@
         setupSelectors();
     }
 
-    // ユーザー選択画面を表示
     function showUserSelection() {
         const listDiv = document.getElementById('user-list');
         listDiv.innerHTML = '';
@@ -264,11 +266,13 @@
 
     function setupSelectors() {
         const selectors = document.getElementById('selectors');
+        selectors.innerHTML = "";
         SHEEP_CONFIG.forEach(s => {
             const btn = document.createElement('button');
             btn.className = 'sheep-btn';
             btn.id = `btn-${s.id}`;
-            btn.innerHTML = `No.${s.id+1}<span class="odds-val">${s.odds}倍</span>`;
+            // オッズ表示
+            btn.innerHTML = `No.${s.id+1}<span class="odds-val">${s.odds.toFixed(1)}倍</span>`;
             btn.onclick = () => {
                 if(raceInProgress) return;
                 selectedSheep = s.id;
@@ -278,17 +282,17 @@
             };
             selectors.appendChild(btn);
         });
-        document.getElementById('btn-0').classList.add('selected');
+        document.getElementById('btn-0').click();
     }
 
     function startRace() {
-        const bet = parseInt(document.getElementById('bet-amount').value);
-        const currentBalance = getUserDonguri(currentUserName);
+        const betInput = document.getElementById('bet-amount');
+        const bet = parseInt(betInput.value);
+        const currentBalance = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
 
         if(bet > currentBalance) { alert("どんぐりが足りないよ！"); return; }
         if(bet <= 0) return;
 
-        // 支払い
         if(typeof spendDonguri === 'function') {
             spendDonguri(currentUserName, bet);
         }
@@ -298,33 +302,67 @@
         document.getElementById('start-btn').disabled = true;
         document.getElementById('commentary').innerText = "各ひつじ、いっせいに出走！！";
 
-        const trackWidth = document.getElementById('track').clientWidth - 110;
+        const trackWidth = document.getElementById('track').clientWidth - 80;
         const positions = [0, 0, 0, 0, 0, 0];
-        const staminas = SHEEP_CONFIG.map(s => 100);
-        let winner = null;
+        
+        // --- 勝負の決定ロジック ---
+        // 確率に基づいて、レース前に勝者を決定します
+        let winnerId = 0;
+        const rand = Math.random();
+        let accumulatedProb = 0;
+        
+        for(let i=0; i < SHEEP_CONFIG.length; i++) {
+            accumulatedProb += SHEEP_CONFIG[i].winProb;
+            if (rand < accumulatedProb) {
+                winnerId = i;
+                break;
+            }
+        }
+        // 念のためのフォールバック
+        if (rand >= accumulatedProb) winnerId = SHEEP_CONFIG.length - 1;
+
+        // --- レース演出 ---
+        // 決まった勝者が必ず勝つように速度を調整しながら走らせます
         let frame = 0;
+        let finished = false;
 
         const raceInterval = setInterval(() => {
             frame++;
+            
             for(let i=0; i<6; i++) {
-                if(winner !== null) continue;
+                if(finished) continue;
+
                 const cfg = SHEEP_CONFIG[i];
-                let move = (cfg.speed * (staminas[i]/100)) + (Math.random() * 0.5);
-                staminas[i] -= (Math.random() * cfg.stamina * 0.3);
-                if(staminas[i] < 20) staminas[i] = 20;
+                
+                // 基本移動
+                let move = cfg.speed * 0.8 + (Math.random() * 1.5);
+
+                // 【演出調整】
+                if (i === winnerId) {
+                    // 勝者は少しブースト
+                    move += 0.8;
+                } else {
+                    // 勝者より前に出そうになったら減速
+                    if (positions[i] > positions[winnerId]) {
+                        move -= 0.8;
+                    }
+                }
+
                 positions[i] += move;
                 document.getElementById(`sheep-${i}`).style.left = positions[i] + 'px';
 
-                // アニメーション
+                // 画像切り替え
                 const img = document.getElementById(`img-${i}`);
                 img.src = (frame % 10 < 5) ? "hitsuji_walk.png" : "hitsuji_run1.png";
 
-                if(positions[i] >= trackWidth) winner = i;
-            }
-
-            if(winner !== null) {
-                clearInterval(raceInterval);
-                finishRace(winner, bet);
+                // ゴール判定（勝者がゴールした時のみ終了）
+                if(positions[i] >= trackWidth) {
+                    if (i === winnerId) {
+                        finished = true;
+                        clearInterval(raceInterval);
+                        finishRace(winnerId, bet);
+                    }
+                }
             }
         }, 30);
     }
@@ -338,11 +376,13 @@
         const msg = document.getElementById('result-msg');
 
         if(isWin) {
-            msg.innerHTML = `的中！ 💰 ${winAmount} どんぐり ゲット！`;
+            msg.innerHTML = `的中！ 💰 <span style="color:#ffd700; font-size:1.2em;">${winAmount}</span> どんぐり ゲット！`;
             if(typeof addDonguri === 'function') addDonguri(currentUserName, winAmount);
             updateBalance();
+            document.getElementById('result-title').style.color = "#ff0055";
         } else {
             msg.innerText = "はずれ... どんぐり没収だ。";
+            document.getElementById('result-title').style.color = "#ffd700";
         }
         document.getElementById('result-overlay').style.display = 'flex';
     }
