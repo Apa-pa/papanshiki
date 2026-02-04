@@ -13,6 +13,7 @@
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>ぱぱん式</title>
+    <script src="ranking.js"></script>
     <style>
     body {
         font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
@@ -230,6 +231,8 @@
 <body>
 
 <header class="hero-header"></header>
+
+<div id="daily-mission-area"></div>
 
 <main>
     <div class="filter-container">
@@ -693,6 +696,10 @@
       });
     });
   }
+
+  if (typeof showDailyMissionWidget === 'function') {
+        showDailyMissionWidget('daily-mission-area');
+    }
 </script>
 </body>
 </html>

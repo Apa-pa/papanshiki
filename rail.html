@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>つなげて！トロッコ</title>
     <script src="ranking.js"></script>
+    <script type="module" src="firebase-ranking.js"></script>
     <style>
         body {
             margin: 0;
@@ -12,7 +13,7 @@
             background-color: #a5d6a7;
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
             overflow: hidden;
-            touch-action: manipulation;
+            touch-action: none;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -121,7 +122,7 @@
 <div id="game-container">
     <div class="header-ui">
         <span>ステージ: <span id="level-disp">1</span> / 5</span>
-        <span>スコア: <span id="score-disp">0</span></span>
+        <div class="status-item">タイム: <span id="time-disp">0.0</span>s</div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -163,19 +164,20 @@
     </div>
 
     <div id="all-clear-screen" class="overlay" style="display:none;">
-        <h1 style="color:#ffeb3b; text-shadow:0 0 10px #f57f17;">かんぜん<br>クリア！</h1>
-        <div style="font-size:100px;">🎊</div>
-        <p style="font-size:20px;">さいごまで ありがとう！<br>きみは 線路マスターだ！</p>
-        <div style="font-size:24px; font-weight:bold; margin:20px;">
-            スコア: <span id="final-score">0</span>
-        </div>
-        <button class="btn" style="background: #ff9800;"
-            onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; if(typeof showPointGetDialog==='function'){showPointGetDialog(30)}else{alert('ranking.jsを更新してね')}">
-            🎁 ポイントをもらう
-        </button>
-        <button class="btn" onclick="location.reload()">さいしょから</button>
-        <br>
-        <a href="index.html" style="color:#fff; text-decoration:underline;">🏠 ホームへ</a>
+    <h1 style="color:#ffeb3b; text-shadow:0 0 10px #f57f17;">かんぜん<br>クリア！</h1>
+    <div style="font-size:100px;">⏱️</div>
+    <p style="font-size:20px;">さいごまで ありがとう！<br>きみは 線路マスターだ！</p>
+    
+    <div style="font-size:24px; font-weight:bold; margin:20px;">
+        タイム: <span id="final-score">0.00</span> 秒
+    </div>
+
+    <button class="btn" style="background: #e91e63;" onclick="saveScoreToRanking()">
+        🏆 タイムをきろくする
+    </button>
+    <button class="btn" onclick="location.reload()">さいしょから</button>
+    <br>
+    <a href="index.html" style="color:#fff; text-decoration:underline;">🏠 ホームへ</a>
     </div>
 </div>
 
@@ -183,9 +185,8 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // ▼ 画像の読み込み
     const playerImg = new Image();
-    playerImg.src = "player.png"; // ここに用意した画像のファイル名
+    playerImg.src = "player.png"; 
 
     const COLS = 5;
     const ROWS = 6;
@@ -197,12 +198,13 @@
 
     let isPlaying = false;
     let level = 1;
-    let score = 0;
+    let gameStartTime = 0; 
+    let finalTime = 0;
+
     let grid = []; 
     let train = { x: 0, y: 0, dir: 1, progress: 0, speed: 0.005 }; 
     let isSpeedUp = false;
     
-    // カウントダウン用
     let countdownVal = 0;
     let countdownTimer = null;
 
@@ -224,7 +226,6 @@
         const padding = 20;
         const availableW = canvas.width - padding * 2;
         const availableH = canvas.height - padding * 2;
-        
         const headerHeight = 50; 
         
         tileSize = Math.min(availableW / COLS, (availableH - headerHeight) / ROWS);
@@ -238,7 +239,7 @@
     function startGame() {
         document.getElementById('start-screen').style.display = 'none';
         level = 1;
-        score = 0;
+        gameStartTime = Date.now();
         initLevel();
     }
 
@@ -250,12 +251,23 @@
     function nextLevel() {
         if(level >= MAX_LEVEL) {
             document.getElementById('clear-screen').style.display = 'none';
-            document.getElementById('final-score').textContent = score;
+            finalTime = ((Date.now() - gameStartTime) / 1000).toFixed(2); 
+            
+            // クリア画面の表示更新
+            document.getElementById('final-score').textContent = finalTime;
             document.getElementById('all-clear-screen').style.display = 'flex';
         } else {
             document.getElementById('clear-screen').style.display = 'none';
             level++;
             initLevel();
+        }
+    }
+
+    function saveScoreToRanking() {
+        if (typeof showSaveDialog === 'function') {
+            showSaveDialog('rail', finalTime);
+        } else {
+            alert('ranking.js が読み込まれていません');
         }
     }
 
@@ -270,9 +282,7 @@
             path.push(curr);
             visited[0][1] = true;
 
-            if (solveMaze(curr, visited, path)) {
-                return path; 
-            }
+            if (solveMaze(curr, visited, path)) return path; 
         }
         return [{x:0,y:0}, {x:1,y:0}, {x:2,y:0}, {x:3,y:0}, {x:4,y:0}, 
                 {x:4,y:1}, {x:4,y:2}, {x:4,y:3}, {x:4,y:4}, {x:4,y:5}];
@@ -280,15 +290,11 @@
 
     function solveMaze(curr, visited, path) {
         if(curr.x === COLS-1 && curr.y === ROWS-1) return true;
-
-        const dirs = [
-            {dx:0, dy:-1}, {dx:1, dy:0}, {dx:0, dy:1}, {dx:-1, dy:0}
-        ].sort(() => Math.random() - 0.5);
+        const dirs = [{dx:0, dy:-1}, {dx:1, dy:0}, {dx:0, dy:1}, {dx:-1, dy:0}].sort(() => Math.random() - 0.5);
 
         for(let d of dirs) {
             let nx = curr.x + d.dx;
             let ny = curr.y + d.dy;
-
             if(nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS && !visited[ny][nx]) {
                 visited[ny][nx] = true;
                 path.push({x:nx, y:ny});
@@ -304,22 +310,17 @@
         isPlaying = true;
         isSpeedUp = false;
         
-        // カウントダウン開始
         countdownVal = 3;
         if(countdownTimer) clearInterval(countdownTimer);
         countdownTimer = setInterval(() => {
             countdownVal--;
-            if(countdownVal < 0) {
-                clearInterval(countdownTimer);
-            }
-        }, 1000); // 1秒ごとに減らす
+            if(countdownVal < 0) clearInterval(countdownTimer);
+        }, 1000); 
 
         grid = [];
         for(let r=0; r<ROWS; r++) {
             let row = [];
-            for(let c=0; c<COLS; c++) {
-                row.push({ type: null, fixed: false });
-            }
+            for(let c=0; c<COLS; c++) row.push({ type: null, fixed: false });
             grid.push(row);
         }
 
@@ -367,7 +368,7 @@
             speed: 0.005 + (level * 0.001) 
         };
 
-        updateUI();
+        updateUI(); // 初期のレベル表示など
         resize(); 
         gameLoop();
     }
@@ -385,9 +386,8 @@
         return all.find(t => t.c[0] == req[0] && t.c[1] == req[1] && t.c[2] == req[2] && t.c[3] == req[3]);
     }
 
-    // ▼▼▼ 修正：ブラウザのデフォルト動作（スクロール/ズーム）を防ぐ ▼▼▼
     canvas.addEventListener('pointerdown', (e) => {
-        e.preventDefault(); // ここでブロック！
+        e.preventDefault(); 
         if(!isPlaying) return;
         const rect = canvas.getBoundingClientRect();
         const clickX = e.clientX - rect.left - offsetX;
@@ -399,7 +399,6 @@
             rotateTile(c, r);
         }
     });
-    // ▲▲▲ ここまで ▲▲▲
 
     function rotateTile(c, r) {
         const cell = grid[r][c];
@@ -410,21 +409,25 @@
         const sIdx = TYPES.STRAIGHT.indexOf(currentType);
         if(sIdx >= 0) {
             cell.type = TYPES.STRAIGHT[(sIdx + 1) % 2];
-            draw();
-            return;
+            draw(); return;
         }
         const cIdx = TYPES.CURVE.indexOf(currentType);
         if(cIdx >= 0) {
             cell.type = TYPES.CURVE[(cIdx + 1) % 4];
-            draw();
-            return;
+            draw(); return;
         }
     }
 
     function gameLoop() {
         if(!isPlaying) return;
         
-        // カウントダウン中はトロッコを更新しない
+        // ▼▼▼ 追加: プレイ中にリアルタイムで時間を更新 ▼▼▼
+        if(gameStartTime > 0) {
+            let currentSec = ((Date.now() - gameStartTime) / 1000).toFixed(1);
+            let timeDisp = document.getElementById('time-disp');
+            if(timeDisp) timeDisp.textContent = currentSec;
+        }
+
         if (countdownVal < 0) {
             updateTrain();
         }
@@ -449,8 +452,7 @@
             if(train.dir === 3) nextX--;
 
             if(nextX < 0 || nextX >= COLS || nextY < 0 || nextY >= ROWS) {
-                gameOver();
-                return;
+                gameOver(); return;
             }
 
             const nextTile = grid[nextY][nextX].type;
@@ -463,14 +465,10 @@
 
                 for(let i=0; i<4; i++) {
                     if(i !== enterDir && nextTile.c[i] === 1) {
-                        train.dir = i;
-                        break;
+                        train.dir = i; break;
                     }
                 }
-
-                if(train.x === COLS-1 && train.y === ROWS-1) {
-                    gameClear();
-                }
+                if(train.x === COLS-1 && train.y === ROWS-1) gameClear();
             } else {
                 gameOver();
             }
@@ -479,30 +477,29 @@
 
     function speedUp(on) { isSpeedUp = on; }
     function gameOver() { isPlaying = false; document.getElementById('gameover-screen').style.display = 'flex'; }
-    function gameClear() { isPlaying = false; score += 100; updateUI(); document.getElementById('clear-screen').style.display = 'flex'; }
-    function updateUI() { document.getElementById('level-disp').textContent = level; document.getElementById('score-disp').textContent = score; }
+    function gameClear() { isPlaying = false; updateUI(); document.getElementById('clear-screen').style.display = 'flex'; }
+    
+    function updateUI() { 
+        document.getElementById('level-disp').textContent = level; 
+        // score-dispの更新は削除（代わりにgameLoopでtime-dispを更新）
+    }
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         for(let r=0; r<ROWS; r++) {
-            for(let c=0; c<COLS; c++) {
-                drawTile(c, r, grid[r][c]);
-            }
+            for(let c=0; c<COLS; c++) drawTile(c, r, grid[r][c]);
         }
         drawTrain();
 
-        // カウントダウン描画
         if(countdownVal >= 0) {
             ctx.fillStyle = "rgba(0,0,0,0.5)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
             ctx.fillStyle = "white";
             ctx.strokeStyle = "#2e7d32";
             ctx.lineWidth = 5;
             ctx.font = "bold 100px sans-serif";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            
             const text = (countdownVal === 0) ? "GO!" : countdownVal;
             ctx.strokeText(text, canvas.width/2, canvas.height/2);
             ctx.fillText(text, canvas.width/2, canvas.height/2);
@@ -517,7 +514,6 @@
         const w = tileSize;
 
         ctx.fillStyle = (c+r)%2 === 0 ? '#dcedc8' : '#f1f8e9'; 
-        
         if(c === 0 && r === 0) ctx.fillStyle = '#b3e5fc';
         if(c === COLS-1 && r === ROWS-1) ctx.fillStyle = '#ffcdd2'; 
 
@@ -532,10 +528,8 @@
             ctx.lineWidth = tileSize * 0.3;
             ctx.lineCap = 'round';
             ctx.strokeStyle = '#795548'; 
-
             ctx.beginPath();
             const conn = cell.type.c; 
-            
             if(conn[0] && conn[2]) { ctx.moveTo(cx, y); ctx.lineTo(cx, y+w); } 
             else if(conn[1] && conn[3]) { ctx.moveTo(x, cy); ctx.lineTo(x+w, cy); }
             else {
@@ -545,11 +539,9 @@
                 else if(conn[3] && conn[0]) { ctx.moveTo(x, cy); ctx.lineTo(cx, cy); ctx.lineTo(cx, y); }
             }
             ctx.stroke();
-
             ctx.lineWidth = tileSize * 0.2;
             ctx.strokeStyle = '#d7ccc8';
             ctx.stroke();
-            
             if(cell.fixed) {
                 ctx.fillStyle = 'rgba(0,0,0,0.2)';
                 ctx.beginPath();
@@ -571,18 +563,15 @@
         const ty = offsetY + train.y * tileSize;
         const half = tileSize/2;
         const p = train.progress;
-
         let px = tx + half;
         let py = ty + half;
         
         const enterDir = (train.dir + 2) % 4;
         let startX=px, startY=py, endX=px, endY=py;
-        
         if(enterDir === 0) startY -= half; 
         if(enterDir === 1) startX += half; 
         if(enterDir === 2) startY += half; 
         if(enterDir === 3) startX -= half; 
-        
         if(train.dir === 0) endY -= half;
         if(train.dir === 1) endX += half;
         if(train.dir === 2) endY += half;
@@ -601,26 +590,32 @@
 
         ctx.save();
         ctx.translate(drawX, drawY);
-        
-        // --- 1. トロッコ本体（茶色い箱）を描く ---
         ctx.fillStyle = '#6d4c41';
         const cartSize = tileSize * 0.7;
         ctx.fillRect(-cartSize/2, -cartSize/2, cartSize, cartSize);
-        
-        // --- 2. 車輪を描く ---
         ctx.fillStyle = '#3e2723';
         const wheelSize = cartSize * 0.3;
         ctx.fillRect(-cartSize/2 - 2, -cartSize/2, wheelSize, wheelSize);
         ctx.fillRect(cartSize/2 - wheelSize + 2, -cartSize/2, wheelSize, wheelSize);
         ctx.fillRect(-cartSize/2 - 2, cartSize/2 - wheelSize, wheelSize, wheelSize);
         ctx.fillRect(cartSize/2 - wheelSize + 2, cartSize/2 - wheelSize, wheelSize, wheelSize);
-
-        // --- 3. 画像(player.png)を重ねる ---
         const imgSize = tileSize * 0.8;
         const imgY = -cartSize/2 - imgSize/2 + (tileSize * 0.1); 
         ctx.drawImage(playerImg, -imgSize/2, imgY, imgSize, imgSize);
-        
         ctx.restore();
+    }
+
+    // ▼▼▼ 追加：ランキング保存機能 ▼▼▼
+    function saveScoreToRanking() {
+        // ranking.js の showSaveDialog を呼び出します
+        // これを呼ぶだけで「名前入力」→「全国ランキング登録(任意)」の流れが自動で動きます
+        if (typeof showSaveDialog === 'function') {
+            // 第1引数: 手順1で登録したID 'rail'
+            // 第2引数: 今回のタイム (finalTime)
+            showSaveDialog('rail', finalTime);
+        } else {
+            alert('ranking.js が読み込まれていません');
+        }
     }
 
 </script>

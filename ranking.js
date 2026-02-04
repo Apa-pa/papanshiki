@@ -2,10 +2,10 @@
 
 const GAME_LIST = {
     'make10':         { name: 'あわせて10',         type: 'time',  unit: '秒' },
-    'math_add_easy':  { name: 'たしざん(なし)',     type: 'time',  unit: '秒' },
-    'math_add_hard':  { name: 'たしざん(あり)',     type: 'time',  unit: '秒' },
-    'math_sub_easy':  { name: 'ひきざん(なし)',     type: 'time',  unit: '秒' },
-    'math_sub_hard':  { name: 'ひきざん(あり)',     type: 'time',  unit: '秒' },
+    'math_add_easy':  { name: 'たしざん(くりあがりなし)',     type: 'time',  unit: '秒' },
+    'math_add_hard':  { name: 'たしざん(くりあがりあり)',     type: 'time',  unit: '秒' },
+    'math_sub_easy':  { name: 'ひきざん(くりさがりなし)',     type: 'time',  unit: '秒' },
+    'math_sub_hard':  { name: 'ひきざん(くりさがりあり)',     type: 'time',  unit: '秒' },
     'math_multi':     { name: 'かけざん九九',       type: 'time',  unit: '秒' },
     'rain_math':      { name: 'あめふり算数',       type: 'score', unit: '点' },
     'clock_read':     { name: 'とけいの読み方',     type: 'time',  unit: '秒' },
@@ -19,7 +19,8 @@ const GAME_LIST = {
     'tsumitsumi':     { name: '漢字つみつみ',       type: 'score', unit: 'こ' },
     'eawase':         { name: 'えあわせ',           type: 'time',  unit: '秒' },
     'shopping':       { name: 'ぴったりしはらい',   type: 'time',  unit: '秒' },
-    'water':          { name: '水槽パズル',         type: 'time',  unit: '秒' }
+    'water':          { name: '水槽パズル',         type: 'time',  unit: '秒' },
+    'rail':           { name: 'つなげて！トロッコ', type: 'time', unit: '秒' }
 };
 
 const STOCK_MASTER = {
@@ -102,6 +103,130 @@ function spendDonguri(userName, amount) {
     }
     return false;
 }
+
+// --- 日替わりミッション機能 (3つ版) ---
+
+// ミッション対象にするゲームIDリスト
+const DAILY_MISSION_CANDIDATES = [
+    'make10',         // あわせて10
+    'math_add_easy',  // 足し算
+    'math_add_hard',  // 足し算（繰り上がり）
+    'math_sub_easy',  // 引き算
+    'math_sub_hard',  // 引き算（繰り下がり）
+    'math_multi',     // 九九
+    'clock_read',     // 時計
+    'triangle_angle', // 三角形
+    'katakana',       // カタカナ
+    'alphabet'        // アルファベット
+];
+
+// 日付文字列から数値を生成するハッシュ関数（シード値生成用）
+function _getDateHash() {
+    const todayStr = getTodayString(); // yyyy-mm-dd
+    let hash = 0;
+    for (let i = 0; i < todayStr.length; i++) {
+        hash = (hash << 5) - hash + todayStr.charCodeAt(i);
+        hash |= 0;
+    }
+    return Math.abs(hash);
+}
+
+// シード値付き乱数生成器（その日は常に同じ乱数順序になる）
+function _seededRandom(seed) {
+    let x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+}
+
+// 今日のミッションIDを3つ取得
+function getTodayMissionIds() {
+    let seed = _getDateHash();
+    // 配列をコピーしてシャッフル
+    const array = [...DAILY_MISSION_CANDIDATES];
+    
+    // フィッシャー–イェーツのシャッフル（シード付き）
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(_seededRandom(seed) * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+        seed++; // 次の乱数のためにシードを進める
+    }
+    
+    // 先頭3つを返す
+    return array.slice(0, 3);
+}
+
+// ユーザーのミッション進捗を取得
+function getDailyMissionProgress(userName) {
+    const key = 'papan_daily_mission_log_v2'; // データ構造を変えるのでキーを変更
+    const log = JSON.parse(localStorage.getItem(key) || '{}');
+    const userLog = log[userName] || { date: "", cleared: [] };
+    const today = getTodayString();
+
+    // 日付が変わっていたらリセット
+    if (userLog.date !== today) {
+        return { date: today, cleared: [] };
+    }
+    return userLog;
+}
+
+// 指定したゲームIDが今日のミッション対象か、そして未クリアか判定
+function checkMissionStatus(userName, gameId) {
+    const targets = getTodayMissionIds();
+    
+    // 今日の対象ゲームではない
+    if (!targets.includes(gameId)) return { isTarget: false, isCleared: false };
+
+    const progress = getDailyMissionProgress(userName);
+    const isCleared = progress.cleared.includes(gameId);
+
+    return { isTarget: true, isCleared: isCleared };
+}
+
+// ミッション完了を記録
+function setDailyMissionCompleted(userName, gameId) {
+    const key = 'papan_daily_mission_log_v2';
+    const log = JSON.parse(localStorage.getItem(key) || '{}');
+    
+    // 現在の状態を取得（日付更新も含む）
+    let userLog = log[userName] || { date: getTodayString(), cleared: [] };
+    if (userLog.date !== getTodayString()) {
+        userLog = { date: getTodayString(), cleared: [] };
+    }
+
+    // まだ記録されていなければ追加
+    if (!userLog.cleared.includes(gameId)) {
+        userLog.cleared.push(gameId);
+    }
+    
+    log[userName] = userLog;
+    localStorage.setItem(key, JSON.stringify(log));
+}
+
+// （オプション）トップページ用ウィジェット表示（コンパクト・1行版）
+function showDailyMissionWidget(elementId) {
+    const targets = getTodayMissionIds();
+    const BONUS_PT = 200; // 表記用
+
+    let htmlList = targets.map(id => {
+        const info = GAME_LIST[id];
+        const name = info ? info.name : id;
+        // ゲーム名のチップ
+        return `<span style="display:inline-block; background:white; color:#e65100; padding:2px 8px; margin-left:5px; border-radius:10px; font-size:12px; border:1px solid #ffcc80; white-space:nowrap;">${name}</span>`;
+    }).join('');
+
+    // 横並びコンテナ (flexbox)
+    const html = `
+        <div style="background:#fff3e0; padding:8px 5px; border-radius:8px; margin:5px auto; max-width:95%; overflow-x:auto; white-space:nowrap; -webkit-overflow-scrolling: touch; border:1px dashed #ffb74d;">
+            <div style="display:inline-flex; align-items:center;">
+                <span style="font-weight:bold; color:#bf360c; font-size:12px; margin-right:5px;">📅 きょうのボーナスコンテンツ(ひとつ+${BONUS_PT}):</span>
+                ${htmlList}
+            </div>
+        </div>
+    `;
+    
+    const container = document.getElementById(elementId);
+    if(container) container.innerHTML = html;
+}
+
 
 // --- 市場関連・日付計算 ---
 function getMarketData() {
@@ -274,36 +399,67 @@ function saveRecord(userName, gameId, value) {
 function checkAndAwardPoints(userName, gameId, currentRecord) {
     const goals = getAllGoals();
     const userGoal = goals[userName]?.[gameId];
-    if (!userGoal) return false;
+    // 目標が設定されていなければ 0 を返す
+    if (!userGoal) return 0;
+
     const allPoints = JSON.parse(localStorage.getItem(POINT_KEY) || '{}');
     const allHistory = JSON.parse(localStorage.getItem(REWARDED_KEY) || '{}');
     const info = GAME_LIST[gameId];
+    
+    // 達成判定
     let isAchieved = info.type === 'score' ? parseFloat(currentRecord) >= parseFloat(userGoal) : parseFloat(currentRecord) <= parseFloat(userGoal);
+    
+    // 達成していて、かつまだ報酬をもらっていなければ
     if (isAchieved && allHistory[userName]?.[gameId] !== parseFloat(userGoal)) {
-        allPoints[userName] = (allPoints[userName] || 0) + 100;
+        const reward = 150; // ★報酬ポイント
+
+        allPoints[userName] = (allPoints[userName] || 0) + reward;
+        
         if (!allHistory[userName]) allHistory[userName] = {};
         allHistory[userName][gameId] = parseFloat(userGoal);
+        
         localStorage.setItem(POINT_KEY, JSON.stringify(allPoints));
         localStorage.setItem(REWARDED_KEY, JSON.stringify(allHistory));
-        return true;
+        
+        return reward; // ★ここで 'true' ではなく '100' を返すように変更
     }
-    return false;
+    return 0; // ★達成していなければ 0 を返す
 }
 
 // ★★★ セーブダイアログ (UI改善＆空欄送信防止版) ★★★
+// ★★★ セーブダイアログ (UI改善 & 全国ランキング & 日替わりミッション統合版) ★★★
 function showSaveDialog(gameId, resultValue) {
     const old = document.getElementById('ranking-overlay');
     if(old) old.remove();
     
     const gameInfo = GAME_LIST[gameId] || { name: 'このゲーム', unit: '' };
-    const users = getUserNames();
+    const users = getUserNames(); // 既存の関数を使用
     const isGlobalRankingEnabled = (typeof window.uploadToWorldRanking === 'function');
+    const BONUS_PT = 200; // 日替わりボーナス点
 
     let usersHtml = '';
     if (users.length > 0) {
         usersHtml += '<p style="margin:10px 0; font-size:14px; color:#666;">きろくする人を選んでね</p>';
         users.forEach(u => {
-            usersHtml += `<button onclick="Ranking.selectUser('${u}')" style="margin:5px; padding:12px 20px; font-size:18px; cursor:pointer; background:#4CAF50; color:white; border:none; border-radius:30px; font-weight:bold;">${u}</button>`;
+            // --- ★ここを追加: ミッション状態の判定 ---
+            // (ヘルパー関数 checkMissionStatus が必要です)
+            let badge = "";
+            if (typeof checkMissionStatus === 'function') {
+                const status = checkMissionStatus(u, gameId);
+                if (status.isTarget) {
+                    if (status.isCleared) {
+                        badge = "<div style='font-size:10px; color:#c8e6c9;'>★クリア済</div>";
+                    } else {
+                        badge = "<div style='font-size:10px; color:#ffeb3b; font-weight:bold; animation: flash 1s infinite;'>★ボーナス対象</div>";
+                    }
+                }
+            }
+            // ---------------------------------------
+
+            usersHtml += `<button onclick="Ranking.selectUser('${u}')" style="margin:5px; padding:10px 20px; font-size:16px; cursor:pointer; background:#4CAF50; color:white; border:none; border-radius:15px; font-weight:bold; min-width:80px; vertical-align:middle;">
+                ${u}
+                ${badge}
+            </button>`;
         });
     }
 
@@ -311,6 +467,11 @@ function showSaveDialog(gameId, resultValue) {
     overlay.id = 'ranking-overlay';
     overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: sans-serif; text-align: center;`;
     
+    // 点滅アニメーション用スタイルを追加
+    const styleTag = document.createElement('style');
+    styleTag.innerHTML = `@keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }`;
+    overlay.appendChild(styleTag);
+
     const globalNameHtml = isGlobalRankingEnabled ? `
         <div style="background:#e3f2fd; border-radius:10px; padding:10px; margin: 15px 0; border: 1px solid #bbdefb;">
             <p style="margin:0 0 5px 0; font-size:14px; color:#1976d2; font-weight:bold;">🌏 ランキングに のせる？</p>
@@ -319,8 +480,19 @@ function showSaveDialog(gameId, resultValue) {
         </div>
     ` : '';
 
-    overlay.innerHTML = `
+    // ミッション対象ならヘッダーにアイコンを表示
+    let missionHeader = "";
+    if (typeof checkMissionStatus === 'function') {
+        // 誰か一人でも対象ならアイコンを出す（簡易判定）
+        const targets = getTodayMissionIds(); 
+        if (targets.includes(gameId)) {
+            missionHeader = `<div style="background:#ff9800; color:white; font-size:12px; padding:2px 8px; border-radius:10px; display:inline-block; margin-bottom:5px;">📅 今日のボーナス対象</div><br>`;
+        }
+    }
+
+    overlay.innerHTML += `
         <div style="background:white; color:#333; padding:25px; border-radius:20px; width:90%; max-width:400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+            ${missionHeader}
             <h2 style="margin:0 0 10px 0; color:#555; font-size:20px;">${gameInfo.name}</h2>
             <div style="background:#fce4ec; border-radius:10px; padding:15px; margin-bottom:15px;">
                 <div style="font-size:14px; color:#880e4f;">今回のきろく</div>
@@ -342,13 +514,30 @@ function showSaveDialog(gameId, resultValue) {
 
     window.Ranking = {
         selectUser: (localName) => {
-            // ローカル保存
+            // 1. 基本ポイント付与 (参加賞)
             addPoints(localName, 30);
+            
+            // 2. 記録保存 & 自己ベスト判定
             const isNew = saveRecord(localName, gameId, resultValue);
+            
+            // 3. 目標達成ポイント判定
             const earnedPoints = checkAndAwardPoints(localName, gameId, resultValue);
+            
+            // --- ★ここを追加: ミッションボーナス付与処理 ---
+            let missionBonus = 0;
+            if (typeof checkMissionStatus === 'function') {
+                const status = checkMissionStatus(localName, gameId);
+                if (status.isTarget && !status.isCleared) {
+                    missionBonus = BONUS_PT;
+                    addPoints(localName, missionBonus); // ボーナス加算
+                    setDailyMissionCompleted(localName, gameId); // 完了フラグ更新
+                }
+            }
+            // ----------------------------------------------
+
             if(typeof toggleStamp === 'function') toggleStamp(localName, getTodayString(), true);
             
-            // 全国ランキング送信 (空欄なら送らない)
+            // 全国ランキング送信
             let sentToRanking = false;
             if (isGlobalRankingEnabled) {
                 const publicInput = document.getElementById('public-username').value.trim();
@@ -359,11 +548,19 @@ function showSaveDialog(gameId, resultValue) {
             }
 
             document.getElementById('ranking-overlay').remove();
+            
+            // メッセージ生成
             setTimeout(() => {
                 let msg = `${localName}さんの記録として保存しました。\n💰 参加賞 30ポイント GET!`;
                 if (isNew) msg = `すごい！ ${localName}さんの\nじこベスト更新！🎉\n💰 参加賞 30ポイント GET!`;
-                if (earnedPoints) msg += `\n🎁 目標クリア！さらに 100ポイント！`;
                 
+                if (earnedPoints) msg += `\n🎁 目標クリア！さらに ${earnedPoints}ポイント！`;
+                
+                // ★ボーナスメッセージ追加
+                if (missionBonus > 0) {
+                    msg += `\n\n🎉 デイリーミッション達成！\n特別ボーナス +${missionBonus}ポイント！！`;
+                }
+
                 if (sentToRanking) {
                     msg += `\n🌏 全国ランキングに 送信したよ！`;
                 } else if (isGlobalRankingEnabled) {
