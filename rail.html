@@ -7,35 +7,41 @@
     <script src="ranking.js"></script>
     <script type="module" src="firebase-ranking.js"></script>
     <style>
-
-        * {
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none; /* Safari用 */
-            -webkit-touch-callout: none; /* 長押しメニュー禁止 */
-        }
-
-        body {
+        /* ▼▼▼ CSS：画面固定とゲームのスタイル ▼▼▼ */
+        html, body {
             margin: 0;
             padding: 0;
-            background-color: #a5d6a7;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* スクロールバーを消す */
+            
+            /* 最強の固定設定 */
+            position: fixed;
+            inset: 0;
+            overscroll-behavior: none; /* バウンド禁止 */
+            
+            background-color: #a5d6a7; /* 緑色の背景 */
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
-            overflow: hidden;
+            
+            /* タッチ操作の無効化（ボタンなどは個別に有効化される） */
             touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            
             display: flex;
             justify-content: center;
             align-items: center;
-            position: fixed; /* 画面をガッチリ固定 */
-            height: 100vh;
-            height: 100dvh;
         }
 
         #game-container {
             position: relative;
             width: 100%;
             max-width: 500px;
-            height: 100%;
+            /* 画面いっぱいに広げる設定 */
+            height: 100%; 
             max-height: 900px;
+            
             background-color: #e8f5e9;
             box-shadow: 0 0 20px rgba(0,0,0,0.2);
             display: flex;
@@ -43,176 +49,134 @@
             overflow: hidden;
         }
 
-        canvas {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: #c8e6c9;
-            display: block;
-            z-index: 0;
-            /* ▼▼▼ 修正：タッチ操作によるズーム・スクロールを無効化 ▼▼▼ */
-            touch-action: none;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            /* ▲▲▲ ここまで ▲▲▲ */
-        }
-
-        /* ヘッダー */
-        .header-ui {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%;
-            padding: 10px 0;
-            background: rgba(255,255,255,0.9);
-            text-align: center;
-            font-weight: bold;
-            color: #2e7d32;
-            font-size: 18px;
-            border-bottom: 2px solid #81c784;
-            display: flex;
-            justify-content: space-around;
-            z-index: 10;
-            box-sizing: border-box;
-            pointer-events: none; /* UIの下のレールも触れるように */
-        }
-
-        /* スピードボタン */
-        .speed-btn {
-            position: absolute;
-            bottom: 40px; right: 20px;
-            width: 90px; height: 90px;
-            background: #2196f3;
+        /* ヘッダー部分 */
+        .header {
+            height: 50px;
+            background-color: #2e7d32;
             color: white;
-            border-radius: 50%;
-            border: 4px solid white;
-            font-weight: bold;
-            font-size: 16px;
-            box-shadow: 0 4px rgba(0,0,0,0.3);
-            cursor: pointer;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            user-select: none;
-            z-index: 50; 
-            touch-action: none;
-            -webkit-tap-highlight-color: transparent;
+            padding: 0 15px;
+            box-sizing: border-box;
+            font-size: 18px;
+            z-index: 10;
         }
-        .speed-btn:active { background: #1976d2; transform: scale(0.95); }
 
-        /* オーバーレイ */
+        canvas {
+            display: block;
+            touch-action: none; /* キャンバス内の操作もブラウザに邪魔させない */
+        }
+
+        /* ボタンやオーバーレイのスタイル（消えていたらここで復活） */
         .overlay {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.85);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 100;
-            text-align: center;
             color: white;
+            z-index: 20;
+            text-align: center;
         }
 
         .btn {
-            background: #ff9800; color: white;
-            border: none; padding: 15px 40px;
-            font-size: 24px; border-radius: 50px;
-            font-weight: bold; cursor: pointer;
-            box-shadow: 0 5px #e65100;
             margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 24px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #2e7d32;
+            transition: transform 0.1s;
+            font-family: inherit;
+            
+            /* ボタンは押せるようにする */
+            pointer-events: auto;
+            touch-action: manipulation;
         }
-        .btn:active { transform: scale(0.95); box-shadow: none; }
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
 
+        /* 文字サイズ調整 */
+        h1 { font-size: 40px; margin-bottom: 10px; color: #ffeb3b; text-shadow: 2px 2px 0 #f57f17; }
+        p { font-size: 18px; line-height: 1.6; }
     </style>
 </head>
 <body>
 
-<div id="game-container">
-    <div class="header-ui">
-        <span>ステージ: <span id="level-disp">1</span> / 5</span>
-        <div class="status-item">タイム: <span id="time-disp">0.0</span>s</div>
+    <div id="game-container">
+        <div class="header">
+            <div class="status-item">レベル: <span id="level-disp">1</span></div>
+            <div class="status-item">タイム: <span id="time-disp">0.0</span>s</div>
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="start-screen" class="overlay">
+            <h1>つなげて！<br>トロッコ</h1>
+            <div style="font-size:80px; margin:20px;">🚂</div>
+            <p>線路を回転させて<br>トロッコをゴールまで導こう！</p>
+            <button class="btn" onclick="startGame()">スタート</button>
+            <br>
+            <a href="index.html" style="color:#fff; text-decoration:underline; pointer-events:auto;">🏠 ホームへ</a>
+        </div>
+
+        <div id="gameover-screen" class="overlay" style="display:none;">
+            <h1 style="color:#ef5350;">だっせん…</h1>
+            <div style="font-size:80px;">💥</div>
+            <button class="btn" onclick="retryGame()">もういちど</button>
+            <br>
+            <a href="index.html" style="color:#fff; text-decoration:underline; pointer-events:auto;">🏠 ホームへ</a>
+        </div>
+
+        <div id="clear-screen" class="overlay" style="display:none; background-color: rgba(0,0,0,0.6);">
+            <h1 style="color:#ffeb3b;">クリア！</h1>
+            <div style="font-size:80px;">🚩</div>
+            <button class="btn" onclick="nextLevel()">つぎへ</button>
+        </div>
+
+        <div id="all-clear-screen" class="overlay" style="display:none;">
+            <h1 style="color:#ffeb3b; text-shadow:0 0 10px #f57f17;">かんぜん<br>クリア！</h1>
+            <div style="font-size:100px;">⏱️</div>
+            <p style="font-size:20px;">さいごまで ありがとう！<br>きみは 線路マスターだ！</p>
+            
+            <div style="font-size:24px; font-weight:bold; margin:20px;">
+                タイム: <span id="final-score">0.00</span> 秒
+            </div>
+
+            <button class="btn" style="background: #e91e63;" onclick="saveScoreToRanking()">
+                🏆 タイムをきろくする
+            </button>
+
+            <button class="btn" onclick="location.reload()">さいしょから</button>
+            <br>
+            <a href="index.html" style="color:#fff; text-decoration:underline; pointer-events:auto;">🏠 ホームへ</a>
+        </div>
     </div>
-
-    <canvas id="gameCanvas"></canvas>
-
-    <button class="speed-btn" id="go-btn" 
-        ontouchstart="speedUp(true); event.preventDefault();" 
-        ontouchend="speedUp(false); event.preventDefault();" 
-        onmousedown="speedUp(true)" 
-        onmouseup="speedUp(false)"
-        onmouseleave="speedUp(false)">
-        <div style="font-size: 24px;">⏩</div>
-        <div>GO!</div>
-    </button>
-
-    <div id="start-screen" class="overlay">
-        <div style="font-size:60px;">🚃</div>
-        <h1 style="margin:10px;">つなげて！<br>トロッコ</h1>
-        <p>レールをタップして 回転！<br>ゴールまで 線路を つなげよう</p>
-        <p style="color:#81c784; font-weight:bold;">ぜんぶで 5ステージ！</p>
-        <button class="btn" onclick="startGame()">スタート</button>
-        <br>
-        <a href="index.html" style="color:#fff; text-decoration:underline;">🏠 もどる</a>
-    </div>
-
-    <div id="gameover-screen" class="overlay" style="display:none;">
-        <h1 style="color:#ff5252;">だっせん！</h1>
-        <div style="font-size:80px;">💥</div>
-        <p>とちゅうで 線路が なかったよ...</p>
-        <button class="btn" onclick="retryGame()">もういちど</button>
-        <br>
-        <a href="index.html" style="color:#fff; text-decoration:underline;">🏠 ホームへ</a>
-    </div>
-
-    <div id="clear-screen" class="overlay" style="display:none;">
-        <h1 style="color:#69f0ae;">ゴール！</h1>
-        <div style="font-size:80px;">🚩</div>
-        <p>つぎのステージへ いくよ！</p>
-        <button class="btn" onclick="nextLevel()">つぎへ</button>
-    </div>
-
-    <div id="all-clear-screen" class="overlay" style="display:none;">
-    <h1 style="color:#ffeb3b; text-shadow:0 0 10px #f57f17;">かんぜん<br>クリア！</h1>
-    <div style="font-size:100px;">⏱️</div>
-    <p style="font-size:20px;">さいごまで ありがとう！<br>きみは 線路マスターだ！</p>
-    
-    <div style="font-size:24px; font-weight:bold; margin:20px;">
-        タイム: <span id="final-score">0.00</span> 秒
-    </div>
-
-    <button class="btn" style="background: #e91e63;" onclick="saveScoreToRanking()">
-        🏆 タイムをきろくする
-    </button>
-    <button class="btn" onclick="location.reload()">さいしょから</button>
-    <br>
-    <a href="index.html" style="color:#fff; text-decoration:underline;">🏠 ホームへ</a>
-    </div>
-</div>
 
 <script>
-// ▼▼▼ 【追加】画面ズレ・ズーム完全防止コード ▼▼▼
-    
-    // 1. 指を動かして画面がスクロールするのを防ぐ
+    // ▼▼▼ 画面ズレ・ズーム完全防止コード ▼▼▼
     document.addEventListener('touchmove', function(e) {
-        if (e.target.tagName !== 'BUTTON') { // ボタン以外は無視
+        if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A') { 
             e.preventDefault();
         }
     }, { passive: false });
 
-    // 2. ダブルタップでのズームを防ぐ
-    document.addEventListener('dblclick', function(e) {
-        e.preventDefault();
-    }, { passive: false });
-
-    // 3. 2本指でのピンチズームを防ぐ
+    document.addEventListener('dblclick', function(e) { e.preventDefault(); }, { passive: false });
     document.addEventListener('touchstart', function(e) {
-        if (e.touches.length > 1) {
-            e.preventDefault();
-        }
+        if (e.touches.length > 1) { e.preventDefault(); }
     }, { passive: false });
-
-    // ▲▲▲ ここまで追加 ▲▲▲
+    // ▲▲▲ ここまで ▲▲▲
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -252,17 +216,22 @@
 
     function resize() {
         const container = document.getElementById('game-container');
-        canvas.width = container.clientWidth;
-        canvas.height = container.clientHeight;
-
-        const padding = 20;
-        const availableW = canvas.width - padding * 2;
-        const availableH = canvas.height - padding * 2;
+        // ヘッダーの高さを引いた分をキャンバスにする
         const headerHeight = 50; 
         
-        tileSize = Math.min(availableW / COLS, (availableH - headerHeight) / ROWS);
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight - headerHeight; 
+        
+        // キャンバスの位置調整（ヘッダーの下に配置）
+        canvas.style.top = headerHeight + "px";
+
+        const padding = 10;
+        const availableW = canvas.width - padding * 2;
+        const availableH = canvas.height - padding * 2;
+        
+        tileSize = Math.min(availableW / COLS, availableH / ROWS);
         offsetX = (canvas.width - tileSize * COLS) / 2;
-        offsetY = (canvas.height - tileSize * ROWS) / 2 + (headerHeight / 2);
+        offsetY = (canvas.height - tileSize * ROWS) / 2;
         
         draw();
     }
@@ -285,7 +254,6 @@
             document.getElementById('clear-screen').style.display = 'none';
             finalTime = ((Date.now() - gameStartTime) / 1000).toFixed(2); 
             
-            // クリア画面の表示更新
             document.getElementById('final-score').textContent = finalTime;
             document.getElementById('all-clear-screen').style.display = 'flex';
         } else {
@@ -400,10 +368,55 @@
             speed: 0.005 + (level * 0.001) 
         };
 
-        updateUI(); // 初期のレベル表示など
+        updateUI();
         resize(); 
+        // ▼▼▼ 追加・修正: スピードアップボタンの再配置 ▼▼▼
+        createSpeedButton(); // ボタンを作る関数を呼ぶ
+        
         gameLoop();
     }
+
+    function createSpeedButton() {
+        // 古いボタンがあれば消す
+        const oldBtn = document.getElementById('speed-btn');
+        if (oldBtn) oldBtn.remove();
+
+        const btn = document.createElement('button');
+        btn.id = 'speed-btn';
+        btn.textContent = '⏩'; // 早送りアイコン
+        
+        // スタイル設定（画面右下に固定）
+        Object.assign(btn.style, {
+            position: 'absolute',
+            bottom: '20px',
+            right: '20px',
+            width: '60px',
+            height: '60px',
+            fontSize: '30px',
+            borderRadius: '50%',
+            backgroundColor: '#ff9800',
+            color: 'white',
+            border: 'none',
+            boxShadow: '0 4px 0 #e65100',
+            cursor: 'pointer',
+            zIndex: '100', // 一番手前に表示
+            touchAction: 'manipulation' // タッチ操作を許可
+        });
+
+        // 押している間だけスピードアップ
+        const startSpeedUp = (e) => { e.preventDefault(); isSpeedUp = true; btn.style.transform = 'scale(0.9)'; };
+        const endSpeedUp = (e) => { e.preventDefault(); isSpeedUp = false; btn.style.transform = 'scale(1)'; };
+
+        btn.addEventListener('mousedown', startSpeedUp);
+        btn.addEventListener('mouseup', endSpeedUp);
+        btn.addEventListener('mouseleave', endSpeedUp);
+        
+        btn.addEventListener('touchstart', startSpeedUp, { passive: false });
+        btn.addEventListener('touchend', endSpeedUp, { passive: false });
+
+        document.getElementById('game-container').appendChild(btn);
+    }
+
 
     function getDir(from, to) {
         if(to.y < from.y) return 0; 
@@ -453,7 +466,6 @@
     function gameLoop() {
         if(!isPlaying) return;
         
-        // ▼▼▼ 追加: プレイ中にリアルタイムで時間を更新 ▼▼▼
         if(gameStartTime > 0) {
             let currentSec = ((Date.now() - gameStartTime) / 1000).toFixed(1);
             let timeDisp = document.getElementById('time-disp');
@@ -513,7 +525,6 @@
     
     function updateUI() { 
         document.getElementById('level-disp').textContent = level; 
-        // score-dispの更新は削除（代わりにgameLoopでtime-dispを更新）
     }
 
     function draw() {
@@ -637,18 +648,11 @@
         ctx.restore();
     }
 
-    // ▼▼▼ 追加：ランキング保存機能 ▼▼▼
-    function saveScoreToRanking() {
-        // ranking.js の showSaveDialog を呼び出します
-        // これを呼ぶだけで「名前入力」→「全国ランキング登録(任意)」の流れが自動で動きます
-        if (typeof showSaveDialog === 'function') {
-            // 第1引数: 手順1で登録したID 'rail'
-            // 第2引数: 今回のタイム (finalTime)
-            showSaveDialog('rail', finalTime);
-        } else {
-            alert('ranking.js が読み込まれていません');
-        }
-    }
+    // ▼▼▼ 修正：ロード完了を待ってからスタート ▼▼▼
+    window.addEventListener('load', () => {
+        resize();
+        initLevel();
+    });
 
 </script>
 </body>
