@@ -277,21 +277,23 @@
         { title: "せいじゃの こうしん", seq: [0, 2, 3, 4, 0, 2, 3, 4] }
     ];
 
+    // AudioBufferを保持するオブジェクト
     const audioBuffers = {};
-    const activeSounds = new Set();
-    
-    let audioCtx;
+    let audioCtx = null;
+
     let isUserTurn = false;
-    let isFreePlay = false; // 自由演奏モードフラグ
+    let isFreePlay = false;
     let questionSequence = []; 
     let userSequence = [];     
     let qCount = 1;
     let currentSongTitle = "";
     let playlist = [];
+    let isLoaded = false; // ロード完了フラグ
 
     window.onload = function() {
         const board = document.getElementById('keyboard');
         
+        // 鍵盤の生成
         NOTES.forEach((n, idx) => {
             const key = document.createElement('div');
             key.className = 'key';
@@ -301,20 +303,62 @@
             
             key.addEventListener('pointerdown', (e) => {
                 e.preventDefault();
-                // 自由演奏モードならいつでも弾ける。ゲーム中は自分の番だけ。
                 if(isFreePlay || isUserTurn) handleUserPlay(idx);
             });
             board.appendChild(key);
-
-            audioBuffers[idx] = new Audio(n.file);
-            audioBuffers[idx].load();
         });
+
+        // 音声ファイルのロード開始（Web Audio API用）
+        initAudioContextAndLoad();
     };
 
+    // AudioContextの初期化とファイルロード
+    async function initAudioContextAndLoad() {
+        try {
+            // AudioContextを作成（まだSuspended状態でもOK）
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+
+            // 全ファイルを並列でロード・デコード
+            const loadPromises = NOTES.map(async (n, idx) => {
+                const response = await fetch(n.file);
+                const arrayBuffer = await response.arrayBuffer();
+                const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+                audioBuffers[idx] = audioBuffer;
+            });
+
+            await Promise.all(loadPromises);
+            isLoaded = true;
+            console.log("All sounds loaded via Web Audio API");
+            
+            // ロード完了したらスタートボタンを有効化などの演出を入れても良い
+            const startBtn = document.querySelector('.start-btn');
+            if(startBtn) startBtn.innerText = "スタート"; 
+
+        } catch (e) {
+            console.error("Audio load failed:", e);
+            alert("音声の読み込みに失敗しました。ページを更新してください。");
+        }
+    }
+
+    // スタートボタンが押されたとき（ユーザーアクション必須）
     function initAudioAndStart() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        
+        if (!isLoaded) {
+            alert("ロード中です...少々お待ちください");
+            return;
+        }
+
+        // iOS対策：ユーザー操作のタイミングで必ずresumeする
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume().then(() => {
+                startGameFlow();
+            });
+        } else {
+            startGameFlow();
+        }
+    }
+
+    function startGameFlow() {
         document.getElementById('start-screen').style.display = 'none';
         
         // ランダム選曲
@@ -343,28 +387,23 @@
         }
     }
 
-    // もう1回遊ぶ（リセット）
     function resetAndRestart() {
-        // 報酬ボタンを復活させる
         const btn = document.getElementById('reward-btn');
         btn.disabled = false;
         btn.innerText = '🎁 50ポイント';
         btn.style.background = '#ff6f00';
         
         document.getElementById('clear-screen').style.display = 'none';
-        initAudioAndStart();
+        // すでにAudioContextは有効なのでそのまま開始
+        startGameFlow();
     }
 
-    // 自由に弾くモード開始
     function startFreePlay() {
         document.getElementById('clear-screen').style.display = 'none';
-        
         isFreePlay = true;
-        isUserTurn = true; // タップ可能にする
-        
-        // 表示切り替え
-        document.getElementById('hud-area').style.display = 'none'; // 問題数隠す
-        document.getElementById('free-quit').style.display = 'block'; // 終了ボタン表示
+        isUserTurn = true;
+        document.getElementById('hud-area').style.display = 'none';
+        document.getElementById('free-quit').style.display = 'block';
         
         const bubble = document.getElementById('msg-bubble');
         bubble.innerText = "すきな 曲を ひいてね♪";
@@ -372,35 +411,28 @@
         bubble.style.borderColor = "#e91e63";
     }
 
-    // 自由演奏モード終了
     function endFreePlay() {
         isFreePlay = false;
-        // UI戻す
         document.getElementById('hud-area').style.display = 'block';
         document.getElementById('free-quit').style.display = 'none';
-        
-        // タイトル画面へ
         document.getElementById('start-screen').style.display = 'flex';
     }
 
+    // ▼▼▼ 変更：Web Audio APIを使った再生処理 ▼▼▼
     function playNote(idx) {
-        const originalAudio = audioBuffers[idx];
-        const sound = originalAudio.cloneNode();
-        sound.volume = 1.0;
-
-        activeSounds.add(sound);
-        sound.onended = () => {
-            activeSounds.delete(sound);
-        };
-
-        const playPromise = sound.play();
-
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                activeSounds.delete(sound);
-                playSynthTone(NOTES[idx].freq);
-            });
+        if (!audioCtx || !audioBuffers[idx]) {
+            // 万が一バッファがない場合はシンセ音
+            playSynthTone(NOTES[idx].freq);
+            return;
         }
+
+        // BufferSourceを作成（使い捨ての軽量プレーヤー）
+        const source = audioCtx.createBufferSource();
+        source.buffer = audioBuffers[idx];
+        source.connect(audioCtx.destination);
+        
+        // 現在時刻ですぐに再生
+        source.start(0);
     }
 
     function playSynthTone(freq) {
@@ -454,6 +486,7 @@
         const keyEl = document.querySelectorAll('.key')[noteIdx];
         
         playNote(noteIdx);
+        
         keyEl.classList.add('demo');
         document.getElementById('teacher-img').classList.add('singing');
 
@@ -471,7 +504,6 @@
         playNote(idx);
         
         const keyEl = document.querySelectorAll('.key')[idx];
-        
         keyEl.classList.remove('active');
         void keyEl.offsetWidth; 
         keyEl.classList.add('active');
@@ -480,9 +512,7 @@
             keyEl.classList.remove('active');
         }, 200);
 
-        // ▼▼▼ 修正：自由演奏モードならここで終わり（正誤判定しない） ▼▼▼
         if (isFreePlay) return;
-        // ▲▲▲ ここまで ▲▲▲
 
         const currentTargetIdx = userSequence.length;
         
