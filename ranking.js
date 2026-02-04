@@ -396,34 +396,56 @@ function saveRecord(userName, gameId, value) {
     return isNew;
 }
 
+// 目標達成チェック＆ポイント付与（修正・強化版）
 function checkAndAwardPoints(userName, gameId, currentRecord) {
-    const goals = getAllGoals();
+    // 必要なキーや関数が存在しない場合の安全策
+    const _POINT_KEY = (typeof POINT_KEY !== 'undefined') ? POINT_KEY : 'papan_points';
+    const _REWARDED_KEY = (typeof REWARDED_KEY !== 'undefined') ? REWARDED_KEY : 'papan_rewarded_goals';
+    const _getAllGoals = (typeof getAllGoals === 'function') ? getAllGoals : () => {
+        // getAllGoalsがない場合は直接localStorageから取る
+        const _GOAL_KEY = (typeof GOAL_KEY !== 'undefined') ? GOAL_KEY : 'papan_goals';
+        return JSON.parse(localStorage.getItem(_GOAL_KEY) || '{}');
+    };
+
+    const goals = _getAllGoals();
     const userGoal = goals[userName]?.[gameId];
-    // 目標が設定されていなければ 0 を返す
+
+    // 目標が設定されていなければ終了
     if (!userGoal) return 0;
 
-    const allPoints = JSON.parse(localStorage.getItem(POINT_KEY) || '{}');
-    const allHistory = JSON.parse(localStorage.getItem(REWARDED_KEY) || '{}');
+    const allPoints = JSON.parse(localStorage.getItem(_POINT_KEY) || '{}');
+    const allHistory = JSON.parse(localStorage.getItem(_REWARDED_KEY) || '{}');
     const info = GAME_LIST[gameId];
     
-    // 達成判定
-    let isAchieved = info.type === 'score' ? parseFloat(currentRecord) >= parseFloat(userGoal) : parseFloat(currentRecord) <= parseFloat(userGoal);
+    // 達成判定（タイムなら「以下」、スコアなら「以上」）
+    // 数値として比較するために parseFloat を使用
+    let isAchieved = false;
+    if (info.type === 'time') {
+        isAchieved = parseFloat(currentRecord) <= parseFloat(userGoal);
+    } else {
+        isAchieved = parseFloat(currentRecord) >= parseFloat(userGoal);
+    }
     
-    // 達成していて、かつまだ報酬をもらっていなければ
+    // 「達成している」かつ「まだその目標値で報酬をもらっていない」場合
+    // ※parseFloatで数値化して比較することで、"10" と 10 の違いによるミスを防ぐ
     if (isAchieved && allHistory[userName]?.[gameId] !== parseFloat(userGoal)) {
-        const reward = 150; // ★報酬ポイント
+        const reward = 100; // 報酬ポイント
 
+        // ポイント加算
         allPoints[userName] = (allPoints[userName] || 0) + reward;
         
+        // 履歴更新（今の目標値を記録する）
         if (!allHistory[userName]) allHistory[userName] = {};
         allHistory[userName][gameId] = parseFloat(userGoal);
         
-        localStorage.setItem(POINT_KEY, JSON.stringify(allPoints));
-        localStorage.setItem(REWARDED_KEY, JSON.stringify(allHistory));
+        // 保存
+        localStorage.setItem(_POINT_KEY, JSON.stringify(allPoints));
+        localStorage.setItem(_REWARDED_KEY, JSON.stringify(allHistory));
         
-        return reward; // ★ここで 'true' ではなく '100' を返すように変更
+        return reward; // 獲得ポイント(100)を返す
     }
-    return 0; // ★達成していなければ 0 を返す
+
+    return 0; // 条件を満たさなければ 0 を返す
 }
 
 // ★★★ セーブダイアログ (UI改善＆空欄送信防止版) ★★★

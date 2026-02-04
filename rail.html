@@ -7,6 +7,14 @@
     <script src="ranking.js"></script>
     <script type="module" src="firebase-ranking.js"></script>
     <style>
+
+        * {
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none; /* Safari用 */
+            -webkit-touch-callout: none; /* 長押しメニュー禁止 */
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -17,6 +25,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            position: fixed; /* 画面をガッチリ固定 */
             height: 100vh;
             height: 100dvh;
         }
@@ -182,6 +191,29 @@
 </div>
 
 <script>
+// ▼▼▼ 【追加】画面ズレ・ズーム完全防止コード ▼▼▼
+    
+    // 1. 指を動かして画面がスクロールするのを防ぐ
+    document.addEventListener('touchmove', function(e) {
+        if (e.target.tagName !== 'BUTTON') { // ボタン以外は無視
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    // 2. ダブルタップでのズームを防ぐ
+    document.addEventListener('dblclick', function(e) {
+        e.preventDefault();
+    }, { passive: false });
+
+    // 3. 2本指でのピンチズームを防ぐ
+    document.addEventListener('touchstart', function(e) {
+        if (e.touches.length > 1) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    // ▲▲▲ ここまで追加 ▲▲▲
+
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
