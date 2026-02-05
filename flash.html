@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>フラッシュ絵文字</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #e8f5e9; /* やさしい緑 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 95%;
+            max-width: 500px;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        h1 { color: #2e7d32; font-size: 24px; margin: 10px 0; }
+
+        /* 設定エリア */
+        .setting-area {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f1f8e9;
+            border-radius: 15px;
+        }
+        
+        select {
+            font-size: 20px;
+            padding: 5px 15px;
+            border-radius: 10px;
+            border: 2px solid #a5d6a7;
+            background: white;
+        }
+
+        /* フラッシュ表示エリア */
+        #flash-display {
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 100px;
+            background: #fff;
+            border: 4px solid #c8e6c9;
+            border-radius: 20px;
+            margin: 20px 0;
+        }
+
+        /* 回答エリア */
+        #answer-slots {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            min-height: 50px;
+        }
+
+        .slot {
+            width: 40px;
+            height: 40px;
+            border-bottom: 3px solid #ccc;
+            font-size: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* キーパッド（選択肢） */
+        #keypad {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .key-btn {
+            font-size: 32px;
+            padding: 10px 0;
+            background: #ffffff;
+            border: 2px solid #a5d6a7;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 3px #81c784;
+        }
+        .key-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        /* ボタン類 */
+        .start-btn {
+            font-size: 24px;
+            padding: 15px 40px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px #2e7d32;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .start-btn:active { transform: scale(0.95); box-shadow: 0 2px #2e7d32; }
+
+        .action-btn {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+        }
+        .btn-reset { background: #ef5350; }
+        .btn-ok { background: #2196f3; }
+
+        .back-btn {
+            background: #90a4ae;
+            font-size: 14px;
+            padding: 8px 20px;
+            color: white;
+            border-radius: 20px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        /* 正解・不正解表示 */
+        #result-message {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            min-height: 36px;
+        }
+        .success { color: #f44336; }
+        .fail { color: #555; }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+
+    <div id="home-screen" class="screen active">
+        <h1>フラッシュ絵文字</h1>
+        <div style="font-size: 80px; margin: 20px;">⚡</div>
+        
+        <div class="setting-area">
+            <label for="level-select" style="font-size:18px; font-weight:bold;">いくつ おぼえる？</label><br><br>
+            <select id="level-select">
+                <option value="2">2こ</option>
+                <option value="3" selected>3こ</option>
+                <option value="4">4こ</option>
+                <option value="5">5こ</option>
+                <option value="6">6こ</option>
+                <option value="7">7こ</option>
+                <option value="8">8こ</option>
+                <option value="9">9こ</option>
+                <option value="10">10こ（激ムズ）</option>
+            </select>
+        </div>
+
+        <p>でてくる絵文字を<br>じゅんばんにおぼえてね！</p>
+        <button class="start-btn" onclick="prepareGame()">スタート！</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 もどる</a>
+    </div>
+
+    <div id="display-screen" class="screen">
+        <h2>よくみて おぼえて！</h2>
+        <div id="flash-display">3</div>
+    </div>
+
+    <div id="answer-screen" class="screen">
+        <h2>じゅんばんにおしてね</h2>
+        
+        <div id="answer-slots"></div>
+
+        <div id="keypad">
+            </div>
+
+        <div>
+            <button class="action-btn btn-reset" onclick="resetInput()">やりなおし</button>
+            <button class="action-btn btn-ok" onclick="checkAnswer()">できた！</button>
+        </div>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <div id="result-icon" style="font-size: 80px; margin: 10px;"></div>
+        <div id="result-message"></div>
+        
+        <div style="background:#f5f5f5; padding:10px; border-radius:10px; margin:10px auto;">
+            <p style="margin:5px; font-size:14px; color:#777;">せいかい</p>
+            <div id="correct-sequence" style="font-size:24px;"></div>
+        </div>
+
+        <button onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; showPointGetDialog(10)" 
+    style="padding:10px 20px; font-size:16px; background:#4CAF50; color:white; border:none; border-radius:30px; font-weight:bold; cursor:pointer; margin-top:10px; box-shadow: 0 4px #2e7d32;">
+    🎁 10ポイントをもらう
+</button>
+
+        <button class="start-btn" onclick="prepareGame()">もういっかい</button>
+        <br>
+        <a href="index.html" class="back-btn" onclick="location.reload()">🏠 ホームへ</a>
+    </div>
+
+</div>
+
+<script>
+    // 使用する絵文字リスト（12個）
+    const emojiPool = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮'];
+    
+    let sequence = [];
+    let userAnswers = [];
+    let targetCount = 3;
+
+    function changeScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    // ゲーム準備
+    function prepareGame() {
+        const select = document.getElementById('level-select');
+        targetCount = parseInt(select.value);
+        sequence = [];
+        
+        // ランダムなシーケンスを作成（同じ絵文字が連続することもあり）
+        for (let i = 0; i < targetCount; i++) {
+            const randomEmoji = emojiPool[Math.floor(Math.random() * emojiPool.length)];
+            sequence.push(randomEmoji);
+        }
+
+        userAnswers = [];
+        changeScreen('display-screen');
+        startFlash();
+    }
+
+    // フラッシュ再生
+    function startFlash() {
+        const display = document.getElementById('flash-display');
+        let index = 0;
+
+        // カウントダウン
+        display.textContent = "3";
+        setTimeout(() => display.textContent = "2", 700);
+        setTimeout(() => display.textContent = "1", 1400);
+
+        setTimeout(() => {
+            // フラッシュ開始
+            const interval = setInterval(() => {
+                if (index >= sequence.length) {
+                    clearInterval(interval);
+                    display.textContent = "";
+                    setupAnswerScreen(); // 回答画面へ
+                    return;
+                }
+
+                // 絵文字を表示
+                display.textContent = sequence[index];
+                
+                // 一瞬消すための処理（連続で同じ絵文字が出た時にわかるように）
+                setTimeout(() => {
+                    display.textContent = "";
+                }, 800); // 0.8秒表示して消す
+
+                index++;
+            }, 1000); // 1秒間隔
+        }, 2100);
+    }
+
+    // 回答画面の準備
+    function setupAnswerScreen() {
+        changeScreen('answer-screen');
+        renderSlots();
+        renderKeypad();
+    }
+
+    // スロット（回答欄）の描画
+    function renderSlots() {
+        const slotsContainer = document.getElementById('answer-slots');
+        slotsContainer.innerHTML = '';
+        
+        for (let i = 0; i < targetCount; i++) {
+            const slot = document.createElement('div');
+            slot.className = 'slot';
+            // 入力済みなら表示、まだなら空
+            if (i < userAnswers.length) {
+                slot.textContent = userAnswers[i];
+            }
+            slotsContainer.appendChild(slot);
+        }
+    }
+
+    // キーパッドの描画
+    function renderKeypad() {
+        const keypad = document.getElementById('keypad');
+        keypad.innerHTML = '';
+        
+        // 12個の絵文字ボタンを表示
+        emojiPool.forEach(emoji => {
+            const btn = document.createElement('button');
+            btn.className = 'key-btn';
+            btn.textContent = emoji;
+            btn.onclick = () => inputEmoji(emoji);
+            keypad.appendChild(btn);
+        });
+    }
+
+    // 入力処理
+    function inputEmoji(emoji) {
+        if (userAnswers.length < targetCount) {
+            userAnswers.push(emoji);
+            renderSlots();
+        }
+    }
+
+    // リセット
+    function resetInput() {
+        userAnswers = [];
+        renderSlots();
+    }
+
+    // 答え合わせ
+    function checkAnswer() {
+        // まだ全部埋まってない場合
+        if (userAnswers.length < targetCount) {
+            alert('さいごまで えらんでね！');
+            return;
+        }
+
+        changeScreen('result-screen');
+        
+        // 配列の中身を比較
+        const isCorrect = JSON.stringify(sequence) === JSON.stringify(userAnswers);
+        
+        const msg = document.getElementById('result-message');
+        const icon = document.getElementById('result-icon');
+        const correctSeq = document.getElementById('correct-sequence');
+
+        correctSeq.textContent = sequence.join(' → ');
+
+        if (isCorrect) {
+            icon.textContent = "💮";
+            msg.textContent = "すごい！ だいせいかい！";
+            msg.className = "success";
+        } else {
+            icon.textContent = "😢";
+            msg.textContent = "おしい...！";
+            msg.className = "fail";
+        }
+    }
+</script>
+
+</body>
+</html>

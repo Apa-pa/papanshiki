@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>おなじのどーれだ？ タイムアタック</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #fff9e6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 500px;
+            position: relative; /* 〇を表示するために必要 */
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        h1 { color: #ff6f61; font-size: 26px; }
+
+        /* タイマーの見た目（追加） */
+        #timer-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ef5350;
+            background: #ffebee;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        /* はじめるボタン */
+        .start-btn {
+            font-size: 30px;
+            padding: 20px 50px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px #e68a00;
+            margin-top: 20px;
+        }
+        .start-btn:active { transform: scale(0.95); box-shadow: 0 2px #e68a00; }
+
+        /* 問題の表示 */
+        #target-symbol {
+            font-size: 100px;
+            margin: 5px 0 15px 0;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            display: inline-block;
+            line-height: 1;
+        }
+
+        #choices {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .choice-card {
+            font-size: 60px;
+            padding: 10px;
+            background: #e3f2fd;
+            border: 4px solid #bbdefb;
+            border-radius: 20px;
+            cursor: pointer;
+            user-select: none; /* 文字選択を防ぐ */
+        }
+        .choice-card:active { background-color: #bbdefb; }
+
+        /* 外部ページへ戻るボタン */
+        .back-to-index-btn {
+            margin-top: 25px;
+            font-size: 16px;
+            padding: 10px 20px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        /* 結果画面のボタン */
+        .retry-btn {
+            font-size: 24px;
+            padding: 15px 40px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            box-shadow: 0 5px #2e7d32;
+        }
+        .retry-btn:active { transform: scale(0.95); box-shadow: 0 2px #2e7d32; }
+
+        /* 結果のタイム表示（追加） */
+        .final-time {
+            font-size: 32px;
+            color: #ff5722;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        /* アニメーション */
+        .correct-flash { animation: flash 0.3s; }
+        @keyframes flash {
+            0% { background-color: white; }
+            50% { background-color: #c8e6c9; }
+            100% { background-color: white; }
+        }
+
+        /* 正解のまる */
+        #correct-mark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 150px;
+            color: #ff3d00;
+            display: none;
+            z-index: 100;
+            pointer-events: none;
+            text-shadow: 2px 2px 0px white;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    
+    <div id="correct-mark">⭕</div>
+
+    <div id="home-screen" class="screen active">
+        <h1>おなじのどーれだ？</h1>
+        <div style="font-size: 80px; margin: 10px;">⏱️</div>
+        <p>10もん できるだけはやく みつけよう！</p>
+        <button class="start-btn" onclick="startGame()">よーい、スタート！</button>
+        <br>
+        <a href="index.html" class="back-to-index-btn">🏠 ページをもどる</a>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <div id="timer-display">0.0びょう</div>
+        <div id="progress">1 / 10</div>
+        <div id="target-symbol">🍎</div>
+        <div id="choices"></div>
+        <br>
+        <a href="index.html" class="back-to-index-btn" style="font-size: 14px; background: #9e9e9e;">🏠 やめる</a>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h1>✨ ゴール！ ✨</h1>
+        <div style="font-size: 60px;">🏆</div>
+        <p>きみの タイムは...</p>
+        <div id="final-time-display" class="final-time">0.0びょう</div>
+        <button class="retry-btn" onclick="startGame()">もういっかい！</button>
+        <br>
+        <a href="index.html" class="back-to-index-btn">🏠 ページをもどる</a>
+    </div>
+
+</div>
+
+<script>
+    const allSymbols = ['🍎','🐶','🚗','⭐️','🌙','🌸','☀️','🎈','🧸','🍦','🍬','🚀','🐱','🐘','🐧','🍄','💎','⚽️','🎨','🎁','🍀','🦁','🍓','🐝'];
+    let currentQuestion = 0;
+    let selectedQuestions = [];
+    const totalQuestions = 10;
+    
+    // タイマー用の変数（追加）
+    let startTime;
+    let timerInterval;
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function changeScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    // タイマーを開始する関数（追加）
+    function startTimer() {
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+            const elapsedTime = (Date.now() - startTime) / 1000;
+            document.getElementById('timer-display').textContent = elapsedTime.toFixed(1) + "びょう";
+        }, 100);
+    }
+
+    // タイマーを止める関数（追加）
+    function stopTimer() {
+        clearInterval(timerInterval);
+        return ((Date.now() - startTime) / 1000).toFixed(1);
+    }
+
+    function startGame() {
+        currentQuestion = 0;
+        selectedQuestions = shuffle([...allSymbols]).slice(0, totalQuestions);
+        changeScreen('quiz-screen');
+        
+        // スタート時にタイマーも動かす
+        startTimer();
+        showQuestion();
+    }
+
+    function showQuestion() {
+        // 全問おわったら
+        if (currentQuestion >= totalQuestions) {
+            // タイマーを止めて結果を表示
+            const finalTime = stopTimer();
+            document.getElementById('final-time-display').textContent = finalTime + "びょう";
+            changeScreen('result-screen');
+
+             // IDは 'eawase'、記録は finalTime (秒数) です
+        if(typeof showSaveDialog === 'function') {
+            showSaveDialog('eawase', finalTime);
+        }
+
+            return;
+        }
+
+        const target = selectedQuestions[currentQuestion];
+        document.getElementById('target-symbol').textContent = target;
+        document.getElementById('progress').textContent = `だい ${currentQuestion + 1} もん / ${totalQuestions}`;
+
+        let others = allSymbols.filter(s => s !== target);
+        let distractors = shuffle(others).slice(0, 3);
+        let choices = shuffle([target, ...distractors]);
+
+        const container = document.getElementById('choices');
+        container.innerHTML = '';
+        choices.forEach(symbol => {
+            const card = document.createElement('div');
+            card.className = 'choice-card';
+            card.textContent = symbol;
+            
+            // カードを押したときの処理
+            card.onclick = () => {
+                if (symbol === target) {
+                    // まるを表示する
+                    const mark = document.getElementById('correct-mark');
+                    mark.style.display = 'block';
+
+                    // 画面のフラッシュ
+                    document.body.classList.add('correct-flash');
+
+                    setTimeout(() => {
+                        // まるを消して次の問題へ
+                        mark.style.display = 'none';
+                        document.body.classList.remove('correct-flash');
+                        currentQuestion++;
+                        showQuestion();
+                    }, 500); // 0.5秒まつ
+                }
+            };
+            container.appendChild(card);
+        });
+    }
+</script>
+
+</body>
+</html>

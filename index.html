@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%%22 y=%2250%%22 style=%22dominant-baseline:central;text-anchor:middle;font-size:90px;%22>🏠</text></svg>">
+    <meta property="og:title" content="ぱぱん式　まなびポータル">
+    <meta property="og:description" content="ダウンロード不要ブラウザで好きなだけ学べる学習ポータルサイトです">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://papan-shiki.com/">
+    <meta property="og:image" content="https://papan-shiki.com/header2.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>ぱぱん式</title>
+    <script src="ranking.js"></script>
+    <style>
+    body {
+        font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+        background-color: #f0f9ff;
+        color: #554c46;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* ヘッダー画像の設定 */
+    .hero-header {
+        width: 100%;
+        padding-top: 29.02%;
+        background-image: url('header01.png'); 
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-color: #f0f9ff;
+        border-radius: 0 0 20px 20px;
+    }
+
+    @media (min-width: 1578px) {
+        .hero-header {
+            padding-top: 0;
+            height: 458px;
+        }
+    }
+
+    /* ▼▼▼ フィルターボタンエリアのスタイル ▼▼▼ */
+    .filter-container {
+        text-align: center;
+        margin: 5px auto;
+        padding: 0 10px;
+    }
+    
+    .filter-label {
+        font-weight: bold;
+        color: #6b4e3d;
+        margin-bottom: 10px;
+        display: block;
+        font-size: 0.9rem;
+    }
+
+    .filter-btn {
+        background: #fff;
+        border: 2px solid #ffad60;
+        color: #ffad60;
+        border-radius: 20px;
+        padding: 8px 16px;
+        margin: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.2s;
+        font-family: inherit;
+        font-size: 0.9rem;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .filter-btn.active, .filter-btn:hover {
+        background: #ffad60;
+        color: white;
+    }
+
+    /* ▼▼▼ 共通ボタン・リンクスタイル（新規追加） ▼▼▼ */
+    
+    /* 上部メニューボタン */
+    .menu-btn {
+        display: inline-block;
+        background: #fff;
+        color: #ff9800;
+        text-decoration: none;
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-weight: bold;
+        font-size: 0.9rem;
+        border: 2px solid #ff9800;
+        box-shadow: 0 2px 5px rgba(255, 152, 0, 0.2);
+        transition: transform 0.2s;
+        margin: 5px; /* ボタン同士の間隔 */
+        white-space: nowrap; /* 折り返し防止 */
+    }
+    .menu-btn:hover {
+        transform: scale(1.05);
+    }
+
+    /* 下部アクションボタン（大きめ） */
+    .action-btn {
+        display: inline-block;
+        background: #fff;
+        color: #ff9800;
+        text-decoration: none;
+        padding: 5px 40px;
+        border-radius: 50px;
+        font-weight: bold;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
+        border: 3px solid #ff9800;
+        transition: transform 0.2s;
+        margin: 10px;
+    }
+    .action-btn:hover {
+        transform: scale(1.05);
+    }
+
+    /* コラム記事カード */
+    .article-card {
+        text-decoration: none;
+        color: #333;
+        background: #fff;
+        padding: 15px;
+        border-radius: 8px;
+        width: 100%;
+        max-width: 300px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: 0.3s;
+        display: block;
+    }
+    .article-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+    }
+    /* ▲▲▲ 共通スタイルここまで ▲▲▲ */
+
+
+    main {
+        max-width: 900px;
+        margin: 20px auto;
+        padding: 20px;
+    }
+
+    /* セクションごとの見出し */
+    .section-title {
+        text-align: left;
+        color: #6b4e3d; 
+        letter-spacing: 0.05em;
+        border-left: 8px solid #ffad60;
+        padding-left: 15px;
+        margin: 50px 0 20px 0;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .title-math { border-color: #4dd0e1; }
+    .title-jp { border-color: #ff8a65; }
+    .title-brain { border-color: #aed581; }
+    .title-art { border-color: #fc316b; }
+    .title-money { border-color: #65ff6a; }
+    .title-science { border-color: #4dd0e1; }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+    }
+
+    .card {
+        background: white;
+        border-radius: 20px; 
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 8px 16px rgba(135, 206, 235, 0.2);
+        transition: transform 0.3s, box-shadow 0.3s;
+        text-decoration: none;
+        color: inherit;
+        border: 3px solid #e6f7ff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
+        box-sizing: border-box;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px rgba(135, 206, 235, 0.3);
+        border-color: #b3e0ff;
+    }
+
+    .icon {
+        font-size: 50px;
+        margin-bottom: 15px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .card h3 {
+        margin: 10px 0;
+        color: #ffad60; 
+        font-size: 1.1rem;
+    }
+    
+    .card p {
+        color: #7a7a7a;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* ラベル */
+    .label {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+    .label-quiz { background-color: #fff3e0; color: #ff9800; }
+    .label-print { background-color: #e3f2fd; color: #2196f3; }
+
+    </style>
+</head>
+<body>
+
+<header class="hero-header"></header>
+
+<div id="daily-mission-area"></div>
+
+<main>
+    <div class="filter-container">
+        <span class="filter-label">ねんれいでさがす</span>
+        <button class="filter-btn active" onclick="filterByAge('all', this)">ぜんぶ</button>
+        <button class="filter-btn" onclick="filterByAge('4', this)">3,4さい</button>
+        <button class="filter-btn" onclick="filterByAge('5', this)">5さい</button>
+        <button class="filter-btn" onclick="filterByAge('6', this)">6さい</button>
+        <button class="filter-btn" onclick="filterByAge('7', this)">7さい</button>
+        <button class="filter-btn" onclick="filterByAge('8', this)">8さい</button>
+        <button class="filter-btn" onclick="filterByAge('9', this)">9さい</button>
+        <button class="filter-btn" onclick="filterByAge('10', this)">10さい〜</button>
+        
+        <div style="margin-top: 15px; display: flex; flex-wrap: wrap; justify-content: center;">
+            <a href="record.html" class="menu-btn">🏆 きろく</a>
+            <a href="calendar.html" class="menu-btn">📅 まなびカレンダー</a>
+            <a href="gacha.html" class="menu-btn">🧸 ガチャ</a>
+            <a href="bank.html" class="menu-btn">🏦 ぱぱん銀行</a>
+            <a href="room.html" class="menu-btn">🏠 ルーム</a>
+        </div>
+        </div>
+
+    <h2 class="section-title title-math">🔢 さんすう・けいさん</h2>
+    <div class="grid">
+        <a href="sansuu.html" class="card" data-age="5,6,7,8,9,10,11,12">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">⏱️</div>
+            <h3>さんすうタイムアタック</h3>
+            <p>たしざん、ひきざん、かけざん！10問早解き新記録にちょうせんだ</p>
+        </a>
+
+        <a href="rain.html" class="card" data-age="6,7,8,9,10,11,12">
+            <span class="label label-quiz">ゲーム</span>
+            <div class="icon">☔</div>
+            <h3>あめふりさんすう</h3>
+            <p>空からおちてくるもんだいを、キーパッドでうってけそう！</p>
+        </a>
+
+        <a href="make10.html" class="card" data-age="4,5,6,7,8">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">🔟</div>
+            <h3>あわせて10（メイクテン）</h3>
+            <p>あといくつで10になる？くりあがりのきほん！</p>
+        </a>
+
+        <a href="dungeon.html" class="card" data-age="6,7,8,9,10">
+        <span class="label label-quiz">RPG</span>
+        <div class="icon">🗡️</div>
+        <h3>計算ダンジョン</h3>
+        <p>もんだいを解いてモンスターをたおそう！どこまで進めるかな？</p>
+        </a>
+
+        <a href="flash_anzan.html" class="card" data-age="6,7,8,9,10,11,12">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">🧮</div>
+            <h3>フラッシュあんざん</h3>
+            <p>じゅんばんに出る数字をたそう！1けた〜3けたまで</p>
+        </a>
+
+        <a href="99.html" class="card" data-age="6,7,8">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">✖</div>
+            <h3>かけざん九九チャレンジ</h3>
+            <p>九九（くく）のよみかたをおぼえるクイズ</p>
+        </a>
+
+        <a href="whattime.html" class="card" data-age="6,7,8">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">🕒</div>
+            <h3>とけいの読み方</h3>
+            <p>いまなんじ？とけいをみて正しいじかんをえらぼう！</p>
+        </a>
+
+        <a href="water.html" class="card" data-age="8,9,10,11,12">
+            <span class="label label-quiz">パズル</span>
+            <div class="icon">💧</div>
+            <h3>分数少数水槽パズル</h3>
+            <p>コップの水を入れて目盛りをあわせよう。「分数」と「小数」の変換を体感！</p>
+        </a>
+
+        <a href="triangle.html" class="card" data-age="8,9,10,11,12">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">📐</div>
+            <h3>三角形の内角</h3>
+            <p>三角形の内角の和は180度！わかっている角から「x」を計算しよう</p>
+        </a>
+
+    </div>
+
+    <h2 class="section-title title-jp">📖 こくご・ことば</h2>
+    <div class="grid">
+        <a href="bunsho.html" class="card" data-age="5,6,7,8">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">🧩</div>
+            <h3>バラバラぶんしょう</h3>
+            <p>ことばをならびかえて、ただしい文章をつくろう！</p>
+        </a>
+
+        <a href="katakana.html" class="card" data-age="5,6,7,8">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">📖</div>
+            <h3>カタカナへんかん</h3>
+            <p>ひらがなをカタカナになおす特訓！ぜんぶわかるかな？</p>
+        </a>
+
+        <a href="1gradekanji.html" class="card" data-age="6,7,8">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">✏️</div>
+            <h3>1年生のかんじクイズ</h3>
+            <p>ぶんしょうにあてはまる正しい漢字をえらぼう</p>
+        </a>
+
+        <a href="alphabet.html" class="card" data-age="5,6,7,8,9">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">ABC</div>
+            <h3>AからZアルファベット</h3>
+            <p>アルファベットをABCからXYZまでじゅんばんにおしておぼえよう</p>
+        </a>
+
+        <a href="alphabet_read.html" class="card" data-age="5,6,7,8">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">🗣️</div>
+            <h3>ABCよみかたクイズ</h3>
+            <p>「A」は「エー」、「Z」は「ズィー」。読み方をクイズでおぼえよう</p>
+        </a>
+
+        <a href="romaji_quiz.html" class="card" data-age="8,9,10,11,12">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">🔤</div>
+            <h3>ローマ字 虫くい</h3>
+            <p>ひらがなをローマ字にしよう。「？」にはいるアルファベットはどれかな？</p>
+        </a>
+
+        <a href="rain_romaji.html" class="card" data-age="8,9,10,11,12">
+            <span class="label label-quiz">ゲーム</span>
+            <div class="icon">🔤</div>
+            <h3>あめふりローマ字（子音）</h3>
+            <p>ひらがなに合うアルファベット（k~w）を押して消そう！</p>
+        </a>
+
+        <a href="rain_vowel.html" class="card" data-age="8,9,10,11,12">
+            <span class="label label-quiz">ゲーム</span>
+            <div class="icon">🗣️</div>
+            <h3>あめふりローマ字（母音）</h3>
+            <p>ひらがなの母音（a,i,u,e,o）をえらんで押そう！</p>
+        </a>
+
+        <a href="100home.html" class="card" data-age="7,8,9,10,11,12">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">👘</div>
+            <h3>五色百人一首クイズ</h3>
+            <p>上の句にあう下の句をあてよう！五色百人一首の色ごとにわかれているよ</p>
+        </a>
+    </div>
+
+    <h2 class="section-title title-brain">🧠 脳トレ・パズル</h2>
+    <div class="grid">
+        <a href="memory.html" class="card" data-age="4,5,6,7">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">🃏</div>
+            <h3>どうぶつあわせ</h3>
+            <p>カードをめくって同じ絵をみつけよう！きおく力をきたえるよ</p>
+        </a>
+
+        <a href="flash.html" class="card" data-age="4,5,6,7,8,9,10,11,12">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">⚡</div>
+            <h3>フラッシュえもじ</h3>
+            <p>いっしゅんだけみえる絵文字（えもじ）のじゅんばんをおぼえてね！</p>
+        </a>
+
+        <a href="numbers.html" class="card" data-age="5,6,7,8,9,10,11,12">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">🔢</div>
+            <h3>1から25までタッチ</h3>
+            <p>バラバラの数字を1からじゅんばんにさがそう！</p>
+        </a>
+
+        <a href="youji.html" class="card" data-age="3,4,5">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">🍎</div>
+            <h3>えあわせパズル</h3>
+            <p>おなじイラストをみつけるちいさいこむけのかんたんパズル</p>
+        </a>
+
+        <a href="kyorokyoro.html" class="card" data-age="5,6,7,8,9,10,11,12">
+        <span class="label label-quiz">クイズ</span>
+        <div class="icon">👀</div>
+        <h3>どこにきえた？動体視力</h3>
+        <p>はこの上を高速でうごくキャラクターを目で追おう！どこで消えたか当てるゲーム</p>
+        </a>
+
+        <a href="search_count.html" class="card" data-age="5,6,7,8,9,10">
+        <span class="label label-quiz">クイズ</span>
+        <div class="icon">🔎</div>
+        <h3>かぞえてさがして</h3>
+        <p>にているもじがまざっているよ。せいかいのもじはいくつあるかな？</p>
+        </a>
+
+        <a href="count30.html" class="card" data-age="6,7,8,9,10,11,12">
+            <span class="label label-quiz">ゲーム</span>
+            <div class="icon">🗣️</div>
+            <h3>30をいわせろ！</h3>
+            <p>じゅんばんに数字を言うゲーム。「30」を言ったら負けだよ！必勝法（ひっしょうほう）わかるかな？</p>
+        </a>
+
+        <a href="tsumitsumi.html" class="card" data-age="6,7,8,9,10,11,12">
+        <span class="label label-quiz">ゲーム</span>
+        <div class="icon">🧱</div>
+        <h3>漢字つみつみ</h3>
+        <p>漢字のブロックをつみあげよう！くずれないように気をつけて！</p>
+        </a>
+
+        <a href="rail.html" class="card" data-age="5,6,7,8,9,10,11,12">
+            <span class="label label-quiz">ゲーム</span>
+            <div class="icon">🚃</div>
+            <h3>つなげて！トロッコ</h3>
+            <p>バラバラのレールを回転させて、エゾリスのヒーが乗るゴールまでの道をつくろう！脳トレ！</p>
+        </a>
+
+        <a href="detective.html" class="card" data-age="6,7,8,9,10,11,12">
+            <span class="label label-quiz">パズル</span>
+            <div class="icon">🕵️‍♂️</div>
+            <h3>名探偵ぱぱん</h3>
+            <p>ウソをついている「はんにん」はだれだ！？証言（しょうげん）を読んで推理しよう！</p>
+        </a>
+        
+    </div>
+
+    <h2 class="section-title title-art">🎵 おんがく・アート</h2>
+    <div class="grid">
+        
+        <a href="color_lab.html" class="card" data-age="5,6,7,8">
+            <span class="label label-quiz">じっけん</span>
+            <div class="icon">🎨</div>
+            <h3>いろまぜ実験室</h3>
+            <p>絵の具をまぜて色をつくろう！あか＋きいろ は なに色？</p>
+        </a>
+    
+        <a href="pitch.html" class="card" data-age="4,5,6,7,8,9,10,11,12">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">🎹</div>
+            <h3>おとあてクイズ</h3>
+            <p>ながれてきた音はドレミのどれ？目指せ絶対音感（ぜったいおんかん）！</p>
+        </a>
+
+        <a href="rhythm.html" class="card" data-age="4,5,6,7,8,9,10,11,12">
+            <span class="label label-quiz">リズム</span>
+            <div class="icon">🎵</div>
+            <h3>アンのリズム教室</h3>
+            <p>ハリネズミのアン先生のマネをして、リズムよくボタンをたたこう！</p>
+        </a>
+
+        <a href="music_class.html" class="card" data-age="4,5,6,7,8,9,10,11,12">
+            <span class="label label-quiz">おんがく</span>
+            <div class="icon">🎹</div>
+            <h3>アンのおんがく教室</h3>
+            <p>こっちではアン先生がピアノを教えてくれるよ！ピアノをひいてみよう！</p>
+        </a>
+    
+    </div>
+
+    <h2 class="section-title title-money">🪙 おかねのべんきょう</h2>
+    <div class="grid">
+        
+        <a href="shopping.html" class="card" data-age="5,6,7,8,9">
+            <span class="label label-quiz">たいけん</span>
+            <div class="icon">🛒</div>
+            <h3>ピッピ商店（しょうてん）</h3>
+            <p>ねふだを見て、さいふからお金を出そう！ぴったり払えるかな？</p>
+        </a>
+        <a href="bank.html" class="card" data-age="9,10,11,12">
+            <span class="label label-quiz">たいけん</span>
+            <div class="icon">💱</div>
+            <h3>ぱぱん銀行（ぎんこう）</h3>
+            <p>べんきょうでためたポイントをどんぐりとこうかん！為替を学べる！ひみつがあるらしい・・</p>
+        </a>
+    
+        <a href="stock.html" class="card" data-age="9,10,11,12">
+            <span class="label label-quiz">たいけん</span>
+            <div class="icon">💴</div>
+            <h3>ぱぱん証券（しょうけん）</h3>
+            <p>ポイントやどんぐりをつかって株をかうことができるよ！ためておくよりおトクかも！</p>
+        </a>
+
+        <a href="interest.html" class="card" data-age="9,10,11,12">
+        <span class="label label-quiz">シミュ</span>
+        <div class="icon">💰</div>
+        <h3>単利と複利（ふくり）</h3>
+        <p>雪だるま式に増えるってどういうこと？グラフで違いを見てみよう！</p>
+        </a>
+
+    </div>
+
+    <h2 class="section-title title-science">🔬 かがく（りか）・しゃかい</h2>
+    <div class="grid">
+        
+        <a href="science.html" class="card" data-age="7,8,9,10,11,12">
+            <span class="label label-quiz">クイズ</span>
+            <div class="icon">⚗️</div>
+            <h3>ヒー先生のかかぐクイズ</h3>
+            <p>ヒー先生がみぢかな理科のクイズをだすぞ！〇×クイズで正解するほどポイントゲット！</p>
+        </a>
+
+        <a href="star_puzzle.html" class="card" data-age="5,6,7,8,9">
+            <span class="label label-quiz">パズル</span>
+            <div class="icon">🌠</div>
+            <h3>ほしぞらパズル</h3>
+            <p>しじされた数字を順におして星座（せいざ）を完成させよう！</p>
+        </a>
+
+        <a href="programming.html" class="card" data-age="7,8,9,10,11,12">
+            <span class="label label-quiz">プログラミング</span>
+            <div class="icon">🤖</div>
+            <h3>ロボットゆうどう作戦</h3>
+            <p>ロボットに指示（しじ）をあたえてゴールまでみちびこう！</p>
+        </a>
+
+    </div>
+
+    <h2 class="section-title">🖨️ プリントしてべんきょう</h2>
+    <div class="grid">
+        <a href="math100.html" class="card" data-age="5,6,7,8,9,10,11,12">
+            <span class="label label-print">プリント</span>
+            <div class="icon">➕</div>
+            <h3>ひゃくますけいさん表</h3>
+            <p>ひゃくますけいさんは最強のトレーニング！たしざん、ひきざん、かけざんに対応！</p>
+        </a>
+
+        <a href="hissan.html" class="card" data-age="5,6,7,8,9">
+            <span class="label label-print">プリント</span>
+            <div class="icon">➖</div>
+            <h3>２けたのひっさん</h3>
+            <p>ひっさんもんだいメーカー！たしざんとひきざんに対応してます</p>
+        </a>
+
+        <a href="print_alphabet.html" class="card" data-age="5,6,7,8,9">
+            <span class="label label-print">プリント</span>
+            <div class="icon">🔤</div>
+            <h3>アルファベット表</h3>
+            <p>A4サイズで印刷！へやにはっておぼえよう！</p>
+        </a>
+
+        <a href="print_kana.html" class="card" data-age="3,4,5,6">
+            <span class="label label-print">プリント</span>
+            <div class="icon">あア</div>
+            <h3>あいうえお・カタカナ表</h3>
+            <p>A4サイズで印刷！ひらがなとカタカナを一緒におぼえよう！</p>
+        </a>
+
+        <a href="print_romaji.html" class="card" data-age="7,8,9,10,11,12">
+            <span class="label label-print">プリント</span>
+            <div class="icon">abc</div>
+            <h3>ローマ字表（濁音つき）</h3>
+            <p>A4横サイズ。がぎぐげご、ぱぴぷぺぽまで入った完ぺきな表です！</p>
+        </a>
+
+    </div>
+
+    <div style="text-align: center; margin-bottom: 30px;">
+        <a href="record.html" class="action-btn">🏆 きろくをみる</a>
+        <a href="backup.html" class="action-btn">🏆 データのバックアップ</a>
+        </div>
+
+</main>
+
+<section style="margin-top: 60px; padding: 20px; background-color: #f0f9ff; border-radius: 10px;">
+    
+    <h2 style="color: #333; border-bottom: 2px solid #88cdf6; padding-bottom: 10px;">
+        📝 コラム <span style="font-size: 16px; color: #555; font-weight: normal;">（パパとママにおしえてね）</span>
+    </h2>
+    <p style="font-size: 0.9em; color: #666;">
+        学習に役立つ情報や、家族で遊べる製品、サイトの紹介をしています。
+    </p>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px;">
+
+        <a href="blog/article001.html" class="article-card">
+            <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 5px; color: #007bff;">
+                こどもの学習で大事なこと
+            </div>
+            <div style="font-size: 0.85em; color: #555;">
+                ぱぱん式の目的と誕生の理由、本当に大事な学習方法とは
+            </div>
+            <div style="text-align: right; margin-top: 10px; font-size: 0.8em; color: #aaa;">
+                記事を読む &gt;
+            </div>
+        </a>
+
+        <a href="blog/article002.html" class="article-card">
+            <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 5px; color: #007bff;">
+                こどものお金の教育について
+            </div>
+            <div style="font-size: 0.85em; color: #555;">
+                ぱぱん式で銀行・為替・株式投資を体験できることの意義
+            </div>
+            <div style="text-align: right; margin-top: 10px; font-size: 0.8em; color: #aaa;">
+                記事を読む &gt;
+            </div>
+        </a>
+        </div>
+
+</section>
+
+<footer style="margin-top: 50px; padding: 20px; background-color: #f9f9f9; text-align: center; border-top: 1px solid #ddd;">
+    <p>
+        <a href="privacy.html" style="color: #666; text-decoration: none; font-size: 14px;">プライバシーポリシー</a>
+    </p>
+    <p style="font-size: 12px; color: #999;">&copy; 2026 Papan-shiki</p>
+</footer>
+
+<script>
+  // ▼▼▼ フィルター機能のスクリプト ▼▼▼
+  function filterByAge(age, btn) {
+    // 1. ボタンの見た目を切り替える
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // 2. カードの表示・非表示を切り替える
+    const cards = document.querySelectorAll('.card');
+    
+    cards.forEach(card => {
+      const targetAges = card.getAttribute('data-age');
+      
+      if (age === 'all') {
+        card.style.display = 'flex';
+      } else {
+        if (targetAges && targetAges.split(',').includes(age)) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      }
+    });
+
+    // 3. 中身がなくなったセクション見出しを隠す
+    const sections = document.querySelectorAll('.grid');
+    sections.forEach(grid => {
+      const visibleCards = Array.from(grid.querySelectorAll('.card')).filter(c => c.style.display !== 'none');
+      const title = grid.previousElementSibling;
+      
+      if (title && title.classList.contains('section-title')) {
+        if (visibleCards.length > 0) {
+          title.style.display = 'flex'; 
+          grid.style.display = 'grid';
+        } else {
+          title.style.display = 'none';
+          grid.style.display = 'none';
+        }
+      }
+    });
+  }
+  // ▲▲▲ スクリプトここまで ▲▲▲
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('./service-worker.js').then(function(registration) {
+        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+      }, function(err) {
+        console.log('ServiceWorker registration failed: ', err);
+      });
+    });
+  }
+
+  if (typeof showDailyMissionWidget === 'function') {
+        showDailyMissionWidget('daily-mission-area');
+    }
+</script>
+</body>
+</html>

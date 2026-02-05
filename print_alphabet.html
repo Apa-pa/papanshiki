@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ぱぱん式 アルファベット表</title>
+    <style>
+        /* --- 画面表示用の設定 --- */
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #f0f9ff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+
+        .nav-area {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .print-btn {
+            font-size: 20px;
+            padding: 12px 30px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px #1565c0;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .print-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        .back-btn {
+            background: #90a4ae;
+            font-size: 16px;
+            padding: 10px 20px;
+            color: white;
+            border-radius: 20px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        /* --- 用紙のデザイン --- */
+        .sheet {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm;
+            box-sizing: border-box;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            position: relative;
+            border: 1px solid #ddd;
+        }
+
+        .sheet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #ff9800;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .brand-name { font-size: 24px; font-weight: bold; color: #ff9800; }
+        .sheet-title { font-size: 32px; font-weight: bold; color: #333; }
+
+        .alphabet-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .char-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 5px 2px;
+            text-align: center;
+            background-color: #fff;
+            page-break-inside: avoid;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* アルファベット部分 */
+        .letters-area {
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 2px;
+            margin-bottom: 2px;
+        }
+
+        .letters {
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            gap: 8px;
+            line-height: 1;
+        }
+
+        .upper { font-size: 38px; font-weight: bold; color: #e91e63; }
+        .lower { font-size: 38px; font-weight: bold; color: #3f51b5; }
+
+        .hiragana-yomi {
+            font-size: 14px;
+            color: #555;
+            font-weight: bold;
+            margin-top: -2px;
+        }
+
+        /* 単語・アイコン部分 */
+        .word-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .icon { font-size: 28px; line-height: 1.1; }
+        .word { font-size: 11px; font-weight: bold; color: #555; margin-top: 1px; }
+        .yomi { font-size: 9px; color: #888; line-height: 1; }
+
+        /* 追加：マスコットキャラクター表示エリア */
+        .mascot-card {
+            grid-column: span 2;
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            /* 必要であればここにも height を指定できます */
+        }
+        
+        /* --- 【修正】画像の高さを指定 --- */
+        .mascot-img {
+            height: 110px;   /* ★ここで高さを指定（他のカードと同じくらいの高さ） */
+            width: auto;     /* 横幅はなりゆきで */
+            max-width: 100%; /* カードからはみ出さないように */
+            object-fit: contain;
+        }
+
+        .sheet-footer {
+            margin-top: 15px;
+            text-align: right;
+            font-size: 12px;
+            color: #aaa;
+            border-top: 1px solid #eee;
+            padding-top: 5px;
+        }
+
+        /* --- 印刷時の特別ルール --- */
+        @media print {
+            body { 
+                background: none; 
+                padding: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .nav-area { display: none; }
+            .sheet-header { display: none; }
+
+            .sheet {
+                width: 100%;
+                height: 100%;
+                box-shadow: none;
+                border: none;
+                padding: 5mm;
+                margin: 0;
+            }
+            
+            .alphabet-grid { gap: 5px; }
+            .char-card { border-width: 1px; }
+
+            .mascot-card { display: flex !important; }
+
+            .sheet-footer {
+                display: block;
+                margin-top: 8px;
+                text-align: center;
+                color: #ff9800;
+                font-weight: bold;
+            }
+
+            @page {
+                size: A4 portrait;
+                margin: 5mm;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="nav-area">
+        <button class="print-btn" onclick="window.print()">🖨️ 印刷する</button>
+        <a href="index.html" class="back-btn">🏠 もどる</a>
+        <p style="font-size:14px; color:#666; margin-top:5px;">※印刷ボタンを押すと、タイトルが消えてA4に収まります</p>
+    </div>
+
+    <div class="sheet">
+        <header class="sheet-header">
+            <div class="sheet-title">アルファベットひょう</div>
+            <div class="brand-name">ぱぱん式</div>
+        </header>
+
+        <div class="alphabet-grid" id="grid-container">
+            </div>
+
+        <div class="sheet-footer">
+            ぱぱん式 アルファベット表
+        </div>
+    </div>
+
+<script>
+    const alphaData = [
+        { u:'A', l:'a', h:'えー', icon:'🍎', w:'Apple', y:'アップル' },
+        { u:'B', l:'b', h:'びー', icon:'🐻', w:'Bear', y:'ベア' },
+        { u:'C', l:'c', h:'しー', icon:'🐱', w:'Cat', y:'キャット' },
+        { u:'D', l:'d', h:'でぃー', icon:'🐶', w:'Dog', y:'ドッグ' },
+        { u:'E', l:'e', h:'いー', icon:'🥚', w:'Egg', y:'エッグ' },
+        { u:'F', l:'f', h:'えふ', icon:'🐟', w:'Fish', y:'フィッシュ' },
+        { u:'G', l:'g', h:'じー', icon:'🍇', w:'Grape', y:'グレープ' },
+        { u:'H', l:'h', h:'えいち', icon:'🏠', w:'House', y:'ハウス' },
+        { u:'I', l:'i', h:'あい', icon:'🍦', w:'Ice cream', y:'アイス' },
+        { u:'J', l:'j', h:'じぇい', icon:'🧃', w:'Juice', y:'ジュース' },
+        { u:'K', l:'k', h:'けー', icon:'👑', w:'King', y:'キング' },
+        { u:'L', l:'l', h:'える', icon:'🦁', w:'Lion', y:'ライオン' },
+        { u:'M', l:'m', h:'えむ', icon:'🌙', w:'Moon', y:'ムーン' },
+        { u:'N', l:'n', h:'えぬ', icon:'📓', w:'Note', y:'ノート' },
+        { u:'O', l:'o', h:'おー', icon:'🐙', w:'Octopus', y:'オクトパス' },
+        { u:'P', l:'p', h:'ぴー', icon:'🐼', w:'Panda', y:'パンダ' },
+        { u:'Q', l:'q', h:'きゅー', icon:'👸', w:'Queen', y:'クイーン' },
+        { u:'R', l:'r', h:'あーる', icon:'🐰', w:'Rabbit', y:'ラビット' },
+        { u:'S', l:'s', h:'えす', icon:'☀️', w:'Sun', y:'サン' },
+        { u:'T', l:'t', h:'てぃー', icon:'🐯', w:'Tiger', y:'タイガー' },
+        { u:'U', l:'u', h:'ゆー', icon:'☂️', w:'Umbrella', y:'アンブレラ' },
+        { u:'V', l:'v', h:'ぶい', icon:'🎻', w:'Violin', y:'バイオリン' },
+        { u:'W', l:'w', h:'だぶりゅー', icon:'⌚', w:'Watch', y:'ウォッチ' },
+        { u:'X', l:'x', h:'えっくす', icon:'🎄', w:'Xmas', y:'クリスマス' },
+        { u:'Y', l:'y', h:'わい', icon:'🛥️', w:'Yacht', y:'ヨット' },
+        { u:'Z', l:'z', h:'ずぃー/ぜっと', icon:'🦓', w:'Zebra', y:'ゼブラ' },
+    ];
+
+    const container = document.getElementById('grid-container');
+
+    alphaData.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'char-card';
+        card.innerHTML = `
+            <div class="letters-area">
+                <div class="letters">
+                    <span class="upper">${item.u}</span>
+                    <span class="lower">${item.l}</span>
+                </div>
+                <div class="hiragana-yomi">${item.h}</div>
+            </div>
+            <div class="word-area">
+                <div class="icon">${item.icon}</div>
+                <div class="word">${item.w}</div>
+                <div class="yomi">${item.y}</div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+
+    const mascotCard = document.createElement('div');
+    mascotCard.className = 'mascot-card'; 
+    mascotCard.innerHTML = `
+        <img src="icon.png" alt="ぱぱん式キャラクター" class="mascot-img">
+    `;
+    container.appendChild(mascotCard);
+
+</script>
+
+</body>
+</html>

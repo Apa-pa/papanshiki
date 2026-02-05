@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>あわせて10（テン）</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #fce4ec; /* やさしいピンク */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        h1 { color: #e91e63; font-size: 26px; }
+
+        /* 問題表示エリア */
+        .question-area {
+            background: #fff0f5;
+            border: 3px solid #f8bbd0;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 10px 0;
+        }
+
+        /* 10個の◯を表示するエリア（ブロックブロック） */
+        .ten-frame {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); /* 5個ずつ2列 */
+            gap: 5px;
+            width: 180px;
+            margin: 0 auto 10px auto;
+        }
+        .dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            background-color: white;
+        }
+        .dot.filled {
+            background-color: #e91e63; /* 埋まっている色 */
+            border-color: #e91e63;
+        }
+
+        #target-number {
+            font-size: 80px;
+            font-weight: bold;
+            color: #333;
+            line-height: 1;
+        }
+
+        .instruction {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        /* 1-9の数字ボタン */
+        #numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .num-btn {
+            font-size: 32px;
+            padding: 15px 0;
+            background: #e3f2fd;
+            border: 2px solid #90caf9;
+            border-radius: 15px;
+            cursor: pointer;
+            color: #1565c0;
+            font-family: inherit;
+            box-shadow: 0 4px #bbdefb;
+        }
+        .num-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px #bbdefb;
+        }
+
+        /* 共通ボタン */
+        .start-btn, .retry-btn {
+            font-size: 24px;
+            padding: 15px 40px;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-family: inherit;
+            font-weight: bold;
+        }
+        .start-btn { background: #ff9800; box-shadow: 0 5px #e65100; }
+        .retry-btn { background: #4caf50; box-shadow: 0 5px #2e7d32; }
+        .start-btn:active, .retry-btn:active { transform: scale(0.95); box-shadow: none; }
+
+        .back-btn {
+            background: #90a4ae;
+            font-size: 14px;
+            padding: 8px 20px;
+            color: white;
+            border-radius: 20px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        /* 正解・不正解 */
+        .feedback {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 150px;
+            display: none;
+            z-index: 100;
+            text-shadow: 3px 3px 0 white;
+            pointer-events: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="feedback-mark" class="feedback">⭕</div>
+
+    <div id="home-screen" class="screen active">
+        <h1>あわせて 10</h1>
+        <div style="font-size: 80px; margin: 10px;">🔟</div>
+        <p>あと いくつで<br>10に なるかな？</p>
+        <button class="start-btn" onclick="startGame()">スタート！</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 もどる</a>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <div style="display:flex; justify-content:space-between; padding:0 10px;">
+            <span id="timer-display">0.0びょう</span>
+            <span id="progress">1 / 10</span>
+        </div>
+
+        <div class="question-area">
+            <div id="ten-frame" class="ten-frame">
+                </div>
+            <div id="target-number">7</div>
+            <div class="instruction">あと いくつ？</div>
+        </div>
+
+        <div id="numpad">
+            <button class="num-btn" onclick="checkAnswer(1)">1</button>
+            <button class="num-btn" onclick="checkAnswer(2)">2</button>
+            <button class="num-btn" onclick="checkAnswer(3)">3</button>
+            <button class="num-btn" onclick="checkAnswer(4)">4</button>
+            <button class="num-btn" onclick="checkAnswer(5)">5</button>
+            <button class="num-btn" onclick="checkAnswer(6)">6</button>
+            <button class="num-btn" onclick="checkAnswer(7)">7</button>
+            <button class="num-btn" onclick="checkAnswer(8)">8</button>
+            <button class="num-btn" onclick="checkAnswer(9)">9</button>
+        </div>
+
+        <a href="index.html" class="back-btn" style="background:#cfd8dc; color:#555;">🏠 やめる</a>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h1>✨ クリア！ ✨</h1>
+        <div style="font-size: 60px;">💮</div>
+        <p>タイムは...</p>
+        <div id="final-time" style="font-size:36px; color:#e91e63; font-weight:bold;">0.0びょう</div>
+        <button class="retry-btn" onclick="startGame()">もういっかい！</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 もどる</a>
+    </div>
+</div>
+
+<script>
+    const totalQuestions = 10;
+    let currentQuestion = 0;
+    let currentTarget = 0;
+    let startTime, timerInterval;
+
+    function changeScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function startGame() {
+        currentQuestion = 0;
+        changeScreen('quiz-screen');
+        startTimer();
+        nextQuestion();
+    }
+
+    function startTimer() {
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+            const t = ((Date.now() - startTime) / 1000).toFixed(1);
+            document.getElementById('timer-display').textContent = t + "びょう";
+        }, 100);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+        return ((Date.now() - startTime) / 1000).toFixed(1);
+    }
+
+    function nextQuestion() {
+        if (currentQuestion >= totalQuestions) {
+            const time = stopTimer();
+            document.getElementById('final-time').textContent = time + "びょう";
+            changeScreen('result-screen');
+            if(typeof showSaveDialog === 'function') {
+                showSaveDialog('make10', time);
+            }
+            return;
+        }
+
+        currentQuestion++;
+        document.getElementById('progress').textContent = `${currentQuestion} / ${totalQuestions}`;
+
+        // 1〜9の乱数
+        currentTarget = Math.floor(Math.random() * 9) + 1;
+        
+        // 画面表示
+        document.getElementById('target-number').textContent = currentTarget;
+        
+        // 10個の◯を描画（ビジュアルヒント）
+        drawTenFrame(currentTarget);
+    }
+
+    // 10個の丸を描画する関数
+    function drawTenFrame(num) {
+        const frame = document.getElementById('ten-frame');
+        frame.innerHTML = '';
+        for (let i = 0; i < 10; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'dot';
+            if (i < num) {
+                dot.classList.add('filled'); // 数字の分だけ色を塗る
+            }
+            frame.appendChild(dot);
+        }
+    }
+
+    function checkAnswer(answer) {
+        // 正解は 10 - currentTarget
+        const correct = 10 - currentTarget;
+        const feedback = document.getElementById('feedback-mark');
+
+        if (answer === correct) {
+            feedback.textContent = '⭕';
+            feedback.style.color = '#ff3d00';
+            feedback.style.display = 'block';
+            
+            // 少し待って次の問題へ
+            setTimeout(() => {
+                feedback.style.display = 'none';
+                nextQuestion();
+            }, 400); // テンポよく進めるため短めに
+        } else {
+            feedback.textContent = '❌';
+            feedback.style.color = '#555';
+            feedback.style.display = 'block';
+            setTimeout(() => {
+                feedback.style.display = 'none';
+            }, 400);
+        }
+    }
+</script>
+
+</body>
+</html>

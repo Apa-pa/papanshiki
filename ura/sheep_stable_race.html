@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>プロ・オーナーズレース</title>
+    <script src="../ranking.js"></script>
+    <style>
+        body { font-family: 'Arial Black', sans-serif; background: #1b5e20; color: #fff; margin: 0; overflow: hidden; display: flex; flex-direction: column; height: 100vh; user-select: none; }
+        .header { padding: 10px; background: rgba(0,0,0,0.8); display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #ffd700; z-index: 10; }
+        .race-track { flex: 1; position: relative; background: #2e7d32; display: flex; flex-direction: column; padding-left: 60px; }
+        .lane { flex: 1; border-bottom: 2px solid rgba(255,255,255,0.5); position: relative; display: flex; align-items: center; background: #388e3c; }
+        .lane:nth-child(even) { background: #2e7d32; }
+        .lane.player-lane { background: #4caf50; box-shadow: inset 0 0 20px rgba(255, 235, 59, 0.3); }
+        .course-no { position: absolute; left: -60px; width: 60px; height: 100%; background: #1b5e20; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #ffd700; border-right: 2px solid #fff; }
+        .finish-line { position: absolute; right: 60px; top: 0; width: 20px; height: 100%; background: repeating-linear-gradient(0deg, #fff, #fff 20px, #000 20px, #000 40px); z-index: 5; }
+        .sheep { position: absolute; left: 10px; width: 70px; height: 70px; z-index: 10; }
+        .sheep-img { width: 100%; height: 100%; object-fit: contain; }
+        .sheep-name-tag { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 2px 8px; border-radius: 10px; font-size: 11px; white-space: nowrap; }
+        .player-indicator { position: absolute; top: -45px; left: 50%; transform: translateX(-50%); background: #ff5252; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; animation: bounce 0.6s infinite alternate; }
+        .tenacity-aura { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle, rgba(255,64,129,0.4) 0%, transparent 70%); display: none; animation: pulse 0.3s infinite; }
+        
+        .speed-btn {
+            background: #444; color: #fff; border: 2px solid #ffd700; padding: 4px 10px;
+            border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; margin-right: 10px; min-width: 60px;
+        }
+
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.3); opacity: 0; } }
+        @keyframes bounce { from { transform: translateX(-50%) translateY(0); } to { transform: translateX(-50%) translateY(-5px); } }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; text-align: center; }
+        .btn-done { padding: 15px 40px; background: #ffc107; color: #000; font-size: 20px; font-weight: bold; border: none; border-radius: 40px; cursor: pointer; box-shadow: 0 5px #ff8f00; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div id="race-title" style="font-weight:bold;">🏁 プロ・オーナーズレース</div>
+    <div style="display:flex; align-items:center;">
+        <button id="speed-btn" class="speed-btn" onclick="toggleSpeed()">×1.0</button>
+        <div style="color:#ffd700;">
+            <span id="race-rank-label" style="background:#e91e63; padding:2px 10px; border-radius:10px; margin-right:10px; font-size:12px;">Rank</span>
+            🏆 賞金: <span id="prize-val">??</span> 🌰
+        </div>
+    </div>
+</div>
+
+<div class="race-track" id="track">
+    <div class="finish-line"></div>
+    <div id="lanes-container" style="display:flex; flex-direction:column; height:100%;"></div>
+</div>
+
+<div id="count-overlay" class="overlay">
+    <h1 id="count-text" style="font-size:100px;">READY</h1>
+</div>
+
+<div id="result-overlay" class="overlay" style="display:none;">
+    <h1 id="result-rank" style="font-size:60px;">---</h1>
+    <p id="result-comment" style="font-size:20px; margin-bottom:20px;"></p>
+    <p id="prize-msg" style="color:#ffd700; font-weight:bold; font-size:24px;"></p>
+    <p id="fatigue-msg" style="color:#ff5252; font-weight:bold; margin-top:10px;"></p>
+    <button class="btn-done" onclick="backToStable()">厩舎へ戻る</button>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const userName = urlParams.get('user');
+    const playerRank = urlParams.get('rank') || "Rookie";
+    const SHEEP_STORAGE_KEY = "papan_my_sheep_v3";
+
+    let playerSheep = null;
+    let racers = [];
+    let raceInterval;
+    let isFinished = false;
+    let currentPrize = 0;
+    let miracleTriggered = false;
+    let gameSpeed = 1.0; // 倍速設定
+
+    window.onload = init;
+
+    function toggleSpeed() {
+        if (gameSpeed === 1.0) gameSpeed = 2.0;
+        else if (gameSpeed === 2.0) gameSpeed = 3.0;
+        else gameSpeed = 1.0;
+        document.getElementById('speed-btn').innerText = `×${gameSpeed.toFixed(1)}`;
+    }
+
+    function init() {
+        const allData = JSON.parse(localStorage.getItem(SHEEP_STORAGE_KEY) || "{}");
+        playerSheep = allData[userName];
+
+        if (!playerSheep) {
+            alert("データが見つかりません");
+            location.href = "sheep_stable.html";
+            return;
+        }
+
+        document.getElementById('race-rank-label').innerText = playerRank + " Class";
+        currentPrize = 15 + Math.floor(playerSheep.speed / 2);
+        document.getElementById('prize-val').innerText = currentPrize;
+
+        setupRacers();
+        startCountdown();
+    }
+
+    function setupRacers() {
+        const container = document.getElementById('lanes-container');
+        
+        // ミラクル判定 (8%)
+        miracleTriggered = (Math.random() < 0.08);
+        if (miracleTriggered) {
+            document.getElementById('race-title').innerText = "✨ 奇跡の追い風が発生中！ ✨";
+            document.getElementById('race-title').style.color = "#ff4081";
+        }
+
+        // 1. プレイヤー設定
+        let pSpeed = playerSheep.speed;
+        if (miracleTriggered) pSpeed += 40;
+
+        racers.push({
+            isPlayer: true,
+            name: playerSheep.name,
+            speed: pSpeed,
+            stamina: playerSheep.stamina,
+            tenacity: playerSheep.tenacity || 30,
+            pos: 0,
+            curStamina: 100,
+            isTenacityActive: false
+        });
+
+        // 2. クラス別のベース値をマイルドに設定
+        let raceBaseLevel = 43; 
+        let comStaminaMin = 43;
+        let comTenacityMin = 30;
+
+        if (playerRank === "Pro") {
+            raceBaseLevel = 75;
+            comStaminaMin = 65;
+            comTenacityMin = 55;
+        } else if (playerRank === "Legend") {
+            raceBaseLevel = 100;
+            comStaminaMin = 75; 
+            comTenacityMin = 55;
+        }
+
+        const comNames = ["ウール1号", "もふもふ丸", "速攻メェー", "草食い大王", "シープスター"];
+
+        for(let i=0; i<5; i++) {
+            // ライバルスピード: プレイヤー影響 60%
+            let comBaseSpeed = (raceBaseLevel * 0.4) + (playerSheep.speed * 0.6);
+            
+            // ハンデ幅: -12 〜 +3
+            let comOffset = (Math.random() * 15) - 12; 
+            let finalComSpeed = comBaseSpeed + comOffset;
+
+            if (miracleTriggered) finalComSpeed *= 0.8;
+
+            let finalComStamina = comStaminaMin + (Math.random() * (100 - comStaminaMin));
+            let finalComTenacity = comTenacityMin + (Math.random() * (100 - comTenacityMin));
+
+            racers.push({
+                isPlayer: false,
+                name: comNames[i],
+                speed: finalComSpeed,
+                stamina: finalComStamina,
+                tenacity: finalComTenacity,
+                pos: 0,
+                curStamina: 100,
+                isTenacityActive: false
+            });
+        }
+
+        racers = racers.sort(() => Math.random() - 0.5);
+
+        racers.forEach((r, i) => {
+            const lane = document.createElement('div');
+            lane.className = `lane ${r.isPlayer ? 'player-lane' : ''}`;
+            lane.innerHTML = `
+                <div class="course-no">${i+1}</div>
+                <div class="sheep" id="sheep-${i}">
+                    <div class="tenacity-aura" id="aura-${i}"></div>
+                    ${r.isPlayer ? '<div class="player-indicator">★あなた★</div>' : ''}
+                    <div class="sheep-name-tag">${r.name}</div>
+                    <img src="hitsuji_walk.png" class="sheep-img" id="img-${i}">
+                </div>
+            `;
+            container.appendChild(lane);
+        });
+    }
+
+    function startCountdown() {
+        const txt = document.getElementById('count-text');
+        let count = 3;
+        const timer = setInterval(() => {
+            if (count > 0) txt.innerText = count;
+            else if (count === 0) {
+                txt.innerText = "GO!!";
+                clearInterval(timer);
+                setTimeout(() => {
+                    document.getElementById('count-overlay').style.display = 'none';
+                    runRace();
+                }, 500);
+            }
+            count--;
+        }, 1000);
+    }
+
+    function runRace() {
+        const trackWidth = document.getElementById('track').clientWidth - 130;
+        let frame = 0;
+
+        raceInterval = setInterval(() => {
+            frame += gameSpeed; // 倍速対応
+            let winner = null;
+
+            racers.forEach((r, i) => {
+                if (isFinished) return;
+
+                // 根性の重要性アップロジック
+                // 1. バテ防止効果
+                let rawStaminaFactor = r.curStamina / 100;
+                let tenacitySupport = r.tenacity / 200; 
+                let staminaFactor = Math.max(rawStaminaFactor, tenacitySupport);
+
+                let currentSpeed = r.speed;
+
+                // 2. ラストスパート強化 (スタミナ40%以下、60%地点から発動)
+                const distRatio = r.pos / trackWidth;
+                if (distRatio > 0.6 && r.curStamina < 40) {
+                    currentSpeed += (r.tenacity / 2); // 加速量アップ
+                    if(!r.isTenacityActive) {
+                        r.isTenacityActive = true;
+                        document.getElementById(`aura-${i}`).style.display = 'block';
+                    }
+                }
+
+                let move = ((currentSpeed / 28) * staminaFactor + (Math.random() * 0.6)) * gameSpeed;
+                
+                r.pos += move;
+                document.getElementById(`sheep-${i}`).style.left = r.pos + 'px';
+
+                const img = document.getElementById(`img-${i}`);
+                img.src = (Math.floor(frame) % 10 < 5) ? "hitsuji_walk.png" : "hitsuji_run1.png";
+
+                r.curStamina -= (Math.random() * (100 / r.stamina)) * gameSpeed;
+                if(r.curStamina < 10) r.curStamina = 10;
+
+                if (r.pos >= trackWidth && winner === null) winner = r;
+            });
+
+            if (winner) {
+                isFinished = true;
+                clearInterval(raceInterval);
+                setTimeout(showResult, 800 / gameSpeed);
+            }
+        }, 30);
+    }
+
+    function showResult() {
+        const results = [...racers].sort((a, b) => b.pos - a.pos);
+        const playerRank = results.findIndex(r => r.isPlayer) + 1;
+
+        const overlay = document.getElementById('result-overlay');
+        document.getElementById('result-rank').innerText = playerRank + "位";
+        const commentTxt = document.getElementById('result-comment');
+        const prizeMsg = document.getElementById('prize-msg');
+        
+        if (playerRank === 1) {
+            commentTxt.innerHTML = "🏆 おめでとう！ 優勝だ！";
+            prizeMsg.innerText = `獲得賞金: ${currentPrize} どんぐり`;
+            if (typeof addDonguri === 'function') addDonguri(userName, currentPrize);
+        } else {
+            commentTxt.innerText = "残念！ 1位になれなかった...";
+            prizeMsg.innerText = "";
+        }
+
+        applyFatigue();
+        overlay.style.display = 'flex';
+    }
+
+    function applyFatigue() {
+        const allData = JSON.parse(localStorage.getItem(SHEEP_STORAGE_KEY) || "{}");
+        const s = allData[userName];
+        if (s) {
+        // パラメータ減少
+        s.speed = Math.max(10, Math.floor(s.speed * 0.9));
+        s.stamina = Math.max(10, Math.floor(s.stamina * 0.9));
+        s.tenacity = Math.max(10, Math.floor(s.tenacity * 0.9));
+        
+        // --- ここから追加：契約レース数のカウントダウン ---
+        if (s.contractRaces === undefined) s.contractRaces = 24; // 未設定なら24に
+        s.contractRaces -= 1;
+
+        if (s.contractRaces <= 0) {
+            // 契約終了
+            delete allData[userName];
+            localStorage.setItem(SHEEP_STORAGE_KEY, JSON.stringify(allData));
+            document.getElementById('fatigue-msg').innerHTML = "<span style='font-size:18px; color:#ffd700;'>🎓 契約期間終了！</span><br>ひつじは次の牧場へと旅立ちました。お疲れ様でした！";
+        } else {
+            // 継続
+            allData[userName] = s;
+            localStorage.setItem(SHEEP_STORAGE_KEY, JSON.stringify(allData));
+            document.getElementById('fatigue-msg').innerText = `レースの疲れで能力が少し下がったよ... (残り契約: ${s.contractRaces}レース)`;
+        }
+        // ----------------------------------------------
+        }
+    }
+
+    function backToStable() { location.href = "sheep_stable.html"; }
+</script>
+</body>
+</html>

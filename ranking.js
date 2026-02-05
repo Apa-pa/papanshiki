@@ -1,0 +1,646 @@
+/* ranking.js - 記録・目標・ポイント・スタンプ・どんぐり・株 管理 (全国ランキングUI改善版) */
+
+const GAME_LIST = {
+    'make10':         { name: 'あわせて10',         type: 'time',  unit: '秒' },
+    'math_add_easy':  { name: 'たしざん(くりあがりなし)',     type: 'time',  unit: '秒' },
+    'math_add_hard':  { name: 'たしざん(くりあがりあり)',     type: 'time',  unit: '秒' },
+    'math_sub_easy':  { name: 'ひきざん(くりさがりなし)',     type: 'time',  unit: '秒' },
+    'math_sub_hard':  { name: 'ひきざん(くりさがりあり)',     type: 'time',  unit: '秒' },
+    'math_multi':     { name: 'かけざん九九',       type: 'time',  unit: '秒' },
+    'rain_math':      { name: 'あめふり算数',       type: 'score', unit: '点' },
+    'clock_read':     { name: 'とけいの読み方',     type: 'time',  unit: '秒' },
+    'triangle_angle': { name: '三角形の内角',       type: 'time',  unit: '秒' },
+    'katakana':       { name: 'カタカナ変換',       type: 'time',  unit: '秒' },
+    'alphabet':       { name: 'a-zアルファベット',  type: 'time',  unit: '秒' },
+    'romaji_hole':    { name: 'ローマ字虫くい',     type: 'time',  unit: '秒' },
+    'rain_vowel':     { name: 'あめふりローマ字(母)', type: 'score', unit: '点' },
+    'rain_consonant': { name: 'あめふりローマ字(子)', type: 'score', unit: '点' },
+    'touch25':        { name: '1から25までタッチ',  type: 'time',  unit: '秒' },
+    'tsumitsumi':     { name: '漢字つみつみ',       type: 'score', unit: 'こ' },
+    'eawase':         { name: 'えあわせ',           type: 'time',  unit: '秒' },
+    'shopping':       { name: 'ぴったりしはらい',   type: 'time',  unit: '秒' },
+    'water':          { name: '水槽パズル',         type: 'time',  unit: '秒' },
+    'rail':           { name: 'つなげて！トロッコ', type: 'time', unit: '秒' }
+};
+
+const STOCK_MASTER = {
+    'motor': { name: 'ぱぱん自動車', currency: 'point', initPrice: 500, volatility: 0.02, dividendRate: 0.01, bias: 0.002, desc: 'あんぜん運転で 人気の会社' },
+    'food':  { name: 'どんぐり食品', currency: 'point', initPrice: 500, volatility: 0.05, dividendRate: 0.03, bias: 0.0, desc: '配当(はいとう)が 多いよ' },
+    'tech':  { name: 'ギャラクシーIT', currency: 'donguri', initPrice: 10, volatility: 0.20, dividendRate: 0.0, bias: 0.0, desc: 'あがったり さがったり' }
+};
+
+const STORAGE_KEY = 'papan_records_v1';
+const GOAL_KEY = 'papan_goals_v1';
+const POINT_KEY = 'papan_points_v1';
+const DONGURI_KEY = 'papan_donguri_v1';
+const REWARDED_KEY = 'papan_rewarded_history_v1';
+const STAMP_KEY = 'papan_stamps_v3';
+const COLLECTION_KEY = 'papan_collection_v1';
+const STOCK_KEY = 'papan_stocks_v1';
+const MARKET_KEY = 'papan_market_v3'; 
+
+// --- データ取得・保存系 ---
+function getAllRecords() { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+function getAllGoals() { return JSON.parse(localStorage.getItem(GOAL_KEY) || '{}'); }
+function saveGoal(userName, gameId, value) {
+    const goals = getAllGoals();
+    if (!goals[userName]) goals[userName] = {};
+    goals[userName][gameId] = value;
+    localStorage.setItem(GOAL_KEY, JSON.stringify(goals));
+}
+function getAllStamps() { return JSON.parse(localStorage.getItem(STAMP_KEY) || '{}'); }
+
+function getUserNames() {
+    const r = getAllRecords();
+    const p = JSON.parse(localStorage.getItem(POINT_KEY) || '{}');
+    const s = getAllStamps();
+    const d = JSON.parse(localStorage.getItem(DONGURI_KEY) || '{}');
+    const st = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
+    const names = new Set([...Object.keys(r), ...Object.keys(p), ...Object.keys(s), ...Object.keys(d), ...Object.keys(st)]);
+    return Array.from(names);
+}
+
+function getUserPoints(userName) {
+    const data = JSON.parse(localStorage.getItem(POINT_KEY) || '{}');
+    return data[userName] || 0;
+}
+function addPoints(userName, amount) {
+    const allPoints = JSON.parse(localStorage.getItem(POINT_KEY) || '{}');
+    const current = allPoints[userName] || 0;
+    allPoints[userName] = Math.floor(current + amount);
+    localStorage.setItem(POINT_KEY, JSON.stringify(allPoints));
+    return allPoints[userName];
+}
+function spendPoints(userName, amount) {
+    const allPoints = JSON.parse(localStorage.getItem(POINT_KEY) || '{}');
+    const current = allPoints[userName] || 0;
+    if (current >= amount) {
+        allPoints[userName] = Math.floor(current - amount);
+        localStorage.setItem(POINT_KEY, JSON.stringify(allPoints));
+        return true;
+    }
+    return false;
+}
+
+function getUserDonguri(userName) {
+    const data = JSON.parse(localStorage.getItem(DONGURI_KEY) || '{}');
+    return data[userName] || 0;
+}
+function addDonguri(userName, amount) {
+    const allDonguri = JSON.parse(localStorage.getItem(DONGURI_KEY) || '{}');
+    const current = allDonguri[userName] || 0;
+    allDonguri[userName] = Math.floor(current + amount);
+    localStorage.setItem(DONGURI_KEY, JSON.stringify(allDonguri));
+    return allDonguri[userName];
+}
+function spendDonguri(userName, amount) {
+    const allDonguri = JSON.parse(localStorage.getItem(DONGURI_KEY) || '{}');
+    const current = allDonguri[userName] || 0;
+    if (current >= amount) {
+        allDonguri[userName] = Math.floor(current - amount);
+        localStorage.setItem(DONGURI_KEY, JSON.stringify(allDonguri));
+        return true;
+    }
+    return false;
+}
+
+// --- 日替わりミッション機能 (3つ版) ---
+
+// ミッション対象にするゲームIDリスト
+const DAILY_MISSION_CANDIDATES = [
+    'make10',         // あわせて10
+    'math_add_easy',  // 足し算
+    'math_add_hard',  // 足し算（繰り上がり）
+    'math_sub_easy',  // 引き算
+    'math_sub_hard',  // 引き算（繰り下がり）
+    'math_multi',     // 九九
+    'clock_read',     // 時計
+    'triangle_angle', // 三角形
+    'katakana',       // カタカナ
+    'alphabet'        // アルファベット
+];
+
+// 日付文字列から数値を生成するハッシュ関数（シード値生成用）
+function _getDateHash() {
+    const todayStr = getTodayString(); // yyyy-mm-dd
+    let hash = 0;
+    for (let i = 0; i < todayStr.length; i++) {
+        hash = (hash << 5) - hash + todayStr.charCodeAt(i);
+        hash |= 0;
+    }
+    return Math.abs(hash);
+}
+
+// シード値付き乱数生成器（その日は常に同じ乱数順序になる）
+function _seededRandom(seed) {
+    let x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+}
+
+// 今日のミッションIDを3つ取得
+function getTodayMissionIds() {
+    let seed = _getDateHash();
+    // 配列をコピーしてシャッフル
+    const array = [...DAILY_MISSION_CANDIDATES];
+    
+    // フィッシャー–イェーツのシャッフル（シード付き）
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(_seededRandom(seed) * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+        seed++; // 次の乱数のためにシードを進める
+    }
+    
+    // 先頭3つを返す
+    return array.slice(0, 3);
+}
+
+// ユーザーのミッション進捗を取得
+function getDailyMissionProgress(userName) {
+    const key = 'papan_daily_mission_log_v2'; // データ構造を変えるのでキーを変更
+    const log = JSON.parse(localStorage.getItem(key) || '{}');
+    const userLog = log[userName] || { date: "", cleared: [] };
+    const today = getTodayString();
+
+    // 日付が変わっていたらリセット
+    if (userLog.date !== today) {
+        return { date: today, cleared: [] };
+    }
+    return userLog;
+}
+
+// 指定したゲームIDが今日のミッション対象か、そして未クリアか判定
+function checkMissionStatus(userName, gameId) {
+    const targets = getTodayMissionIds();
+    
+    // 今日の対象ゲームではない
+    if (!targets.includes(gameId)) return { isTarget: false, isCleared: false };
+
+    const progress = getDailyMissionProgress(userName);
+    const isCleared = progress.cleared.includes(gameId);
+
+    return { isTarget: true, isCleared: isCleared };
+}
+
+// ミッション完了を記録
+function setDailyMissionCompleted(userName, gameId) {
+    const key = 'papan_daily_mission_log_v2';
+    const log = JSON.parse(localStorage.getItem(key) || '{}');
+    
+    // 現在の状態を取得（日付更新も含む）
+    let userLog = log[userName] || { date: getTodayString(), cleared: [] };
+    if (userLog.date !== getTodayString()) {
+        userLog = { date: getTodayString(), cleared: [] };
+    }
+
+    // まだ記録されていなければ追加
+    if (!userLog.cleared.includes(gameId)) {
+        userLog.cleared.push(gameId);
+    }
+    
+    log[userName] = userLog;
+    localStorage.setItem(key, JSON.stringify(log));
+}
+
+// （オプション）トップページ用ウィジェット表示（コンパクト・1行版）
+function showDailyMissionWidget(elementId) {
+    const targets = getTodayMissionIds();
+    const BONUS_PT = 150; // 表記用
+
+    let htmlList = targets.map(id => {
+        const info = GAME_LIST[id];
+        const name = info ? info.name : id;
+        // ゲーム名のチップ
+        return `<span style="display:inline-block; background:white; color:#e65100; padding:2px 8px; margin-left:5px; border-radius:10px; font-size:12px; border:1px solid #ffcc80; white-space:nowrap;">${name}</span>`;
+    }).join('');
+
+    // 横並びコンテナ (flexbox)
+    const html = `
+        <div style="background:#fff3e0; padding:8px 5px; border-radius:8px; margin:5px auto; max-width:95%; overflow-x:auto; white-space:nowrap; -webkit-overflow-scrolling: touch; border:1px dashed #ffb74d;">
+            <div style="display:inline-flex; align-items:center;">
+                <span style="font-weight:bold; color:#bf360c; font-size:12px; margin-right:5px;">📅 きょうのボーナスコンテンツ(ひとつ+${BONUS_PT}):</span>
+                ${htmlList}
+            </div>
+        </div>
+    `;
+    
+    const container = document.getElementById(elementId);
+    if(container) container.innerHTML = html;
+}
+
+
+// --- 市場関連・日付計算 ---
+function getMarketData() {
+    let market = JSON.parse(localStorage.getItem(MARKET_KEY));
+    if (!market) {
+        const initialPrices = {};
+        const initialLastPrices = {};
+        for(let key in STOCK_MASTER){
+            initialPrices[key] = STOCK_MASTER[key].initPrice;
+            initialLastPrices[key] = STOCK_MASTER[key].initPrice;
+        }
+        market = { prices: initialPrices, lastPrices: initialLastPrices, news: "ぱぱん証券、本日オープン！", trend: { 'motor': 0, 'food': 0, 'tech': 0 }, lastUpdate: "" };
+        localStorage.setItem(MARKET_KEY, JSON.stringify(market));
+    }
+    return market;
+}
+
+function getDaysDiff(dateStr1, dateStr2) {
+    const d1 = new Date(dateStr1);
+    const d2 = new Date(dateStr2);
+    const diffTime = d2 - d1;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+    return diffDays > 0 ? diffDays : 0;
+}
+
+function checkAndAdvanceDate() {
+    const today = getTodayString();
+    const market = getMarketData();
+    if (market.lastUpdate !== today) {
+        let daysElapsed = market.lastUpdate ? getDaysDiff(market.lastUpdate, today) : 0;
+        if (daysElapsed < 0) daysElapsed = 1;
+        return updateMarketDay(today, daysElapsed);
+    }
+    return null; 
+}
+
+function updateMarketDay(todayStr, daysElapsed) {
+    const market = getMarketData();
+    market.lastPrices = { ...market.prices };
+    const eventRoll = Math.random();
+    if (eventRoll < 0.1) { market.news = "【特報】新型エンジンが大発明！自動車株が急上昇！"; market.trend['motor'] = 0.1; }
+    else if (eventRoll < 0.2) { market.news = "【悲報】どんぐりが不作... 食品株に影響か"; market.trend['food'] = -0.1; }
+    else if (eventRoll < 0.3) { market.news = "【IT】次世代ゲーム機が大コケ。IT株が暴落の危機"; market.trend['tech'] = -0.3; }
+    else if (eventRoll < 0.4) { market.news = "【IT】AIがすごい発明！IT株に買い注文殺到！"; market.trend['tech'] = 0.4; }
+    else { market.news = "本日は穏やかな市場です。"; market.trend = { 'motor': 0, 'food': 0, 'tech': 0 }; }
+    market.lastUpdate = todayStr;
+    for (let id in STOCK_MASTER) {
+        let changeRate = (market.trend[id] || 0) + (STOCK_MASTER[id].bias || 0) + ((Math.random() * STOCK_MASTER[id].volatility * 2) - STOCK_MASTER[id].volatility);
+        let newPrice = Math.floor(market.prices[id] * (1 + changeRate));
+        market.prices[id] = newPrice < 1 ? 1 : newPrice;
+    }
+    localStorage.setItem(MARKET_KEY, JSON.stringify(market));
+    return daysElapsed > 0 ? distributeDividends(daysElapsed) : [];
+}
+
+function distributeDividends(days) {
+    const market = getMarketData();
+    const allStocks = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
+    let report = [];
+    for (let user in allStocks) {
+        let totalP = 0, totalD = 0;
+        for (let id in allStocks[user]) {
+            const count = allStocks[user][id];
+            if (count > 0) {
+                const info = STOCK_MASTER[id];
+                const div = Math.floor(market.prices[id] * count * info.dividendRate * days);
+                if (div > 0) info.currency === 'point' ? totalP += div : totalD += div;
+            }
+        }
+        if (totalP > 0 || totalD > 0) {
+            addPoints(user, totalP); addDonguri(user, totalD);
+            report.push(`${user}さんに 配当: ${totalP}pt / ${totalD}🌰${days > 1 ? ` (${days}日分!)` : ''}`);
+        }
+    }
+    return report;
+}
+
+// --- 株・取引システム ---
+
+// ユーザーの持っている株のリストを取得する
+function getUserStocks(userName) {
+    const allStocks = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
+    return allStocks[userName] || {};
+}
+
+// 株を買う関数
+function buyStock(userName, stockId, amount) {
+    const market = getMarketData();
+    const info = STOCK_MASTER[stockId];
+    // 今の株価 × 買う数
+    const cost = market.prices[stockId] * amount;
+    
+    // お金（ポイント or どんぐり）が足りるかチェックして支払う
+    let success = false;
+    if (info.currency === 'point') {
+        success = spendPoints(userName, cost);
+    } else {
+        success = spendDonguri(userName, cost);
+    }
+
+    // 支払いができたら、株を増やす
+    if (success) {
+        const allStocks = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
+        if (!allStocks[userName]) allStocks[userName] = {};
+        
+        allStocks[userName][stockId] = (allStocks[userName][stockId] || 0) + amount;
+        localStorage.setItem(STOCK_KEY, JSON.stringify(allStocks));
+        return true;
+    }
+    return false; // お金が足りなかったとき
+}
+
+// 株を売る関数
+function sellStock(userName, stockId, amount) {
+    const allStocks = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
+    const currentHoldings = allStocks[userName]?.[stockId] || 0;
+
+    // 持っている株が、売る数より多いかチェック
+    if (currentHoldings >= amount) {
+        // 株を減らす
+        allStocks[userName][stockId] = currentHoldings - amount;
+        localStorage.setItem(STOCK_KEY, JSON.stringify(allStocks));
+
+        // お金を増やす
+        const market = getMarketData();
+        const price = market.prices[stockId];
+        const gain = price * amount;
+        const info = STOCK_MASTER[stockId];
+        
+        if (info.currency === 'point') {
+            addPoints(userName, gain);
+        } else {
+            addDonguri(userName, gain);
+        }
+        return true;
+    }
+    return false; // 持っている株が足りないとき
+}
+// ▲▲▲ ここまで ▲▲▲
+
+
+// --- スタンプ・レコード ---
+function getTodayString() {
+    const d = new Date();
+    return `${d.getFullYear()}-${('0' + (d.getMonth() + 1)).slice(-2)}-${('0' + d.getDate()).slice(-2)}`;
+}
+function setStamp(userName, dateStr, imageName) {
+    const allStamps = getAllStamps();
+    if (!allStamps[userName]) allStamps[userName] = {}; 
+    allStamps[userName][dateStr] = imageName; 
+    localStorage.setItem(STAMP_KEY, JSON.stringify(allStamps));
+}
+function toggleStamp(userName, dateStr, forceAdd = false) {
+    const allStamps = getAllStamps();
+    const current = allStamps[userName] ? allStamps[userName][dateStr] : null;
+    if (forceAdd || !current) setStamp(userName, dateStr, 'hi-an-192.png');
+    else { delete allStamps[userName][dateStr]; localStorage.setItem(STAMP_KEY, JSON.stringify(allStamps)); }
+}
+
+function saveRecord(userName, gameId, value) {
+    const records = getAllRecords();
+    if (!records[userName]) records[userName] = {};
+    const currentBest = records[userName][gameId];
+    const gameType = GAME_LIST[gameId]?.type || 'score';
+    let isNew = currentBest === undefined || (gameType === 'score' ? parseFloat(value) > parseFloat(currentBest) : parseFloat(value) < parseFloat(currentBest));
+    if (isNew) { records[userName][gameId] = value; localStorage.setItem(STORAGE_KEY, JSON.stringify(records)); }
+    return isNew;
+}
+
+// 目標達成チェック＆ポイント付与（修正・強化版）
+function checkAndAwardPoints(userName, gameId, currentRecord) {
+    // 必要なキーや関数が存在しない場合の安全策
+    const _POINT_KEY = (typeof POINT_KEY !== 'undefined') ? POINT_KEY : 'papan_points';
+    const _REWARDED_KEY = (typeof REWARDED_KEY !== 'undefined') ? REWARDED_KEY : 'papan_rewarded_goals';
+    const _getAllGoals = (typeof getAllGoals === 'function') ? getAllGoals : () => {
+        // getAllGoalsがない場合は直接localStorageから取る
+        const _GOAL_KEY = (typeof GOAL_KEY !== 'undefined') ? GOAL_KEY : 'papan_goals';
+        return JSON.parse(localStorage.getItem(_GOAL_KEY) || '{}');
+    };
+
+    const goals = _getAllGoals();
+    const userGoal = goals[userName]?.[gameId];
+
+    // 目標が設定されていなければ終了
+    if (!userGoal) return 0;
+
+    const allPoints = JSON.parse(localStorage.getItem(_POINT_KEY) || '{}');
+    const allHistory = JSON.parse(localStorage.getItem(_REWARDED_KEY) || '{}');
+    const info = GAME_LIST[gameId];
+    
+    // 達成判定（タイムなら「以下」、スコアなら「以上」）
+    // 数値として比較するために parseFloat を使用
+    let isAchieved = false;
+    if (info.type === 'time') {
+        isAchieved = parseFloat(currentRecord) <= parseFloat(userGoal);
+    } else {
+        isAchieved = parseFloat(currentRecord) >= parseFloat(userGoal);
+    }
+    
+    // 「達成している」かつ「まだその目標値で報酬をもらっていない」場合
+    // ※parseFloatで数値化して比較することで、"10" と 10 の違いによるミスを防ぐ
+    if (isAchieved && allHistory[userName]?.[gameId] !== parseFloat(userGoal)) {
+        const reward = 100; // 報酬ポイント
+
+        // ポイント加算
+        allPoints[userName] = (allPoints[userName] || 0) + reward;
+        
+        // 履歴更新（今の目標値を記録する）
+        if (!allHistory[userName]) allHistory[userName] = {};
+        allHistory[userName][gameId] = parseFloat(userGoal);
+        
+        // 保存
+        localStorage.setItem(_POINT_KEY, JSON.stringify(allPoints));
+        localStorage.setItem(_REWARDED_KEY, JSON.stringify(allHistory));
+        
+        return reward; // 獲得ポイント(100)を返す
+    }
+
+    return 0; // 条件を満たさなければ 0 を返す
+}
+
+// ★★★ セーブダイアログ (UI改善＆空欄送信防止版) ★★★
+// ★★★ セーブダイアログ (UI改善 & 全国ランキング & 日替わりミッション統合版) ★★★
+function showSaveDialog(gameId, resultValue) {
+    const old = document.getElementById('ranking-overlay');
+    if(old) old.remove();
+    
+    const gameInfo = GAME_LIST[gameId] || { name: 'このゲーム', unit: '' };
+    const users = getUserNames(); // 既存の関数を使用
+    const isGlobalRankingEnabled = (typeof window.uploadToWorldRanking === 'function');
+    const BONUS_PT = 200; // 日替わりボーナス点
+
+    let usersHtml = '';
+    if (users.length > 0) {
+        usersHtml += '<p style="margin:10px 0; font-size:14px; color:#666;">きろくする人を選んでね</p>';
+        users.forEach(u => {
+            // --- ★ここを追加: ミッション状態の判定 ---
+            // (ヘルパー関数 checkMissionStatus が必要です)
+            let badge = "";
+            if (typeof checkMissionStatus === 'function') {
+                const status = checkMissionStatus(u, gameId);
+                if (status.isTarget) {
+                    if (status.isCleared) {
+                        badge = "<div style='font-size:10px; color:#c8e6c9;'>★クリア済</div>";
+                    } else {
+                        badge = "<div style='font-size:10px; color:#ffeb3b; font-weight:bold; animation: flash 1s infinite;'>★ボーナス対象</div>";
+                    }
+                }
+            }
+            // ---------------------------------------
+
+            usersHtml += `<button onclick="Ranking.selectUser('${u}')" style="margin:5px; padding:10px 20px; font-size:16px; cursor:pointer; background:#4CAF50; color:white; border:none; border-radius:15px; font-weight:bold; min-width:80px; vertical-align:middle;">
+                ${u}
+                ${badge}
+            </button>`;
+        });
+    }
+
+    const overlay = document.createElement('div');
+    overlay.id = 'ranking-overlay';
+    overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: sans-serif; text-align: center;`;
+    
+    // 点滅アニメーション用スタイルを追加
+    const styleTag = document.createElement('style');
+    styleTag.innerHTML = `@keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }`;
+    overlay.appendChild(styleTag);
+
+    const globalNameHtml = isGlobalRankingEnabled ? `
+        <div style="background:#e3f2fd; border-radius:10px; padding:10px; margin: 15px 0; border: 1px solid #bbdefb;">
+            <p style="margin:0 0 5px 0; font-size:14px; color:#1976d2; font-weight:bold;">🌏 ランキングに のせる？</p>
+            <input type="text" id="public-username" maxlength="6" placeholder="みんなにみえるなまえ（6文字まで）" style="padding:8px; font-size:14px; width:90%; border:2px solid #90caf9; border-radius:5px; text-align:center;">
+            <p style="margin:5px 0 0 0; font-size:11px; color:#666;">※かかないと 自分だけのきろくになるよ</p>
+        </div>
+    ` : '';
+
+    // ミッション対象ならヘッダーにアイコンを表示
+    let missionHeader = "";
+    if (typeof checkMissionStatus === 'function') {
+        // 誰か一人でも対象ならアイコンを出す（簡易判定）
+        const targets = getTodayMissionIds(); 
+        if (targets.includes(gameId)) {
+            missionHeader = `<div style="background:#ff9800; color:white; font-size:12px; padding:2px 8px; border-radius:10px; display:inline-block; margin-bottom:5px;">📅 今日のボーナス対象</div><br>`;
+        }
+    }
+
+    overlay.innerHTML += `
+        <div style="background:white; color:#333; padding:25px; border-radius:20px; width:90%; max-width:400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+            ${missionHeader}
+            <h2 style="margin:0 0 10px 0; color:#555; font-size:20px;">${gameInfo.name}</h2>
+            <div style="background:#fce4ec; border-radius:10px; padding:15px; margin-bottom:15px;">
+                <div style="font-size:14px; color:#880e4f;">今回のきろく</div>
+                <div style="font-size:36px; font-weight:bold; color:#e91e63;">${resultValue} <span style="font-size:16px;">${gameInfo.unit}</span></div>
+            </div>
+            ${globalNameHtml}
+            <div id="user-list" style="margin-bottom:20px;">${usersHtml}</div>
+            <div style="border-top:2px dashed #eee; padding-top:20px;">
+                <p style="margin:0 0 10px 0; font-size:14px; font-weight:bold;">あたらしく 登録する</p>
+                <div style="display:flex; justify-content:center; gap:5px;">
+                    <input type="text" id="new-username" placeholder="おなまえ" style="padding:10px; font-size:16px; width:60%; border:2px solid #ddd; border-radius:5px;">
+                    <button onclick="Ranking.registerNew()" style="padding:10px 20px; font-size:16px; background:#2196F3; color:white; border:none; border-radius:5px; font-weight:bold;">OK</button>
+                </div>
+            </div>
+            <button onclick="document.getElementById('ranking-overlay').remove()" style="margin-top:25px; background:none; border:none; color:#999; text-decoration:underline; cursor:pointer;">とじる</button>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    window.Ranking = {
+        selectUser: (localName) => {
+            // 1. 基本ポイント付与 (参加賞)
+            addPoints(localName, 30);
+            
+            // 2. 記録保存 & 自己ベスト判定
+            const isNew = saveRecord(localName, gameId, resultValue);
+            
+            // 3. 目標達成ポイント判定
+            const earnedPoints = checkAndAwardPoints(localName, gameId, resultValue);
+            
+            // --- ★ここを追加: ミッションボーナス付与処理 ---
+            let missionBonus = 0;
+            if (typeof checkMissionStatus === 'function') {
+                const status = checkMissionStatus(localName, gameId);
+                if (status.isTarget && !status.isCleared) {
+                    missionBonus = BONUS_PT;
+                    addPoints(localName, missionBonus); // ボーナス加算
+                    setDailyMissionCompleted(localName, gameId); // 完了フラグ更新
+                }
+            }
+            // ----------------------------------------------
+
+            if(typeof toggleStamp === 'function') toggleStamp(localName, getTodayString(), true);
+            
+            // 全国ランキング送信
+            let sentToRanking = false;
+            if (isGlobalRankingEnabled) {
+                const publicInput = document.getElementById('public-username').value.trim();
+                if (publicInput !== "") {
+                    window.uploadToWorldRanking(gameId, localName, resultValue, publicInput);
+                    sentToRanking = true;
+                }
+            }
+
+            document.getElementById('ranking-overlay').remove();
+            
+            // メッセージ生成
+            setTimeout(() => {
+                let msg = `${localName}さんの記録として保存しました。\n💰 参加賞 30ポイント GET!`;
+                if (isNew) msg = `すごい！ ${localName}さんの\nじこベスト更新！🎉\n💰 参加賞 30ポイント GET!`;
+                
+                if (earnedPoints) msg += `\n🎁 目標クリア！さらに ${earnedPoints}ポイント！`;
+                
+                // ★ボーナスメッセージ追加
+                if (missionBonus > 0) {
+                    msg += `\n\n🎉 デイリーミッション達成！\n特別ボーナス +${missionBonus}ポイント！！`;
+                }
+
+                if (sentToRanking) {
+                    msg += `\n🌏 全国ランキングに 送信したよ！`;
+                } else if (isGlobalRankingEnabled) {
+                    msg += `\n🔒 ランキングには 送らなかったよ（ひみつ）`;
+                }
+
+                alert(msg);
+            }, 100);
+        },
+        registerNew: () => {
+            const name = document.getElementById('new-username').value.trim();
+            if(!name) return;
+            Ranking.selectUser(name);
+        }
+    };
+}
+
+function showPointGetDialog(amount) {
+    const old = document.getElementById('ranking-overlay');
+    if(old) old.remove();
+    const users = getUserNames();
+    let usersHtml = users.length > 0 ? users.map(u => `<button onclick="RankingPoint.selectUser('${u}', ${amount})" style="margin:5px; padding:12px 20px; font-size:18px; cursor:pointer; background:#ff9800; color:white; border:none; border-radius:30px; font-weight:bold;">${u}</button>`).join('') : '<p style="color:#aaa;">まだ ユーザーがいません</p>';
+    const overlay = document.createElement('div');
+    overlay.id = 'ranking-overlay';
+    overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: sans-serif; text-align: center;`;
+    overlay.innerHTML = `<div style="background:white; color:#333; padding:25px; border-radius:20px; width:90%; max-width:400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);"><h2>🎁 クリアおめでとう！</h2><div style="background:#fff3e0; border-radius:10px; padding:15px; margin-bottom:20px;"><div>ごほうび</div><div style="font-size:36px; font-weight:bold;">${amount} ポイント</div></div>${usersHtml}<button onclick="document.getElementById('ranking-overlay').remove()" style="margin-top:20px; background:none; border:none; color:#999; text-decoration:underline; cursor:pointer;">とじる</button></div>`;
+    document.body.appendChild(overlay);
+    window.RankingPoint = { selectUser: (name, pts) => { addPoints(name, pts); if(typeof toggleStamp === 'function') toggleStamp(name, getTodayString(), true); document.getElementById('ranking-overlay').remove(); alert(`${name}さんに ${pts}ポイント！`); } };
+}
+
+// --- ガチャ・コレクション管理 ---
+
+// ユーザーの持っているコレクション（IDのリスト）を取得する
+function getCollection(userName) {
+    // COLLECTION_KEY は ranking.js の最初の方で定義されています
+    // もし見つからない場合は 'papan_collection_v1' を使います
+    const key = (typeof COLLECTION_KEY !== 'undefined') ? COLLECTION_KEY : 'papan_collection_v1';
+    const allCollections = JSON.parse(localStorage.getItem(key) || '{}');
+    return allCollections[userName] || [];
+}
+
+// コレクションに追加する (初めてなら true を返す)
+function addToCollection(userName, itemId) {
+    const key = (typeof COLLECTION_KEY !== 'undefined') ? COLLECTION_KEY : 'papan_collection_v1';
+    const allCollections = JSON.parse(localStorage.getItem(key) || '{}');
+    
+    if (!allCollections[userName]) {
+        allCollections[userName] = [];
+    }
+
+    // すでに持っているかチェック
+    if (allCollections[userName].includes(itemId)) {
+        return false; // すでに持っている
+    }
+
+    // 新しいアイテムを追加
+    allCollections[userName].push(itemId);
+    localStorage.setItem(key, JSON.stringify(allCollections));
+    return true; // 新しくゲットした！
+}
+// ▲▲▲ ここまで ▲▲▲

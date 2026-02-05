@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>どうぶつ あわせ（神経衰弱）</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #f3e5f5; /* やさしい紫色 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 95%;
+            max-width: 500px;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        h1 { color: #8e24aa; font-size: 24px; margin: 10px 0; }
+
+        /* ゲーム情報エリア */
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        /* カードを並べるグリッド（4x4） */
+        #grid-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+            perspective: 1000px; /* 3D回転のために必要 */
+        }
+
+        /* カードのスタイル */
+        .card {
+            aspect-ratio: 1 / 1;
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+        }
+
+        /* カードがめくられた時 */
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        /* カードのオモテとウラ */
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* ウラ面（模様） */
+        .card-back {
+            background-color: #ce93d8;
+            color: white;
+            font-size: 24px;
+        }
+        /* オモテ面（動物） */
+        .card-front {
+            background-color: white;
+            border: 2px solid #ce93d8;
+            transform: rotateY(180deg); /* 最初は裏返しておく */
+        }
+
+        /* 正解したカード */
+        .card.matched .card-front {
+            background-color: #e1bee7; /* 薄い紫 */
+            border-color: #8e24aa;
+        }
+
+        /* スタート・リトライボタン */
+        .start-btn {
+            font-size: 24px;
+            padding: 15px 40px;
+            background: #ab47bc;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px #7b1fa2;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .start-btn:active { transform: scale(0.95); box-shadow: 0 2px #7b1fa2; }
+
+        .back-btn {
+            background: #90a4ae;
+            font-size: 14px;
+            padding: 8px 20px;
+            color: white;
+            border-radius: 20px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        /* 正解アニメーション */
+        .correct-flash { animation: flash 0.5s; }
+        @keyframes flash {
+            0% { background-color: white; }
+            50% { background-color: #e1bee7; }
+            100% { background-color: white; }
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+
+    <div id="home-screen" class="screen active">
+        <h1>どうぶつ あわせ</h1>
+        <div style="font-size: 80px; margin: 20px;">🃏</div>
+        <p>カードをめくって<br>おなじ どうぶつを みつけてね！</p>
+        <button class="start-btn" onclick="startGame()">スタート！</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 もどる</a>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div class="info-bar">
+            <span>のこり: <span id="pairs-left">8</span> ペア</span>
+            <span id="timer">0.0びょう</span>
+        </div>
+
+        <div id="grid-board">
+            </div>
+
+        <a href="index.html" class="back-btn">🏠 やめる</a>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h1>✨ ぜんぶみつけた！ ✨</h1>
+        <div style="font-size: 60px;">🦄</div>
+        <p>タイムは...</p>
+        <div id="final-time" style="font-size: 36px; color: #8e24aa; font-weight: bold;">0.0びょう</div>
+        <button onclick="showPointGetDialog(30)" style="font-size:20px; padding:10px 30px; background:#ff9800; color:white; border:none; border-radius:30px; margin:10px; font-weight:bold; cursor:pointer;">
+    🎁 30ポイントをもらう
+</button>
+        <button class="start-btn" onclick="startGame()">もういっかい！</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 もどる</a>
+    </div>
+
+</div>
+
+<script>
+    // 使いたい絵文字リスト（ここを変えるとキャラが変わります）
+    const emojis = ['🐶', '🐱', '🐰', '🐻', '🐼', '🐨', '🐯', '🦁'];
+    
+    let cardsArray = [];
+    let flippedCards = []; // 今めくっているカード（最大2枚）
+    let matchedPairs = 0;
+    let startTime;
+    let timerInterval;
+    let isProcessing = false; // アニメーション中の操作防止
+
+    function changeScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function startGame() {
+        // リセット
+        flippedCards = [];
+        matchedPairs = 0;
+        isProcessing = false;
+        const totalPairs = emojis.length; // 8ペア
+        document.getElementById('pairs-left').textContent = totalPairs;
+
+        // カード生成（各絵文字を2つずつ用意）
+        let deck = [...emojis, ...emojis];
+        deck = shuffle(deck);
+
+        const board = document.getElementById('grid-board');
+        board.innerHTML = '';
+
+        deck.forEach((emoji, index) => {
+            // カードのHTML構造を作る
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.dataset.emoji = emoji; // 正解判定用
+            card.dataset.index = index; // 識別用
+
+            // ウラ面
+            const back = document.createElement('div');
+            back.className = 'card-back';
+            back.textContent = '❓'; // ウラの模様
+
+            // オモテ面
+            const front = document.createElement('div');
+            front.className = 'card-front';
+            front.textContent = emoji;
+
+            card.appendChild(back);
+            card.appendChild(front);
+
+            // クリックイベント
+            card.onclick = () => flipCard(card);
+
+            board.appendChild(card);
+        });
+
+        changeScreen('game-screen');
+        
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+            const t = ((Date.now() - startTime) / 1000).toFixed(1);
+            document.getElementById('timer').textContent = t + "びょう";
+        }, 100);
+    }
+
+    function flipCard(card) {
+        // すでにめくられている、または処理中、またはマッチ済みの場合は無視
+        if (card.classList.contains('flipped') || isProcessing || card.classList.contains('matched')) {
+            return;
+        }
+
+        // カードをめくる
+        card.classList.add('flipped');
+        flippedCards.push(card);
+
+        // 2枚めくったら判定
+        if (flippedCards.length === 2) {
+            checkForMatch();
+        }
+    }
+
+    function checkForMatch() {
+        isProcessing = true; // 操作ロック
+        const [card1, card2] = flippedCards;
+
+        if (card1.dataset.emoji === card2.dataset.emoji) {
+            // 正解！
+            matchedPairs++;
+            document.getElementById('pairs-left').textContent = emojis.length - matchedPairs;
+            
+            card1.classList.add('matched');
+            card2.classList.add('matched');
+            
+            // 少しピカッとさせる
+            document.body.classList.add('correct-flash');
+            setTimeout(() => document.body.classList.remove('correct-flash'), 500);
+
+            flippedCards = [];
+            isProcessing = false;
+
+            // 全ペア揃ったら終了
+            if (matchedPairs === emojis.length) {
+                finishGame();
+            }
+
+        } else {
+            // 不正解...少し待ってから戻す
+            setTimeout(() => {
+                card1.classList.remove('flipped');
+                card2.classList.remove('flipped');
+                flippedCards = [];
+                isProcessing = false; // ロック解除
+            }, 1000); // 1秒だけ見せる
+        }
+    }
+
+    function finishGame() {
+        clearInterval(timerInterval);
+        const finalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+        document.getElementById('final-time').textContent = finalTime + "びょう";
+        // 少し待ってから結果画面へ（最後のカードが見えるように）
+        setTimeout(() => {
+            changeScreen('result-screen');
+        }, 800);
+    }
+</script>
+
+</body>
+</html>

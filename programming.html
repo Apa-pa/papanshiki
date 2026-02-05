@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ロボットゆうどう作戦</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background-color: #e3f2fd;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            height: 100dvh;
+            touch-action: none;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 600px;
+            height: 100%;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        /* ゲーム画面（グリッド） */
+        .grid-area {
+            flex: 1;
+            background: #263238;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #grid {
+            display: grid;
+            gap: 2px;
+            background: #546e7a;
+            border: 5px solid #546e7a;
+            border-radius: 5px;
+        }
+
+        .cell {
+            width: 60px;
+            height: 60px;
+            background: #cfd8dc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            border-radius: 2px;
+        }
+        
+        .robot { transition: transform 0.3s linear, top 0.3s linear, left 0.3s linear; }
+
+        /* 命令エリア */
+        .command-area {
+            height: 220px;
+            background: #f5f5f5;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            border-top: 2px solid #ccc;
+        }
+
+        .queue-display {
+            height: 60px;
+            background: white;
+            border: 2px solid #bbb;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            overflow-x: auto; /* 横スクロール許可 */
+            gap: 5px;
+        }
+
+        .cmd-icon {
+            width: 40px; height: 40px;
+            background: #eee;
+            border-radius: 5px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            border: 1px solid #ccc;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .ctrl-btn {
+            flex: 1;
+            padding: 15px 0;
+            font-size: 16px; /* 文字サイズ調整 */
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px rgba(0,0,0,0.2);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            line-height: 1.2;
+        }
+        .ctrl-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        .btn-forward { background: #4caf50; font-size: 18px; }
+        .btn-turn-r { background: #2196f3; }
+        .btn-turn-l { background: #ff9800; }
+        
+        .action-row {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-run { flex: 2; background: #e91e63; font-size: 22px; }
+        .btn-clear { flex: 1; background: #9e9e9e; font-size: 16px; }
+
+        /* オーバーレイ */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 100; display: none;
+        }
+        
+        .quit-btn {
+            position: absolute; top: 10px; right: 10px;
+            font-weight: bold; color: #fff; z-index: 10;
+            background: #ef5350;
+            padding: 5px 15px; border-radius: 20px;
+            text-decoration: none; font-size: 14px;
+            box-shadow: 0 2px #c62828;
+        }
+
+        /* ▼▼▼ 追加: つぎへボタン専用スタイル ▼▼▼ */
+        .result-btn {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            background: #4caf50;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px #2e7d32;
+        }
+        .result-btn:active { transform: translateY(2px); box-shadow: none; }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <a href="index.html" class="quit-btn">🏠 やめる</a>
+    <div style="position:absolute; top:10px; left:10px; font-weight:bold; color:white; z-index:5;">
+        ステージ <span id="level-display">1</span>
+    </div>
+
+    <div class="grid-area">
+        <div id="grid"></div>
+    </div>
+
+    <div class="command-area">
+        <div class="queue-display" id="queue">
+            <span style="color:#aaa; font-size:12px;">ここにめいれいが入るよ</span>
+        </div>
+        
+        <div class="btn-row">
+            <button class="ctrl-btn btn-turn-l" onclick="addCommand('left')">↺ 左を<br>むく</button>
+            <button class="ctrl-btn btn-forward" onclick="addCommand('forward')">↑ すすむ</button>
+            <button class="ctrl-btn btn-turn-r" onclick="addCommand('right')">↻ 右を<br>むく</button>
+        </div>
+
+        <div class="action-row">
+            <button class="ctrl-btn btn-clear" onclick="clearCommands()">けす</button>
+            <button class="ctrl-btn btn-run" onclick="runProgram()">▶ スタート！</button>
+        </div>
+    </div>
+
+    <div id="result-screen" class="overlay">
+        <div style="font-size:80px;">🚩</div>
+        <h1 style="color:#e91e63;">ゴール！</h1>
+        <p>ロボットが うごいたよ！</p>
+        
+        <button class="result-btn" onclick="nextLevel()">つぎへ</button>
+    </div>
+</div>
+
+<script>
+    // マップデータ (0:床, 1:壁, 2:ゴール, 9:スタート)
+    const LEVELS = [
+        [ // Lv1
+            [0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 0],
+            [9, 0, 0, 0, 2],
+            [0, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0]
+        ],
+        [ // Lv2
+            [0, 0, 2, 0, 0],
+            [0, 1, 0, 1, 0],
+            [0, 1, 0, 1, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 9, 0, 0]
+        ],
+        [ // Lv3
+            [2, 0, 0, 0, 0],
+            [1, 1, 1, 1, 0],
+            [0, 0, 0, 1, 0],
+            [0, 1, 0, 0, 0],
+            [9, 1, 0, 0, 0]
+        ],
+        [ // Lv4 (少し難しく)
+            [0, 0, 0, 0, 0],
+            [0, 1, 0, 1, 2],
+            [0, 1, 0, 1, 1],
+            [0, 1, 0, 0, 0],
+            [9, 0, 0, 1, 0]
+        ]
+    ];
+
+    let currentLevel = 0;
+    let commands = [];
+    let robotPos = {r:0, c:0, dir:0}; // dir 0:上 1:右 2:下 3:左
+    let isRunning = false;
+    let mapData = [];
+
+    window.onload = loadLevel;
+
+    function loadLevel() {
+        document.getElementById('result-screen').style.display = 'none';
+        document.getElementById('level-display').innerText = currentLevel + 1;
+        mapData = JSON.parse(JSON.stringify(LEVELS[currentLevel]));
+        commands = [];
+        updateQueue();
+        renderGrid();
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+        const rows = mapData.length;
+        const cols = mapData[0].length;
+        
+        grid.style.gridTemplateColumns = `repeat(${cols}, 60px)`;
+        grid.style.gridTemplateRows = `repeat(${rows}, 60px)`;
+
+        for(let r=0; r<rows; r++){
+            for(let c=0; c<cols; c++){
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                const val = mapData[r][c];
+                
+                if(val === 1) {
+                    cell.style.background = '#546e7a'; // 壁
+                    cell.innerText = '🧱';
+                } else if(val === 2) {
+                    cell.style.background = '#ffcdd2'; // ゴール
+                    cell.innerText = '🚩';
+                } else if(val === 9) {
+                    // スタート地点の初期化
+                    robotPos = {r, c, dir: 1}; // 最初は右向きにしておく
+                    mapData[r][c] = 0; // 床にする
+                }
+                cell.id = `cell-${r}-${c}`;
+                grid.appendChild(cell);
+            }
+        }
+        drawRobot();
+    }
+
+    function drawRobot() {
+        // 前のロボットを消す
+        document.querySelectorAll('.robot-icon').forEach(e => e.remove());
+        
+        const cell = document.getElementById(`cell-${robotPos.r}-${robotPos.c}`);
+        if(cell) {
+            const robot = document.createElement('div');
+            robot.className = 'robot-icon';
+            robot.innerText = '🤖';
+            // 向きに合わせて回転
+            const deg = (robotPos.dir * 90);
+            robot.style.transform = `rotate(${deg}deg)`;
+            robot.style.fontSize = "40px";
+            cell.appendChild(robot);
+        }
+    }
+
+    function addCommand(type) {
+        if(isRunning) return;
+        // ▼▼▼ 修正: 上限を30回に変更 ▼▼▼
+        if(commands.length >= 30) {
+            alert("これ以上 めいれい できません！");
+            return; 
+        }
+        commands.push(type);
+        updateQueue();
+    }
+
+    function clearCommands() {
+        if(isRunning) return;
+        commands = [];
+        updateQueue();
+        renderGrid(); 
+    }
+
+    function updateQueue() {
+        const q = document.getElementById('queue');
+        q.innerHTML = '';
+        if(commands.length === 0) {
+            q.innerHTML = '<span style="color:#aaa; font-size:12px;">ここにめいれいが入るよ</span>';
+            return;
+        }
+        commands.forEach(cmd => {
+            const icon = document.createElement('div');
+            icon.className = 'cmd-icon';
+            if(cmd === 'forward') icon.innerText = '↑';
+            if(cmd === 'left') icon.innerText = '↺';
+            if(cmd === 'right') icon.innerText = '↻';
+            q.appendChild(icon);
+        });
+        
+        // 追加したら一番右（最新）までスクロール
+        q.scrollLeft = q.scrollWidth;
+    }
+
+    async function runProgram() {
+        if(isRunning || commands.length === 0) return;
+        isRunning = true;
+
+        for(const cmd of commands) {
+            await new Promise(r => setTimeout(r, 500)); // 待機
+            
+            if(cmd === 'left') {
+                robotPos.dir = (robotPos.dir + 3) % 4;
+            } else if(cmd === 'right') {
+                robotPos.dir = (robotPos.dir + 1) % 4;
+            } else if(cmd === 'forward') {
+                let nr = robotPos.r;
+                let nc = robotPos.c;
+                if(robotPos.dir === 0) nr--; // 上
+                if(robotPos.dir === 1) nc++; // 右
+                if(robotPos.dir === 2) nr++; // 下
+                if(robotPos.dir === 3) nc--; // 左
+                
+                if(nr >= 0 && nr < mapData.length && nc >= 0 && nc < mapData[0].length) {
+                    if(mapData[nr][nc] !== 1) { 
+                        robotPos.r = nr;
+                        robotPos.c = nc;
+                    } 
+                }
+            }
+            drawRobot();
+
+            // ゴール判定
+            if(LEVELS[currentLevel][robotPos.r][robotPos.c] === 2) {
+                await new Promise(r => setTimeout(r, 200));
+                document.getElementById('result-screen').style.display = 'flex';
+                isRunning = false;
+                
+                // ポイント付与（もしあれば）
+                if(typeof showPointGetDialog === 'function'){
+                    // showPointGetDialog(10);
+                }
+                return;
+            }
+        }
+        
+        isRunning = false;
+        await new Promise(r => setTimeout(r, 500));
+        alert("ゴールにつかなかったよ！ もういちど やってみよう。");
+        renderGrid();
+    }
+
+    function nextLevel() {
+        currentLevel++;
+        if(currentLevel >= LEVELS.length) {
+            alert("全ステージクリア！ おめでとう！");
+            currentLevel = 0;
+            if(typeof showPointGetDialog === 'function'){
+                showPointGetDialog(50);
+            }
+        }
+        loadLevel();
+    }
+</script>
+</body>
+</html>

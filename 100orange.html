@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>五色百人一首クイズ - だいだい色</title>
+    <style>
+        body { font-family: "Helvetica Neue", Arial, sans-serif; background-color: #fff5e6; display: flex; justify-content: center; padding: 20px; }
+        #quiz-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
+        h1 { color: #e67e22; font-size: 1.5em; }
+        #question-num { font-weight: bold; color: #666; }
+        #upper-phrase { font-size: 1.3em; margin: 20px 0; min-height: 3em; display: flex; align-items: center; justify-content: center; line-height: 1.5; }
+        .option-btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #f39c12; background: white; border-radius: 8px; cursor: pointer; font-size: 1em; transition: 0.2s; }
+        .option-btn:hover { background: #f39c12; color: white; }
+        #result-area { margin-top: 20px; font-weight: bold; font-size: 1.2em; min-height: 1.5em; }
+        .correct { color: #27ae60; }
+        .incorrect { color: #e74c3c; }
+        button:disabled { cursor: not-allowed; opacity: 0.6; }
+        #next-btn { margin-top: 20px; padding: 10px 25px; background: #e67e22; color: white; border: none; border-radius: 5px; cursor: pointer; display: none; }
+    </style>
+</head>
+<body>
+
+<div id="quiz-card">
+    <h1>五色百人一首クイズ【だいだい】</h1>
+    <p id="question-num">第 1 問 / 10</p>
+    <div id="upper-phrase">上の句がここに表示されます</div>
+    <div id="options"></div>
+    <div id="result-area"></div>
+    <button id="next-btn" onclick="nextQuestion()">次の問題へ</button>
+</div>
+
+<script>
+    // CSVから抽出した「だいだい色」の厳密な20首データ
+    const allData = [
+        {no:19, u:"なにわがた みじかきあしの ふしのまも", l:"あはでこのよを すぐしてよとや"},
+        {no:21, u:"いま来んと いーしばかりに ながつきの", l:"ありあけのつきを まちいでつるかな"},
+        {no:25, u:"名にしおわば おーさかやまの さねかずら", l:"ひとにしられで くるよしもがな"},
+        {no:27, u:"みかの原 わきてながるる 泉川", l:"いつみきとてか こいしかるらん"},
+        {no:43, u:"あいみての のちのこころに くらぶれば", l:"むかしはものを おもわざりけり"},
+        {no:44, u:"お(お)ことの たえてしなくば なかなかに", l:"ひとをもみをも うらみざらまし"},
+        {no:45, u:"あはれとも ゆーべきひとわ おも(お)えで", l:"みのいたずらに なりぬべきかな"},
+        {no:49, u:"みかきもり えじのたくひの よるわもえ", l:"ひるはきえつつ ものをこそおもえ"},
+        {no:52, u:"あけぬれば くるるものとわ しりながら", l:"なおうらめしき あさぼらけかな"},
+        {no:53, u:"なげきつつ ひとりぬるよの あくるまわ", l:"いかにひさしき ものとかわしる"},
+        {no:56, u:"あらざらん このよのほかの おもいでに", l:"いまひとたびの あうこともがな"},
+        {no:63, u:"いまわただ おもいたえなん とばかりを", l:"ひとづてならで ゆうよしもがな"},
+        {no:64, u:"朝ぼらけ うじのかわぎり　たえだえに", l:"あらはれわたる　せぜのあじろぎ"},
+        {no:67, u:"春の夜の ゆめばかりなる 手枕に", l:"かいなくたたん なこそをしけれ"},
+        {no:77, u:"せをはやみ いわにせかるる たきがわの", l:"われてもすえに あわんとぞおもう"},
+        {no:88, u:"なにわえの あしのかりねの ひとよゆえ", l:"みをつくしてや こいわたるべき"},
+        {no:90, u:"見せばやな 雄島のあまの 袖だにも", l:"ぬれにぞぬれし いろわかわらず"},      
+        {no:95, u:"おほけなく うき世の民に おほふかな", l:"わがたつそまに すみぞめのそで"},
+        {no:98, u:"風そよぐ ならの小川の 夕ぐれは", l:"みそぎぞなつの しるしなりける"},
+        {no:99, u:"人もをし 人もうらめし あぢきなく", l:"よをおもふゆゑに ものおもーみわ"},
+        
+    ];
+
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+
+    // 初期化：20首からランダムに10問選ぶ
+    function initQuiz() {
+        currentQuestions = [...allData].sort(() => 0.5 - Math.random()).slice(0, 10);
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const q = currentQuestions[currentIndex];
+        document.getElementById("question-num").innerText = `第 ${currentIndex + 1} 問 / 10`;
+        document.getElementById("upper-phrase").innerText = q.u;
+        document.getElementById("result-area").innerText = "";
+        document.getElementById("next-btn").style.display = "none";
+
+        // 選択肢作成：正解1つ + リスト内の他の歌からランダムに2つ
+        let options = [q.l];
+        let others = allData.filter(d => d.l !== q.l).sort(() => 0.5 - Math.random());
+        options.push(others[0].l, others[1].l);
+        options.sort(() => 0.5 - Math.random());
+
+        const optionsDiv = document.getElementById("options");
+        optionsDiv.innerHTML = "";
+        options.forEach(opt => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn";
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt, q.l);
+            optionsDiv.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected, correct) {
+        const resultArea = document.getElementById("result-area");
+        const btns = document.getElementsByClassName("option-btn");
+        for(let btn of btns) btn.disabled = true;
+
+        if (selected === correct) {
+            resultArea.innerHTML = "<span class='correct'>正解！</span>";
+            score++;
+        } else {
+            resultArea.innerHTML = `<span class='incorrect'>残念！正解は：<br>${correct}</span>`;
+        }
+        
+        if (currentIndex < 9) {
+            document.getElementById("next-btn").style.display = "inline-block";
+        } else {
+            setTimeout(() => {
+                alert(`終了！あなたのスコアは ${score} / 10 です。`);
+                location.reload();
+            }, 1000);
+        }
+    }
+
+    function nextQuestion() {
+        currentIndex++;
+        showQuestion();
+    }
+
+    initQuiz();
+</script>
+
+</body>
+</html>

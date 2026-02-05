@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>100マス計算メーカー</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; margin: 0; padding: 20px; }
+        .sheet { width: 180mm; margin: 0 auto; }
+        h2 { margin: 10px 0; font-size: 18px; color: #333; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 30px; table-layout: fixed; }
+        th, td { border: 2px solid #000; height: 42px; text-align: center; font-size: 18px; }
+        th { background-color: #f2f2f2; }
+        .controls { margin-bottom: 20px; }
+        
+        /* 共通のボタンデザイン */
+        .btn {
+            padding: 10px 20px; 
+            font-size: 16px; 
+            cursor: pointer;
+            border: none; 
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* シャッフルボタンの色 */
+        .shuffle-btn { background-color: #007bff; color: white; }
+        .shuffle-btn:hover { background-color: #0056b3; }
+
+        /* ホームボタンの色（オレンジ） */
+        .home-btn { background-color: #ff9d00; color: white; }
+        .home-btn:hover { background-color: #e68a00; }
+
+        /* 印刷時はボタンを隠す */
+        @media print {
+            .controls { display: none; }
+            body { padding: 0; }
+            table { margin-bottom: 50px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <a href="index.html" class="btn home-btn">🏠 ホームにもどる</a>
+        <button class="btn shuffle-btn" onclick="randomizeAll()">🎲 数字をシャッフルする</button>
+        <p style="font-size: 12px; color: #666;">※印刷時にはこのボタンは消えます。</p>
+    </div>
+
+    <div class="sheet">
+        <h2>100マス計算（かけざん） ①</h2>
+        <table id="table1"></table>
+
+        <h2>100マス計算（かけざん） ②</h2>
+        <table id="table2"></table>
+    </div>
+
+    <script>
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function createTable(tableId) {
+            const table = document.getElementById(tableId);
+            table.innerHTML = ""; // クリア
+            
+            const numsTop = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+            const numsLeft = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+
+            // ヘッダー行
+            let tr = document.createElement("tr");
+            tr.innerHTML = `<th>×</th>` + numsTop.map(n => `<th>${n}</th>`).join("");
+            table.appendChild(tr);
+
+            // 各行の生成
+            for (let i = 0; i < 10; i++) {
+                tr = document.createElement("tr");
+                let rowHtml = `<th>${numsLeft[i]}</th>`;
+                for (let j = 0; j < 10; j++) {
+                    rowHtml += `<td></td>`;
+                }
+                tr.innerHTML = rowHtml;
+                table.appendChild(tr);
+            }
+        }
+
+        function randomizeAll() {
+            createTable("table1");
+            createTable("table2");
+        }
+
+        // 初回実行
+        randomizeAll();
+    </script>
+</body>
+</html>

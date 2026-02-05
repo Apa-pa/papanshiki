@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>いまなんじ？ とけいクイズ</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "UD Digital Kyokasho-tai", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #fff8e1; /* やさしい黄色 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        h1 { color: #ff6f00; font-size: 26px; }
+
+        /* キャンバス（時計の描画エリア） */
+        canvas {
+            background-color: white;
+            border-radius: 50%;
+            margin: 10px auto;
+            display: block;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* 選択肢ボタン */
+        #choices {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .choice-btn {
+            font-size: 28px;
+            padding: 15px 5px;
+            background: #e3f2fd;
+            border: 3px solid #90caf9;
+            border-radius: 15px;
+            cursor: pointer;
+            color: #333;
+            font-weight: bold;
+            font-family: inherit;
+        }
+        .choice-btn:active { background: #bbdefb; transform: translateY(2px); }
+
+        /* スタートボタン等の共通スタイル */
+        .start-btn, .retry-btn {
+            font-size: 24px;
+            padding: 15px 40px;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px 0;
+            font-family: inherit;
+            font-weight: bold;
+        }
+        .start-btn { background: #ff9800; box-shadow: 0 5px #e65100; }
+        .retry-btn { background: #4caf50; box-shadow: 0 5px #2e7d32; }
+        .start-btn:active, .retry-btn:active { transform: scale(0.95); box-shadow: none; }
+
+        .back-to-index-btn {
+            font-size: 16px;
+            padding: 10px 20px;
+            background: #90a4ae;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        /* 正解・不正解アニメーション */
+        .correct-flash { animation: flash 0.3s; }
+        @keyframes flash {
+            0% { background-color: white; }
+            50% { background-color: #c8e6c9; }
+            100% { background-color: white; }
+        }
+
+        #feedback-mark {
+            position: absolute;
+            top: 40%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 180px;
+            display: none;
+            z-index: 100;
+            pointer-events: none;
+            text-shadow: 3px 3px 0px white;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="feedback-mark">⭕</div>
+
+    <div id="home-screen" class="screen active">
+        <h1>いま なんじ？</h1>
+        <div style="font-size: 80px; margin: 10px;">🕒</div>
+        <p>とけいをみて、ただしいじかんを<br>あててね！</p>
+        <button class="start-btn" onclick="startGame()">よーい、スタート！</button>
+        <br>
+        <a href="index.html" class="back-to-index-btn">🏠 もどる</a>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <div style="display:flex; justify-content:space-between; padding:0 10px; color:#555;">
+            <span id="timer-display">0.0びょう</span>
+            <span id="progress">1 / 10</span>
+        </div>
+        
+        <canvas id="clockCanvas" width="250" height="250"></canvas>
+        
+        <div id="choices"></div>
+        <br>
+        <a href="index.html" class="back-to-index-btn" style="background:#cfd8dc; color:#555;">🏠 やめる</a>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h1>✨ ゴール！ ✨</h1>
+        <div style="font-size: 60px;">🏆</div>
+        <p>きみの タイムは...</p>
+        <div id="final-time" style="font-size:36px; color:#d84315; font-weight:bold; margin:10px;">0.0びょう</div>
+        <button class="retry-btn" onclick="startGame()">もういっかい！</button>
+        <br>
+        <a href="index.html" class="back-to-index-btn">🏠 もどる</a>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('clockCanvas');
+    const ctx = canvas.getContext('2d');
+    const totalQuestions = 10;
+    let currentQuestion = 0;
+    let correctTime = { h: 0, m: 0 };
+    let startTime, timerInterval;
+
+    // 時計を描画する関数（重要！）
+    function drawClock(hour, minute) {
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const radius = cx - 10;
+
+        // リセット
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 枠を描く
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 5;
+        ctx.stroke();
+
+        // 文字盤の数字
+        ctx.font = 'bold 24px Arial';
+        ctx.fillStyle = '#333';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        for (let num = 1; num <= 12; num++) {
+            const ang = num * Math.PI / 6;
+            const x = cx + radius * 0.8 * Math.sin(ang);
+            const y = cy - radius * 0.8 * Math.cos(ang);
+            ctx.fillText(num.toString(), x, y);
+        }
+
+        // 分針（ながい針）
+        const mAng = (minute * Math.PI / 30);
+        drawHand(cx, cy, mAng, radius * 0.85, 5, '#2196f3'); // 青色
+
+        // 時針（みじかい針）
+        // ※ポイント：分が進むにつれて時針も少し進める
+        const hAng = (hour % 12 * Math.PI / 6) + (minute * Math.PI / 360);
+        drawHand(cx, cy, hAng, radius * 0.55, 8, '#f44336'); // 赤色
+
+        // 中心点
+        ctx.beginPath();
+        ctx.arc(cx, cy, 8, 0, 2 * Math.PI);
+        ctx.fillStyle = '#333';
+        ctx.fill();
+    }
+
+    function drawHand(cx, cy, angle, length, width, color) {
+        ctx.beginPath();
+        ctx.lineWidth = width;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = color;
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + length * Math.sin(angle), cy - length * Math.cos(angle));
+        ctx.stroke();
+    }
+
+    function changeScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function startGame() {
+        currentQuestion = 0;
+        changeScreen('quiz-screen');
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+            const t = ((Date.now() - startTime) / 1000).toFixed(1);
+            document.getElementById('timer-display').textContent = t + "びょう";
+        }, 100);
+        nextQuestion();
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+        return ((Date.now() - startTime) / 1000).toFixed(1);
+    }
+
+    function nextQuestion() {
+        if (currentQuestion >= totalQuestions) {
+            const time = stopTimer();
+            document.getElementById('final-time').textContent = time + "びょう";
+            changeScreen('result-screen');
+            // IDは 'clock_read'、記録は time (秒数) です
+            if(typeof showSaveDialog === 'function') {
+                showSaveDialog('clock_read', time);
+            }
+
+            return;
+        }
+
+        currentQuestion++;
+        document.getElementById('progress').textContent = `${currentQuestion} / ${totalQuestions}`;
+
+        // 問題作成：5分刻みでランダムな時間を生成
+        let h = Math.floor(Math.random() * 12) + 1; // 1~12
+        let m = Math.floor(Math.random() * 12) * 5; // 0, 5, 10...55
+        correctTime = { h, m };
+
+        drawClock(h, m);
+        generateChoices(h, m);
+    }
+
+    function generateChoices(h, m) {
+        // 正解の文字列
+        const correctStr = `${h}じ ${m}ふん`.replace(' 0ふん', ' はん').replace('0ふん', ''); 
+        // 今回はシンプルに「3じ 00ふん」形式で表示統一します
+        
+        const formatTime = (hh, mm) => `${hh}じ ${mm.toString().padStart(2, '0')}ふん`;
+        
+        let answers = [formatTime(h, m)];
+
+        // ダミー生成（よくある間違いを作る）
+        while (answers.length < 4) {
+            let dh = Math.floor(Math.random() * 12) + 1;
+            let dm = Math.floor(Math.random() * 12) * 5;
+            
+            // 引っかけ問題：針が逆（9:15 と 3:45など）
+            if (answers.length === 1) { dh = h + 1; dm = m; } 
+            
+            let str = formatTime(dh > 12 ? dh - 12 : dh, dm);
+            if (!answers.includes(str)) {
+                answers.push(str);
+            }
+        }
+
+        // シャッフル
+        answers.sort(() => Math.random() - 0.5);
+
+        const container = document.getElementById('choices');
+        container.innerHTML = '';
+        answers.forEach(ans => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.textContent = ans;
+            btn.onclick = () => checkAnswer(ans, formatTime(h, m));
+            container.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected, correct) {
+        const feedback = document.getElementById('feedback-mark');
+        if (selected === correct) {
+            feedback.textContent = '⭕';
+            feedback.style.color = '#ff3d00';
+            feedback.style.display = 'block';
+            document.body.classList.add('correct-flash');
+            
+            setTimeout(() => {
+                feedback.style.display = 'none';
+                document.body.classList.remove('correct-flash');
+                nextQuestion();
+            }, 600);
+        } else {
+            feedback.textContent = '❌';
+            feedback.style.color = '#555';
+            feedback.style.display = 'block';
+            setTimeout(() => {
+                feedback.style.display = 'none';
+            }, 500);
+        }
+    }
+</script>
+
+</body>
+</html>

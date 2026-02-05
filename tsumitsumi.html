@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>漢字つみつみ</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #e0e0e0; /* PCなどの背景色（枠外） */
+            font-family: "UD Digital Kyokasho-tai-R", "Zen Kaku Gothic New", sans-serif;
+            touch-action: manipulation;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* ゲーム画面をスマホサイズに固定 */
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px; /* 最大幅を制限 */
+            height: 100%;
+            max-height: 900px;
+            background-color: #fffbe6; /* ゲーム画面の背景 */
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2); /* 影をつけて浮き上がらせる */
+        }
+
+        /* UIレイヤー */
+        .ui-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .hud {
+            position: absolute;
+            top: 20px; left: 20px;
+            font-size: 24px; font-weight: bold;
+            color: #5d4037;
+            text-shadow: 2px 2px 0 #fff;
+        }
+
+        .life-area {
+            position: absolute;
+            top: 20px; right: 20px;
+            font-size: 24px;
+        }
+
+        /* スタート・ゲームオーバー画面 */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 253, 231, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            pointer-events: auto;
+            text-align: center;
+        }
+
+        h1 {
+            color: #d84315; font-size: 36px; margin-bottom: 10px;
+            font-family: serif;
+        }
+
+        .btn {
+            background: #d84315; color: white; border: none;
+            padding: 15px 50px; font-size: 22px;
+            border-radius: 50px; cursor: pointer;
+            box-shadow: 0 5px #bf360c; font-weight: bold;
+            margin-top: 20px;
+        }
+        .btn:active { transform: scale(0.95); box-shadow: none; }
+
+        .back-link {
+            margin-top: 20px; color: #8d6e63;
+            text-decoration: underline; font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="ui-layer">
+        <div class="hud">つんだ数: <span id="score">0</span> こ</div>
+        <div class="life-area" id="life-display">❤️❤️❤️</div>
+    </div>
+
+    <div id="start-screen" class="overlay">
+        <h1>漢字つみつみ</h1>
+        <div style="font-size: 60px; margin: 20px;">🧱</div>
+        <p style="color:#5d4037; font-size:16px; line-height: 1.6;">
+            ゆれる 漢字(かんじ)を タップで おとそう！<br>
+            台座(だいざ)から おちたら アウトだよ。
+        </p>
+        <button class="btn" onclick="startGame()">スタート</button>
+        <br>
+        <a href="index.html" class="back-link">🏠 ホームへもどる</a>
+    </div>
+
+    <div id="gameover-screen" class="overlay" style="display:none;">
+        <h1 style="color:#5d4037;">そこまで！</h1>
+        <p style="font-size:24px; color:#d84315; font-weight:bold;">
+            きろく: <span id="final-score">0</span> こ
+        </p>
+        <button class="btn" onclick="startGame()">もういっかい</button>
+        <br>
+        <a href="index.html" class="back-link">🏠 ホームへ</a>
+    </div>
+</div>
+
+<script>
+    const Engine = Matter.Engine,
+          Render = Matter.Render,
+          Runner = Matter.Runner,
+          Bodies = Matter.Bodies,
+          Composite = Matter.Composite,
+          Events = Matter.Events;
+
+    // 漢字データ
+    const kanjiList = [
+        { char: "山", w: 1.2, h: 0.8 },
+        { char: "川", w: 0.8, h: 1.2 },
+        { char: "田", w: 1.0, h: 1.0 },
+        { char: "日", w: 0.9, h: 1.1 },
+        { char: "目", w: 0.9, h: 1.1 },
+        { char: "口", w: 1.0, h: 0.9 },
+        { char: "木", w: 1.1, h: 1.1 },
+        { char: "人", w: 1.2, h: 0.8 },
+        { char: "水", w: 1.1, h: 1.1 },
+        { char: "火", w: 1.1, h: 1.1 },
+        { char: "土", w: 1.2, h: 0.8 },
+        { char: "王", w: 1.1, h: 1.0 },
+        { char: "金", w: 1.2, h: 1.0 },
+        { char: "大", w: 1.3, h: 1.0 },
+        { char: "小", w: 0.8, h: 0.8 },
+        { char: "力", w: 1.0, h: 1.1 },
+        { char: "夕", w: 1.0, h: 1.0 },
+        { char: "円", w: 1.0, h: 1.0 }
+    ];
+
+    let engine, render, runner;
+    let isPlaying = false;
+    let score = 0;
+    let life = 3;
+    let spawnerX = 0;
+    let nextKanjiIndex = 0;
+    let canDrop = true;
+
+    // ゲーム画面のサイズを取得（固定幅の中でのサイズ）
+    const container = document.getElementById('game-container');
+    let gameW = container.clientWidth;
+    let gameH = container.clientHeight;
+
+    function init() {
+        engine = Engine.create();
+        
+        render = Render.create({
+            element: container,
+            engine: engine,
+            options: {
+                width: gameW,
+                height: gameH,
+                background: 'transparent',
+                wireframes: false
+            }
+        });
+
+        // 描画ループ内の処理（文字描画など）
+        Events.on(render, 'afterRender', function() {
+            const context = render.context;
+            const bodies = Composite.allBodies(engine.world);
+
+            context.font = "bold 30px 'UD Digital Kyokasho-tai-R', serif";
+            context.textAlign = "center";
+            context.textBaseline = "middle";
+            context.fillStyle = "#3e2723";
+
+            bodies.forEach(body => {
+                if (body.label && body.label.startsWith('kanji-')) {
+                    const char = body.label.split('-')[1];
+                    context.save();
+                    context.translate(body.position.x, body.position.y);
+                    context.rotate(body.angle);
+                    context.fillText(char, 0, 0);
+                    context.restore();
+                }
+            });
+
+            // スポナー（予告）
+            if(isPlaying && canDrop) {
+                const nextChar = kanjiList[nextKanjiIndex].char;
+                context.fillStyle = "rgba(216, 67, 21, 0.5)";
+                context.font = "bold 40px serif";
+                context.fillText(nextChar, spawnerX, 100);
+                
+                context.beginPath();
+                context.moveTo(spawnerX, 0);
+                context.lineTo(spawnerX, 80);
+                context.strokeStyle = "#8d6e63";
+                context.lineWidth = 2;
+                context.stroke();
+            }
+        });
+
+        // リサイズ対応（ウィンドウサイズが変わっても比率を維持）
+        window.addEventListener('resize', () => {
+            gameW = container.clientWidth;
+            gameH = container.clientHeight;
+            render.canvas.width = gameW;
+            render.canvas.height = gameH;
+            
+            // 地面などの再配置が必要ならここで行うが、
+            // 今回は固定幅コンテナなのでCSS側で制御され、JS側はあまり崩れない
+            // ただし台座の位置はずれる可能性があるので再生成
+            if(!isPlaying) {
+                Composite.clear(engine.world);
+                createPlatform();
+            }
+        });
+
+        runner = Runner.create();
+    }
+
+    function createPlatform() {
+        // 台座のみ作成（地面は作らない＝落ちたら終わり）
+        // 幅を320pxに設定（以前より広く）
+        const platformW = 320;
+        const platformH = 30;
+        
+        const platform = Bodies.rectangle(gameW / 2, gameH - 100, platformW, platformH, {
+            isStatic: true,
+            render: { fillStyle: '#8d6e63' },
+            label: 'platform'
+        });
+
+        Composite.add(engine.world, platform);
+    }
+
+    function startGame() {
+        if (!engine) init();
+
+        // 世界をリセット
+        Composite.clear(engine.world);
+        Engine.clear(engine);
+        
+        // サイズ再取得（念のため）
+        gameW = container.clientWidth;
+        gameH = container.clientHeight;
+        render.canvas.width = gameW;
+        render.canvas.height = gameH;
+
+        createPlatform();
+
+        score = 0;
+        life = 3;
+        updateUI();
+        
+        nextKanjiIndex = Math.floor(Math.random() * kanjiList.length);
+        
+        isPlaying = true;
+        canDrop = true;
+
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('gameover-screen').style.display = 'none';
+
+        Render.run(render);
+        Runner.run(runner, engine);
+        
+        gameLoop();
+    }
+
+    function gameLoop() {
+        if (!isPlaying) return;
+
+        // スポナー移動（台座の幅くらいを行ったり来たり）
+        const time = Date.now() * 0.002;
+        // 振れ幅を台座より少し狭くする（積みやすくするため）
+        const range = 140; 
+        spawnerX = (gameW / 2) + Math.sin(time) * range;
+
+        // 落下判定
+        const bodies = Composite.allBodies(engine.world);
+        for (let i = bodies.length - 1; i >= 0; i--) {
+            const b = bodies[i];
+            if (b.isStatic) continue;
+
+            // 画面外（下）に落ちたらミス
+            if (b.position.y > gameH + 50) {
+                Composite.remove(engine.world, b);
+                life--;
+                updateUI();
+                
+                // 画面を赤くフラッシュ
+                container.style.boxShadow = "inset 0 0 50px red";
+                setTimeout(() => container.style.boxShadow = "0 0 20px rgba(0,0,0,0.2)", 200);
+
+                if (life <= 0) {
+                    gameOver();
+                    return;
+                }
+            }
+        }
+
+        requestAnimationFrame(gameLoop);
+    }
+
+    // タップ操作
+    container.addEventListener('pointerdown', (e) => {
+        // ボタン等のクリックは無視
+        if (e.target.closest('button') || e.target.closest('a')) return;
+        if (!isPlaying || !canDrop) return;
+
+        dropKanji();
+    });
+
+    function dropKanji() {
+        canDrop = false;
+
+        const data = kanjiList[nextKanjiIndex];
+        const baseSize = 50; 
+        const w = baseSize * data.w;
+        const h = baseSize * data.h;
+
+        const colors = ['#ffe0b2', '#ffcc80', '#ffecb3', '#fff9c4'];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+
+        // スポナーの位置から落下
+        const body = Bodies.rectangle(spawnerX, 100, w, h, {
+            restitution: 0.1,
+            friction: 0.8,
+            density: 0.002,
+            render: {
+                fillStyle: color,
+                strokeStyle: '#8d6e63',
+                lineWidth: 2
+            },
+            label: 'kanji-' + data.char
+        });
+
+        Composite.add(engine.world, body);
+
+        nextKanjiIndex = Math.floor(Math.random() * kanjiList.length);
+        score++;
+        updateUI();
+
+        setTimeout(() => {
+            canDrop = true;
+        }, 600); // テンポよく落とせるよう少し短縮
+    }
+
+    function updateUI() {
+        document.getElementById('score').textContent = score;
+        let hearts = "";
+        for(let i=0; i<life; i++) hearts += "❤️";
+        document.getElementById('life-display').textContent = hearts;
+    }
+
+    function gameOver() {
+        isPlaying = false;
+        Runner.stop(runner);
+        document.getElementById('final-score').textContent = score;
+        document.getElementById('gameover-screen').style.display = 'flex';
+        if(typeof showSaveDialog === 'function') {
+            showSaveDialog('tsumitsumi', score);
+        }
+    }
+
+    init();
+
+</script>
+</body>
+</html>

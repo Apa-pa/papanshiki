@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>がんばったきろく</title>
+    <script src="ranking.js"></script>
+    <style>
+        body { 
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif; 
+            background: #e0f7fa; 
+            text-align: center; 
+            padding: 20px; 
+            margin: 0;
+            color: #37474f;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h1 { color: #0097a7; margin-bottom: 20px; }
+        
+        .user-select-area {
+            background: #fff9c4;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        select { 
+            padding: 12px; 
+            font-size: 20px; 
+            border-radius: 10px; 
+            border: 2px solid #fbc02d; 
+            width: 80%; 
+            background: white;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* ポイント表示エリア */
+        .point-display {
+            background: linear-gradient(135deg, #ffca28, #ff6f00);
+            color: white;
+            padding: 15px;
+            border-radius: 50px;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(255, 111, 0, 0.3);
+            display: inline-block;
+            min-width: 200px;
+        }
+
+        /* おまかせボタンエリア */
+        .auto-set-area {
+            margin: 10px 0 20px 0;
+        }
+        .auto-btn {
+            background: #29b6f6;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px #0288d1;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .auto-btn:active { transform: translateY(2px); box-shadow: none; }
+        .auto-btn:hover { background: #03a9f4; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        
+        th { 
+            background: #f5f5f5;
+            color: #777; 
+            font-size: 14px; 
+            padding: 10px;
+        }
+        
+        td { 
+            border-bottom: 1px solid #eee; 
+            padding: 15px 5px; 
+            text-align: left; 
+            vertical-align: middle;
+        }
+
+        .game-name { font-weight: bold; font-size: 16px; }
+        
+        td.score { 
+            text-align: right; 
+            font-weight: bold; 
+            color: #d84315; 
+            font-size: 20px; 
+            white-space: nowrap;
+        }
+
+        .goal-input {
+            width: 70px;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+            font-family: inherit;
+            color: #555;
+            -webkit-appearance: none; /* iOSでの見た目調整 */
+        }
+        
+        .goal-input:focus {
+            border-color: #2196f3;
+            outline: none;
+            background: #e3f2fd;
+        }
+
+        /* OKボタン */
+        .ok-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 10px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px #2e7d32;
+        }
+        .ok-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        /* 目標達成時のスタイル */
+        tr.achieved {
+            background-color: #fffde7;
+        }
+        tr.achieved .score {
+            color: #e65100;
+            text-shadow: 0 0 5px rgba(255, 167, 38, 0.4);
+        }
+        tr.achieved .game-name::before {
+            content: '🎉 ';
+        }
+        
+        /* ボタン共通スタイル */
+        .nav-link { 
+            display: inline-block; 
+            margin: 10px 5px; 
+            padding: 15px 30px;
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            transition: transform 0.1s;
+        }
+        .nav-link:active { transform: translateY(2px); box-shadow: none; }
+
+        .back-link { 
+            background: #78909c;
+            box-shadow: 0 4px #546e7a;
+        }
+
+        /* 削除ボタンのスタイル */
+        .delete-btn {
+            background: #eceff1;
+            color: #b0bec5;
+            border: none;
+            border-radius: 50%;
+            width: 30px; 
+            height: 30px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: 0.2s;
+            vertical-align: middle;
+        }
+        .delete-btn:hover {
+            background: #ffcdd2;
+            color: #d32f2f;
+        }
+
+
+
+        /* 追加：全国ランキングボタン */
+        .ranking-link {
+            background: #e91e63;
+            box-shadow: 0 4px #c2185b;
+        }
+
+        .empty-msg { color: #aaa; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🏆 がんばったきろく</h1>
+        
+        <div class="user-select-area">
+            <p style="margin-top:0; font-weight:bold;">だれの記録をみる？</p>
+            <select id="user-select" onchange="showRecords()">
+                <option value="">(えらんでね)</option>
+            </select>
+        </div>
+
+        <div id="record-display" style="display:none;">
+            <div class="point-display">
+                <span style="font-size:16px;">ポイント</span><br>
+                <span id="total-points">0</span> pt
+            </div>
+
+            <div class="auto-set-area">
+                <button class="auto-btn" onclick="autoSetGoals()">
+                    🤖 目標を「おまかせ」で設定する
+                </button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align:left;">ゲーム</th>
+                        <th style="text-align:right;">ベスト</th>
+                        <th style="text-align:center;">🎯 もくひょう</th>
+                    </tr>
+                </thead>
+                <tbody id="score-list">
+                    </tbody>
+            </table>
+        </div>
+        
+        <div id="empty-msg" class="empty-msg">
+            まだ 記録が ありません。<br>ゲームで遊んで 保存してね！
+        </div>
+    </div>
+
+    <br>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+        <a href="open_record.html" class="nav-link ranking-link">🌏 ぜんこくランキングをみる</a>
+        <a href="index.html" class="nav-link back-link">🏠 ホームへもどる</a>
+    </div>
+
+    <script>
+        // ゲームごとのデフォルト目標値（初心者向け）
+        const DEFAULT_GOALS = {
+            'sansuu': 50,      // 2分
+            'rain': 200,         // 50点
+            'make10': 50,      // 2分
+            'flash_anzan': 50,  // 50点
+            '99': 100,          // 1分40秒くらい
+            'whattime': 120,
+            'triangle': 120,
+            'bunsho': 100,
+            'katakana': 60,
+            '1gradekanji': 100,
+            'alphabet': 90,
+            'alphabet_read': 60,
+            'romaji_quiz': 60,
+            'rain_romaji': 100,
+            'rain_vowel': 100,
+            '100home': 100,
+            'memory': 60,       // 1分
+            'flash': 50,
+            'numbers': 60,      // 1分
+            'youji': 60,
+            'kyorokyoro': 50,
+            'search_count': 100,
+            'count30': 50,      // 勝ち点?
+            'tsumitsumi': 10,
+            'rail': 300,
+            'detective': 100,
+            'color_lab': 50,
+            'pitch': 50,
+            'rhythm': 50,
+            'shopping': 90,     // 1分
+            'water': 90         // 1分
+        };
+
+        window.onload = function() {
+            if(typeof getUserNames !== 'function') {
+                alert('ranking.js が正しく読み込まれていません');
+                return;
+            }
+            const users = getUserNames(); 
+            const select = document.getElementById('user-select');
+            
+            if (users.length > 0) {
+                document.getElementById('empty-msg').style.display = 'none';
+                users.forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u;
+                    opt.innerText = u;
+                    select.appendChild(opt);
+                });
+            }
+        };
+
+        function showRecords() {
+            const userName = document.getElementById('user-select').value;
+            const display = document.getElementById('record-display');
+            const list = document.getElementById('score-list');
+            const pointDisplay = document.getElementById('total-points');
+            
+            if (!userName) {
+                display.style.display = 'none';
+                return;
+            }
+
+            display.style.display = 'block';
+            list.innerHTML = '';
+            
+            // データ取得
+            const allRecords = getAllRecords();
+            const allGoals = getAllGoals();
+            const userRecords = allRecords[userName] || {};
+            const userGoals = allGoals[userName] || {};
+
+            // ポイント表示
+            pointDisplay.innerText = getUserPoints(userName);
+
+            // リスト表示
+            for (const [gameId, info] of Object.entries(GAME_LIST)) {
+                const recordVal = userRecords[gameId];
+                const goalVal = userGoals[gameId] || '';
+
+                const tr = document.createElement('tr');
+
+                // --- 達成判定 ---
+                let isAchieved = false;
+                if (recordVal !== undefined && goalVal !== '') {
+                    const r = parseFloat(recordVal);
+                    const g = parseFloat(goalVal);
+                    if (!isNaN(r) && !isNaN(g)) {
+                        if (info.type === 'score' && r >= g) isAchieved = true;
+                        if (info.type === 'time' && r <= g) isAchieved = true;
+                    }
+                }
+
+                if (isAchieved) {
+                    tr.classList.add('achieved');
+                }
+
+                // 表示用のHTML作成（スコアがない時は「-」、ある時は「スコア＋ゴミ箱」）
+                let scoreHtml = '<span style="color:#ddd; font-size:14px;">-</span>';
+                
+                if (recordVal !== undefined) {
+                    scoreHtml = `
+                        ${recordVal} <span style="font-size:14px">${info.unit}</span>
+                        <button class="delete-btn" title="記録を消す" 
+                            onclick="resetRecord('${userName}', '${gameId}', '${info.name}')">🗑️</button>
+                    `;
+                }
+
+                const inputId = `goal-${gameId}`;
+                tr.innerHTML = `
+                    <td class="game-name">${info.name}</td>
+                    <td class="score">${scoreHtml}</td> <td style="text-align:center;">
+                        <div style="display:flex; align-items:center; justify-content:center; gap:5px;">
+                            <input type="number" id="${inputId}" class="goal-input" 
+                                value="${goalVal}" 
+                                placeholder="-" 
+                                step="0.1"
+                                onblur="updateGoal('${userName}', '${gameId}', this.value)"
+                                onkeydown="if(event.key==='Enter')this.blur()">
+                            <button class="ok-btn" onclick="updateGoal('${userName}', '${gameId}', document.getElementById('${inputId}').value)">OK</button>
+                        </div>
+                        <span style="font-size:10px; color:#999; display:block; margin-top:2px;">${info.unit}</span>
+                    </td>
+                `;
+                list.appendChild(tr);
+            }
+        }
+
+        function updateGoal(userName, gameId, value) {
+            if(typeof saveGoal !== 'function') return;
+            saveGoal(userName, gameId, value);
+            showRecords(); 
+        }
+
+        // ▼▼▼ おまかせ設定ロジック ▼▼▼
+        function autoSetGoals() {
+            const userName = document.getElementById('user-select').value;
+            if(!userName) return;
+
+            const confirmMsg = "目標を「おまかせ」で設定しますか？\n\n・達成したものは、ベスト記録より1%高く\n・未達成のものはそのまま\n・記録がないものは標準レベルに\n\n設定されます。";
+            if(!confirm(confirmMsg)) return;
+
+            const userRecords = getAllRecords()[userName] || {};
+            const userGoals = getAllGoals()[userName] || {};
+            let isChanged = false;
+
+            for (const [gameId, info] of Object.entries(GAME_LIST)) {
+                const record = parseFloat(userRecords[gameId]);
+                const goal = parseFloat(userGoals[gameId]);
+                const hasRecord = !isNaN(record);
+                const hasGoal = !isNaN(goal);
+
+                let newGoal = null;
+
+                // 1. 達成済み判定（または記録あるのに目標がない場合）
+                let isAchieved = false;
+                if (hasRecord) {
+                    if (!hasGoal) {
+                        isAchieved = true; // 目標がないなら達成扱い（ベスト基準で設定する）
+                    } else {
+                        if (info.type === 'score' && record >= goal) isAchieved = true;
+                        if (info.type === 'time' && record <= goal) isAchieved = true;
+                    }
+                }
+
+                // ロジック分岐
+                if (isAchieved) {
+                    // ★ 1%だけ高く設定（単位未満は繰り上げ）
+                    if (info.type === 'score') {
+                        // スコア：1%増やす
+                        let increase = record * 0.01;
+                        if (increase < 1) increase = 1; // 最小1点は上げる
+                        newGoal = Math.ceil(record + increase); 
+                    } else {
+                        // タイム：1%減らす（速くする）
+                        let decrease = record * 0.01;
+                        if (decrease < 0.1) decrease = 0.1; // 最小0.1秒は速くする
+                        newGoal = parseFloat((record - decrease).toFixed(1));
+                        if (newGoal < 0) newGoal = 0;
+                    }
+
+                } else if (!hasRecord && !hasGoal) {
+                    // ★ 記録も目標もない → デフォルト設定
+                    newGoal = DEFAULT_GOALS[gameId] || (info.type === 'time' ? 60 : 50);
+                }
+                // ※ 未達成の場合は何もしない（今の目標を維持）
+
+                // 保存
+                if (newGoal !== null) {
+                    saveGoal(userName, gameId, newGoal);
+                    isChanged = true;
+                }
+            }
+
+            if (isChanged) {
+                showRecords();
+                alert("目標を設定しました！\nがんばって記録更新を目指してね！");
+            } else {
+                alert("変更が必要な目標はありませんでした。\n今の目標に向かってがんばろう！");
+            }
+        }
+
+        // ▼▼▼ 記録リセット機能 ▼▼▼
+        function resetRecord(userName, gameId, gameName) {
+            if(!confirm(`${userName}さんの\n「${gameName}」の記録を消しますか？\n\n※消すと、もとにはもどりません！`)) return;
+
+            const STORAGE_KEY = 'papan_records_v1';
+            const allRecords = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+            if (allRecords[userName] && allRecords[userName][gameId] !== undefined) {
+                // 記録を削除
+                delete allRecords[userName][gameId];
+                
+                // 保存
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(allRecords));
+                
+                // 画面更新
+                showRecords();
+                alert('記録をリセットしました🗑️');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>アンのおんがく教室</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background-color: #fff9c4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            height: 100dvh;
+            touch-action: none;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 600px;
+            height: 100%;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* 先生エリア */
+        .teacher-area {
+            flex: 1;
+            background: #ffecb3;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 5px solid #ffca28;
+            position: relative;
+        }
+
+        .char-teacher {
+            width: 140px;
+            transition: transform 0.2s;
+        }
+        .char-teacher.singing { transform: scale(1.1) rotate(-5deg); }
+
+        .bubble {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #5d4037;
+            border: 2px solid #5d4037;
+            position: relative;
+            min-width: 200px;
+            text-align: center;
+        }
+        .bubble::after {
+            content: ''; position: absolute; bottom: -10px; left: 50%;
+            border-width: 10px 10px 0; border-style: solid;
+            border-color: #5d4037 transparent; transform: translateX(-50%);
+        }
+
+        /* 鍵盤エリア */
+        .piano-area {
+            flex: 1.2;
+            background: #e1f5fe;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            position: relative;
+        }
+
+        .keyboard {
+            display: flex;
+            gap: 4px;
+            background: #455a64;
+            padding: 10px 5px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .key {
+            width: 45px;
+            height: 160px;
+            background: white;
+            border-radius: 0 0 5px 5px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: inset 0 -5px 0 #ccc;
+            transition: background-color 0.1s, transform 0.1s;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 10px;
+            font-weight: bold;
+            color: #555;
+            font-size: 18px;
+            touch-action: manipulation; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
+        .key:active, .key.active {
+            background: #ffeb3b !important; 
+            transform: translateY(2px);
+            box-shadow: inset 0 -2px 0 #aaa;
+        }
+        
+        .key.demo {
+            background: #ff9800 !important;
+            color: white;
+            transform: translateY(2px);
+        }
+
+        .key[data-note="C4"] { border-top: 8px solid #e57373; }
+        .key[data-note="D4"] { border-top: 8px solid #ffb74d; }
+        .key[data-note="E4"] { border-top: 8px solid #fff176; }
+        .key[data-note="F4"] { border-top: 8px solid #81c784; }
+        .key[data-note="G4"] { border-top: 8px solid #4fc3f7; }
+        .key[data-note="A4"] { border-top: 8px solid #7986cb; }
+        .key[data-note="B4"] { border-top: 8px solid #ba68c8; }
+
+        /* UIパーツ */
+        .hud {
+            position: absolute; top: 10px; left: 10px;
+            font-weight: bold; color: #5d4037; z-index: 10;
+            background: rgba(255,255,255,0.8);
+            padding: 5px 10px; border-radius: 10px;
+        }
+
+        /* ▼▼▼ 追加：やめるボタン ▼▼▼ */
+        .quit-btn {
+            position: absolute; top: 10px; right: 10px;
+            font-weight: bold; color: #fff; z-index: 10;
+            background: #ef5350;
+            padding: 5px 15px; border-radius: 20px;
+            text-decoration: none; font-size: 14px;
+            box-shadow: 0 2px #c62828;
+        }
+        .quit-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        /* ▼▼▼ 追加：自由演奏終了ボタン ▼▼▼ */
+        .free-quit-btn {
+            position: absolute; top: 10px; right: 10px;
+            font-weight: bold; color: #fff; z-index: 20;
+            background: #0277bd;
+            padding: 10px 20px; border-radius: 20px;
+            border: none; cursor: pointer;
+            box-shadow: 0 4px #01579b;
+            display: none; /* 最初は隠す */
+        }
+        
+        #feedback {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 120px; font-weight: bold;
+            pointer-events: none; z-index: 50;
+            display: none; text-shadow: 0 0 10px white;
+        }
+
+        /* オーバーレイ */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 249, 196, 0.98);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 100; text-align: center;
+        }
+        .start-btn {
+            font-size: 24px; padding: 15px 50px;
+            background: #ff6f00; color: white;
+            border: none; border-radius: 50px;
+            font-weight: bold; cursor: pointer;
+            box-shadow: 0 5px #e65100; margin-top: 20px;
+        }
+        .start-btn:active { transform: scale(0.95); box-shadow: none; }
+
+        /* ▼▼▼ 追加：クリア画面のボタン群 ▼▼▼ */
+        .clear-btn-group {
+            display: flex; flex-direction: column; gap: 15px; margin-top: 20px; width: 80%; max-width: 300px;
+        }
+        .btn-sub {
+            padding: 12px; font-size: 18px; border-radius: 30px; border:none;
+            cursor: pointer; font-weight: bold; color: white;
+            box-shadow: 0 4px rgba(0,0,0,0.2);
+        }
+        .btn-restart { background: #4caf50; }
+        .btn-free { background: #00bcd4; }
+
+        .btn-link { color:#8d6e63; margin-top:20px; text-decoration: underline; display:block;}
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="hud-area" class="hud">もんだい: <span id="q-num">1</span> / 5</div>
+    
+    <a href="index.html" class="quit-btn">🏠 やめる</a>
+    
+    <button id="free-quit" class="free-quit-btn" onclick="endFreePlay()">タイトルへ</button>
+
+    <div class="teacher-area">
+        <div id="msg-bubble" class="bubble">よく きいてね！</div>
+        <img src="hari-an.png" class="char-teacher" id="teacher-img">
+        <div style="font-weight:bold; color:#f57f17; margin-top:5px;">アン先生</div>
+    </div>
+
+    <div class="piano-area">
+        <div id="feedback"></div>
+        <div class="keyboard" id="keyboard">
+            </div>
+    </div>
+
+    <div id="start-screen" class="overlay">
+        <div style="font-size:60px; margin-bottom:10px;">🎹</div>
+        <h1 style="color:#f57f17; margin:0;">アンの<br>おんがく教室</h1>
+        <p style="color:#5d4037; margin:20px;">
+            アン先生が ひく 曲を<br>
+            おぼえて マネしてね！
+        </p>
+        <button class="start-btn" onclick="initAudioAndStart()">スタート</button>
+        <a href="index.html" class="btn-link">🏠 もどる</a>
+    </div>
+
+    <div id="clear-screen" class="overlay" style="display:none;">
+        <div style="font-size:80px;">🎼</div>
+        <h1 style="color:#e65100;">全もんクリア！</h1>
+        <p>すごい！ ピアニストみたい！</p>
+        
+        <div class="clear-btn-group">
+            <button id="reward-btn" class="start-btn" style="width:100%; font-size:20px;"
+                onclick="getReward()">
+                🎁 50ポイント
+            </button>
+            
+            <button class="btn-sub btn-restart" onclick="resetAndRestart()">🔄 もう1回する</button>
+            <button class="btn-sub btn-free" onclick="startFreePlay()">🎹 自由に弾く</button>
+        </div>
+        
+        <a href="index.html" class="btn-link">🏠 ホームへ</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+
+    const NOTES = [
+        { note: 'C4', name: 'ド', file: 'se/C4.mp3', freq: 261.63 },
+        { note: 'D4', name: 'レ', file: 'se/D4.mp3', freq: 293.66 },
+        { note: 'E4', name: 'ミ', file: 'se/E4.mp3', freq: 329.63 },
+        { note: 'F4', name: 'ファ', file: 'se/F4.mp3', freq: 349.23 },
+        { note: 'G4', name: 'ソ', file: 'se/G4.mp3', freq: 392.00 },
+        { note: 'A4', name: 'ラ', file: 'se/A4.mp3', freq: 440.00 },
+        { note: 'B4', name: 'シ', file: 'se/B4.mp3', freq: 493.88 }
+    ];
+
+    const ALL_SONGS = [
+        { title: "かえるの がっしょう", seq: [0, 1, 2, 3, 2, 1, 0] },
+        { title: "メリーさんの ひつじ", seq: [2, 1, 0, 1, 2, 2, 2] },
+        { title: "ちょうちょう", seq: [4, 2, 2, 3, 1, 1] },
+        { title: "きらきらぼし", seq: [0, 0, 4, 4, 5, 5, 4] },
+        { title: "チューリップ", seq: [0, 1, 2, 0, 1, 2, 4] },
+        { title: "ぶんぶんぶん", seq: [4, 3, 2, 3, 2, 1] },
+        { title: "かっこう", seq: [4, 2, 4, 2, 1, 0] },
+        { title: "こぎつね", seq: [0, 1, 2, 3, 4, 4, 5] },
+        { title: "ロンドンばし", seq: [4, 5, 4, 3, 2, 3, 4] },
+        { title: "せいじゃの こうしん", seq: [0, 2, 3, 4, 0, 2, 3, 4] }
+    ];
+
+    // AudioBufferを保持するオブジェクト
+    const audioBuffers = {};
+    let audioCtx = null;
+
+    let isUserTurn = false;
+    let isFreePlay = false;
+    let questionSequence = []; 
+    let userSequence = [];     
+    let qCount = 1;
+    let currentSongTitle = "";
+    let playlist = [];
+    let isLoaded = false; // ロード完了フラグ
+
+    window.onload = function() {
+        const board = document.getElementById('keyboard');
+        
+        // 鍵盤の生成
+        NOTES.forEach((n, idx) => {
+            const key = document.createElement('div');
+            key.className = 'key';
+            key.setAttribute('data-note', n.note);
+            key.setAttribute('data-idx', idx);
+            key.innerText = n.name;
+            
+            key.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                if(isFreePlay || isUserTurn) handleUserPlay(idx);
+            });
+            board.appendChild(key);
+        });
+
+        // 音声ファイルのロード開始（Web Audio API用）
+        initAudioContextAndLoad();
+    };
+
+    // AudioContextの初期化とファイルロード
+    async function initAudioContextAndLoad() {
+        try {
+            // AudioContextを作成（まだSuspended状態でもOK）
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+
+            // 全ファイルを並列でロード・デコード
+            const loadPromises = NOTES.map(async (n, idx) => {
+                const response = await fetch(n.file);
+                const arrayBuffer = await response.arrayBuffer();
+                const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+                audioBuffers[idx] = audioBuffer;
+            });
+
+            await Promise.all(loadPromises);
+            isLoaded = true;
+            console.log("All sounds loaded via Web Audio API");
+            
+            // ロード完了したらスタートボタンを有効化などの演出を入れても良い
+            const startBtn = document.querySelector('.start-btn');
+            if(startBtn) startBtn.innerText = "スタート"; 
+
+        } catch (e) {
+            console.error("Audio load failed:", e);
+            alert("音声の読み込みに失敗しました。ページを更新してください。");
+        }
+    }
+
+    // スタートボタンが押されたとき（ユーザーアクション必須）
+    function initAudioAndStart() {
+        if (!isLoaded) {
+            alert("ロード中です...少々お待ちください");
+            return;
+        }
+
+        // iOS対策：ユーザー操作のタイミングで必ずresumeする
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume().then(() => {
+                startGameFlow();
+            });
+        } else {
+            startGameFlow();
+        }
+    }
+
+    function startGameFlow() {
+        document.getElementById('start-screen').style.display = 'none';
+        
+        // ランダム選曲
+        let shuffled = ALL_SONGS.slice();
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        playlist = shuffled.slice(0, 5);
+
+        qCount = 1;
+        isFreePlay = false;
+        startLevel();
+    }
+
+    // ポイント受け取り
+    function getReward() {
+        const btn = document.getElementById('reward-btn');
+        btn.disabled = true;
+        btn.innerText = 'ゲット！';
+        btn.style.background = '#ccc';
+        if(typeof showPointGetDialog==='function'){
+            showPointGetDialog(50);
+        } else {
+            alert("50ポイントゲット！");
+        }
+    }
+
+    function resetAndRestart() {
+        const btn = document.getElementById('reward-btn');
+        btn.disabled = false;
+        btn.innerText = '🎁 50ポイント';
+        btn.style.background = '#ff6f00';
+        
+        document.getElementById('clear-screen').style.display = 'none';
+        // すでにAudioContextは有効なのでそのまま開始
+        startGameFlow();
+    }
+
+    function startFreePlay() {
+        document.getElementById('clear-screen').style.display = 'none';
+        isFreePlay = true;
+        isUserTurn = true;
+        document.getElementById('hud-area').style.display = 'none';
+        document.getElementById('free-quit').style.display = 'block';
+        
+        const bubble = document.getElementById('msg-bubble');
+        bubble.innerText = "すきな 曲を ひいてね♪";
+        bubble.style.color = "#e91e63";
+        bubble.style.borderColor = "#e91e63";
+    }
+
+    function endFreePlay() {
+        isFreePlay = false;
+        document.getElementById('hud-area').style.display = 'block';
+        document.getElementById('free-quit').style.display = 'none';
+        document.getElementById('start-screen').style.display = 'flex';
+    }
+
+    // ▼▼▼ 変更：Web Audio APIを使った再生処理 ▼▼▼
+    function playNote(idx) {
+        if (!audioCtx || !audioBuffers[idx]) {
+            // 万が一バッファがない場合はシンセ音
+            playSynthTone(NOTES[idx].freq);
+            return;
+        }
+
+        // BufferSourceを作成（使い捨ての軽量プレーヤー）
+        const source = audioCtx.createBufferSource();
+        source.buffer = audioBuffers[idx];
+        source.connect(audioCtx.destination);
+        
+        // 現在時刻ですぐに再生
+        source.start(0);
+    }
+
+    function playSynthTone(freq) {
+        if (!audioCtx) return;
+        const t = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle'; 
+        osc.frequency.setValueAtTime(freq, t);
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.5, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 1.0);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 1.0);
+    }
+
+    function startLevel() {
+        document.getElementById('q-num').innerText = qCount;
+        userSequence = [];
+        isUserTurn = false;
+        
+        const songData = playlist[qCount - 1];
+        questionSequence = songData.seq;
+        currentSongTitle = songData.title;
+
+        const bubble = document.getElementById('msg-bubble');
+        bubble.innerText = `♪ ${currentSongTitle}`;
+        bubble.style.color = "#5d4037";
+        bubble.style.borderColor = "#5d4037";
+
+        setTimeout(() => {
+            playSequence(0);
+        }, 1000);
+    }
+
+    function playSequence(idx) {
+        if (idx >= questionSequence.length) {
+            setTimeout(() => {
+                isUserTurn = true;
+                const bubble = document.getElementById('msg-bubble');
+                bubble.innerText = "はい、どうぞ！";
+                bubble.style.color = "#e65100";
+                bubble.style.borderColor = "#e65100";
+            }, 500);
+            return;
+        }
+
+        const noteIdx = questionSequence[idx];
+        const keyEl = document.querySelectorAll('.key')[noteIdx];
+        
+        playNote(noteIdx);
+        
+        keyEl.classList.add('demo');
+        document.getElementById('teacher-img').classList.add('singing');
+
+        setTimeout(() => {
+            keyEl.classList.remove('demo');
+            document.getElementById('teacher-img').classList.remove('singing');
+            
+            setTimeout(() => {
+                playSequence(idx + 1);
+            }, 400); 
+        }, 400); 
+    }
+
+    function handleUserPlay(idx) {
+        playNote(idx);
+        
+        const keyEl = document.querySelectorAll('.key')[idx];
+        keyEl.classList.remove('active');
+        void keyEl.offsetWidth; 
+        keyEl.classList.add('active');
+
+        setTimeout(() => {
+            keyEl.classList.remove('active');
+        }, 200);
+
+        if (isFreePlay) return;
+
+        const currentTargetIdx = userSequence.length;
+        
+        if (idx === questionSequence[currentTargetIdx]) {
+            userSequence.push(idx);
+            
+            if (userSequence.length === questionSequence.length) {
+                isUserTurn = false;
+                showFeedback(true);
+            }
+        } else {
+            isUserTurn = false;
+            showFeedback(false);
+        }
+    }
+
+    function showFeedback(isSuccess) {
+        const fb = document.getElementById('feedback');
+        if (isSuccess) {
+            fb.innerText = "⭕";
+            fb.style.color = "#ff3d00";
+            fb.style.display = "block";
+            
+            setTimeout(() => {
+                fb.style.display = "none";
+                if (qCount < 5) { 
+                    qCount++;
+                    startLevel();
+                } else {
+                    document.getElementById('clear-screen').style.display = "flex";
+                }
+            }, 1000);
+        } else {
+            fb.innerText = "❌";
+            fb.style.color = "#555";
+            fb.style.display = "block";
+            
+            setTimeout(() => {
+                fb.style.display = "none";
+                userSequence = [];
+                startLevel(); 
+            }, 1000);
+        }
+    }
+</script>
+</body>
+</html>

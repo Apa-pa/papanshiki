@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>30を言わせろ！</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #fff3e0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #4e342e;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 95vh;
+            max-height: 800px;
+        }
+
+        /* ヘッダー */
+        header {
+            background: #ff9800;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        /* チャットエリア */
+        #chat-area {
+            flex: 1;
+            background: #fff8e1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            border-bottom: 2px solid #ffe0b2;
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-end;
+            max-width: 80%;
+        }
+        .msg-cpu { align-self: flex-start; }
+        .msg-player { align-self: flex-end; flex-direction: row-reverse; }
+
+        .icon {
+            font-size: 40px;
+            margin: 0 10px;
+            background: white;
+            border-radius: 50%;
+            width: 50px; height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .bubble {
+            padding: 15px 20px;
+            border-radius: 20px;
+            font-size: 18px;
+            line-height: 1.5;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .msg-cpu .bubble {
+            background: white;
+            border-top-left-radius: 5px;
+        }
+        .msg-player .bubble {
+            background: #dce775;
+            border-top-right-radius: 5px;
+        }
+
+        /* 数字の強調 */
+        .count-num {
+            font-weight: bold;
+            color: #d84315;
+            font-size: 1.2em;
+        }
+        .last-num {
+            color: #c62828;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        /* 操作パネル */
+        #controls {
+            padding: 20px;
+            background: white;
+            text-align: center;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 15px 0;
+            width: 30%;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px #f57c00;
+            font-weight: bold;
+        }
+        .btn:active { transform: translateY(2px); box-shadow: none; }
+        .btn:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
+
+        /* スタート画面・オーバーレイ */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            text-align: center;
+        }
+
+        .level-btn {
+            width: 200px;
+            margin: 10px;
+            padding: 15px;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px rgba(0,0,0,0.2);
+        }
+        .lvl-easy { background: #81c784; }
+        .lvl-normal { background: #ffb74d; }
+        .lvl-hard { background: #e57373; }
+
+        .back-link {
+            margin-top: 20px;
+            color: #8d6e63;
+            text-decoration: underline;
+        }
+
+        /* 現在の数字表示 */
+        #status-bar {
+            text-align: center;
+            padding: 5px;
+            font-size: 14px;
+            color: #777;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <header>30を言わせろ！</header>
+    
+    <div id="status-bar">30を いったら まけだよ！</div>
+
+    <div id="chat-area">
+        </div>
+
+    <div id="controls">
+        <div id="turn-msg">あなたの ばん です</div>
+        <div class="btn-group">
+            <button class="btn" onclick="playerMove(1)">1こ<br>いう</button>
+            <button class="btn" onclick="playerMove(2)">2こ<br>いう</button>
+            <button class="btn" onclick="playerMove(3)">3こ<br>いう</button>
+        </div>
+    </div>
+</div>
+
+<div id="start-screen" class="overlay">
+    <div style="font-size: 80px; margin-bottom: 20px;">🗣️</div>
+    <h1 style="color:#e65100; margin:0;">30を言わせろ！</h1>
+    <p style="margin: 20px; color:#5d4037;">
+        じゅんばんに 数字を いってね。<br>
+        「30」を いったほうが 負け！<br>
+        (1回に 3こまで いえるよ)
+    </p>
+    <p style="font-weight:bold;">つよさを えらんでね</p>
+    <button class="level-btn lvl-easy" onclick="startGame('easy')">よわい</button>
+    <button class="level-btn lvl-normal" onclick="startGame('normal')">ふつう</button>
+    <button class="level-btn lvl-hard" onclick="startGame('hard')">さいきょう</button>
+    
+    <a href="index.html" class="back-link">🏠 ホームへもどる</a>
+</div>
+
+<div id="result-screen" class="overlay" style="display:none;">
+    <h1 id="result-title">かち！</h1>
+    <div id="result-icon" style="font-size: 80px; margin: 20px;">🎉</div>
+    <p id="result-msg">すごい！作戦どおりだね！</p>
+    
+    <button class="btn" 
+            onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; if(typeof showPointGetDialog==='function'){showPointGetDialog(30)}else{alert('ranking.jsを更新してね')}">
+            🎁 ポイントをもらう
+    </button>
+    
+    <button class="level-btn lvl-normal" onclick="location.reload()">もういっかい</button>
+    <a href="index.html" class="back-link">🏠 ホームへ</a>
+</div>
+
+<script>
+    let currentCount = 0;
+    let difficulty = 'normal';
+    let isPlayerTurn = true;
+    const targetNumber = 30;
+    const chatArea = document.getElementById('chat-area');
+    
+    // ▼▼▼ ここを修正しました！ ▼▼▼
+    // 「#controls」の中にあるボタンだけを選ぶように変更
+    const btns = document.querySelectorAll('#controls .btn');
+    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+    function startGame(level) {
+        difficulty = level;
+        document.getElementById('start-screen').style.display = 'none';
+        
+        // 初期メッセージ
+        addMessage('cpu', 'わたしは ハリネズミだよ。よろしくね！<br>あなたは リスさんだね。さきに どうぞ！');
+    }
+
+    // プレイヤーの操作
+    function playerMove(count) {
+        if (!isPlayerTurn) return;
+
+        if (currentCount + count > targetNumber) {
+            count = targetNumber - currentCount; 
+        }
+
+        let nums = [];
+        for (let i = 1; i <= count; i++) {
+            currentCount++;
+            nums.push(currentCount);
+        }
+
+        addMessage('player', nums.join(', '));
+        checkWin();
+
+        if (currentCount < targetNumber) {
+            isPlayerTurn = false;
+            setButtonsEnabled(false);
+            document.getElementById('turn-msg').textContent = 'ハリネズミが かんがえ中...';
+            
+            setTimeout(computerMove, 1000);
+        }
+    }
+
+    // コンピューターの思考
+    function computerMove() {
+        let moveCount = 1;
+        const remaining = targetNumber - currentCount;
+
+        if (remaining <= 1) {
+            moveCount = 1; 
+        } else {
+            let targetPos = -1;
+            for (let i = 1; i < 30; i += 4) {
+                if (i > currentCount && i <= currentCount + 3) {
+                    targetPos = i;
+                    break;
+                }
+            }
+
+            if (targetPos !== -1) {
+                if (difficulty === 'hard') {
+                    moveCount = targetPos - currentCount;
+                } else if (difficulty === 'normal') {
+                    if (Math.random() > 0.5) {
+                        moveCount = targetPos - currentCount;
+                    } else {
+                        moveCount = Math.floor(Math.random() * 3) + 1;
+                    }
+                } else {
+                    if (Math.random() > 0.8) {
+                        moveCount = targetPos - currentCount;
+                    } else {
+                        moveCount = Math.floor(Math.random() * 3) + 1;
+                    }
+                }
+            } else {
+                moveCount = Math.floor(Math.random() * 3) + 1;
+            }
+        }
+
+        if (currentCount + moveCount > targetNumber) {
+            moveCount = targetNumber - currentCount;
+        }
+        if (moveCount < 1) moveCount = 1;
+        if (moveCount > 3) moveCount = 3;
+
+        let nums = [];
+        for (let i = 1; i <= moveCount; i++) {
+            currentCount++;
+            nums.push(currentCount);
+        }
+
+        addMessage('cpu', nums.join(', '));
+        checkWin();
+
+        if (currentCount < targetNumber) {
+            isPlayerTurn = true;
+            setButtonsEnabled(true);
+            document.getElementById('turn-msg').textContent = 'あなたの ばん です';
+        }
+    }
+
+    function checkWin() {
+        if (currentCount >= targetNumber) {
+            setTimeout(() => {
+                showResult(!isPlayerTurn); 
+            }, 500);
+        }
+    }
+
+    function showResult(playerWin) {
+        const screen = document.getElementById('result-screen');
+        const title = document.getElementById('result-title');
+        const icon = document.getElementById('result-icon');
+        const msg = document.getElementById('result-msg');
+
+        screen.style.display = 'flex';
+
+        if (playerWin) {
+            title.textContent = 'あなたのかち！';
+            title.style.color = '#e65100';
+            icon.textContent = '🏆';
+            msg.textContent = 'ハリネズミに「30」をいわせたね！';
+        } else {
+            title.textContent = 'あなたのまけ...';
+            title.style.color = '#555';
+            icon.textContent = '😭';
+            msg.textContent = '「30」をいっちゃったね...';
+        }
+    }
+
+    function addMessage(who, text) {
+        const div = document.createElement('div');
+        div.className = `message msg-${who}`;
+        
+        const icon = document.createElement('div');
+        icon.className = 'icon';
+        icon.textContent = who === 'player' ? '🐿️' : '🦔';
+        
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        
+        if (text.includes(targetNumber.toString())) {
+             text = text.replace(targetNumber.toString(), `<span class="last-num">${targetNumber}</span>`);
+        }
+        bubble.innerHTML = text;
+
+        div.appendChild(icon);
+        div.appendChild(bubble);
+        chatArea.appendChild(div);
+
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function setButtonsEnabled(enabled) {
+        btns.forEach(btn => btn.disabled = !enabled);
+    }
+
+</script>
+</body>
+</html>

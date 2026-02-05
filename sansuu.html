@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>さんすうタイムアタック！</title>
+    <script src="ranking.js"></script>
+    <style>
+        :root {
+            --primary-bg: #e0f7fa;
+            --card-bg: #ffffff;
+            --accent-color: #ff4081;
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            text-align: center;
+            width: 95%;
+            max-width: 500px;
+            position: relative; 
+        }
+
+        .hidden { display: none; }
+
+        .main-title {
+            font-size: 1.8rem;
+            color: #444;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .sub-title {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* コース選択ボタンのエリア */
+        .btn-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: bold;
+            transition: transform 0.1s;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+            width: 100%;
+            font-family: inherit;
+        }
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.15);
+        }
+
+        /* 各ボタンの色 */
+        .btn-add-easy { background: #4fc3f7; } /* 水色 */
+        .btn-add-hard { background: #2196f3; } /* 青 */
+        .btn-sub-easy { background: #ff8a65; } /* オレンジ */
+        .btn-sub-hard { background: #f44336; } /* 赤 */
+        .btn-multi    { background: #ffca28; color: #5d4037; } /* 黄色 */
+        
+        .retry-btn { background: #66bb6a; margin-top: 10px; }
+
+        .home-link {
+            display: inline-block;
+            margin-top: 25px;
+            color: #78909c;
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #78909c;
+        }
+
+        /* ゲーム画面 */
+        #progress { font-size: 1rem; color: #888; margin-bottom: 10px; display: inline-block; background: #eee; padding: 5px 15px; border-radius: 20px;}
+        #question { font-size: 3.5rem; margin: 10px 0 30px 0; color: #333; font-weight: bold; letter-spacing: 2px;}
+        
+        .choice-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .choice-btn { 
+            background-color: #fff; 
+            color: #333; 
+            border: 2px solid #ddd;
+            font-size: 1.5rem;
+            padding: 20px 0;
+            border-radius: 15px;
+        }
+        .choice-btn:active { background-color: #eee; }
+
+        /* 結果画面 */
+        #result-time { font-size: 3rem; color: #e91e63; margin: 15px 0; font-weight: bold;}
+
+        /* 正解マーク */
+        #correct-mark {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 150px;
+            color: #ff3d00;
+            font-weight: bold;
+            display: none;
+            z-index: 100;
+            pointer-events: none;
+            text-shadow: 2px 2px 0px white;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="correct-mark">◎</div>
+
+    <div id="start-screen">
+        <div class="main-title">⏱️ さんすう<br>タイムアタック</div>
+        <div class="sub-title">10もん はやとき！ コースをえらんでね</div>
+        
+        <div class="btn-grid">
+            <button class="btn-add-easy" onclick="startGame('add_easy')">たしざん</button>
+            <button class="btn-add-hard" onclick="startGame('add_hard')">たしざん (くりあがり)</button>
+            <button class="btn-sub-easy" onclick="startGame('sub_easy')">ひきざん</button>
+            <button class="btn-sub-hard" onclick="startGame('sub_hard')">ひきざん (くりさがり)</button>
+            <button class="btn-multi"    onclick="startGame('multi')">かけざん (九九)</button>
+        </div>
+
+        <a href="index.html" class="home-link">🏠 ホームへもどる</a>
+    </div>
+
+    <div id="quiz-screen" class="hidden">
+        <span id="progress">1 / 10</span>
+        <div id="question"></div>
+        <div id="choices" class="choice-grid"></div>
+    </div>
+
+    <div id="result-screen" class="hidden">
+        <div class="main-title">🚩 ゴール！</div>
+        <p>あなたのタイム</p>
+        <div id="result-time">0.00秒</div>
+        
+        <button class="retry-btn" onclick="resetGame()">もういちど あそぶ</button>
+        <br>
+        <a href="index.html" class="home-link">🏠 ホームへもどる</a>
+    </div>
+</div>
+
+<script>
+    let currentQuestion = 0;
+    let currentMode = ''; // 現在のコースID
+    let correctAnswer = 0;
+    let startTime;
+    const totalQuestions = 10;
+    
+    // ランキング保存用のID対応表
+    const RANKING_IDS = {
+        'add_easy': 'math_add_easy',
+        'add_hard': 'math_add_hard',
+        'sub_easy': 'math_sub_easy',
+        'sub_hard': 'math_sub_hard',
+        'multi':    'math_multi'
+    };
+
+    function startGame(mode) {
+        currentMode = mode;
+        currentQuestion = 1;
+        startTime = Date.now();
+        
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        
+        nextQuestion();
+    }
+
+    function nextQuestion() {
+        if (currentQuestion > totalQuestions) {
+            endGame();
+            return;
+        }
+
+        document.getElementById('progress').innerText = `だい ${currentQuestion} / ${totalQuestions} もん`;
+        generateProblem();
+    }
+
+    // 問題作成ロジック
+    function generateProblem() {
+        let n1, n2, opSign;
+
+        // ランダム整数作成ヘルパー (minからmaxまで)
+        const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+        switch (currentMode) {
+            case 'add_easy': // くりあがりなし (和が9以下)
+                // 例: 2+3, 4+5
+                do {
+                    n1 = rand(1, 8);
+                    n2 = rand(1, 8);
+                } while (n1 + n2 > 9); 
+                correctAnswer = n1 + n2;
+                opSign = '+';
+                break;
+
+            case 'add_hard': // くりあがりあり (和が10以上)
+                // 例: 6+7, 8+5
+                do {
+                    n1 = rand(2, 9);
+                    n2 = rand(2, 9);
+                } while (n1 + n2 < 10);
+                correctAnswer = n1 + n2;
+                opSign = '+';
+                break;
+
+            case 'sub_easy': // くりさがりなし
+                // 例: 8-3, 9-5
+                n1 = rand(2, 9);
+                n2 = rand(1, n1 - 1); // 引く数はn1より小さい
+                correctAnswer = n1 - n2;
+                opSign = '-';
+                break;
+
+            case 'sub_hard': // くりさがりあり (11~18 から引く、かつ1の位より大きい数を引く)
+                // 例: 13-5 (3 < 5 なので繰り下がり発生)
+                do {
+                    n1 = rand(11, 18); // 11から18
+                    n2 = rand(2, 9);
+                    // 答えが1桁になる(9以下) かつ 1の位同士で引けない
+                } while ((n1 - n2) > 9 || (n1 % 10) >= n2);
+                correctAnswer = n1 - n2;
+                opSign = '-';
+                break;
+
+            case 'multi': // 九九
+                n1 = rand(1, 9);
+                n2 = rand(1, 9);
+                correctAnswer = n1 * n2;
+                opSign = '×';
+                break;
+        }
+
+        document.getElementById('question').innerText = `${n1} ${opSign} ${n2}`;
+        generateChoices(correctAnswer);
+    }
+
+    function generateChoices(correct) {
+        const choicesDiv = document.getElementById('choices');
+        choicesDiv.innerHTML = '';
+        let choices = new Set([correct]);
+
+        // ダミーの選択肢を作る
+        while(choices.size < 4) {
+            // 正解に近い数字をランダムに作る
+            let diff = Math.floor(Math.random() * 10) - 5; // -5 〜 +4
+            let wrong = correct + diff;
+            if (wrong >= 0 && !choices.has(wrong)) {
+                choices.add(wrong);
+            }
+        }
+
+        // シャッフルしてボタン配置
+        let choiceArray = Array.from(choices).sort(() => Math.random() - 0.5);
+
+        choiceArray.forEach(val => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerText = val;
+            btn.onclick = () => checkAnswer(val);
+            choicesDiv.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected) {
+        if (selected === correctAnswer) {
+            // 正解！
+            const mark = document.getElementById('correct-mark');
+            mark.style.display = 'block';
+
+            setTimeout(() => {
+                mark.style.display = 'none';
+                currentQuestion++;
+                nextQuestion();
+            }, 200); // テンポよく次へ
+        } else {
+            // 不正解
+            document.body.style.backgroundColor = "#ffcdd2"; // 背景を一瞬赤く
+            setTimeout(() => { document.body.style.backgroundColor = ""; }, 200);
+        }
+    }
+
+    function endGame() {
+        const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+        
+        document.getElementById('quiz-screen').classList.add('hidden');
+        document.getElementById('result-screen').classList.remove('hidden');
+        document.getElementById('result-time').innerText = `${duration}秒`;
+
+        // ★ランキング保存画面を呼び出し
+        const rankingId = RANKING_IDS[currentMode];
+        if(typeof showSaveDialog === 'function' && rankingId) {
+            showSaveDialog(rankingId, duration);
+        }
+    }
+
+    function resetGame() {
+        document.getElementById('result-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>いろまぜ実験室</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background-color: #f3e5f5; /* 薄い紫 */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #4a148c;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1 { margin: 10px 0; font-size: 24px; color: #8e24aa; }
+
+        /* 問題エリア */
+        .question-area {
+            background: #fff3e0;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 3px dashed #ffb74d;
+        }
+
+        .target-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            border: 4px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: background-color 0.5s;
+        }
+
+        /* フラスコ（混ぜる場所） */
+        .flask-area {
+            position: relative;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            margin: 20px 0;
+        }
+
+        .flask {
+            width: 120px;
+            height: 140px;
+            background: #e1f5fe; /* 空のフラスコの色 */
+            border: 4px solid #444;
+            border-top: none;
+            border-radius: 0 0 50px 50px;
+            position: relative;
+            overflow: hidden;
+        }
+        /* フラスコの首 */
+        .flask::before {
+            content: '';
+            position: absolute;
+            top: -40px; left: 35px;
+            width: 42px; height: 50px;
+            background: inherit;
+            border: 4px solid #444;
+            border-bottom: none;
+            z-index: 1;
+        }
+
+        .liquid {
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%; height: 0%; /* 量 */
+            background-color: transparent;
+            transition: all 0.5s ease;
+        }
+
+        /* 絵の具チューブ */
+        .tubes-grid {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tube-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .tube-btn:active { transform: scale(0.9); }
+
+        .tube-body {
+            width: 40px; height: 60px;
+            border-radius: 5px 5px 15px 15px;
+            border: 2px solid rgba(0,0,0,0.1);
+            position: relative;
+            margin-bottom: 5px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+        }
+        /* キャップ */
+        .tube-body::before {
+            content: '';
+            position: absolute;
+            top: -12px; left: 5px;
+            width: 30px; height: 10px;
+            background: #333;
+            border-radius: 2px;
+        }
+        
+        .tube-label { font-size: 14px; font-weight: bold; color: #555; }
+
+        /* 色定義 */
+        .col-red { background-color: #ff1744; }
+        .col-blue { background-color: #2979ff; }
+        .col-yellow { background-color: #ffea00; }
+        .col-white { background-color: #ffffff; border: 1px solid #ddd; }
+        .col-black { background-color: #37474f; }
+
+        /* 操作ボタン */
+        .action-btns {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px rgba(0,0,0,0.2);
+        }
+
+        .btn-reset { background: #90a4ae; }
+        .btn-check { background: #8e24aa; }
+        .btn:active { transform: translateY(2px); box-shadow: none; }
+
+        /* スタート・結果画面 */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            text-align: center;
+        }
+        .start-btn {
+            font-size: 24px; padding: 15px 50px;
+            background: #ff6f00; color: white;
+            border: none; border-radius: 50px;
+            font-weight: bold; cursor: pointer;
+            box-shadow: 0 5px #e65100;
+        }
+
+        .pt-btn {
+            background: #e65100;
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px #bf360c;
+            font-weight: bold;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        /* エフェクト */
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .pop-anim { animation: pop 0.3s; }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <h1>🎨 いろまぜ実験室</h1>
+
+    <div style="text-align: right; font-size: 14px; color:#888; margin-right: 10px;">
+        のこり <span id="q-count">0</span> 問
+    </div>
+
+    <div class="question-area">
+        <div style="margin-bottom:5px;">この色をつくろう！</div>
+        <div id="target-circle" class="target-circle" style="background-color: orange;"></div>
+        <div id="target-name" style="font-weight:bold; font-size:20px;">オレンジ</div>
+    </div>
+
+    <div class="flask-area">
+        <div class="flask">
+            <div id="liquid" class="liquid"></div>
+        </div>
+    </div>
+
+    <div>絵の具を選んでね（2つまで）</div>
+    <div class="tubes-grid">
+        <button class="tube-btn" onclick="addColor('red')">
+            <div class="tube-body col-red"></div>
+            <div class="tube-label">あか</div>
+        </button>
+        <button class="tube-btn" onclick="addColor('blue')">
+            <div class="tube-body col-blue"></div>
+            <div class="tube-label">あお</div>
+        </button>
+        <button class="tube-btn" onclick="addColor('yellow')">
+            <div class="tube-body col-yellow"></div>
+            <div class="tube-label">きいろ</div>
+        </button>
+        <button class="tube-btn" onclick="addColor('white')">
+            <div class="tube-body col-white"></div>
+            <div class="tube-label">しろ</div>
+        </button>
+        <button class="tube-btn" onclick="addColor('black')">
+            <div class="tube-body col-black"></div>
+            <div class="tube-label">くろ</div>
+        </button>
+    </div>
+
+    <div class="action-btns">
+        <button class="btn btn-reset" onclick="resetFlask()">やりなおす</button>
+        <button class="btn btn-check" onclick="checkAnswer()">できた！</button>
+    </div>
+
+    <div id="start-screen" class="overlay">
+        <div style="font-size: 80px; margin-bottom: 20px;">🎨</div>
+        <h1 style="color:#8e24aa; margin:0;">いろまぜ実験室</h1>
+        <p style="margin: 20px; color:#555;">
+            2つの 絵の具を まぜて<br>お題の色を 作ってね！
+        </p>
+        <button class="start-btn" onclick="startGame()">じっけん開始</button>
+        <br>
+        <a href="index.html" style="color:#8e24aa; margin-top:20px; text-decoration: underline;">🏠 もどる</a>
+    </div>
+
+    <div id="result-screen" class="overlay" style="display:none; background: rgba(0,0,0,0.8); color:white;">
+        <div id="result-icon" style="font-size: 80px;">⭕</div>
+        <h2 id="result-msg">だいせいかい！</h2>
+        <button class="start-btn" onclick="nextQuestion()">つぎの問題へ</button>
+    </div>
+
+    <div id="all-clear-screen" class="overlay" style="display:none; background: rgba(255,255,255,0.95); color:#4a148c;">
+        <h1 style="color:#e65100;">ぜんぶできた！</h1>
+        <div style="font-size: 80px; margin: 20px;">👨‍🎨👩‍🎨</div>
+        <p style="font-size: 20px;">すごい！<br>きみは 色のハカセだ！</p>
+        <button class="pt-btn" style="background: #ff9800;"
+            onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; if(typeof showPointGetDialog==='function'){showPointGetDialog(30)}else{alert('ranking.jsを更新してね')}">
+            🎁 ポイントをもらう
+        </button>
+        <button class="start-btn" onclick="location.reload()">もういっかい</button>
+        <br>
+        <a href="index.html" style="color:#8e24aa; margin-top:20px; text-decoration: underline;">🏠 ホームへ</a>
+    </div>
+
+</div>
+
+<script>
+    // 色の定義（絵の具ルール）
+    const colorRules = {
+        // 基本色
+        "red": { name: "あか", code: "#ff1744" },
+        "blue": { name: "あお", code: "#2979ff" },
+        "yellow": { name: "きいろ", code: "#ffea00" },
+        "white": { name: "しろ", code: "#ffffff" },
+        "black": { name: "くろ", code: "#37474f" },
+        
+        // 混ぜた色（キーはアルファベット順である必要がある）
+        // red, yellow -> red_yellow
+        // blue, yellow -> blue_yellow
+        // blue, red -> blue_red
+        // red, white -> red_white
+        // blue, white -> blue_white
+        // black, white -> black_white
+        
+        // ★修正ポイント: white(w) と yellow(y) なので、アルファベット順だと white_yellow が正しい
+        "red_yellow": { name: "オレンジ", code: "#ff9100" },
+        "blue_yellow": { name: "みどり", code: "#00c853" },
+        "blue_red": { name: "むらさき", code: "#aa00ff" },
+        "red_white": { name: "ピンク", code: "#f48fb1" },
+        "blue_white": { name: "みずいろ", code: "#80d8ff" },
+        "black_white": { name: "はいいろ", code: "#9e9e9e" },
+        "white_yellow": { name: "クリームいろ", code: "#fff59d" } // ここを修正！
+    };
+
+    // 出題する色のリスト
+    const questionKeys = [
+        "red_yellow", 
+        "blue_yellow", 
+        "blue_red",   
+        "red_white",  
+        "blue_white", 
+        "black_white", 
+        "white_yellow" // キー修正
+    ];
+
+    let currentTargetKey = "";
+    let addedColors = [];
+    let qIndex = 0;
+    let shuffledQuestions = [];
+
+    function startGame() {
+        document.getElementById('start-screen').style.display = 'none';
+        shuffledQuestions = [...questionKeys].sort(() => Math.random() - 0.5);
+        qIndex = 0;
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        // 残り問題数を表示
+        document.getElementById('q-count').innerText = (shuffledQuestions.length - qIndex);
+
+        if (qIndex >= shuffledQuestions.length) {
+            // 全問クリア！
+            document.getElementById('all-clear-screen').style.display = 'flex';
+            return;
+        }
+        
+        currentTargetKey = shuffledQuestions[qIndex];
+        const targetData = colorRules[currentTargetKey];
+        
+        // お題の表示
+        document.getElementById('target-circle').style.backgroundColor = targetData.code;
+        document.getElementById('target-name').innerText = targetData.name;
+        
+        resetFlask();
+    }
+
+    function addColor(color) {
+        if (addedColors.length >= 2) return; // 2色まで
+
+        addedColors.push(color);
+        updateFlask();
+    }
+
+    function resetFlask() {
+        addedColors = [];
+        updateFlask();
+    }
+
+    function updateFlask() {
+        const liquid = document.getElementById('liquid');
+        
+        if (addedColors.length === 0) {
+            liquid.style.height = "0%";
+            liquid.style.backgroundColor = "transparent";
+            return;
+        }
+
+        // 高さ（量）の更新
+        liquid.style.height = (addedColors.length * 40) + "%"; // 40%, 80%
+
+        // 色の更新
+        let resultColorCode = "";
+        
+        if (addedColors.length === 1) {
+            // 1色だけ
+            resultColorCode = colorRules[addedColors[0]].code;
+        } else {
+            // 2色まざった
+            const key = makeKey(addedColors[0], addedColors[1]);
+            if (colorRules[key]) {
+                resultColorCode = colorRules[key].code;
+            } else {
+                // 定義されていない組み合わせ（茶色っぽくする）
+                resultColorCode = "#795548"; 
+            }
+        }
+        liquid.style.backgroundColor = resultColorCode;
+    }
+
+    function checkAnswer() {
+        if (addedColors.length !== 2) {
+            return;
+        }
+
+        const currentMixKey = makeKey(addedColors[0], addedColors[1]);
+        const resultScreen = document.getElementById('result-screen');
+        const msg = document.getElementById('result-msg');
+        const icon = document.getElementById('result-icon');
+
+        resultScreen.style.display = 'flex';
+
+        if (currentMixKey === currentTargetKey) {
+            // 正解
+            icon.innerText = "⭕";
+            msg.innerText = "だいせいかい！";
+            msg.style.color = "#b2ff59";
+        } else {
+            // 不正解
+            icon.innerText = "❌";
+            msg.innerText = "ざんねん...";
+            msg.style.color = "#ff5252";
+        }
+    }
+
+    function nextQuestion() {
+        document.getElementById('result-screen').style.display = 'none';
+        
+        // 次へ進む
+        qIndex++;
+        loadQuestion();
+    }
+
+    // キーを生成するヘルパー（アルファベット順に並べる）
+    function makeKey(c1, c2) {
+        const sorted = [c1, c2].sort();
+        return sorted[0] + "_" + sorted[1];
+    }
+
+</script>
+</body>
+</html>

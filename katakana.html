@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>カタカナへんかん クイズ</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "UD Digital Kyokasho-tai", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #e3f2fd; /* さわやかな青色 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        h1 { color: #1976d2; font-size: 26px; }
+
+        /* タイマー */
+        #timer-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1976d2;
+            background: #bbdefb;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        /* スタートボタン */
+        .start-btn {
+            font-size: 28px;
+            padding: 20px 40px;
+            background: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px #0d47a1;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .start-btn:active { transform: scale(0.95); box-shadow: 0 2px #0d47a1; }
+
+        /* 問題（ひらがな）の表示 */
+        #target-symbol {
+            font-size: 100px;
+            margin: 5px 0 15px 0;
+            padding: 10px;
+            background: #fff3e0; /* 薄いオレンジ */
+            border: 3px dashed #ff9800;
+            border-radius: 20px;
+            display: inline-block;
+            line-height: 1;
+            min-width: 120px;
+        }
+
+        #choices {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        /* 選択肢（カタカナ） */
+        .choice-card {
+            font-size: 60px;
+            padding: 10px;
+            background: #ffffff;
+            border: 4px solid #90caf9;
+            border-radius: 20px;
+            cursor: pointer;
+            user-select: none;
+            color: #333;
+        }
+        .choice-card:active { background-color: #bbdefb; }
+
+        .back-to-index-btn {
+            margin-top: 25px;
+            font-size: 16px;
+            padding: 10px 20px;
+            background: #607d8b;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .retry-btn {
+            font-size: 24px;
+            padding: 15px 40px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            box-shadow: 0 5px #2e7d32;
+        }
+        .retry-btn:active { transform: scale(0.95); box-shadow: 0 2px #2e7d32; }
+
+        .final-time {
+            font-size: 32px;
+            color: #d84315;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        /* 正解アニメーション */
+        .correct-flash { animation: flash 0.3s; }
+        @keyframes flash {
+            0% { background-color: white; }
+            50% { background-color: #c8e6c9; }
+            100% { background-color: white; }
+        }
+
+        #correct-mark {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 150px;
+            color: #ff3d00;
+            display: none;
+            z-index: 100;
+            pointer-events: none;
+            text-shadow: 2px 2px 0px white;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="correct-mark">⭕</div>
+
+    <div id="home-screen" class="screen active">
+        <h1>カタカナわかるかな？</h1>
+        <div style="font-size: 80px; margin: 10px;">🔠</div>
+        <p>ひらがなと おなじ カタカナを<br>えらんでね！</p>
+        <button class="start-btn" onclick="startGame()">よーい、スタート！</button>
+        <br>
+        <a href="index.html" class="back-to-index-btn">🏠 ページをもどる</a>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <div id="timer-display">0.0びょう</div>
+        <div id="progress">1 / 10</div>
+        
+        <div id="target-symbol">あ</div>
+        
+        <div id="choices"></div>
+        <br>
+        <a href="index.html" class="back-to-index-btn" style="font-size: 14px; background: #90a4ae;">🏠 やめる</a>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h1>✨ ゴール！ ✨</h1>
+        <div style="font-size: 60px;">🏅</div>
+        <p>ぜんぶで 10もん！<br>きみの タイムは...</p>
+        <div id="final-time-display" class="final-time">0.0びょう</div>
+        <button class="retry-btn" onclick="startGame()">もういっかい！</button>
+        <br>
+        <a href="index.html" class="back-to-index-btn">🏠 ページをもどる</a>
+    </div>
+</div>
+
+<script>
+    // 問題データ：hがひらがな(問題)、kがカタカナ(正解)
+    const kanaData = [
+        {h:'あ', k:'ア'}, {h:'い', k:'イ'}, {h:'う', k:'ウ'}, {h:'え', k:'エ'}, {h:'お', k:'オ'},
+        {h:'か', k:'カ'}, {h:'き', k:'キ'}, {h:'く', k:'ク'}, {h:'け', k:'ケ'}, {h:'こ', k:'コ'},
+        {h:'さ', k:'サ'}, {h:'し', k:'シ'}, {h:'す', k:'ス'}, {h:'せ', k:'セ'}, {h:'そ', k:'ソ'},
+        {h:'た', k:'タ'}, {h:'ち', k:'チ'}, {h:'つ', k:'ツ'}, {h:'て', k:'テ'}, {h:'と', k:'ト'},
+        {h:'な', k:'ナ'}, {h:'に', k:'ニ'}, {h:'ぬ', k:'ヌ'}, {h:'ね', k:'ネ'}, {h:'の', k:'ノ'},
+        {h:'は', k:'ハ'}, {h:'ひ', k:'ヒ'}, {h:'ふ', k:'フ'}, {h:'へ', k:'ヘ'}, {h:'ほ', k:'ホ'},
+        {h:'ま', k:'マ'}, {h:'み', k:'ミ'}, {h:'む', k:'ム'}, {h:'め', k:'メ'}, {h:'も', k:'モ'},
+        {h:'や', k:'ヤ'}, {h:'ゆ', k:'ユ'}, {h:'よ', k:'ヨ'},
+        {h:'ら', k:'ラ'}, {h:'り', k:'リ'}, {h:'る', k:'ル'}, {h:'れ', k:'レ'}, {h:'ろ', k:'ロ'},
+        {h:'わ', k:'ワ'}, {h:'を', k:'ヲ'}, {h:'ん', k:'ン'}
+    ];
+
+    let currentQuestion = 0;
+    let selectedQuestions = []; // 今回出題する10問のリスト
+    const totalQuestions = 10;
+    
+    let startTime;
+    let timerInterval;
+
+    // 配列をシャッフルする関数
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    // 画面切り替え
+    function changeScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function startTimer() {
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+            const elapsedTime = (Date.now() - startTime) / 1000;
+            document.getElementById('timer-display').textContent = elapsedTime.toFixed(1) + "びょう";
+        }, 100);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+        return ((Date.now() - startTime) / 1000).toFixed(1);
+    }
+
+    function startGame() {
+        currentQuestion = 0;
+        // 全データからランダムに10個選ぶ
+        selectedQuestions = shuffle([...kanaData]).slice(0, totalQuestions);
+        changeScreen('quiz-screen');
+        startTimer();
+        showQuestion();
+    }
+
+    function showQuestion() {
+        // 全問終了チェック
+        if (currentQuestion >= totalQuestions) {
+            const finalTime = stopTimer();
+            document.getElementById('final-time-display').textContent = finalTime + "びょう";
+            changeScreen('result-screen');
+
+            if(typeof showSaveDialog === 'function') {
+                showSaveDialog('katakana', finalTime);
+            }
+            
+            return;
+        }
+
+        const targetPair = selectedQuestions[currentQuestion];
+        
+        // 問題を表示（ひらがな）
+        document.getElementById('target-symbol').textContent = targetPair.h;
+        document.getElementById('progress').textContent = `だい ${currentQuestion + 1} もん / ${totalQuestions}`;
+
+        // 選択肢を作る
+        // 1. 正解以外のデータを抽出
+        let others = kanaData.filter(item => item.h !== targetPair.h);
+        // 2. その中からダミーを3つ選ぶ
+        let distractors = shuffle(others).slice(0, 3);
+        // 3. 正解とダミーを混ぜる
+        let choices = shuffle([targetPair, ...distractors]);
+
+        const container = document.getElementById('choices');
+        container.innerHTML = '';
+        
+        choices.forEach(pair => {
+            const card = document.createElement('div');
+            card.className = 'choice-card';
+            // 選択肢にはカタカナを表示
+            card.textContent = pair.k;
+            
+            card.onclick = () => {
+                if (pair.k === targetPair.k) {
+                    // 正解！
+                    const mark = document.getElementById('correct-mark');
+                    mark.style.display = 'block';
+                    document.body.classList.add('correct-flash');
+
+                    setTimeout(() => {
+                        mark.style.display = 'none';
+                        document.body.classList.remove('correct-flash');
+                        currentQuestion++;
+                        showQuestion();
+                    }, 500);
+                }
+            };
+            container.appendChild(card);
+        });
+    }
+</script>
+
+</body>
+</html>

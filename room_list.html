@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>みんなのお部屋リスト</title>
+    <script type="module" src="firebase-ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background-color: #e0f7fa;
+            text-align: center;
+            padding: 20px;
+            color: #006064;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 { color: #0097a7; }
+
+        .room-card {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #333;
+            transition: transform 0.2s;
+            border: 2px solid transparent;
+        }
+        .room-card:hover {
+            transform: scale(1.02);
+            border-color: #4dd0e1;
+        }
+
+        .avatar-preview {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            background: #fafafa;
+            border-radius: 50%;
+            border: 2px solid #eee;
+            margin-right: 15px;
+        }
+        
+        .room-info { text-align: left; flex: 1; }
+        .room-name { font-weight: bold; font-size: 18px; color: #00838f; }
+        .room-date { font-size: 10px; color: #999; }
+
+        .btn-visit {
+            background: #e91e63; color: white;
+            padding: 8px 15px; border-radius: 20px;
+            font-weight: bold; font-size: 14px;
+        }
+
+        .back-btn {
+            display: inline-block; margin-top: 20px; padding: 10px 30px;
+            background: #90a4ae; color: white; text-decoration: none;
+            border-radius: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🌏 みんなのお部屋</h1>
+    <p>公開されているお部屋に 遊びに行こう！</p>
+
+    <div id="loading" style="margin:50px;">読み込み中...</div>
+    <div id="list-area"></div>
+
+    <a href="room.html" class="back-btn">自分のお部屋にもどる</a>
+</div>
+
+<script>
+    // 画面が開いたらリストを読み込む
+    window.onload = async function() {
+        const listArea = document.getElementById('list-area');
+        const loading = document.getElementById('loading');
+
+        // firebase-ranking.js の読み込み待ち
+        // (module読み込みのタイミング対策で少しだけ待つ)
+        setTimeout(async () => {
+            if (typeof window.fetchPublicRoomList === 'function') {
+                const rooms = await window.fetchPublicRoomList();
+                loading.style.display = 'none';
+
+                if (rooms.length === 0) {
+                    listArea.innerHTML = "<p>まだ公開された部屋がありません</p>";
+                    return;
+                }
+
+                rooms.forEach(room => {
+                    // 日付の変換
+                    let dateStr = "";
+                    if(room.updatedAt && room.updatedAt.toDate) {
+                        const d = room.updatedAt.toDate();
+                        dateStr = `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${d.getMinutes()}`;
+                    }
+
+                    // カードを作成
+                    const card = document.createElement('a');
+                    card.className = 'room-card';
+                    // ★ここがポイント: ?uid=xxxxx というパラメータ付きで移動する
+                    card.href = `room.html?uid=${room.id}`;
+                    
+                    card.innerHTML = `
+                        <img src="avatar/${room.avatar}.png" class="avatar-preview" onerror="this.src='avatar/none.png'">
+                        <div class="room-info">
+                            <div class="room-name">${room.name}</div>
+                            <div class="room-date">更新: ${dateStr}</div>
+                        </div>
+                        <div class="btn-visit">GO!</div>
+                    `;
+                    listArea.appendChild(card);
+                });
+
+            } else {
+                loading.innerText = "読み込みエラー: 再読み込みしてください";
+            }
+        }, 500);
+    };
+</script>
+
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ぱぱん式 学習アプリ</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background-color: #f0f4c3; /* 全体の背景 */
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            color: #333;
+            touch-action: manipulation;
+        }
+
+        h1 {
+            color: #558b2f;
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-shadow: 2px 2px 0 #fff;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+        }
+
+        /* アプリカード共通設定 */
+        .app-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 10px;
+            border-radius: 20px;
+            text-decoration: none;
+            color: #333;
+            background: white;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+            border: 3px solid #ccc;
+            transition: transform 0.1s;
+            position: relative;
+        }
+        .app-card:active {
+            transform: translateY(3px);
+            box-shadow: none;
+        }
+
+        .app-icon { font-size: 40px; margin-bottom: 5px; }
+        .app-title { font-weight: bold; font-size: 16px; margin-bottom: 5px; }
+        .app-desc { font-size: 11px; color: #666; line-height: 1.4; }
+
+        /* 個別の色設定 */
+        
+        /* 算数・RPG系 */
+        .card-dungeon { border-color: #546e7a; background: #eceff1; }
+        .card-dungeon .app-title { color: #37474f; }
+
+        /* 銀行・金融系 */
+        .card-bank { border-color: #66bb6a; background: #e8f5e9; }
+        .card-bank .app-title { color: #2e7d32; }
+
+        /* 理科系 */
+        .card-science { border-color: #29b6f6; background: #e1f5fe; }
+        .card-science .app-title { color: #0277bd; }
+
+        /* 音楽系 */
+        .card-music { border-color: #ffca28; background: #fffde7; }
+        .card-music .app-title { color: #f57f17; }
+
+        /* NEWバッジ */
+        .badge-new {
+            position: absolute;
+            top: -10px; right: -10px;
+            background: #ff5252;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        .section-title {
+            grid-column: 1 / -1;
+            text-align: left;
+            margin-top: 20px;
+            margin-bottom: 5px;
+            font-size: 18px;
+            color: #555;
+            border-bottom: 2px dashed #aaa;
+            padding-bottom: 5px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>🏫 ぱぱん式 学習アプリ</h1>
+
+    <div class="container">
+
+        <div class="section-title">🎵 おんがく・芸術</div>
+
+        <a href="music_class.html" class="app-card card-music">
+            <div class="badge-new">NEW!</div>
+            <div class="app-icon">🎹</div>
+            <div class="app-title">アンのおんがく教室</div>
+            <div class="app-desc">先生のマネをして弾こう<br>（音感・記憶力）</div>
+        </a>
+
+        <a href="pitch.html" class="app-card card-music">
+            <div class="app-icon">👂</div>
+            <div class="app-title">おとあてクイズ</div>
+            <div class="app-desc">ドレミの音をあてよう<br>（絶対音感）</div>
+        </a>
+
+        <a href="rhythm.html" class="app-card card-music">
+            <div class="app-icon">🥁</div>
+            <div class="app-title">リズム教室</div>
+            <div class="app-desc">リズムにあわせて<br>ボタンをたたこう</div>
+        </a>
+
+
+        <div class="section-title">✏️ 算数・理科</div>
+
+        <a href="dungeon.html" class="app-card card-dungeon">
+            <div class="app-icon">🗡️</div>
+            <div class="app-title">計算ダンジョン</div>
+            <div class="app-desc">計算でモンスターを倒せ！<br>（足し算・引き算）</div>
+        </a>
+
+        <a href="water.html" class="app-card card-science">
+            <div class="app-icon">💧</div>
+            <div class="app-title">水槽パズル</div>
+            <div class="app-desc">ピッタリの量にできる？<br>（量感・小数）</div>
+        </a>
+
+
+        <div class="section-title">💰 社会・生活</div>
+
+        <a href="bank.html" class="app-card card-bank">
+            <div class="app-icon">🏦</div>
+            <div class="app-title">ぱぱん銀行</div>
+            <div class="app-desc">どんぐりを貯金・交換<br>（為替レート）</div>
+        </a>
+
+        <a href="stock.html" class="app-card card-bank">
+            <div class="app-icon">📈</div>
+            <div class="app-title">ぱぱん証券</div>
+            <div class="app-desc">株価で大儲け！？<br>（経済・グラフ）</div>
+        </a>
+
+    </div>
+
+    <div style="margin-top: 50px; color: #888; font-size: 12px;">
+        &copy; 2024 Papan-Shiki
+    </div>
+
+</body>
+</html>

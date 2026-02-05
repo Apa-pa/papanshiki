@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1から25まで タッチ！</title>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #e0f7fa; /* 爽やかな水色 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 95%;
+            max-width: 500px;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        h1 { color: #0097a7; font-size: 24px; margin: 10px 0; }
+
+        /* ゲーム情報エリア */
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        /* 次に押す数字を目立たせる */
+        #next-target {
+            color: #ff5722;
+            font-size: 24px;
+        }
+
+        /* --- ここがポイント！ 5x5のグリッド --- */
+        #grid-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); /* 5回繰り返す */
+            gap: 8px; /* ボタン同士のすきま */
+            margin-bottom: 20px;
+        }
+
+        /* 数字ボタンのデザイン */
+        .num-btn {
+            aspect-ratio: 1 / 1; /* 正方形にする */
+            font-size: 24px;
+            font-weight: bold;
+            background-color: #ffffff;
+            border: 2px solid #4dd0e1;
+            border-radius: 10px;
+            color: #006064;
+            cursor: pointer;
+            box-shadow: 0 4px #00bcd4;
+            transition: transform 0.1s;
+            font-family: inherit;
+            padding: 0; /* パディングリセット */
+        }
+
+        .num-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px #00bcd4;
+        }
+
+        /* 押された後のスタイル（凹んで薄くなる） */
+        .num-btn.pushed {
+            background-color: #e0f7fa;
+            border-color: #b2ebf2;
+            color: #b2ebf2;
+            box-shadow: none;
+            transform: translateY(4px);
+            pointer-events: none; /* もう押せないようにする */
+        }
+
+        /* スタート・リトライボタン */
+        .start-btn {
+            font-size: 24px;
+            padding: 15px 40px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px #e65100;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .start-btn:active { transform: scale(0.95); box-shadow: 0 2px #e65100; }
+
+        .back-btn {
+            background: #90a4ae;
+            font-size: 14px;
+            padding: 8px 20px;
+            color: white;
+            border-radius: 20px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+
+    <div id="home-screen" class="screen active">
+        <h1>1から25まで タッチ！</h1>
+        <div style="font-size: 80px; margin: 20px;">🔢</div>
+        <p>1から じゅんばんに<br>すうじを おしてね！</p>
+        <button class="start-btn" onclick="startGame()">スタート！</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 もどる</a>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div class="info-bar">
+            <span>つぎ: <span id="next-target">1</span></span>
+            <span id="timer">0.0びょう</span>
+        </div>
+
+        <div id="grid-board">
+            </div>
+
+        <a href="index.html" class="back-btn">🏠 やめる</a>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h1>✨ クリア！ ✨</h1>
+        <div style="font-size: 60px;">🏆</div>
+        <p>タイムは...</p>
+        <div id="final-time" style="font-size: 36px; color: #ff5722; font-weight: bold;">0.0びょう</div>
+        <button class="start-btn" onclick="startGame()">もういっかい！</button>
+        <br>
+        <a href="index.html" class="back-btn">🏠 もどる</a>
+    </div>
+
+</div>
+
+<script src="ranking.js"></script>
+
+<script type="module" src="firebase-ranking.js"></script>
+
+<script>
+    let currentNumber = 1;
+    let startTime;
+    let timerInterval;
+    const maxNumber = 25;
+
+    // 画面切り替え
+    function changeScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    // 配列シャッフル
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function startGame() {
+        currentNumber = 1;
+        document.getElementById('next-target').textContent = currentNumber;
+        
+        // 1〜25の数字配列を作ってシャッフル
+        let numbers = [];
+        for (let i = 1; i <= maxNumber; i++) {
+            numbers.push(i);
+        }
+        numbers = shuffle(numbers);
+
+        // グリッド生成
+        const board = document.getElementById('grid-board');
+        board.innerHTML = ''; // クリア
+
+        numbers.forEach(num => {
+            const btn = document.createElement('button');
+            btn.className = 'num-btn';
+            btn.textContent = num;
+            
+            // ボタンを押した時の処理
+            btn.onclick = function() {
+                if (num === currentNumber) {
+                    // 正解のとき
+                    this.classList.add('pushed'); // 見た目を変える
+                    currentNumber++;
+                    
+                    if (currentNumber > maxNumber) {
+                        // ゴール！
+                        finishGame();
+                    } else {
+                        // 次の数字を表示
+                        document.getElementById('next-target').textContent = currentNumber;
+                    }
+                } else {
+                    // 間違いのとき（ちょっと揺らすとかもできますが今回は何もしない）
+                }
+            };
+            board.appendChild(btn);
+        });
+
+        changeScreen('game-screen');
+        
+        // タイマースタート
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+            const t = ((Date.now() - startTime) / 1000).toFixed(1);
+            document.getElementById('timer').textContent = t + "びょう";
+        }, 100);
+    }
+
+    function finishGame() {
+        clearInterval(timerInterval);
+        const finalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+        document.getElementById('final-time').textContent = finalTime + "びょう";
+        changeScreen('result-screen');
+
+        // IDは 'touch25'、記録は finalTime (秒数) です
+        if(typeof showSaveDialog === 'function') {
+            showSaveDialog('touch25', finalTime);
+        }
+
+        
+    }
+</script>
+
+</body>
+</html>

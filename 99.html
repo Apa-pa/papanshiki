@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ぱぱん式　九九の読み方マスター</title>
+    <style>
+        body { 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            background-color: #f0f4f8; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px 0; 
+        }
+        
+        .quiz-card { background: white; width: 90%; max-width: 500px; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+        h1 { color: #2c3e50; font-size: 1.4rem; margin-bottom: 20px; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
+        .menu-btn { padding: 15px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: background 0.2s; }
+        .menu-btn:hover { background: #2980b9; }
+        .all-btn { grid-column: span 3; background: #2c3e50; }
+        .stats { font-size: 0.9rem; color: #7f8c8d; margin-bottom: 10px; display: none; }
+        
+        /* 文字サイズを3remから2.5remに少し小さくして、式が長くても収まるように調整 */
+        .question { font-size: 2.5rem; font-weight: bold; margin: 20px 0; color: #e67e22; display: none; white-space: nowrap; }
+        
+        .options { display: grid; gap: 10px; display: none; }
+        .option { padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; background: white; font-size: 1.1rem; cursor: pointer; }
+        .option.correct { background-color: #2ecc71; border-color: #27ae60; color: white; }
+        .option.wrong { background-color: #e74c3c; border-color: #c0392b; color: white; }
+        #feedback { margin-top: 20px; font-weight: bold; min-height: 1.5rem; }
+        #next-btn { margin-top: 20px; padding: 12px 30px; background: #34495e; color: white; border: none; border-radius: 5px; cursor: pointer; display: none; margin-left: auto; margin-right: auto; }
+        #back-btn { margin-top: 20px; background: none; border: none; color: #3498db; text-decoration: underline; cursor: pointer; display: none; margin-left: auto; margin-right: auto; }
+    </style>
+</head>
+<body>
+
+<div class="quiz-card">
+    <h1 id="title">練習する段を選んでね</h1>
+    
+    <div id="menu" class="menu-grid">
+        <button class="menu-btn" onclick="startQuiz(1)">1の段</button>
+        <button class="menu-btn" onclick="startQuiz(2)">2の段</button>
+        <button class="menu-btn" onclick="startQuiz(3)">3の段</button>
+        <button class="menu-btn" onclick="startQuiz(4)">4の段</button>
+        <button class="menu-btn" onclick="startQuiz(5)">5の段</button>
+        <button class="menu-btn" onclick="startQuiz(6)">6の段</button>
+        <button class="menu-btn" onclick="startQuiz(7)">7の段</button>
+        <button class="menu-btn" onclick="startQuiz(8)">8の段</button>
+        <button class="menu-btn" onclick="startQuiz(9)">9の段</button>
+        <button class="menu-btn all-btn" onclick="startQuiz(0)">すべての段（ランダム10問）</button>
+    </div>
+
+    <div id="stats" class="stats"></div>
+    <div id="question" class="question"></div>
+    <div id="options" class="options"></div>
+    <div id="feedback"></div>
+    <button id="next-btn" onclick="loadNextQuestion()">つぎのもんだいへ</button>
+    <button id="back-btn" onclick="resetToMenu()">メニューに戻る</button>
+</div>
+
+<div style="text-align: center; margin-top: 30px;">
+    <a href="index.html" style="
+        display: inline-block;
+        padding: 10px 25px;
+        background-color: #ff9d00;
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        box-shadow: 0 4px #e68a00;
+        font-weight: bold;
+        transition: 0.2s;
+    ">🏠 ホームにもどる</a>
+</div>
+
+<script>
+    // 問題データ：表示部分(f)に答えを追加しました
+    const masterData = {
+        1: [
+            { f: "1 × 1 = 1", a: "いんいちがいち", w: ["いちいちがいち", "いちいちのいち"] },
+            { f: "1 × 2 = 2", a: "いんにがに", w: ["いちにがに", "いんにのにな"] },
+            { f: "1 × 3 = 3", a: "いんさんがさん", w: ["いちさんがさん", "いんさんさん"] },
+            { f: "1 × 4 = 4", a: "いんしがし", w: ["いちしがし", "いんよんがよん"] },
+            { f: "1 × 5 = 5", a: "いんごがご", w: ["いちごがご", "いんごのご"] },
+            { f: "1 × 6 = 6", a: "いんろくがろく", w: ["いちろくがろく", "いんろくろく"] },
+            { f: "1 × 7 = 7", a: "いんしちがしち", w: ["いちしちがしち", "いんなながなな"] },
+            { f: "1 × 8 = 8", a: "いんはちがはち", w: ["いちはちがはち", "いんぱちがぱち"] },
+            { f: "1 × 9 = 9", a: "いんくがく", w: ["いちくがく", "いんきゅうがきゅう"] }
+        ],
+        2: [
+            { f: "2 × 1 = 2", a: "にいちがに", w: ["にいちに", "にいいちに"] },
+            { f: "2 × 2 = 4", a: "ににんがし", w: ["ににがし", "ににんし"] },
+            { f: "2 × 3 = 6", a: "にさんがろく", w: ["にさんろく", "にさんのがろく"] },
+            { f: "2 × 4 = 8", a: "にしがはち", w: ["によんがはち", "にしはち"] },
+            { f: "2 × 5 = 10", a: "にごじゅう", w: ["にごがじゅう", "にごのじゅう"] },
+            { f: "2 × 6 = 12", a: "にろくじゅうに", w: ["にろくがじゅうに", "にろくじゅうにち"] },
+            { f: "2 × 7 = 14", a: "にしちじゅうし", w: ["にななじゅうよん", "にしちじゅうよん"] },
+            { f: "2 × 8 = 16", a: "にはちじゅうろく", w: ["にっぱじゅうろく", "にっぱちじゅうろく"] },
+            { f: "2 × 9 = 18", a: "にくじゅうはち", w: ["にきゅうじゅうはち", "にくじゅうは"] }
+        ],
+        3: [
+            { f: "3 × 1 = 3", a: "さんいちがさん", w: ["さんいちさん", "さんいんがさん"] },
+            { f: "3 × 2 = 6", a: "さんにがろく", w: ["さんにんがろく", "さんにろく"] },
+            { f: "3 × 3 = 9", a: "さざんがく", w: ["さんさんがきゅう", "さざんがきゅう"] },
+            { f: "3 × 4 = 12", a: "さんしじゅうに", w: ["さんよんじゅうに", "さんしがじゅうに"] },
+            { f: "3 × 5 = 15", a: "さんごじゅうご", w: ["さんごがじゅうご", "さんごじゅう"] },
+            { f: "3 × 6 = 18", a: "さぶろくじゅうはち", w: ["さんろくじゅうはち", "さぶろくじゅうは"] },
+            { f: "3 × 7 = 21", a: "さんしちにじゅういち", w: ["さんななにじゅういち", "さんしちにじゅういっち"] },
+            { f: "3 × 8 = 24", a: "さんぱにじゅうし", w: ["さんはちにじゅうよん", "さんぱにじゅうよん"] },
+            { f: "3 × 9 = 27", a: "さんくにじゅうしち", w: ["さんくがにじゅうしち", "さんきゅうにじゅうなな"] }
+        ],
+        4: [
+            { f: "4 × 1 = 4", a: "しいちがし", w: ["よんいちがよん", "しいちし"] },
+            { f: "4 × 2 = 8", a: "しにがはち", w: ["しにんはち", "よんにがはち"] },
+            { f: "4 × 3 = 12", a: "しさんじゅうに", w: ["よんさんじゅうに", "しさんがじゅうに"] },
+            { f: "4 × 4 = 16", a: "ししじゅうろく", w: ["よんよんじゅうろく", "ししじゅうろくち"] },
+            { f: "4 × 5 = 20", a: "しごにじゅう", w: ["しごがにじゅう", "よんごにじゅう"] },
+            { f: "4 × 6 = 24", a: "しろくにじゅうし", w: ["しろくにじゅうよん", "よんろくにじゅうし"] },
+            { f: "4 × 7 = 28", a: "ししちにじゅうはち", w: ["よんななじゅうはち", "ししちじゅうは"] },
+            { f: "4 × 8 = 32", a: "しはさんじゅうに", w: ["よんはさんじゅうに", "しはちさんじゅうに"] },
+            { f: "4 × 9 = 36", a: "しくさんじゅうろく", w: ["よんくさんじゅうろく", "しきゅうさんじゅうろく"] }
+        ],
+        5: [
+            { f: "5 × 1 = 5", a: "ごいちがご", w: ["ごいちご", "ごいんがご"] },
+            { f: "5 × 2 = 10", a: "ごにじゅう", w: ["ごにがじゅう", "ごにんじゅう"] },
+            { f: "5 × 3 = 15", a: "ごさんじゅうご", w: ["ごさんがじゅうご", "ごさんじゅう"] },
+            { f: "5 × 4 = 20", a: "ごしにじゅう", w: ["ごよんにじゅう", "ごしがにじゅう"] },
+            { f: "5 × 5 = 25", a: "ごごにじゅうご", w: ["ごごにじゅう", "ごっごにじゅうご"] },
+            { f: "5 × 6 = 30", a: "ごろくさんじゅう", w: ["ごむさんじゅう", "ごーろくさんじゅう"] },
+            { f: "5 × 7 = 35", a: "ごしちさんじゅうご", w: ["ごななさんじゅうご", "ごしちさんじゅう"] },
+            { f: "5 × 8 = 40", a: "ごはしじゅう", w: ["ごはちしじゅう", "ごはっしじゅう"] },
+            { f: "5 × 9 = 45", a: "ごっくしじゅうご", w: ["ごきゅうしじゅうご", "ごくしじゅう"] }
+        ],
+        6: [
+            { f: "6 × 1 = 6", a: "ろくいちがろく", w: ["ろくいちろく", "ろくいんがろく"] },
+            { f: "6 × 2 = 12", a: "ろくにじゅうに", w: ["ろくにがじゅうに", "ろくにんじゅうに"] },
+            { f: "6 × 3 = 18", a: "ろくさんじゅうはち", w: ["ろくさんがじゅうはち", "ろくさんじゅうは"] },
+            { f: "6 × 4 = 24", a: "ろくしにじゅうし", w: ["ろくしにじゅうよん", "ろくよんにじゅうし"] },
+            { f: "6 × 5 = 30", a: "ろくごさんじゅう", w: ["ろくごがさんじゅう", "むごさんじゅう"] },
+            { f: "6 × 6 = 36", a: "ろくろくさんじゅうろく", w: ["むむさんじゅうろく", "ろくろくさんじゅう"] },
+            { f: "6 × 7 = 42", a: "ろくしちしじゅうに", w: ["ろくななしじゅうに", "ろくしちよんじゅうに"] },
+            { f: "6 × 8 = 48", a: "ろくはしじゅうはち", w: ["ろくはちしじゅうはち", "ろくぱしじゅうはち"] },
+            { f: "6 × 9 = 54", a: "ろっくごじゅうし", w: ["ろくくごじゅうし", "ろくきゅうごじゅうよん"] }
+        ],
+        7: [
+            { f: "7 × 1 = 7", a: "しちいちがしち", w: ["ななななな", "しちいちしち"] },
+            { f: "7 × 2 = 14", a: "しちにじゅうし", w: ["しちにがじゅうし", "ななにじゅうし"] },
+            { f: "7 × 3 = 21", a: "しちさんにじゅういち", w: ["ななさんにじゅういち", "しちさんじゅういち"] },
+            { f: "7 × 4 = 28", a: "しちしにじゅうはち", w: ["しちよんにじゅうはち", "ななしにじゅうはち"] },
+            { f: "7 × 5 = 35", a: "しちごさんじゅうご", w: ["ななごさんじゅうご", "しちごさんじゅう"] },
+            { f: "7 × 6 = 42", a: "しちろくしじゅうに", w: ["ななろくしじゅうに", "しちろくよんじゅうに"] },
+            { f: "7 × 7 = 49", a: "しちしちしじゅうく", w: ["ななななしじゅうく", "しちしちよんじゅうきゅう"] },
+            { f: "7 × 8 = 56", a: "しちはごじゅうろく", w: ["しちはちごじゅうろく", "ななはごじゅうろく"] },
+            { f: "7 × 9 = 63", a: "しちくろくじゅうさん", w: ["ななくろくじゅうさん", "しちきゅうろくじゅうさん"] }
+        ],
+        8: [
+            { f: "8 × 1 = 8", a: "はちいちがはち", w: ["はちいちはち", "はっぱがいち"] },
+            { f: "8 × 2 = 16", a: "はちにじゅうろく", w: ["はっぱじゅうろく", "はちにがじゅうろく"] },
+            { f: "8 × 3 = 24", a: "はちさんにじゅうし", w: ["はちさんにじゅうよん", "はっさんにじゅうし"] },
+            { f: "8 × 4 = 32", a: "はちしさんじゅうに", w: ["はっしさんじゅうに", "はちよんさんじゅうに"] },
+            { f: "8 × 5 = 40", a: "はちごしじゅう", w: ["はちごがしじゅう", "はっぱごしじゅう"] },
+            { f: "8 × 6 = 48", a: "はちろくしじゅうはち", w: ["はちろくよんじゅうはち", "はっぱろくしじゅうはち"] },
+            { f: "8 × 7 = 56", a: "はちしちごじゅうろく", w: ["はっちしちごじゅうろく", "はちしちごじゅうなな"] },
+            { f: "8 × 8 = 64", a: "はっぱろくじゅうし", w: ["はちはちろくじゅうし", "はっぱろくじゅうよん"] },
+            { f: "8 × 9 = 72", a: "はっくしちじゅうに", w: ["はちきゅうしちじゅうに", "はっくななじゅうに"] }
+        ],
+        9: [
+            { f: "9 × 1 = 9", a: "くいちがく", w: ["きゅういちがきゅう", "くいちく"] },
+            { f: "9 × 2 = 18", a: "くにじゅうはち", w: ["きゅうにじゅうはち", "くにじゅうは"] },
+            { f: "9 × 3 = 27", a: "くさんにじゅうしち", w: ["くさんにじゅうなな", "きゅうさんにじゅうしち"] },
+            { f: "9 × 4 = 36", a: "くしさんじゅうろく", w: ["きゅうしさんじゅうろく", "くしさんじゅう"] },
+            { f: "9 × 5 = 45", a: "くごしじゅうご", w: ["きゅうごしじゅうご", "くごしじゅう"] },
+            { f: "9 × 6 = 54", a: "くろくごじゅうし", w: ["きゅうろくごじゅうし", "くろくごじゅうよん"] },
+            { f: "9 × 7 = 63", a: "くしちろくじゅうさん", w: ["ななくろくじゅうさん", "きゅうしちろくじゅうさん"] },
+            { f: "9 × 8 = 72", a: "くはしちじゅうに", w: ["くはちしちじゅうに", "きゅうはしちじゅうに"] },
+            { f: "9 × 9 = 81", a: "くくはちじゅういち", w: ["きゅうきゅうはちじゅういち", "くくはちじゅう"] }
+        ]
+    };
+
+    let currentQuestions = [];
+    let qIdx = 0;
+
+    function startQuiz(step) {
+        document.getElementById("menu").style.display = "none";
+        document.getElementById("stats").style.display = "block";
+        document.getElementById("question").style.display = "block";
+        document.getElementById("options").style.display = "grid";
+        document.getElementById("back-btn").style.display = "block";
+
+        if (step === 0) {
+            // 全段からランダムに10問
+            const all = Object.values(masterData).flat();
+            currentQuestions = all.sort(() => Math.random() - 0.5).slice(0, 10);
+            document.getElementById("title").innerText = "すべての段";
+        } else {
+            // 指定した段の9問
+            currentQuestions = [...masterData[step]];
+            document.getElementById("title").innerText = step + " の段";
+        }
+        qIdx = 0;
+        loadNextQuestion();
+    }
+
+    function loadNextQuestion() {
+        if (qIdx >= currentQuestions.length) {
+            document.getElementById("question").innerText = "お疲れ様でした！";
+            document.getElementById("options").innerHTML = "";
+            document.getElementById("feedback").innerText = "チャレンジ完了！";
+            document.getElementById("next-btn").style.display = "none";
+            document.getElementById("stats").innerText = "";
+            return;
+        }
+
+        const data = currentQuestions[qIdx];
+        document.getElementById("stats").innerText = `第 ${qIdx + 1} 問 / ${currentQuestions.length}`;
+        document.getElementById("question").innerText = data.f;
+        document.getElementById("feedback").innerText = "";
+        document.getElementById("next-btn").style.display = "none";
+
+        const opts = [data.a, ...data.w].sort(() => Math.random() - 0.5);
+        const container = document.getElementById("options");
+        container.innerHTML = "";
+
+        opts.forEach(text => {
+            const btn = document.createElement("button");
+            btn.className = "option";
+            btn.innerText = text;
+            btn.onclick = () => check(btn, text, data.a);
+            container.appendChild(btn);
+        });
+        qIdx++;
+    }
+
+    function check(btn, selected, correct) {
+        const btns = document.querySelectorAll(".option");
+        btns.forEach(b => b.disabled = true); 
+
+        if (selected === correct) {
+            btn.classList.add("correct");
+            document.getElementById("feedback").innerText = "正解！⭕️";
+            document.getElementById("feedback").style.color = "#2ecc71";
+            
+            setTimeout(() => {
+                loadNextQuestion();
+            }, 1000); 
+
+        } else {
+            btn.classList.add("wrong");
+            document.getElementById("feedback").innerText = `❌ 正解は「${correct}」`;
+            document.getElementById("feedback").style.color = "#e74c3c";
+            document.getElementById("next-btn").style.display = "block";
+        }
+    }
+
+    function resetToMenu() {
+        location.reload();
+    }
+</script>
+
+</body>
+</html>

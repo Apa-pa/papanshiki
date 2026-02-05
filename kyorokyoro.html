@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>どこにきえた？動体視力ゲーム</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #fff3e0; /* やさしいオレンジ */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            width: 95%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .screen { display: none; }
+        .active { display: block; }
+
+        h1 { color: #e65100; font-size: 24px; margin: 10px 0; }
+
+        /* 設定エリア */
+        .setting-group {
+            background: #ffe0b2;
+            padding: 10px 15px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            text-align: left;
+            font-size: 18px;
+        }
+        .setting-group label { font-weight: bold; color: #e65100; }
+        select {
+            font-size: 18px; padding: 5px; border-radius: 8px;
+            border: 2px solid #e65100; background: white;
+        }
+
+        /* --- 3x3の箱エリア --- */
+        #box-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px auto;
+            max-width: 400px;
+            position: relative; /* 絵文字の配置基準 */
+        }
+
+        /* 箱のデザイン */
+        .box {
+            aspect-ratio: 1 / 1;
+            background: #ffffff;
+            border: 4px solid #ffcc80;
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: inset 0 0 10px rgba(255, 152, 0, 0.1);
+        }
+        /* 回答時のホバー */
+        .answering .box:hover { background: #fff8e1; }
+        
+        /* 正解・不正解時の色 */
+        .box.correct-box { background: #c8e6c9; border-color: #4caf50; }
+        .box.wrong-box { background: #ffcdd2; border-color: #f44336; }
+
+        /* --- 移動するキャラクター --- */
+        #mover {
+            position: absolute;
+            font-size: 60px;
+            /* 箱の中央に配置するための調整 */
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none; /* クリックの邪魔をしない */
+            display: none; /* 最初は隠す */
+            z-index: 10;
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.2));
+        }
+
+        /* ボタン類 */
+        .start-btn, .retry-btn {
+            font-size: 24px; padding: 15px 40px;
+            background: #ff9800; color: white;
+            border: none; border-radius: 50px;
+            cursor: pointer; margin: 15px 0; font-weight: bold;
+            box-shadow: 0 5px #e65100;
+        }
+        .start-btn:active, .retry-btn:active { transform: scale(0.95); box-shadow: none; }
+
+        .back-btn {
+            background: #90a4ae; font-size: 14px; padding: 8px 20px;
+            color: white; border-radius: 20px; text-decoration: none;
+            display: inline-block; margin-top: 10px;
+        }
+
+        /* メッセージ */
+        #game-message {
+            font-size: 20px; font-weight: bold; color: #e65100; height: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="home-screen" class="screen active">
+        <h1>どこに きえた？</h1>
+        <div style="font-size: 80px; margin: 10px;">👀</div>
+        <p>はこの上をうごく どうぶつを<br>目で追ってね！</p>
+
+        <div class="setting-group">
+            <label>スピード：</label>
+            <select id="speed-select">
+                <option value="800">ゆっくり</option>
+                <option value="500" selected>ふつう</option>
+                <option value="300">はやい</option>
+                <option value="150">超高速！</option>
+                <option value="100">神速 (0.1秒)</option>
+                <option value="50">光速 (0.05秒)</option>
+            </select>
+        </div>
+        <div class="setting-group">
+            <label>うごく回数：</label>
+            <select id="count-select">
+                <option value="5">5回</option>
+                <option value="10" selected>10回</option>
+                <option value="20">20回</option>
+            </select>
+        </div>
+
+        <button class="start-btn" onclick="startGame()">スタート！</button>
+        <br><a href="index.html" class="back-btn">🏠 もどる</a>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div id="game-message">よく見ててね...</div>
+        
+        <div id="box-grid">
+            <div id="mover">🐶</div>
+            <div class="box" onclick="checkAnswer(0)"></div>
+            <div class="box" onclick="checkAnswer(1)"></div>
+            <div class="box" onclick="checkAnswer(2)"></div>
+            <div class="box" onclick="checkAnswer(3)"></div>
+            <div class="box" onclick="checkAnswer(4)"></div>
+            <div class="box" onclick="checkAnswer(5)"></div>
+            <div class="box" onclick="checkAnswer(6)"></div>
+            <div class="box" onclick="checkAnswer(7)"></div>
+            <div class="box" onclick="checkAnswer(8)"></div>
+        </div>
+
+        <a href="index.html" class="back-btn" id="giveup-btn">🏠 やめる</a>
+        <div id="result-area" style="display:none;">
+            <button id="reward-btn" onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; showPointGetDialog(5)" 
+                style="padding:10px 20px; font-size:16px; background:#4CAF50; color:white; border:none; border-radius:30px; font-weight:bold; cursor:pointer; margin-top:10px; box-shadow: 0 4px #2e7d32;">
+                🎁 5ポイントをもらう
+            </button>
+            <button class="retry-btn" onclick="startGame()">もういっかい</button>
+             <br><a href="index.html" class="back-btn">🏠 もどる</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const boxes = document.querySelectorAll('.box');
+    const mover = document.getElementById('mover');
+    const message = document.getElementById('game-message');
+    const grid = document.getElementById('box-grid');
+
+    let currentPos = -1;
+    let lastPos = -1; // 最後に消えた場所（正解）
+    let moveCount = 0;
+    let maxMoves = 10;
+    let speed = 500;
+    let timer;
+    let isAnswering = false; // 回答受付中かどうか
+
+    // キャラクターのリスト
+    const chars = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐸', '🐷'];
+
+    function changeScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function startGame() {
+        // 設定読み込みとリセット
+        speed = parseInt(document.getElementById('speed-select').value);
+        maxMoves = parseInt(document.getElementById('count-select').value);
+        moveCount = 0;
+        isAnswering = false;
+        grid.classList.remove('answering');
+        document.getElementById('giveup-btn').style.display = 'inline-block';
+        document.getElementById('result-area').style.display = 'none';
+        boxes.forEach(b => b.className = 'box'); // 箱の色を戻す
+
+        // ▼▼▼ 追加: ポイントボタンを復活させる ▼▼▼
+        const rewardBtn = document.getElementById('reward-btn');
+        if (rewardBtn) {
+            rewardBtn.disabled = false;
+            rewardBtn.innerText = '🎁 5ポイントをもらう';
+            rewardBtn.style.background = '#4CAF50';
+        }
+        // ▲▲▲ ここまで ▲▲▲
+
+        // キャラをランダムに決定
+        mover.textContent = chars[Math.floor(Math.random() * chars.length)];
+        
+        message.textContent = "よく見ててね...";
+        changeScreen('game-screen');
+
+        // 少し待ってから移動開始
+        setTimeout(startMoving, 1000);
+    }
+
+    function startMoving() {
+        mover.style.display = 'block';
+        
+        timer = setInterval(() => {
+            moveOnce();
+            moveCount++;
+
+            if (moveCount >= maxMoves) {
+                // 終了！
+                clearInterval(timer);
+                finishMoving();
+            }
+        }, speed);
+    }
+
+    function moveOnce() {
+        let nextPos;
+        // 同じ場所に連続で出ないようにするループ
+        do {
+            nextPos = Math.floor(Math.random() * boxes.length);
+        } while (nextPos === currentPos);
+
+        currentPos = nextPos;
+        // キャラをその箱の上に移動させる
+        boxes[currentPos].appendChild(mover);
+    }
+
+    function finishMoving() {
+        lastPos = currentPos; // 正解を記憶
+        
+        // パッと消す
+        setTimeout(() => {
+            mover.style.display = 'none';
+            message.textContent = "どこで 消えた？ タッチして！";
+            grid.classList.add('answering'); // カーソルを変える用
+            isAnswering = true; // 回答受付開始
+        }, speed); // 最後の位置で少し止まってから消える
+    }
+
+    // 箱をクリックした時の判定
+    function checkAnswer(index) {
+        if (!isAnswering) return; // 受付中以外は無視
+
+        isAnswering = false;
+        grid.classList.remove('answering');
+        document.getElementById('giveup-btn').style.display = 'none';
+
+        if (index === lastPos) {
+            // 正解！
+            message.textContent = "だいせいかい！✨";
+            boxes[index].classList.add('correct-box');
+            // 正解の箱にキャラを再表示
+            boxes[index].appendChild(mover);
+            mover.style.display = 'block';
+        } else {
+            // 不正解...
+            message.textContent = "ざんねん... ここでした！";
+            boxes[index].classList.add('wrong-box'); // 選んだ箱を赤く
+            boxes[lastPos].classList.add('correct-box'); // 正解を緑に
+            // 正解の箱にキャラを再表示
+            boxes[lastPos].appendChild(mover);
+            mover.style.display = 'block';
+        }
+
+        // 結果ボタン表示
+        document.getElementById('result-area').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
