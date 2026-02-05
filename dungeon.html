@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -15,7 +16,7 @@
             padding: 10px;
             touch-action: manipulation;
             user-select: none;
-            overflow: hidden; 
+            overflow: hidden;
         }
 
         .container {
@@ -24,7 +25,7 @@
             background: #37474f;
             border-radius: 15px;
             padding: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             position: relative;
             height: 90vh;
             display: flex;
@@ -33,23 +34,49 @@
 
         /* ヘッダー情報 */
         .header-ui {
-            display: flex; justify-content: space-between; align-items: center;
-            background: #455a64; padding: 10px; border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #455a64;
+            padding: 10px;
+            border-radius: 10px;
             margin-bottom: 10px;
             font-weight: bold;
-            flex-shrink: 0; /* ヘッダーは縮ませない */
+            flex-shrink: 0;
+            /* ヘッダーは縮ませない */
         }
+
         .floor-badge {
-            background: #ffc107; color: #333; padding: 3px 10px; border-radius: 5px;
+            background: #ffc107;
+            color: #333;
+            padding: 3px 10px;
+            border-radius: 5px;
         }
+
         .hp-bar-container {
-            flex-grow: 1; margin: 0 15px; background: #263238; height: 15px; border-radius: 10px; overflow: hidden; position: relative;
+            flex-grow: 1;
+            margin: 0 15px;
+            background: #263238;
+            height: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
         }
+
         .hp-bar {
-            height: 100%; background: #4caf50; width: 100%; transition: width 0.3s;
+            height: 100%;
+            background: #4caf50;
+            width: 100%;
+            transition: width 0.3s;
         }
+
         .hp-text {
-            position: absolute; width: 100%; text-align: center; font-size: 10px; line-height: 15px; top:0;
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            line-height: 15px;
+            top: 0;
         }
 
         /* バトル画面 */
@@ -61,12 +88,14 @@
             border-radius: 10px;
             display: flex;
             flex-direction: column;
-            justify-content: space-evenly; /* 上下に均等配置 */
+            justify-content: space-evenly;
+            /* 上下に均等配置 */
             align-items: center;
-            overflow: hidden; 
+            overflow: hidden;
             background-size: cover;
             background-position: center;
         }
+
         /* ボス階の背景演出 */
         .boss-floor {
             background: radial-gradient(circle, #5d4037 0%, #263238 80%);
@@ -74,65 +103,102 @@
         }
 
         /* 敵キャラエリア */
-        .enemy-area { 
+        .enemy-area {
             width: 100%;
             /* min-heightを少し減らして圧迫感を軽減しつつ、画像サイズは確保 */
-            min-height: 180px; 
-            position: relative; 
-            display: flex; 
-            align-items: center; 
+            min-height: 180px;
+            position: relative;
+            display: flex;
+            align-items: center;
             justify-content: center;
-            flex-direction: column; 
+            flex-direction: column;
         }
-        
-        .enemy-emoji { font-size: 80px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.2)); transition: transform 0.1s; line-height: 1;}
-        .enemy-img-file { width: 120px; height: 120px; object-fit: contain; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3)); transition: transform 0.1s; }
-        .boss-img-file { width: 160px; height: 160px; object-fit: contain; filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.5)); transition: transform 0.1s; }
+
+        .enemy-emoji {
+            font-size: 80px;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+            transition: transform 0.1s;
+            line-height: 1;
+        }
+
+        .enemy-img-file {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.3));
+            transition: transform 0.1s;
+        }
+
+        .boss-img-file {
+            width: 160px;
+            height: 160px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.5));
+            transition: transform 0.1s;
+        }
 
         /* HPバー */
         .enemy-hp-bar {
-            width: 140px; 
-            height: 12px; 
-            background: #000; 
-            margin-top: 15px; 
-            border-radius: 8px; 
+            width: 140px;
+            height: 12px;
+            background: #000;
+            margin-top: 15px;
+            border-radius: 8px;
             overflow: hidden;
-            border: 2px solid #fff; 
-            box-shadow: 0 0 5px rgba(0,0,0,0.5);
-            flex-shrink: 0; 
+            border: 2px solid #fff;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+            flex-shrink: 0;
         }
-        .enemy-hp-fill { height: 100%; background: #e91e63; width: 100%; transition: width 0.2s; }
-        
+
+        .enemy-hp-fill {
+            height: 100%;
+            background: #e91e63;
+            width: 100%;
+            transition: width 0.2s;
+        }
+
         /* ダメージ表示位置 */
         .damage-popup {
-            position: absolute; 
-            top: 50%; left: 50%; /* 親要素のど真ん中 */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            /* 親要素のど真ん中 */
             transform: translate(-50%, -50%);
-            font-size: 60px; /* 文字を大きく */
-            font-weight: bold; color: #ff5252;
+            font-size: 60px;
+            /* 文字を大きく */
+            font-weight: bold;
+            color: #ff5252;
             text-shadow: 3px 3px 0 #fff;
-            opacity: 0; pointer-events: none; z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 20;
         }
 
         /* 問題表示 */
         .question-box {
-            font-size: 42px; font-weight: bold; color: #80deea;
+            font-size: 42px;
+            font-weight: bold;
+            color: #80deea;
             margin: 5px 0;
-            background: rgba(0,0,0,0.3);
-            padding: 5px 30px; border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 30px;
+            border-radius: 10px;
             letter-spacing: 2px;
             flex-shrink: 0;
         }
-        
+
         /* 入力エリア */
         .answer-area {
-            font-size: 32px; 
-            height: 50px;       /* 高さを固定で確保 */
-            line-height: 50px;  /* 文字を縦中央に */
-            color: #ffeb3b; 
-            border-bottom: 2px solid #ffeb3b; 
-            width: 120px; 
-            margin: 0 auto 10px auto; /* 下に少し隙間 */
+            font-size: 32px;
+            height: 50px;
+            /* 高さを固定で確保 */
+            line-height: 50px;
+            /* 文字を縦中央に */
+            color: #ffeb3b;
+            border-bottom: 2px solid #ffeb3b;
+            width: 120px;
+            margin: 0 auto 10px auto;
+            /* 下に少し隙間 */
             flex-shrink: 0;
         }
 
@@ -145,555 +211,678 @@
             padding-top: 10px;
             flex-shrink: 0;
         }
+
         .key {
-            background: #546e7a; color: white;
-            font-size: 24px; padding: 15px 0;
-            border: none; border-radius: 8px;
+            background: #546e7a;
+            color: white;
+            font-size: 24px;
+            padding: 15px 0;
+            border: none;
+            border-radius: 8px;
             box-shadow: 0 4px #37474f;
-            cursor: pointer; font-family: inherit; font-weight: bold;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
         }
-        .key:active { transform: translateY(2px); box-shadow: 0 0 #37474f; }
-        .key-enter { background: #00bcd4; box-shadow: 0 4px #0097a7; }
-        .key-del { background: #ef5350; box-shadow: 0 4px #c62828; font-size: 20px; }
+
+        .key:active {
+            transform: translateY(2px);
+            box-shadow: 0 0 #37474f;
+        }
+
+        .key-enter {
+            background: #00bcd4;
+            box-shadow: 0 4px #0097a7;
+        }
+
+        .key-del {
+            background: #ef5350;
+            box-shadow: 0 4px #c62828;
+            font-size: 20px;
+        }
 
         /* オーバーレイ */
         .overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 100;
-            display: none; flex-direction: column; justify-content: center; align-items: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
+
         .menu-box {
-            background: #fff; color: #333; padding: 30px; border-radius: 20px; width: 80%;
+            background: #fff;
+            color: #333;
+            padding: 30px;
+            border-radius: 20px;
+            width: 80%;
             text-align: center;
         }
+
         .btn {
-            display: block; width: 100%; margin: 10px 0; padding: 15px;
-            font-size: 18px; border: none; border-radius: 30px; cursor: pointer; font-weight: bold;
-            box-sizing: border-box; text-decoration: none; line-height: normal;
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 15px;
+            font-size: 18px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            box-sizing: border-box;
+            text-decoration: none;
+            line-height: normal;
         }
-        .btn-start { background: #ff9800; color: white; }
-        .btn-home { background: #90a4ae; color: white; }
-        .btn-reset { background: #ef9a9a; color: #b71c1c; font-size: 14px; padding: 10px; margin-top: 5px; }
-        
+
+        .btn-start {
+            background: #ff9800;
+            color: white;
+        }
+
+        .btn-home {
+            background: #90a4ae;
+            color: white;
+        }
+
+        .btn-reset {
+            background: #ef9a9a;
+            color: #b71c1c;
+            font-size: 14px;
+            padding: 10px;
+            margin-top: 5px;
+        }
+
         .btn-reward {
-            padding:10px 20px; font-size:16px; background:#ff9800; color:white; border:none; border-radius:30px; font-weight:bold; cursor:pointer; margin-bottom:10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
         }
-        .btn-reward:disabled { background: #ccc; cursor: default; }
+
+        .btn-reward:disabled {
+            background: #ccc;
+            cursor: default;
+        }
 
         /* アニメーション */
-        @keyframes shake { 0% { transform: translate(0,0); } 25% { transform: translate(-5px, 0); } 75% { transform: translate(5px, 0); } 100% { transform: translate(0,0); } }
-        .shaking { animation: shake 0.2s; }
-        
-        @keyframes popUp { 
-            0% { opacity: 1; transform:translate(-50%, -50%) scale(0.5); } 
-            50% { transform:translate(-50%, -100%) scale(1.2); } 
-            100% { opacity: 0; transform:translate(-50%, -120%) scale(1); } 
+        @keyframes shake {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            25% {
+                transform: translate(-5px, 0);
+            }
+
+            75% {
+                transform: translate(5px, 0);
+            }
+
+            100% {
+                transform: translate(0, 0);
+            }
         }
-        .pop-anim { animation: popUp 0.8s ease-out forwards; }
-        
+
+        .shaking {
+            animation: shake 0.2s;
+        }
+
+        @keyframes popUp {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+
+            50% {
+                transform: translate(-50%, -100%) scale(1.2);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -120%) scale(1);
+            }
+        }
+
+        .pop-anim {
+            animation: popUp 0.8s ease-out forwards;
+        }
+
         /* エンディング用 */
         #ending-screen {
             background: linear-gradient(135deg, #1a237e, #4a148c);
             color: white;
         }
-        .ending-title { font-size: 32px; color: #ffd700; text-shadow: 0 0 10px #e65100; margin-bottom: 20px; }
 
+        .ending-title {
+            font-size: 32px;
+            color: #ffd700;
+            text-shadow: 0 0 10px #e65100;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <div class="header-ui">
-        <div class="floor-badge"><span id="floor-disp">1</span>F</div>
-        <div class="hp-bar-container">
-            <div id="hero-hp-bar" class="hp-bar"></div>
-            <div id="hero-hp-text" class="hp-text">50/50</div>
-        </div>
-        <button onclick="saveAndQuit()" style="background:none; border:1px solid #aaa; color:#fff; border-radius:5px; font-size:12px; cursor:pointer;">中断</button>
-    </div>
-
-    <div class="battle-screen" id="battle-field">
-        <div class="enemy-area">
-            <div id="damage-disp" class="damage-popup">10</div>
-            <div id="enemy-display">👾</div>
-            <div class="enemy-hp-bar"><div id="enemy-hp-fill" class="enemy-hp-fill"></div></div>
-        </div>
-
-        <div id="question-text" class="question-box">5 + 3</div>
-        <div id="user-input" class="answer-area"></div>
-    </div>
-
-    <div class="numpad">
-        <button class="key" onclick="inputNum(7)">7</button>
-        <button class="key" onclick="inputNum(8)">8</button>
-        <button class="key" onclick="inputNum(9)">9</button>
-        <button class="key" onclick="inputNum(4)">4</button>
-        <button class="key" onclick="inputNum(5)">5</button>
-        <button class="key" onclick="inputNum(6)">6</button>
-        <button class="key" onclick="inputNum(1)">1</button>
-        <button class="key" onclick="inputNum(2)">2</button>
-        <button class="key" onclick="inputNum(3)">3</button>
-        <button class="key key-del" onclick="delNum()">けす</button>
-        <button class="key" onclick="inputNum(0)">0</button>
-        <button class="key key-enter" onclick="checkAnswer()">こうげき</button>
-    </div>
-
-    <div id="start-screen" class="overlay" style="display:flex;">
-        <div class="menu-box">
-            <h1 style="color:#e65100; margin-top:0;">🗡️ 計算ダンジョン</h1>
-            <p>だれがプレイしますか？</p>
-            <select id="user-select" style="font-size:18px; padding:10px; width:100%; margin-bottom:20px;">
-                <option value="">(えらんでね)</option>
-            </select>
-            
-            <div id="resume-info" style="display:none; color:#555; margin-bottom:10px;">
-                <span id="save-floor">1</span>階から 再開！
+    <div class="container">
+        <div class="header-ui">
+            <div class="floor-badge"><span id="floor-disp">1</span>F</div>
+            <div class="hp-bar-container">
+                <div id="hero-hp-bar" class="hp-bar"></div>
+                <div id="hero-hp-text" class="hp-text">50/50</div>
             </div>
-            
-            <button id="start-btn-text" class="btn btn-start" onclick="gameStart()">冒険へいく！</button>
-            
-            <div id="reset-area" style="display:none; margin-top:15px; border-top:1px dashed #ccc; padding-top:10px;">
-                <button class="btn btn-reset" onclick="resetGameStart()">はじめから (データをけす)</button>
+            <button onclick="saveAndQuit()"
+                style="background:none; border:1px solid #aaa; color:#fff; border-radius:5px; font-size:12px; cursor:pointer;">中断</button>
+        </div>
+
+        <div class="battle-screen" id="battle-field">
+            <div class="enemy-area">
+                <div id="damage-disp" class="damage-popup">10</div>
+                <div id="enemy-display">👾</div>
+                <div class="enemy-hp-bar">
+                    <div id="enemy-hp-fill" class="enemy-hp-fill"></div>
+                </div>
             </div>
 
-            <a href="index.html" class="btn btn-home">🏠 ホームへ</a>
+            <div id="question-text" class="question-box">5 + 3</div>
+            <div id="user-input" class="answer-area"></div>
+        </div>
+
+        <div class="numpad">
+            <button class="key" onclick="inputNum(7)">7</button>
+            <button class="key" onclick="inputNum(8)">8</button>
+            <button class="key" onclick="inputNum(9)">9</button>
+            <button class="key" onclick="inputNum(4)">4</button>
+            <button class="key" onclick="inputNum(5)">5</button>
+            <button class="key" onclick="inputNum(6)">6</button>
+            <button class="key" onclick="inputNum(1)">1</button>
+            <button class="key" onclick="inputNum(2)">2</button>
+            <button class="key" onclick="inputNum(3)">3</button>
+            <button class="key key-del" onclick="delNum()">けす</button>
+            <button class="key" onclick="inputNum(0)">0</button>
+            <button class="key key-enter" onclick="checkAnswer()">こうげき</button>
+        </div>
+
+        <div id="start-screen" class="overlay" style="display:flex;">
+            <div class="menu-box">
+                <h1 style="color:#e65100; margin-top:0;">🗡️ 計算ダンジョン</h1>
+                <p>だれがプレイしますか？</p>
+                <select id="user-select" style="font-size:18px; padding:10px; width:100%; margin-bottom:20px;">
+                    <option value="">(えらんでね)</option>
+                </select>
+
+                <div id="resume-info" style="display:none; color:#555; margin-bottom:10px;">
+                    <span id="save-floor">1</span>階から 再開！
+                </div>
+
+                <button id="start-btn-text" class="btn btn-start" onclick="gameStart()">冒険へいく！</button>
+
+                <div id="reset-area"
+                    style="display:none; margin-top:15px; border-top:1px dashed #ccc; padding-top:10px;">
+                    <button class="btn btn-reset" onclick="resetGameStart()">はじめから (データをけす)</button>
+                </div>
+
+                <a href="index.html" class="btn btn-home">🏠 ホームへ</a>
+            </div>
+        </div>
+
+        <div id="clear-screen" class="overlay">
+            <div class="menu-box">
+                <div style="font-size:60px;">🗝️</div>
+                <h2 id="clear-msg" style="color:#00bcd4;">クリア！</h2>
+                <p>モンスターを倒した！</p>
+
+                <button id="reward-btn" class="btn-reward" onclick="receiveReward()">
+                    🎁 30ポイント
+                </button>
+
+                <p style="font-size:14px; color:#888;">HPが少し回復したよ</p>
+                <button class="btn btn-start" onclick="nextFloor()">次の階へ進む</button>
+
+                <button class="btn btn-home" onclick="saveAndQuitNext()">セーブしてやめる</button>
+            </div>
+        </div>
+
+        <div id="ending-screen" class="overlay">
+            <div class="menu-box" style="background:rgba(255,255,255,0.9);">
+                <div style="font-size:80px;">👑</div>
+                <h1 class="ending-title">完全制覇！</h1>
+                <p style="font-size:18px; color:#333;">おめでとう！<br>地下100階のボスを倒し、<br>伝説の勇者になった！</p>
+                <p style="color:#e91e63; font-weight:bold;">キミの計算力は最強だ！</p>
+                <a href="index.html" class="btn btn-start">🏠 凱旋（ホームへ）</a>
+            </div>
+        </div>
+
+        <div id="gameover-screen" class="overlay">
+            <div class="menu-box">
+                <div style="font-size:60px;">⚰️</div>
+                <h2 style="color:#ff5252;">やられた...</h2>
+                <p>HPがなくなってしまった。</p>
+                <button class="btn btn-start" onclick="retryFloor()">この階からやりなおす</button>
+                <a href="index.html" class="btn btn-home" style="text-decoration:none;">🏠 ホームへ</a>
+            </div>
         </div>
     </div>
 
-    <div id="clear-screen" class="overlay">
-        <div class="menu-box">
-            <div style="font-size:60px;">🗝️</div>
-            <h2 id="clear-msg" style="color:#00bcd4;">クリア！</h2>
-            <p>モンスターを倒した！</p>
-            
-            <button id="reward-btn" class="btn-reward" onclick="receiveReward()">
-                🎁 30ポイント
-            </button>
+    <script>
+        let currentUser = "";
+        let gameState = {
+            floor: 1,
+            maxHp: 50,
+            currentHp: 50
+        };
 
-            <p style="font-size:14px; color:#888;">HPが少し回復したよ</p>
-            <button class="btn btn-start" onclick="nextFloor()">次の階へ進む</button>
-            
-            <button class="btn btn-home" onclick="saveAndQuitNext()">セーブしてやめる</button>
-        </div>
-    </div>
+        // 戦闘中データ
+        let enemy = { hp: 10, maxHp: 10, isBoss: false };
+        let currentQ = { ans: 0 };
+        let inputBuffer = "";
+        let currentReward = 30;
 
-    <div id="ending-screen" class="overlay">
-        <div class="menu-box" style="background:rgba(255,255,255,0.9);">
-            <div style="font-size:80px;">👑</div>
-            <h1 class="ending-title">完全制覇！</h1>
-            <p style="font-size:18px; color:#333;">おめでとう！<br>地下100階のボスを倒し、<br>伝説の勇者になった！</p>
-            <p style="color:#e91e63; font-weight:bold;">キミの計算力は最強だ！</p>
-            <a href="index.html" class="btn btn-start">🏠 凱旋（ホームへ）</a>
-        </div>
-    </div>
+        const ENEMIES = ['👾', '🦇', '🐍', '🐺', '💀', '👻', '👺', '👹', '🐉', '👿'];
 
-    <div id="gameover-screen" class="overlay">
-        <div class="menu-box">
-            <div style="font-size:60px;">⚰️</div>
-            <h2 style="color:#ff5252;">やられた...</h2>
-            <p>HPがなくなってしまった。</p>
-            <button class="btn btn-start" onclick="retryFloor()">この階からやりなおす</button>
-            <a href="index.html" class="btn btn-home" style="text-decoration:none;">🏠 ホームへ</a>
-        </div>
-    </div>
-</div>
+        // ▼▼▼ 追加：効果音の準備 ▼▼▼
+        // ファイルがなくてもエラーにならないよう、再生時にチェックします
+        const SE = {
+            attack: new Audio('se/attack.mp3'),
+            damage: new Audio('se/damage.mp3'),
+            clear: new Audio('se/clear.mp3')
+        };
 
-<script>
-    let currentUser = "";
-    let gameState = {
-        floor: 1,
-        maxHp: 50,
-        currentHp: 50
-    };
-    
-    // 戦闘中データ
-    let enemy = { hp: 10, maxHp: 10, isBoss: false };
-    let currentQ = { ans:0 };
-    let inputBuffer = "";
-    let currentReward = 30;
-
-    const ENEMIES = ['👾', '🦇', '🐍', '🐺', '💀', '👻', '👺', '👹', '🐉', '👿'];
-
-    // ▼▼▼ 追加：効果音の準備 ▼▼▼
-    // ファイルがなくてもエラーにならないよう、再生時にチェックします
-    const SE = {
-        attack: new Audio('se/attack.mp3'),
-        damage: new Audio('se/damage.mp3'),
-        clear:  new Audio('se/clear.mp3')
-    };
-
-    function playSe(type) {
-        try {
-            const audio = SE[type];
-            if (audio) {
-                audio.currentTime = 0; // 連続再生用
-                audio.play().catch(e => { /* ファイルがない場合などはここに来るが無視 */ });
+        function playSe(type) {
+            try {
+                const audio = SE[type];
+                if (audio) {
+                    audio.currentTime = 0; // 連続再生用
+                    audio.play().catch(e => { /* ファイルがない場合などはここに来るが無視 */ });
+                }
+            } catch (e) {
+                // エラー無視
             }
-        } catch(e) {
-            // エラー無視
         }
-    }
-    // ▲▲▲ ここまで ▲▲▲
+        // ▲▲▲ ここまで ▲▲▲
 
-    window.onload = function() {
-        const users = getUserNames();
-        const select = document.getElementById('user-select');
-        users.forEach(u => {
-            const opt = document.createElement('option');
-            opt.value = u;
-            opt.innerText = u;
-            select.appendChild(opt);
-        });
+        window.onload = function () {
+            const users = getUserNames();
+            const select = document.getElementById('user-select');
+            users.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u;
+                opt.innerText = u;
+                select.appendChild(opt);
+            });
 
-        select.addEventListener('change', function() {
-            const user = this.value;
-            if(!user) return;
-            
-            const saved = loadGameData(user);
-            const resumeInfo = document.getElementById('resume-info');
-            const startBtn = document.getElementById('start-btn-text');
-            const resetArea = document.getElementById('reset-area');
+            select.addEventListener('change', function () {
+                const user = this.value;
+                if (!user) return;
 
-            if(saved) {
-                // セーブデータあり
-                document.getElementById('save-floor').innerText = saved.floor;
-                resumeInfo.style.display = 'block';
-                startBtn.innerText = "つづきから 冒険！";
-                resetArea.style.display = 'block';
-            } else {
-                // セーブデータなし
-                resumeInfo.style.display = 'none';
-                startBtn.innerText = "冒険へいく！";
-                resetArea.style.display = 'none';
-            }
-        });
-    };
+                const saved = loadGameData(user);
+                const resumeInfo = document.getElementById('resume-info');
+                const startBtn = document.getElementById('start-btn-text');
+                const resetArea = document.getElementById('reset-area');
 
-    function getKey(user) { return `papan_dungeon_v1_${user}`; }
+                if (saved) {
+                    // セーブデータあり
+                    document.getElementById('save-floor').innerText = saved.floor;
+                    resumeInfo.style.display = 'block';
+                    startBtn.innerText = "つづきから 冒険！";
+                    resetArea.style.display = 'block';
+                } else {
+                    // セーブデータなし
+                    resumeInfo.style.display = 'none';
+                    startBtn.innerText = "冒険へいく！";
+                    resetArea.style.display = 'none';
+                }
+            });
+        };
 
-    function saveGameData(user, data) {
-        localStorage.setItem(getKey(user), JSON.stringify(data));
-    }
+        function getKey(user) { return `papan_dungeon_v1_${user}`; }
 
-    function loadGameData(user) {
-        const json = localStorage.getItem(getKey(user));
-        return json ? JSON.parse(json) : null;
-    }
-
-    function gameStart() {
-        const user = document.getElementById('user-select').value;
-        if(!user) { alert("なまえをえらんでね"); return; }
-        
-        currentUser = user;
-        const saved = loadGameData(user);
-        
-        if(saved) {
-            gameState = saved;
-        } else {
-            gameState = { floor: 1, maxHp: 50, currentHp: 50 };
+        function saveGameData(user, data) {
+            localStorage.setItem(getKey(user), JSON.stringify(data));
         }
 
-        document.getElementById('start-screen').style.display = 'none';
-        initFloor();
-    }
+        function loadGameData(user) {
+            const json = localStorage.getItem(getKey(user));
+            return json ? JSON.parse(json) : null;
+        }
 
-    function resetGameStart() {
-        const user = document.getElementById('user-select').value;
-        if(!user) return;
+        function gameStart() {
+            const user = document.getElementById('user-select').value;
+            if (!user) { alert("なまえをえらんでね"); return; }
 
-        if(confirm(user + "さんの データを消して\n1階から はじめますか？")) {
             currentUser = user;
-            gameState = { floor: 1, maxHp: 50, currentHp: 50 };
-            saveGameData(currentUser, gameState); 
+            const saved = loadGameData(user);
+
+            if (saved) {
+                gameState = saved;
+            } else {
+                gameState = { floor: 1, maxHp: 50, currentHp: 50 };
+            }
 
             document.getElementById('start-screen').style.display = 'none';
             initFloor();
         }
-    }
 
-    function saveAndQuit() {
-        if(!currentUser) return;
-        saveGameData(currentUser, gameState);
-        alert("セーブしました。またあそんでね！");
-        location.href = "index.html";
-    }
+        function resetGameStart() {
+            const user = document.getElementById('user-select').value;
+            if (!user) return;
 
-    function saveAndQuitNext() {
-        if(!currentUser) return;
-        
-        gameState.floor++;
-        gameState.maxHp += 5;
-        gameState.currentHp += 20;
-        if(gameState.currentHp > gameState.maxHp) gameState.currentHp = gameState.maxHp;
+            if (confirm(user + "さんの データを消して\n1階から はじめますか？")) {
+                currentUser = user;
+                gameState = { floor: 1, maxHp: 50, currentHp: 50 };
+                saveGameData(currentUser, gameState);
 
-        if(gameState.floor > 100) gameState.floor = 101;
-
-        saveGameData(currentUser, gameState);
-        alert("セーブしました。つぎは " + gameState.floor + "階 から冒険再開です！");
-        location.href = "index.html";
-    }
-
-    // --- フロア初期化 ---
-    function initFloor() {
-        if (gameState.floor > 100) {
-             document.getElementById('ending-screen').style.display = 'flex';
-             return;
-        }
-
-        document.getElementById('floor-disp').innerText = gameState.floor;
-        updateHeroHpUI();
-
-        const field = document.getElementById('battle-field');
-        const enemyDisplay = document.getElementById('enemy-display');
-        enemy.isBoss = false;
-
-        let hpVal = 0;
-
-        if (gameState.floor % 10 === 0) {
-            // ボス階
-            enemy.isBoss = true;
-            const avgDmg = 12 + Math.floor(gameState.floor / 2);
-            hpVal = avgDmg * 15;
-            
-            const bossNum = gameState.floor / 10;
-            const bossNumStr = bossNum < 10 ? '0' + bossNum : bossNum;
-            const imgPath = `image/monster${bossNumStr}.png`;
-            enemyDisplay.innerHTML = `<img src="${imgPath}" class="boss-img-file" alt="ボス">`;
-            field.classList.add('boss-floor');
-
-        } else if (gameState.floor === 1) {
-            // 1階スライム
-            hpVal = 80; 
-            enemyDisplay.innerHTML = '<img src="slime.png" class="enemy-img-file" alt="スライム">';
-            field.classList.remove('boss-floor');
-            
-        } else {
-            // 通常階
-            const avgDmg = 12 + Math.floor(gameState.floor / 2);
-            hpVal = avgDmg * 7;
-            
-            const idx = (gameState.floor) % ENEMIES.length;
-            enemyDisplay.innerHTML = ENEMIES[idx];
-            enemyDisplay.className = "enemy-emoji";
-            field.classList.remove('boss-floor');
-        }
-
-        enemy.maxHp = hpVal;
-        enemy.hp = hpVal;
-        
-        updateEnemyHpUI();
-        nextQuestion();
-    }
-
-    // --- 問題作成ロジック ---
-    function nextQuestion() {
-        inputBuffer = "";
-        document.getElementById('user-input').innerText = "";
-
-        const f = gameState.floor;
-        let op = '';
-        let a = 0, b = 0, ans = 0;
-        let type = 0; 
-
-        if (f <= 20) {
-            if (f <= 5) {
-                type = 0; a = r(1,9); b = r(1,9);
-            } else if (f <= 10) {
-                type = 1; a = r(5,15); b = r(1, a);
-            } else {
-                type = 0; a = r(10,50); b = r(1,50);
-            }
-        } else if (f <= 25) {
-            type = 1; a = r(20, 99); b = r(5, a - 1);
-        } else if (f <= 35) {
-            type = 2; a = r(1, 9); b = r(1, 9);
-        } else if (f <= 45) {
-            type = 3; ans = r(1, 9); b = r(2, 9); a = ans * b;
-        } else {
-            const dice = Math.random();
-            if (dice < 0.25) { type = 0; a = r(10,99); b = r(10,99); }
-            else if (dice < 0.5) { type = 1; a = r(20,99); b = r(5,a); }
-            else if (dice < 0.75) { type = 2; a = r(2,9); b = r(2,9); }
-            else { type = 3; ans = r(2,9); b = r(2,9); a = ans * b; }
-        }
-
-        if (type === 0) { op = '+'; ans = a + b; }
-        else if (type === 1) { op = '-'; ans = a - b; }
-        else if (type === 2) { op = '×'; ans = a * b; }
-        else if (type === 3) { op = '÷'; ans = a / b; }
-
-        currentQ = { ans: ans };
-        document.getElementById('question-text').innerText = `${a} ${op} ${b}`;
-    }
-
-    function r(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    // --- 入力・判定 ---
-    function inputNum(n) {
-        if(inputBuffer.length >= 4) return;
-        inputBuffer += n;
-        document.getElementById('user-input').innerText = inputBuffer;
-    }
-    function delNum() {
-        inputBuffer = inputBuffer.slice(0, -1);
-        document.getElementById('user-input').innerText = inputBuffer;
-    }
-
-    function checkAnswer() {
-        if(inputBuffer === "") return;
-        const userAns = parseInt(inputBuffer);
-
-        if(userAns === currentQ.ans) {
-            // 正解
-            const baseDmg = Math.floor(Math.random() * 5) + 10;
-            const levelBonus = Math.floor(gameState.floor / 2);
-            const damage = baseDmg + levelBonus;
-            
-            playSe('attack'); // ▼ 追加
-            playEffect('attack');
-            enemy.hp -= damage;
-            showDamage(damage);
-            
-            if(enemy.hp <= 0) {
-                enemy.hp = 0;
-                updateEnemyHpUI();
-                setTimeout(floorClear, 500);
-            } else {
-                updateEnemyHpUI();
-                nextQuestion();
-            }
-        } else {
-            // 不正解
-            const dmg = Math.floor(Math.random() * 5) + 5;
-            playSe('damage'); // ▼ 追加
-            playEffect('damage');
-            gameState.currentHp -= dmg;
-            if(gameState.currentHp < 0) gameState.currentHp = 0;
-            
-            updateHeroHpUI();
-            const field = document.getElementById('battle-field');
-            field.style.borderColor = '#ff5252';
-            setTimeout(() => field.style.borderColor = '#546e7a', 200);
-
-            if(gameState.currentHp <= 0) {
-                setTimeout(gameOver, 500);
-            } else {
-                inputBuffer = "";
-                document.getElementById('user-input').innerText = "";
+                document.getElementById('start-screen').style.display = 'none';
+                initFloor();
             }
         }
-    }
 
-    // --- UI更新 ---
-    function updateHeroHpUI() {
-        const bar = document.getElementById('hero-hp-bar');
-        const txt = document.getElementById('hero-hp-text');
-        const pct = (gameState.currentHp / gameState.maxHp) * 100;
-        bar.style.width = pct + "%";
-        if(pct < 30) bar.style.background = "#ff5252";
-        else bar.style.background = "#4caf50";
-        txt.innerText = `${gameState.currentHp} / ${gameState.maxHp}`;
-    }
-
-    function updateEnemyHpUI() {
-        const bar = document.getElementById('enemy-hp-fill');
-        const pct = (enemy.hp / enemy.maxHp) * 100;
-        bar.style.width = pct + "%";
-    }
-
-    function showDamage(val) {
-        const el = document.getElementById('damage-disp');
-        el.innerText = val;
-        el.classList.remove('pop-anim');
-        void el.offsetWidth;
-        el.classList.add('pop-anim');
-    }
-
-    function playEffect(type) {
-        const target = type === 'attack' ? document.getElementById('enemy-display') : document.getElementById('battle-field');
-        target.classList.add('shaking');
-        setTimeout(() => target.classList.remove('shaking'), 200);
-    }
-
-    // --- 結果画面 ---
-    function floorClear() {
-        playSe('clear'); // ▼ 追加
-        document.getElementById('clear-screen').style.display = 'flex';
-        saveGameData(currentUser, gameState);
-
-        // 報酬計算
-        const btn = document.getElementById('reward-btn');
-        btn.disabled = false;
-        btn.style.background = '#ff9800';
-
-        if (gameState.floor === 100) {
-            currentReward = 1000;
-            document.getElementById('clear-msg').innerText = "地下100階 制覇！";
-            btn.innerText = `🎁 ${currentReward}ポイント`;
-        } else if (enemy.isBoss) {
-            currentReward = 100;
-            document.getElementById('clear-msg').innerText = "ボス撃破！";
-            btn.innerText = `🎁 ${currentReward}ポイント`;
-        } else {
-            currentReward = 30;
-            document.getElementById('clear-msg').innerText = "クリア！";
-            btn.innerText = `🎁 ${currentReward}ポイント`;
-        }
-    }
-
-    function receiveReward() {
-        const btn = document.getElementById('reward-btn');
-        btn.disabled = true;
-        btn.innerText = 'ゲット！';
-        btn.style.background = '#ccc';
-        
-        if(typeof showPointGetDialog === 'function') {
-            showPointGetDialog(currentReward);
-        } else {
-            alert(`${currentReward}ポイントゲット！`);
-        }
-    }
-
-    function nextFloor() {
-        document.getElementById('clear-screen').style.display = 'none';
-        
-        // リセット報酬ボタン
-        const btn = document.getElementById('reward-btn');
-        btn.disabled = false;
-        btn.innerText = '🎁 30ポイント';
-        btn.style.background = '#ff9800';
-
-        // 100階クリア時 -> エンディングへ
-        if (gameState.floor >= 100) {
-            document.getElementById('ending-screen').style.display = 'flex';
-            gameState.floor = 101; 
+        function saveAndQuit() {
+            if (!currentUser) return;
             saveGameData(currentUser, gameState);
-            return;
+            alert("セーブしました。またあそんでね！");
+            location.href = "index.html";
         }
 
-        gameState.floor++;
-        gameState.maxHp += 5;
-        gameState.currentHp += 20;
-        if(gameState.currentHp > gameState.maxHp) gameState.currentHp = gameState.maxHp;
+        function saveAndQuitNext() {
+            if (!currentUser) return;
 
-        saveGameData(currentUser, gameState);
-        initFloor();
-    }
+            gameState.floor++;
+            gameState.maxHp += 5;
+            gameState.currentHp += 20;
+            if (gameState.currentHp > gameState.maxHp) gameState.currentHp = gameState.maxHp;
 
-    function gameOver() {
-        document.getElementById('gameover-screen').style.display = 'flex';
-    }
+            if (gameState.floor > 100) gameState.floor = 101;
 
-    function retryFloor() {
-        document.getElementById('gameover-screen').style.display = 'none';
-        gameState.currentHp = Math.floor(gameState.maxHp / 2);
-        updateHeroHpUI();
-        saveGameData(currentUser, gameState);
-        initFloor();
-    }
+            saveGameData(currentUser, gameState);
+            alert("セーブしました。つぎは " + gameState.floor + "階 から冒険再開です！");
+            location.href = "index.html";
+        }
 
-</script>
+        // --- フロア初期化 ---
+        function initFloor() {
+            if (gameState.floor > 100) {
+                document.getElementById('ending-screen').style.display = 'flex';
+                return;
+            }
+
+            document.getElementById('floor-disp').innerText = gameState.floor;
+            updateHeroHpUI();
+
+            const field = document.getElementById('battle-field');
+            const enemyDisplay = document.getElementById('enemy-display');
+            enemy.isBoss = false;
+
+            let hpVal = 0;
+
+            if (gameState.floor % 10 === 0) {
+                // ボス階
+                enemy.isBoss = true;
+                const avgDmg = 12 + Math.floor(gameState.floor / 2);
+                hpVal = avgDmg * 15;
+
+                const bossNum = gameState.floor / 10;
+                const bossNumStr = bossNum < 10 ? '0' + bossNum : bossNum;
+                const imgPath = `image/monster${bossNumStr}.png`;
+                enemyDisplay.innerHTML = `<img src="${imgPath}" class="boss-img-file" alt="ボス">`;
+                field.classList.add('boss-floor');
+
+            } else if (gameState.floor === 1) {
+                // 1階スライム
+                hpVal = 80;
+                enemyDisplay.innerHTML = '<img src="slime.png" class="enemy-img-file" alt="スライム">';
+                field.classList.remove('boss-floor');
+
+            } else {
+                // 通常階
+                const avgDmg = 12 + Math.floor(gameState.floor / 2);
+                hpVal = avgDmg * 7;
+
+                const idx = (gameState.floor) % ENEMIES.length;
+                enemyDisplay.innerHTML = ENEMIES[idx];
+                enemyDisplay.className = "enemy-emoji";
+                field.classList.remove('boss-floor');
+            }
+
+            enemy.maxHp = hpVal;
+            enemy.hp = hpVal;
+
+            updateEnemyHpUI();
+            nextQuestion();
+        }
+
+        // --- 問題作成ロジック ---
+        function nextQuestion() {
+            inputBuffer = "";
+            document.getElementById('user-input').innerText = "";
+
+            const f = gameState.floor;
+            let op = '';
+            let a = 0, b = 0, ans = 0;
+            let type = 0;
+
+            if (f <= 20) {
+                if (f <= 5) {
+                    type = 0; a = r(1, 9); b = r(1, 9);
+                } else if (f <= 10) {
+                    type = 1; a = r(5, 15); b = r(1, a);
+                } else {
+                    type = 0; a = r(10, 50); b = r(1, 50);
+                }
+            } else if (f <= 25) {
+                type = 1; a = r(20, 99); b = r(5, a - 1);
+            } else if (f <= 35) {
+                type = 2; a = r(1, 9); b = r(1, 9);
+            } else if (f <= 45) {
+                type = 3; ans = r(1, 9); b = r(2, 9); a = ans * b;
+            } else {
+                const dice = Math.random();
+                if (dice < 0.25) { type = 0; a = r(10, 99); b = r(10, 99); }
+                else if (dice < 0.5) { type = 1; a = r(20, 99); b = r(5, a); }
+                else if (dice < 0.75) { type = 2; a = r(2, 9); b = r(2, 9); }
+                else { type = 3; ans = r(2, 9); b = r(2, 9); a = ans * b; }
+            }
+
+            if (type === 0) { op = '+'; ans = a + b; }
+            else if (type === 1) { op = '-'; ans = a - b; }
+            else if (type === 2) { op = '×'; ans = a * b; }
+            else if (type === 3) { op = '÷'; ans = a / b; }
+
+            currentQ = { ans: ans };
+            document.getElementById('question-text').innerText = `${a} ${op} ${b}`;
+        }
+
+        function r(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // --- 入力・判定 ---
+        function inputNum(n) {
+            if (inputBuffer.length >= 4) return;
+            inputBuffer += n;
+            document.getElementById('user-input').innerText = inputBuffer;
+        }
+        function delNum() {
+            inputBuffer = inputBuffer.slice(0, -1);
+            document.getElementById('user-input').innerText = inputBuffer;
+        }
+
+        function checkAnswer() {
+            if (inputBuffer === "") return;
+            const userAns = parseInt(inputBuffer);
+
+            if (userAns === currentQ.ans) {
+                // 正解
+                const baseDmg = Math.floor(Math.random() * 5) + 10;
+                const levelBonus = Math.floor(gameState.floor / 2);
+                const damage = baseDmg + levelBonus;
+
+                playSe('attack'); // ▼ 追加
+                playEffect('attack');
+                enemy.hp -= damage;
+                showDamage(damage);
+
+                if (enemy.hp <= 0) {
+                    enemy.hp = 0;
+                    updateEnemyHpUI();
+                    setTimeout(floorClear, 500);
+                } else {
+                    updateEnemyHpUI();
+                    nextQuestion();
+                }
+            } else {
+                // 不正解
+                const dmg = Math.floor(Math.random() * 5) + 5;
+                playSe('damage'); // ▼ 追加
+                playEffect('damage');
+                gameState.currentHp -= dmg;
+                if (gameState.currentHp < 0) gameState.currentHp = 0;
+
+                updateHeroHpUI();
+                const field = document.getElementById('battle-field');
+                field.style.borderColor = '#ff5252';
+                setTimeout(() => field.style.borderColor = '#546e7a', 200);
+
+                if (gameState.currentHp <= 0) {
+                    setTimeout(gameOver, 500);
+                } else {
+                    inputBuffer = "";
+                    document.getElementById('user-input').innerText = "";
+                }
+            }
+        }
+
+        // --- UI更新 ---
+        function updateHeroHpUI() {
+            const bar = document.getElementById('hero-hp-bar');
+            const txt = document.getElementById('hero-hp-text');
+            const pct = (gameState.currentHp / gameState.maxHp) * 100;
+            bar.style.width = pct + "%";
+            if (pct < 30) bar.style.background = "#ff5252";
+            else bar.style.background = "#4caf50";
+            txt.innerText = `${gameState.currentHp} / ${gameState.maxHp}`;
+        }
+
+        function updateEnemyHpUI() {
+            const bar = document.getElementById('enemy-hp-fill');
+            const pct = (enemy.hp / enemy.maxHp) * 100;
+            bar.style.width = pct + "%";
+        }
+
+        function showDamage(val) {
+            const el = document.getElementById('damage-disp');
+            el.innerText = val;
+            el.classList.remove('pop-anim');
+            void el.offsetWidth;
+            el.classList.add('pop-anim');
+        }
+
+        function playEffect(type) {
+            const target = type === 'attack' ? document.getElementById('enemy-display') : document.getElementById('battle-field');
+            target.classList.add('shaking');
+            setTimeout(() => target.classList.remove('shaking'), 200);
+        }
+
+        // --- 結果画面 ---
+        function floorClear() {
+            playSe('clear');
+            saveGameData(currentUser, gameState);
+
+            // 報酬計算
+            if (gameState.floor === 100) {
+                currentReward = 1000;
+                document.getElementById('clear-msg').innerText = "地下100階 制覇！";
+            } else if (enemy.isBoss) {
+                currentReward = 100;
+                document.getElementById('clear-msg').innerText = "ボス撃破！";
+            } else {
+                currentReward = 30;
+                document.getElementById('clear-msg').innerText = "クリア！";
+            }
+
+            // 自動でポイント取得
+            if (typeof showPointGetDialog === 'function') {
+                showPointGetDialog(currentReward);
+            }
+
+            // UI更新: ボタンを非表示にし、獲得メッセージを表示
+            const btn = document.getElementById('reward-btn');
+            btn.style.display = 'none';
+
+            // 既存のメッセージがあれば削除
+            const existingMsg = document.getElementById('auto-reward-msg');
+            if (existingMsg) existingMsg.remove();
+
+            const msg = document.createElement('div');
+            msg.id = 'auto-reward-msg';
+            msg.innerText = `🎁 ${currentReward} ポイント ゲット！`;
+            msg.style.cssText = "font-size: 20px; color: #ff9800; font-weight: bold; margin-bottom: 20px;";
+
+            // ボタンの直後に挿入
+            btn.insertAdjacentElement('afterend', msg);
+
+            document.getElementById('clear-screen').style.display = 'flex';
+        }
+
+        function receiveReward() {
+            const btn = document.getElementById('reward-btn');
+            btn.disabled = true;
+            btn.innerText = 'ゲット！';
+            btn.style.background = '#ccc';
+
+            if (typeof showPointGetDialog === 'function') {
+                showPointGetDialog(currentReward);
+            } else {
+                alert(`${currentReward}ポイントゲット！`);
+            }
+        }
+
+        function nextFloor() {
+            document.getElementById('clear-screen').style.display = 'none';
+
+            // 自動報酬のためボタンリセットは不要
+
+            // 100階クリア時 -> エンディングへ
+            if (gameState.floor >= 100) {
+                document.getElementById('ending-screen').style.display = 'flex';
+                gameState.floor = 101;
+                saveGameData(currentUser, gameState);
+                return;
+            }
+
+            gameState.floor++;
+            gameState.maxHp += 5;
+            gameState.currentHp += 20;
+            if (gameState.currentHp > gameState.maxHp) gameState.currentHp = gameState.maxHp;
+
+            saveGameData(currentUser, gameState);
+            initFloor();
+        }
+
+        function gameOver() {
+            document.getElementById('gameover-screen').style.display = 'flex';
+        }
+
+        function retryFloor() {
+            document.getElementById('gameover-screen').style.display = 'none';
+            gameState.currentHp = Math.floor(gameState.maxHp / 2);
+            updateHeroHpUI();
+            saveGameData(currentUser, gameState);
+            initFloor();
+        }
+
+    </script>
 </body>
+
 </html>
