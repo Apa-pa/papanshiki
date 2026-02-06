@@ -33,8 +33,8 @@ const STOCK_MASTER = {
     'food': { name: 'どんぐり食品', currency: 'point', initPrice: 500, volatility: 0.05, dividendRate: 0.03, bias: 0.0, desc: '配当(はいとう)が 多いよ' },
     'tech': { name: 'ギャラクシーIT', currency: 'donguri', initPrice: 10, volatility: 0.20, dividendRate: 0.0, bias: 0.0, desc: 'あがったり さがったり' },
     // ▼ 追加分 ▼
-    'nikkei': { name: 'ぱぱん平均株価', type: 'linked', linkage: 'NI225', currency: 'point', initPrice: 1000, volatility: 0.0, dividendRate: 0.005, desc: '日本の景気と 連動するよ' },
-    'sp500': { name: 'ぱぱんSP500', type: 'linked', linkage: 'SP500', currency: 'point', initPrice: 100, volatility: 0.0, dividendRate: 0.005, desc: 'アメリカの景気と 連動するよ' }
+    'nikkei': { name: 'ぱぱんの森平均株価', type: 'linked', linkage: 'NI225', currency: 'point', initPrice: 1000, volatility: 0.0, dividendRate: 0.005, divisor: 100, desc: 'ぱぱんの森の平均株価と連動するよ' },
+    'sp500': { name: 'とおくの山SP500', type: 'linked', linkage: 'SP500', currency: 'point', initPrice: 100, volatility: 0.0, dividendRate: 0.005, divisor: 10, desc: 'とおくの山を代表する500社の株価と連動するよ' }
 };
 
 // --- 定数定義 ---
@@ -147,6 +147,32 @@ function setDailyMissionCompleted(userName, gameId) {
     localStorage.setItem(DAILY_MISSION_KEY, JSON.stringify(data));
 }
 
+// （オプション）トップページ用ウィジェット表示（コンパクト・1行版）
+function showDailyMissionWidget(elementId) {
+    const targets = getTodayMissionIds();
+    const BONUS_PT = 150; // 表記用
+
+    let htmlList = targets.map(id => {
+        const info = GAME_LIST[id];
+        const name = info ? info.name : id;
+        // ゲーム名のチップ
+        return `<span style="display:inline-block; background:white; color:#e65100; padding:2px 8px; margin-left:5px; border-radius:10px; font-size:12px; border:1px solid #ffcc80; white-space:nowrap;">${name}</span>`;
+    }).join('');
+
+    // 横並びコンテナ (flexbox)
+    const html = `
+        <div style="background:#fff3e0; padding:8px 5px; border-radius:8px; margin:5px auto; max-width:95%; overflow-x:auto; white-space:nowrap; -webkit-overflow-scrolling: touch; border:1px dashed #ffb74d;">
+            <div style="display:inline-flex; align-items:center;">
+                <span style="font-weight:bold; color:#bf360c; font-size:12px; margin-right:5px;">📅 きょうのボーナスコンテンツ(ひとつ+${BONUS_PT}):</span>
+                ${htmlList}
+            </div>
+        </div>
+    `;
+
+    const container = document.getElementById(elementId);
+    if (container) container.innerHTML = html;
+}
+
 
 // --- 市場関連・日付計算 ---
 function getMarketData() {
@@ -220,7 +246,9 @@ async function checkAndAdvanceDate() {
     let isPriceUpdated = false;
 
     // 1. リアル連動銘柄は「常に」最新データを取得して反映する（同日でも更新）
+    // ★ 修正: 1日1回更新に戻すため、このブロックはコメントアウト（または削除）
     const realData = await fetchRealMarketData();
+    /*
     if (realData) {
         for (let id in STOCK_MASTER) {
             const info = STOCK_MASTER[id];
@@ -238,6 +266,7 @@ async function checkAndAdvanceDate() {
             localStorage.setItem(MARKET_KEY, JSON.stringify(market));
         }
     }
+    */
 
     // 2. 日付変更チェック（配当や通常銘柄の変動）
     if (market.lastUpdate !== today) {

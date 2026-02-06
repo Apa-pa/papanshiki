@@ -374,6 +374,7 @@
         }
 
         // デバッグ用: 保存された日付を消す（＝次回アクセス時に必ず更新が走る）
+        
         function debugResetDate() {
             const market = getMarketData();
             market.lastUpdate = "";
@@ -381,6 +382,7 @@
             alert("日付データをリセットしました。\nページをリロードすると「次の日」になります。");
             location.reload();
         }
+        
 
     </script>
 
