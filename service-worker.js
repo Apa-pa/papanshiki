@@ -16,33 +16,37 @@ var urlsToCache = [
 ];
 
 // インストール処理
-self.addEventListener('install', function(event) {
+self.addEventListener('install', function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(function(cache) {
+      .then(function (cache) {
         return cache.addAll(urlsToCache);
       })
   );
 });
 
 // ★ここが変更点：通信時の処理（ネットワーク優先）
-self.addEventListener('fetch', function(event) {
+self.addEventListener('fetch', function (event) {
   event.respondWith(
     // まずネットワーク(最新)を取りに行く
     fetch(event.request)
-      .then(function(response) {
+      .then(function (response) {
         // 成功したらキャッシュにも保存して、その最新データを返す
         if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
         }
-        var responseToCache = response.clone();
-        caches.open(CACHE_NAME)
-          .then(function(cache) {
-            cache.put(event.request, responseToCache);
-          });
+
+        // 重要: chrome-extension:// など、http(s)以外のリクエストはキャッシュしようとするとエラーになるので除外
+        if (event.request.url.startsWith('http')) {
+          var responseToCache = response.clone();
+          caches.open(CACHE_NAME)
+            .then(function (cache) {
+              cache.put(event.request, responseToCache);
+            });
+        }
         return response;
       })
-      .catch(function() {
+      .catch(function () {
         // ネットワークが繋がらない時だけ、保存したキャッシュを使う
         return caches.match(event.request);
       })
