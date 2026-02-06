@@ -374,15 +374,15 @@
         }
 
         // デバッグ用: 保存された日付を消す（＝次回アクセス時に必ず更新が走る）
-        
+
         function debugResetDate() {
             const market = getMarketData();
             market.lastUpdate = "";
-            localStorage.setItem('papan_market_v3', JSON.stringify(market));
+            localStorage.setItem('papan_market_v1', JSON.stringify(market));
             alert("日付データをリセットしました。\nページをリロードすると「次の日」になります。");
             location.reload();
         }
-        
+
 
     </script>
 
