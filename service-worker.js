@@ -27,6 +27,12 @@ self.addEventListener('install', function (event) {
 
 // ★ここが変更点：通信時の処理（ネットワーク優先）
 self.addEventListener('fetch', function (event) {
+  // 重要: chrome-extension:// や file:// など、http(s)以外のリクエストは
+  // Service Workerで扱わず、ブラウザの標準挙動に任せる
+  if (!event.request.url.startsWith('http')) {
+    return;
+  }
+
   event.respondWith(
     // まずネットワーク(最新)を取りに行く
     fetch(event.request)
@@ -36,14 +42,13 @@ self.addEventListener('fetch', function (event) {
           return response;
         }
 
-        // 重要: chrome-extension:// など、http(s)以外のリクエストはキャッシュしようとするとエラーになるので除外
-        if (event.request.url.startsWith('http')) {
-          var responseToCache = response.clone();
-          caches.open(CACHE_NAME)
-            .then(function (cache) {
-              cache.put(event.request, responseToCache);
-            });
-        }
+        // ここに来るのは http(s) の success レスポンスのみ
+        var responseToCache = response.clone();
+        caches.open(CACHE_NAME)
+          .then(function (cache) {
+            cache.put(event.request, responseToCache);
+          });
+
         return response;
       })
       .catch(function () {
