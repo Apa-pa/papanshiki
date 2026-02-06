@@ -434,6 +434,14 @@ function toggleStamp(userName, dateStr, forceAdd = false) {
     else { delete allStamps[userName][dateStr]; localStorage.setItem(STAMP_KEY, JSON.stringify(allStamps)); }
 }
 
+function removeStamp(userName, dateStr) {
+    const allStamps = getAllStamps();
+    if (allStamps[userName]) {
+        delete allStamps[userName][dateStr];
+        localStorage.setItem(STAMP_KEY, JSON.stringify(allStamps));
+    }
+}
+
 function saveRecord(userName, gameId, value) {
     const records = getAllRecords();
     if (!records[userName]) records[userName] = {};
