@@ -37,7 +37,116 @@ const STOCK_MASTER = {
     'sp500': { name: 'ぱぱんSP500', type: 'linked', linkage: 'SP500', currency: 'point', initPrice: 100, volatility: 0.0, dividendRate: 0.005, desc: 'アメリカの景気と 連動するよ' }
 };
 
-// ... (中略) ...
+// --- 定数定義 ---
+const STORAGE_KEY = 'papan_records_v1';
+const GOAL_KEY = 'papan_goals_v1';
+const POINT_KEY = 'papan_points_v1';
+const REWARDED_KEY = 'papan_rewarded_goals_v1';
+const STAMP_KEY = 'papan_stamps_v1';
+const MARKET_KEY = 'papan_market_v1';
+const STOCK_KEY = 'papan_stocks_v1';
+const COLLECTION_KEY = 'papan_collection_v1';
+
+// --- 共通ヘルパー関数 ---
+function getUserNames() {
+    // ポイント、記録、株保有者などから全ユーザー名を収集
+    const points = JSON.parse(localStorage.getItem(POINT_KEY) || '{}');
+    const records = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    const stocks = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
+
+    const users = new Set([
+        ...Object.keys(points),
+        ...Object.keys(records),
+        ...Object.keys(stocks)
+    ]);
+    return Array.from(users).sort();
+}
+
+function getUserPoints(userName) {
+    const points = JSON.parse(localStorage.getItem(POINT_KEY) || '{}');
+    return points[userName] || 0;
+}
+
+function addPoints(userName, amount) {
+    if (!userName || amount <= 0) return;
+    const points = JSON.parse(localStorage.getItem(POINT_KEY) || '{}');
+    points[userName] = (points[userName] || 0) + amount;
+    localStorage.setItem(POINT_KEY, JSON.stringify(points));
+}
+
+function spendPoints(userName, amount) {
+    const points = JSON.parse(localStorage.getItem(POINT_KEY) || '{}');
+    const current = points[userName] || 0;
+    if (current >= amount) {
+        points[userName] = current - amount;
+        localStorage.setItem(POINT_KEY, JSON.stringify(points));
+        return true;
+    }
+    return false;
+}
+
+// どんぐり（第2通貨）の処理
+const DONGURI_KEY = 'papan_donguri_v1';
+function addDonguri(userName, amount) {
+    if (!userName || amount <= 0) return;
+    const db = JSON.parse(localStorage.getItem(DONGURI_KEY) || '{}');
+    db[userName] = (db[userName] || 0) + amount;
+    localStorage.setItem(DONGURI_KEY, JSON.stringify(db));
+}
+function spendDonguri(userName, amount) {
+    const db = JSON.parse(localStorage.getItem(DONGURI_KEY) || '{}');
+    const current = db[userName] || 0;
+    if (current >= amount) {
+        db[userName] = current - amount;
+        localStorage.setItem(DONGURI_KEY, JSON.stringify(db));
+        return true;
+    }
+    return false;
+}
+function getUserDonguri(userName) {
+    const db = JSON.parse(localStorage.getItem(DONGURI_KEY) || '{}');
+    return db[userName] || 0;
+}
+
+function getAllRecords() { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+function getAllGoals() { return JSON.parse(localStorage.getItem(GOAL_KEY) || '{}'); }
+function getAllStamps() { return JSON.parse(localStorage.getItem(STAMP_KEY) || '{}'); }
+
+// --- デイリーミッション関連ヘルパー ---
+const DAILY_MISSION_KEY = 'papan_daily_mission_v1';
+function getDailyMissionData() { return JSON.parse(localStorage.getItem(DAILY_MISSION_KEY) || '{}'); }
+function getTodayMissionIds() {
+    const today = getTodayString();
+    // 日替わりロジック（日付から乱数シードっぽく決定）
+    const seed = parseInt(today.replace(/-/g, ''));
+    const gameIds = Object.keys(GAME_LIST);
+    const count = 3; // 1日3つ
+    let missions = [];
+    for (let i = 0; i < count; i++) {
+        const idx = (seed + i * 13) % gameIds.length;
+        missions.push(gameIds[idx]);
+    }
+    return missions;
+}
+function checkMissionStatus(userName, gameId) {
+    const today = getTodayString();
+    const targets = getTodayMissionIds();
+    if (!targets.includes(gameId)) return { isTarget: false, isCleared: false };
+
+    // クリア済みかチェック
+    const data = getDailyMissionData();
+    const userMissions = data[userName] || {};
+    const clearedDate = userMissions[gameId];
+
+    return { isTarget: true, isCleared: (clearedDate === today) };
+}
+function setDailyMissionCompleted(userName, gameId) {
+    const data = getDailyMissionData();
+    if (!data[userName]) data[userName] = {};
+    data[userName][gameId] = getTodayString();
+    localStorage.setItem(DAILY_MISSION_KEY, JSON.stringify(data));
+}
+
 
 // --- 市場関連・日付計算 ---
 function getMarketData() {
