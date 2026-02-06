@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,8 @@
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
-            background-color: #e3f2fd; /* ビジネスっぽい薄い青 */
+            background-color: #e3f2fd;
+            /* ビジネスっぽい薄い青 */
             text-align: center;
             padding: 20px;
             margin: 0;
@@ -22,70 +24,161 @@
             background: white;
             padding: 20px;
             border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
 
-        h1 { margin: 0 0 10px 0; color: #1565c0; font-size: 24px; }
+        h1 {
+            margin: 0 0 10px 0;
+            color: #1565c0;
+            font-size: 24px;
+        }
 
         /* 資産表示 */
         .assets-area {
-            display: flex; justify-content: space-around;
-            background: #fff3e0; border: 2px solid #ffe0b2;
-            padding: 10px; border-radius: 10px; margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            background: #fff3e0;
+            border: 2px solid #ffe0b2;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
         }
-        .asset-val { font-weight: bold; font-size: 18px; color: #e65100; }
+
+        .asset-val {
+            font-weight: bold;
+            font-size: 18px;
+            color: #e65100;
+        }
 
         /* ニュースティッカー */
         .news-box {
-            background: #333; color: #00e5ff;
-            padding: 10px; border-radius: 5px; margin-bottom: 20px;
-            font-family: monospace; font-size: 14px;
-            white-space: nowrap; overflow: hidden;
+            background: #333;
+            color: #00e5ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
             border-left: 5px solid #ff1744;
         }
-        .news-text { display: inline-block; animation: marquee 10s linear infinite; }
-        @keyframes marquee { 
-            0% { transform: translateX(100%); } 
-            100% { transform: translateX(-100%); } 
+
+        .news-text {
+            display: inline-block;
+            animation: marquee 10s linear infinite;
+        }
+
+        @keyframes marquee {
+            0% {
+                transform: translateX(100%);
+            }
+
+            100% {
+                transform: translateX(-100%);
+            }
         }
 
         /* 銘柄リスト */
-        .stock-list { display: grid; gap: 15px; }
+        .stock-list {
+            display: grid;
+            gap: 15px;
+        }
 
         .stock-card {
-            background: #fff; border: 2px solid #ddd;
-            border-radius: 15px; padding: 15px;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            padding: 15px;
             text-align: left;
             transition: 0.2s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
-        .stock-card.up { border-color: #ff5252; background: #ffebee; }
-        .stock-card.down { border-color: #448aff; background: #e3f2fd; }
 
-        .st-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .st-name { font-size: 18px; font-weight: bold; }
-        .st-price { font-size: 22px; font-weight: bold; }
-        .st-change { font-size: 14px; margin-left: 10px; }
-        
-        .st-desc { font-size: 12px; color: #666; margin-bottom: 10px; }
+        .stock-card.up {
+            border-color: #ff5252;
+            background: #ffebee;
+        }
+
+        .stock-card.down {
+            border-color: #448aff;
+            background: #e3f2fd;
+        }
+
+        .st-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .st-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .st-price {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .st-change {
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .st-desc {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
 
         .st-actions {
-            display: flex; gap: 10px; margin-top: 10px; align-items: center;
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            align-items: center;
         }
-        .st-holdings { font-size: 14px; flex: 1; text-align: right; color: #555; }
-        
+
+        .st-holdings {
+            font-size: 14px;
+            flex: 1;
+            text-align: right;
+            color: #555;
+        }
+
         button.btn-trade {
-            padding: 8px 16px; border-radius: 20px; border: none; font-weight: bold; cursor: pointer; color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
         }
-        .btn-buy { background: #ff5252; }
-        .btn-sell { background: #4caf50; }
-        .btn-trade:disabled { background: #ccc; cursor: not-allowed; }
+
+        .btn-buy {
+            background: #ff5252;
+        }
+
+        .btn-sell {
+            background: #4caf50;
+        }
+
+        .btn-trade:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
 
         /* デバッグ用 */
         .debug-area {
-            margin-top: 50px; text-align: right; opacity: 0.3;
+            margin-top: 50px;
+            text-align: right;
+            opacity: 0.3;
         }
-        .debug-area:hover { opacity: 1; }
+
+        .debug-area:hover {
+            opacity: 1;
+        }
 
         /* ▼▼▼ 追加：リンクボタンのスタイル ▼▼▼ */
         .link-area {
@@ -95,6 +188,7 @@
             gap: 20px;
             align-items: center;
         }
+
         .btn-link {
             text-decoration: none;
             padding: 10px 20px;
@@ -104,185 +198,192 @@
             transition: 0.2s;
             display: inline-block;
         }
+
         .to-bank {
             background: #fff;
             color: #2e7d32;
             border: 2px solid #2e7d32;
             box-shadow: 0 2px 5px rgba(46, 125, 50, 0.2);
         }
+
         .to-home {
             color: #1565c0;
             text-decoration: underline;
         }
-        /* ▲▲▲ ここまで ▲▲▲ */
 
+        /* ▲▲▲ ここまで ▲▲▲ */
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h1>📈 ぱぱん証券</h1>
-    
-    <select id="user-select" onchange="updateUI()" style="padding: 5px; font-size: 16px; margin-bottom: 15px;">
-        <option value="">(なまえをえらんでね)</option>
-    </select>
+    <div class="container">
+        <h1>📈 ぱぱん証券</h1>
 
-    <div class="assets-area">
-        <div>💰 <span id="my-pts" class="asset-val">0</span> pt</div>
-        <div>🌰 <span id="my-don" class="asset-val">0</span></div>
-    </div>
+        <select id="user-select" onchange="updateUI()" style="padding: 5px; font-size: 16px; margin-bottom: 15px;">
+            <option value="">(なまえをえらんでね)</option>
+        </select>
 
-    <div class="news-box">
-        <div id="news-text" class="news-text">ニュースを読み込み中...</div>
-    </div>
-
-    <div id="stock-list" class="stock-list">
+        <div class="assets-area">
+            <div>💰 <span id="my-pts" class="asset-val">0</span> pt</div>
+            <div>🌰 <span id="my-don" class="asset-val">0</span></div>
         </div>
-    
-    <div style="margin-top: 20px; font-size: 12px; color: #aaa;">
-        ※株価は 1日に 1回 かわります。毎日チェックしてね。
+
+        <div class="news-box">
+            <div id="news-text" class="news-text">ニュースを読み込み中...</div>
+        </div>
+
+        <div id="stock-list" class="stock-list">
+        </div>
+
+        <div style="margin-top: 20px; font-size: 12px; color: #aaa;">
+            ※株価は 1日に 1回 かわります。毎日チェックしてね。
+        </div>
+
+        <div class="link-area">
+            <a href="index.html" class="btn-link to-home">🏠 ホームへもどる</a>
+            <a href="bank.html" class="btn-link to-bank">🏦 ぱぱん銀行へいく</a>
+        </div>
+        <div class="debug-area">
+            <button onclick="debugResetDate()" style="font-size:10px;">[DEBUG] 日付をリセットする</button>
+        </div>
     </div>
 
-    <div class="link-area">
-        <a href="index.html" class="btn-link to-home">🏠 ホームへもどる</a>
-        <a href="bank.html" class="btn-link to-bank">🏦 ぱぱん銀行へいく</a>
-    </div>
-    <div class="debug-area">
-        <button onclick="debugResetDate()" style="font-size:10px;">[DEBUG] 日付をリセットする</button>
-    </div>
-</div>
+    <script>
+        const STOCK_KEYS = ['motor', 'food', 'tech', 'nikkei', 'sp500'];
 
-<script>
-    const STOCK_KEYS = ['motor', 'food', 'tech'];
+        window.onload = function () {
+            const users = getUserNames();
+            const select = document.getElementById('user-select');
+            users.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u;
+                opt.innerText = u;
+                select.appendChild(opt);
+            });
 
-    window.onload = function() {
-        const users = getUserNames();
-        const select = document.getElementById('user-select');
-        users.forEach(u => {
-            const opt = document.createElement('option');
-            opt.value = u;
-            opt.innerText = u;
-            select.appendChild(opt);
-        });
+            // 1. まず画面を今の状態ですぐに表示（ユーザーを待たせない）
+            updateUI();
 
-        // 1. まずページを開いた瞬間に「日付が変わったか？」をチェック
-        // もし変わっていたら、更新処理(reportが返ってくる)が走る
-        const report = checkAndAdvanceDate();
-        
-        // 2. 画面を今の状態に更新
-        updateUI();
+            // 2. 裏で「日付が変わったか？」をチェック
+            // ※リアル連動データの取得で数秒かかる場合があるので、画面表示後に実行
+            checkAndAdvanceDate().then(report => {
+                // もし更新があったら、もう一度画面を描画しなおす
+                if (report) {
+                    updateUI();
 
-        // 3. もし更新があったなら、通知を出す
-        if (report && report.length >= 0) {
-            let msg = "📅 新しい日になりました！\n株価が変動しました。";
-            if (report.length > 0) {
-                msg += "\n\n【配当金のお知らせ】\n" + report.join("\n");
-            }
-            // 少し遅らせてアラート（画面描画を待つため）
-            setTimeout(() => alert(msg), 100);
-        }
-    };
+                    if (report.length >= 0) {
+                        let msg = "📅 新しい日になりました！\n株価が変動しました。";
+                        if (report.length > 0) {
+                            msg += "\n\n【配当金のお知らせ】\n" + report.join("\n");
+                        }
+                        setTimeout(() => alert(msg), 100);
+                    }
+                }
+            });
+        };
 
-    function updateUI() {
-        const userName = document.getElementById('user-select').value;
-        const market = getMarketData();
-        
-        document.getElementById('news-text').innerText = market.news;
+        function updateUI() {
+            const userName = document.getElementById('user-select').value;
+            const market = getMarketData();
 
-        if (userName) {
-            document.getElementById('my-pts').innerText = getUserPoints(userName);
-            document.getElementById('my-don').innerText = getUserDonguri(userName);
-        } else {
-            document.getElementById('my-pts').innerText = 0;
-            document.getElementById('my-don').innerText = 0;
-        }
+            document.getElementById('news-text').innerText = market.news;
 
-        const container = document.getElementById('stock-list');
-        container.innerHTML = '';
-
-        STOCK_KEYS.forEach(key => {
-            const info = STOCK_MASTER[key];
-            const price = market.prices[key];
-            const lastPrice = market.lastPrices[key];
-            const diff = price - lastPrice;
-            
-            let holdings = 0;
             if (userName) {
-                const stocks = getUserStocks(userName) || {};
-                holdings = stocks[key] || 0;
+                document.getElementById('my-pts').innerText = getUserPoints(userName);
+                document.getElementById('my-don').innerText = getUserDonguri(userName);
+            } else {
+                document.getElementById('my-pts').innerText = 0;
+                document.getElementById('my-don').innerText = 0;
             }
 
-            let colorClass = '';
-            let sign = '±';
-            if (diff > 0) { colorClass = 'up'; sign = '+'; }
-            else if (diff < 0) { colorClass = 'down'; sign = ''; }
+            const container = document.getElementById('stock-list');
+            container.innerHTML = '';
 
-            const unit = info.currency === 'point' ? 'pt' : '🌰';
+            STOCK_KEYS.forEach(key => {
+                const info = STOCK_MASTER[key];
+                const price = market.prices[key];
+                const lastPrice = market.lastPrices[key];
+                const diff = price - lastPrice;
 
-            const html = `
+                let holdings = 0;
+                if (userName) {
+                    const stocks = getUserStocks(userName) || {};
+                    holdings = stocks[key] || 0;
+                }
+
+                let colorClass = '';
+                let sign = '±';
+                if (diff > 0) { colorClass = 'up'; sign = '+'; }
+                else if (diff < 0) { colorClass = 'down'; sign = ''; }
+
+                const unit = info.currency === 'point' ? 'pt' : '🌰';
+
+                const html = `
                 <div class="stock-card ${colorClass}">
                     <div class="st-header">
                         <span class="st-name">${info.name}</span>
                         <div>
                             <span class="st-price">${price} <span style="font-size:14px">${unit}</span></span>
-                            <span class="st-change" style="color:${diff>0?'red':(diff<0?'blue':'gray')}">${sign}${diff}</span>
+                            <span class="st-change" style="color:${diff > 0 ? 'red' : (diff < 0 ? 'blue' : 'gray')}">${sign}${diff}</span>
                         </div>
                     </div>
-                    <div class="st-desc">${info.desc} (配当: ${Math.floor(info.dividendRate*100)}%)</div>
+                    <div class="st-desc">${info.desc} (配当: ${Math.floor(info.dividendRate * 100)}%)</div>
                     
                     <div class="st-actions">
-                        <button class="btn-trade btn-buy" onclick="trade('${key}', 'buy')" ${!userName?'disabled':''}>買う</button>
-                        <button class="btn-trade btn-sell" onclick="trade('${key}', 'sell')" ${!userName||holdings<=0?'disabled':''}>売る</button>
+                        <button class="btn-trade btn-buy" onclick="trade('${key}', 'buy')" ${!userName ? 'disabled' : ''}>買う</button>
+                        <button class="btn-trade btn-sell" onclick="trade('${key}', 'sell')" ${!userName || holdings <= 0 ? 'disabled' : ''}>売る</button>
                         <div class="st-holdings">持ち株: <b>${holdings}</b> 株</div>
                     </div>
                 </div>
             `;
-            container.insertAdjacentHTML('beforeend', html);
-        });
-    }
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
 
-    function trade(stockId, type) {
-        const userName = document.getElementById('user-select').value;
-        if (!userName) return;
+        function trade(stockId, type) {
+            const userName = document.getElementById('user-select').value;
+            if (!userName) return;
 
-        const amount = 1;
-        
-        if (type === 'buy') {
-            const market = getMarketData();
-            const price = market.prices[stockId];
-            const info = STOCK_MASTER[stockId];
-            const unit = info.currency === 'point' ? 'pt' : '🌰';
+            const amount = 1;
 
-            if(confirm(`${info.name} を ${price}${unit} で 1株 買いますか？`)) {
-                const success = buyStock(userName, stockId, amount);
+            if (type === 'buy') {
+                const market = getMarketData();
+                const price = market.prices[stockId];
+                const info = STOCK_MASTER[stockId];
+                const unit = info.currency === 'point' ? 'pt' : '🌰';
+
+                if (confirm(`${info.name} を ${price}${unit} で 1株 買いますか？`)) {
+                    const success = buyStock(userName, stockId, amount);
+                    if (success) {
+                        alert("かいました！");
+                        updateUI();
+                    } else {
+                        alert(`${unit}が 足りないよ！`);
+                    }
+                }
+            } else {
+                const success = sellStock(userName, stockId, amount);
                 if (success) {
-                    alert("かいました！");
+                    alert("うりました！");
                     updateUI();
                 } else {
-                    alert(`${unit}が 足りないよ！`);
+                    alert("売れる株をもっていないよ");
                 }
             }
-        } else {
-            const success = sellStock(userName, stockId, amount);
-            if (success) {
-                alert("うりました！");
-                updateUI();
-            } else {
-                alert("売れる株をもっていないよ");
-            }
         }
-    }
 
-    // デバッグ用: 保存された日付を消す（＝次回アクセス時に必ず更新が走る）
-    function debugResetDate() {
-        const market = getMarketData();
-        market.lastUpdate = ""; 
-        localStorage.setItem('papan_market_v3', JSON.stringify(market));
-        alert("日付データをリセットしました。\nページをリロードすると「次の日」になります。");
-        location.reload();
-    }
+        // デバッグ用: 保存された日付を消す（＝次回アクセス時に必ず更新が走る）
+        function debugResetDate() {
+            const market = getMarketData();
+            market.lastUpdate = "";
+            localStorage.setItem('papan_market_v3', JSON.stringify(market));
+            alert("日付データをリセットしました。\nページをリロードすると「次の日」になります。");
+            location.reload();
+        }
 
-</script>
+    </script>
 
 </body>
+
 </html>

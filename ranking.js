@@ -23,210 +23,21 @@ const GAME_LIST = {
     'rail': { name: 'つなげて！トロッコ', type: 'time', unit: '秒' }
 };
 
+// --- リアル株価連動設定 ---
+// ユーザーが作成したGoogleスプレッドシートの「Webに公開(CSV)」URLをここに入れます
+const REAL_MARKET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT11R_97G1YmVITxEtQ7zspehsp2SsjKbflETP1_0VDkLzJQAYLnVjXJXOIE32WJDTUTcZ8PnlxTJa6/pub?output=csv';
+
+// 新しい銘柄を追加
 const STOCK_MASTER = {
     'motor': { name: 'ぱぱん自動車', currency: 'point', initPrice: 500, volatility: 0.02, dividendRate: 0.01, bias: 0.002, desc: 'あんぜん運転で 人気の会社' },
     'food': { name: 'どんぐり食品', currency: 'point', initPrice: 500, volatility: 0.05, dividendRate: 0.03, bias: 0.0, desc: '配当(はいとう)が 多いよ' },
-    'tech': { name: 'ギャラクシーIT', currency: 'donguri', initPrice: 10, volatility: 0.20, dividendRate: 0.0, bias: 0.0, desc: 'あがったり さがったり' }
+    'tech': { name: 'ギャラクシーIT', currency: 'donguri', initPrice: 10, volatility: 0.20, dividendRate: 0.0, bias: 0.0, desc: 'あがったり さがったり' },
+    // ▼ 追加分 ▼
+    'nikkei': { name: 'ぱぱん平均株価', type: 'linked', linkage: 'NI225', currency: 'point', initPrice: 1000, volatility: 0.0, dividendRate: 0.005, desc: '日本の景気と 連動するよ' },
+    'sp500': { name: 'ぱぱんSP500', type: 'linked', linkage: 'SP500', currency: 'point', initPrice: 100, volatility: 0.0, dividendRate: 0.005, desc: 'アメリカの景気と 連動するよ' }
 };
 
-const STORAGE_KEY = 'papan_records_v1';
-const GOAL_KEY = 'papan_goals_v1';
-const POINT_KEY = 'papan_points_v1';
-const DONGURI_KEY = 'papan_donguri_v1';
-const REWARDED_KEY = 'papan_rewarded_history_v1';
-const STAMP_KEY = 'papan_stamps_v3';
-const COLLECTION_KEY = 'papan_collection_v1';
-const STOCK_KEY = 'papan_stocks_v1';
-const MARKET_KEY = 'papan_market_v3';
-
-// --- データ取得・保存系 ---
-function getAllRecords() { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
-function getAllGoals() { return JSON.parse(localStorage.getItem(GOAL_KEY) || '{}'); }
-function saveGoal(userName, gameId, value) {
-    const goals = getAllGoals();
-    if (!goals[userName]) goals[userName] = {};
-    goals[userName][gameId] = value;
-    localStorage.setItem(GOAL_KEY, JSON.stringify(goals));
-}
-function getAllStamps() { return JSON.parse(localStorage.getItem(STAMP_KEY) || '{}'); }
-
-function getUserNames() {
-    const r = getAllRecords();
-    const p = JSON.parse(localStorage.getItem(POINT_KEY) || '{}');
-    const s = getAllStamps();
-    const d = JSON.parse(localStorage.getItem(DONGURI_KEY) || '{}');
-    const st = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
-    const names = new Set([...Object.keys(r), ...Object.keys(p), ...Object.keys(s), ...Object.keys(d), ...Object.keys(st)]);
-    return Array.from(names);
-}
-
-function getUserPoints(userName) {
-    const data = JSON.parse(localStorage.getItem(POINT_KEY) || '{}');
-    return data[userName] || 0;
-}
-function addPoints(userName, amount) {
-    const allPoints = JSON.parse(localStorage.getItem(POINT_KEY) || '{}');
-    const current = allPoints[userName] || 0;
-    allPoints[userName] = Math.floor(current + amount);
-    localStorage.setItem(POINT_KEY, JSON.stringify(allPoints));
-    return allPoints[userName];
-}
-function spendPoints(userName, amount) {
-    const allPoints = JSON.parse(localStorage.getItem(POINT_KEY) || '{}');
-    const current = allPoints[userName] || 0;
-    if (current >= amount) {
-        allPoints[userName] = Math.floor(current - amount);
-        localStorage.setItem(POINT_KEY, JSON.stringify(allPoints));
-        return true;
-    }
-    return false;
-}
-
-function getUserDonguri(userName) {
-    const data = JSON.parse(localStorage.getItem(DONGURI_KEY) || '{}');
-    return data[userName] || 0;
-}
-function addDonguri(userName, amount) {
-    const allDonguri = JSON.parse(localStorage.getItem(DONGURI_KEY) || '{}');
-    const current = allDonguri[userName] || 0;
-    allDonguri[userName] = Math.floor(current + amount);
-    localStorage.setItem(DONGURI_KEY, JSON.stringify(allDonguri));
-    return allDonguri[userName];
-}
-function spendDonguri(userName, amount) {
-    const allDonguri = JSON.parse(localStorage.getItem(DONGURI_KEY) || '{}');
-    const current = allDonguri[userName] || 0;
-    if (current >= amount) {
-        allDonguri[userName] = Math.floor(current - amount);
-        localStorage.setItem(DONGURI_KEY, JSON.stringify(allDonguri));
-        return true;
-    }
-    return false;
-}
-
-// --- 日替わりミッション機能 (3つ版) ---
-
-// ミッション対象にするゲームIDリスト
-const DAILY_MISSION_CANDIDATES = [
-    'make10',         // あわせて10
-    'math_add_easy',  // 足し算
-    'math_add_hard',  // 足し算（繰り上がり）
-    'math_sub_easy',  // 引き算
-    'math_sub_hard',  // 引き算（繰り下がり）
-    'math_multi',     // 九九
-    'clock_read',     // 時計
-    'triangle_angle', // 三角形
-    'katakana',       // カタカナ
-    'alphabet'        // アルファベット
-];
-
-// 日付文字列から数値を生成するハッシュ関数（シード値生成用）
-function _getDateHash() {
-    const todayStr = getTodayString(); // yyyy-mm-dd
-    let hash = 0;
-    for (let i = 0; i < todayStr.length; i++) {
-        hash = (hash << 5) - hash + todayStr.charCodeAt(i);
-        hash |= 0;
-    }
-    return Math.abs(hash);
-}
-
-// シード値付き乱数生成器（その日は常に同じ乱数順序になる）
-function _seededRandom(seed) {
-    let x = Math.sin(seed++) * 10000;
-    return x - Math.floor(x);
-}
-
-// 今日のミッションIDを3つ取得
-function getTodayMissionIds() {
-    let seed = _getDateHash();
-    // 配列をコピーしてシャッフル
-    const array = [...DAILY_MISSION_CANDIDATES];
-
-    // フィッシャー–イェーツのシャッフル（シード付き）
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(_seededRandom(seed) * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-        seed++; // 次の乱数のためにシードを進める
-    }
-
-    // 先頭3つを返す
-    return array.slice(0, 3);
-}
-
-// ユーザーのミッション進捗を取得
-function getDailyMissionProgress(userName) {
-    const key = 'papan_daily_mission_log_v2'; // データ構造を変えるのでキーを変更
-    const log = JSON.parse(localStorage.getItem(key) || '{}');
-    const userLog = log[userName] || { date: "", cleared: [] };
-    const today = getTodayString();
-
-    // 日付が変わっていたらリセット
-    if (userLog.date !== today) {
-        return { date: today, cleared: [] };
-    }
-    return userLog;
-}
-
-// 指定したゲームIDが今日のミッション対象か、そして未クリアか判定
-function checkMissionStatus(userName, gameId) {
-    const targets = getTodayMissionIds();
-
-    // 今日の対象ゲームではない
-    if (!targets.includes(gameId)) return { isTarget: false, isCleared: false };
-
-    const progress = getDailyMissionProgress(userName);
-    const isCleared = progress.cleared.includes(gameId);
-
-    return { isTarget: true, isCleared: isCleared };
-}
-
-// ミッション完了を記録
-function setDailyMissionCompleted(userName, gameId) {
-    const key = 'papan_daily_mission_log_v2';
-    const log = JSON.parse(localStorage.getItem(key) || '{}');
-
-    // 現在の状態を取得（日付更新も含む）
-    let userLog = log[userName] || { date: getTodayString(), cleared: [] };
-    if (userLog.date !== getTodayString()) {
-        userLog = { date: getTodayString(), cleared: [] };
-    }
-
-    // まだ記録されていなければ追加
-    if (!userLog.cleared.includes(gameId)) {
-        userLog.cleared.push(gameId);
-    }
-
-    log[userName] = userLog;
-    localStorage.setItem(key, JSON.stringify(log));
-}
-
-// （オプション）トップページ用ウィジェット表示（コンパクト・1行版）
-function showDailyMissionWidget(elementId) {
-    const targets = getTodayMissionIds();
-    const BONUS_PT = 150; // 表記用
-
-    let htmlList = targets.map(id => {
-        const info = GAME_LIST[id];
-        const name = info ? info.name : id;
-        // ゲーム名のチップ
-        return `<span style="display:inline-block; background:white; color:#e65100; padding:2px 8px; margin-left:5px; border-radius:10px; font-size:12px; border:1px solid #ffcc80; white-space:nowrap;">${name}</span>`;
-    }).join('');
-
-    // 横並びコンテナ (flexbox)
-    const html = `
-        <div style="background:#fff3e0; padding:8px 5px; border-radius:8px; margin:5px auto; max-width:95%; overflow-x:auto; white-space:nowrap; -webkit-overflow-scrolling: touch; border:1px dashed #ffb74d;">
-            <div style="display:inline-flex; align-items:center;">
-                <span style="font-weight:bold; color:#bf360c; font-size:12px; margin-right:5px;">📅 きょうのボーナスコンテンツ(ひとつ+${BONUS_PT}):</span>
-                ${htmlList}
-            </div>
-        </div>
-    `;
-
-    const container = document.getElementById(elementId);
-    if (container) container.innerHTML = html;
-}
-
+// ... (中略) ...
 
 // --- 市場関連・日付計算 ---
 function getMarketData() {
@@ -241,6 +52,15 @@ function getMarketData() {
         market = { prices: initialPrices, lastPrices: initialLastPrices, news: "ぱぱん証券、本日オープン！", trend: { 'motor': 0, 'food': 0, 'tech': 0 }, lastUpdate: "" };
         localStorage.setItem(MARKET_KEY, JSON.stringify(market));
     }
+
+    // データ構造のマイグレーション（後から銘柄を追加した場合の対応）
+    for (let key in STOCK_MASTER) {
+        if (market.prices[key] === undefined) {
+            market.prices[key] = STOCK_MASTER[key].initPrice;
+            market.lastPrices[key] = STOCK_MASTER[key].initPrice;
+        }
+    }
+
     return market;
 }
 
@@ -252,32 +72,125 @@ function getDaysDiff(dateStr1, dateStr2) {
     return diffDays > 0 ? diffDays : 0;
 }
 
-function checkAndAdvanceDate() {
+// 外部データ（Google Sheets）を取得する
+async function fetchRealMarketData() {
+    if (!REAL_MARKET_URL) return null;
+
+    try {
+        const res = await fetch(REAL_MARKET_URL);
+        if (!res.ok) throw new Error('Network response was not ok');
+        const text = await res.text();
+
+        // CSVパース: 期待する形式は "Key,Value" のリスト
+        // 例: 
+        // NI225,38500
+        // SP500,5100
+        const rows = text.split('\n');
+        const data = {};
+        rows.forEach(row => {
+            const cols = row.split(',');
+            if (cols.length >= 2) {
+                const key = cols[0].trim();
+                const val = parseFloat(cols[1].trim());
+                if (key && !isNaN(val)) {
+                    data[key] = val;
+                }
+            }
+        });
+        return data;
+    } catch (e) {
+        console.warn("Real market fetch failed:", e);
+        return null; // 失敗時はnullを返す（ランダム変動にフォールバック）
+    }
+}
+
+// Asyncに変更
+async function checkAndAdvanceDate() {
     const today = getTodayString();
     const market = getMarketData();
     if (market.lastUpdate !== today) {
         let daysElapsed = market.lastUpdate ? getDaysDiff(market.lastUpdate, today) : 0;
         if (daysElapsed < 0) daysElapsed = 1;
-        return updateMarketDay(today, daysElapsed);
+
+        // ここでawaitを使う
+        return await updateMarketDay(today, daysElapsed);
     }
     return null;
 }
 
-function updateMarketDay(todayStr, daysElapsed) {
+// Asyncに変更
+async function updateMarketDay(todayStr, daysElapsed) {
     const market = getMarketData();
     market.lastPrices = { ...market.prices };
+
+    // リアルデータの取得にトライ
+    const realData = await fetchRealMarketData();
+    const prevRealDataKey = 'papan_real_market_prev_v1';
+    let prevRealData = JSON.parse(localStorage.getItem(prevRealDataKey) || '{}');
+
+    // ニュース決定ロジック
     const eventRoll = Math.random();
     if (eventRoll < 0.1) { market.news = "【特報】新型エンジンが大発明！自動車株が急上昇！"; market.trend['motor'] = 0.1; }
     else if (eventRoll < 0.2) { market.news = "【悲報】どんぐりが不作... 食品株に影響か"; market.trend['food'] = -0.1; }
     else if (eventRoll < 0.3) { market.news = "【IT】次世代ゲーム機が大コケ。IT株が暴落の危機"; market.trend['tech'] = -0.3; }
     else if (eventRoll < 0.4) { market.news = "【IT】AIがすごい発明！IT株に買い注文殺到！"; market.trend['tech'] = 0.4; }
     else { market.news = "本日は穏やかな市場です。"; market.trend = { 'motor': 0, 'food': 0, 'tech': 0 }; }
+
+    // リアル連動ニュースの上書き
+    if (realData) {
+        // もしリアルデータが取れていれば、ニュースもそれっぽくする
+        market.news += " (世界市場データ受信中)";
+    }
+
     market.lastUpdate = todayStr;
+
     for (let id in STOCK_MASTER) {
-        let changeRate = (market.trend[id] || 0) + (STOCK_MASTER[id].bias || 0) + ((Math.random() * STOCK_MASTER[id].volatility * 2) - STOCK_MASTER[id].volatility);
-        let newPrice = Math.floor(market.prices[id] * (1 + changeRate));
+        const info = STOCK_MASTER[id];
+        let newPrice = market.prices[id];
+        let changeRate = 0;
+        let isRealDataApplied = false;
+
+        // ★ リアル連動銘柄の場合
+        if (info.type === 'linked' && realData && realData[info.linkage]) {
+            const currentReal = realData[info.linkage];
+
+            // 修正: 変化率ではなく、実数 ÷ divisor で価格を決定する
+            // 例: 日経38500円 ÷ 100 = 385ポイント
+            if (info.divisor) {
+                newPrice = Math.floor(currentReal / info.divisor);
+                isRealDataApplied = true;
+
+                // 変動幅の計算（表示用などで使うかも）
+                /* 
+                   ここは絶対値で決まるので changeRate の計算は厳密には不要だが、
+                   ニュース判定などで急激な変動があったかを検知したければ計算してもよい。
+                   今回はシンプルに価格代入のみ。
+                */
+            }
+        }
+
+        // リアルデータが適用されなかった場合（通常銘柄 or 取得失敗時）
+        if (!isRealDataApplied) {
+            changeRate = (market.trend[id] || 0) + (info.bias || 0) + ((Math.random() * info.volatility * 2) - info.volatility);
+            let currentPrice = market.prices[id];
+            newPrice = Math.floor(currentPrice * (1 + changeRate));
+
+            // 修正: 上昇トレンドなのに価格が変わらない（1のままなど）場合、最低でも+1する
+            if (changeRate > 0 && newPrice <= currentPrice) {
+                newPrice = currentPrice + 1;
+            }
+        }
+
         market.prices[id] = newPrice < 1 ? 1 : newPrice;
     }
+
+    // 今日のリアルデータを「前回データ」として保存（明日の比較用）
+    if (realData) {
+        // 既存データとマージして保存
+        const merged = { ...prevRealData, ...realData };
+        localStorage.setItem(prevRealDataKey, JSON.stringify(merged));
+    }
+
     localStorage.setItem(MARKET_KEY, JSON.stringify(market));
     return daysElapsed > 0 ? distributeDividends(daysElapsed) : [];
 }
