@@ -112,14 +112,34 @@ function getAllRecords() { return JSON.parse(localStorage.getItem(STORAGE_KEY) |
 function getAllGoals() { return JSON.parse(localStorage.getItem(GOAL_KEY) || '{}'); }
 function getAllStamps() { return JSON.parse(localStorage.getItem(STAMP_KEY) || '{}'); }
 
-// --- デイリーミッション関連ヘルパー ---
+// --- 日替わりミッション機能 (3つ版) ---
+
+// ミッション対象にするゲームIDリスト
+const DAILY_MISSION_CANDIDATES = [
+    'make10',         // あわせて10
+    'math_add_hard',  // 足し算（繰り上がり）
+    'math_sub_easy',  // 引き算
+    'math_sub_hard',  // 引き算（繰り下がり）
+    'math_multi',     // 九九
+    'clock_read',     // 時計
+    'triangle_angle', // 三角形
+    'katakana',       // カタカナ
+    'alphabet',       // アルファベット
+    'romaji_hole',    // ローマ字
+    'shopping',       // おかいもの
+    'rain_math'       // あめふり算数
+];
+
 const DAILY_MISSION_KEY = 'papan_daily_mission_v1';
 function getDailyMissionData() { return JSON.parse(localStorage.getItem(DAILY_MISSION_KEY) || '{}'); }
 function getTodayMissionIds() {
     const today = getTodayString();
     // 日替わりロジック（日付から乱数シードっぽく決定）
     const seed = parseInt(today.replace(/-/g, ''));
-    const gameIds = Object.keys(GAME_LIST);
+
+    // 修正: 全ゲームではなく、勉強系リストから選ぶ
+    const gameIds = DAILY_MISSION_CANDIDATES;
+
     const count = 3; // 1日3つ
     let missions = [];
     for (let i = 0; i < count; i++) {
