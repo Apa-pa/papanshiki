@@ -1,32 +1,32 @@
 /* ranking.js - 記録・目標・ポイント・スタンプ・どんぐり・株 管理 (全国ランキングUI改善版) */
 
 const GAME_LIST = {
-    'make10':         { name: 'あわせて10',         type: 'time',  unit: '秒' },
-    'math_add_easy':  { name: 'たしざん(くりあがりなし)',     type: 'time',  unit: '秒' },
-    'math_add_hard':  { name: 'たしざん(くりあがりあり)',     type: 'time',  unit: '秒' },
-    'math_sub_easy':  { name: 'ひきざん(くりさがりなし)',     type: 'time',  unit: '秒' },
-    'math_sub_hard':  { name: 'ひきざん(くりさがりあり)',     type: 'time',  unit: '秒' },
-    'math_multi':     { name: 'かけざん九九',       type: 'time',  unit: '秒' },
-    'rain_math':      { name: 'あめふり算数',       type: 'score', unit: '点' },
-    'clock_read':     { name: 'とけいの読み方',     type: 'time',  unit: '秒' },
-    'triangle_angle': { name: '三角形の内角',       type: 'time',  unit: '秒' },
-    'katakana':       { name: 'カタカナ変換',       type: 'time',  unit: '秒' },
-    'alphabet':       { name: 'a-zアルファベット',  type: 'time',  unit: '秒' },
-    'romaji_hole':    { name: 'ローマ字虫くい',     type: 'time',  unit: '秒' },
-    'rain_vowel':     { name: 'あめふりローマ字(母)', type: 'score', unit: '点' },
+    'make10': { name: 'あわせて10', type: 'time', unit: '秒' },
+    'math_add_easy': { name: 'たしざん(くりあがりなし)', type: 'time', unit: '秒' },
+    'math_add_hard': { name: 'たしざん(くりあがりあり)', type: 'time', unit: '秒' },
+    'math_sub_easy': { name: 'ひきざん(くりさがりなし)', type: 'time', unit: '秒' },
+    'math_sub_hard': { name: 'ひきざん(くりさがりあり)', type: 'time', unit: '秒' },
+    'math_multi': { name: 'かけざん九九', type: 'time', unit: '秒' },
+    'rain_math': { name: 'あめふり算数', type: 'score', unit: '点' },
+    'clock_read': { name: 'とけいの読み方', type: 'time', unit: '秒' },
+    'triangle_angle': { name: '三角形の内角', type: 'time', unit: '秒' },
+    'katakana': { name: 'カタカナ変換', type: 'time', unit: '秒' },
+    'alphabet': { name: 'a-zアルファベット', type: 'time', unit: '秒' },
+    'romaji_hole': { name: 'ローマ字虫くい', type: 'time', unit: '秒' },
+    'rain_vowel': { name: 'あめふりローマ字(母)', type: 'score', unit: '点' },
     'rain_consonant': { name: 'あめふりローマ字(子)', type: 'score', unit: '点' },
-    'touch25':        { name: '1から25までタッチ',  type: 'time',  unit: '秒' },
-    'tsumitsumi':     { name: '漢字つみつみ',       type: 'score', unit: 'こ' },
-    'eawase':         { name: 'えあわせ',           type: 'time',  unit: '秒' },
-    'shopping':       { name: 'ぴったりしはらい',   type: 'time',  unit: '秒' },
-    'water':          { name: '水槽パズル',         type: 'time',  unit: '秒' },
-    'rail':           { name: 'つなげて！トロッコ', type: 'time', unit: '秒' }
+    'touch25': { name: '1から25までタッチ', type: 'time', unit: '秒' },
+    'tsumitsumi': { name: '漢字つみつみ', type: 'score', unit: 'こ' },
+    'eawase': { name: 'えあわせ', type: 'time', unit: '秒' },
+    'shopping': { name: 'ぴったりしはらい', type: 'time', unit: '秒' },
+    'water': { name: '水槽パズル', type: 'time', unit: '秒' },
+    'rail': { name: 'つなげて！トロッコ', type: 'time', unit: '秒' }
 };
 
 const STOCK_MASTER = {
     'motor': { name: 'ぱぱん自動車', currency: 'point', initPrice: 500, volatility: 0.02, dividendRate: 0.01, bias: 0.002, desc: 'あんぜん運転で 人気の会社' },
-    'food':  { name: 'どんぐり食品', currency: 'point', initPrice: 500, volatility: 0.05, dividendRate: 0.03, bias: 0.0, desc: '配当(はいとう)が 多いよ' },
-    'tech':  { name: 'ギャラクシーIT', currency: 'donguri', initPrice: 10, volatility: 0.20, dividendRate: 0.0, bias: 0.0, desc: 'あがったり さがったり' }
+    'food': { name: 'どんぐり食品', currency: 'point', initPrice: 500, volatility: 0.05, dividendRate: 0.03, bias: 0.0, desc: '配当(はいとう)が 多いよ' },
+    'tech': { name: 'ギャラクシーIT', currency: 'donguri', initPrice: 10, volatility: 0.20, dividendRate: 0.0, bias: 0.0, desc: 'あがったり さがったり' }
 };
 
 const STORAGE_KEY = 'papan_records_v1';
@@ -37,7 +37,7 @@ const REWARDED_KEY = 'papan_rewarded_history_v1';
 const STAMP_KEY = 'papan_stamps_v3';
 const COLLECTION_KEY = 'papan_collection_v1';
 const STOCK_KEY = 'papan_stocks_v1';
-const MARKET_KEY = 'papan_market_v3'; 
+const MARKET_KEY = 'papan_market_v3';
 
 // --- データ取得・保存系 ---
 function getAllRecords() { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
@@ -142,14 +142,14 @@ function getTodayMissionIds() {
     let seed = _getDateHash();
     // 配列をコピーしてシャッフル
     const array = [...DAILY_MISSION_CANDIDATES];
-    
+
     // フィッシャー–イェーツのシャッフル（シード付き）
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(_seededRandom(seed) * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
         seed++; // 次の乱数のためにシードを進める
     }
-    
+
     // 先頭3つを返す
     return array.slice(0, 3);
 }
@@ -171,7 +171,7 @@ function getDailyMissionProgress(userName) {
 // 指定したゲームIDが今日のミッション対象か、そして未クリアか判定
 function checkMissionStatus(userName, gameId) {
     const targets = getTodayMissionIds();
-    
+
     // 今日の対象ゲームではない
     if (!targets.includes(gameId)) return { isTarget: false, isCleared: false };
 
@@ -185,7 +185,7 @@ function checkMissionStatus(userName, gameId) {
 function setDailyMissionCompleted(userName, gameId) {
     const key = 'papan_daily_mission_log_v2';
     const log = JSON.parse(localStorage.getItem(key) || '{}');
-    
+
     // 現在の状態を取得（日付更新も含む）
     let userLog = log[userName] || { date: getTodayString(), cleared: [] };
     if (userLog.date !== getTodayString()) {
@@ -196,7 +196,7 @@ function setDailyMissionCompleted(userName, gameId) {
     if (!userLog.cleared.includes(gameId)) {
         userLog.cleared.push(gameId);
     }
-    
+
     log[userName] = userLog;
     localStorage.setItem(key, JSON.stringify(log));
 }
@@ -222,9 +222,9 @@ function showDailyMissionWidget(elementId) {
             </div>
         </div>
     `;
-    
+
     const container = document.getElementById(elementId);
-    if(container) container.innerHTML = html;
+    if (container) container.innerHTML = html;
 }
 
 
@@ -234,7 +234,7 @@ function getMarketData() {
     if (!market) {
         const initialPrices = {};
         const initialLastPrices = {};
-        for(let key in STOCK_MASTER){
+        for (let key in STOCK_MASTER) {
             initialPrices[key] = STOCK_MASTER[key].initPrice;
             initialLastPrices[key] = STOCK_MASTER[key].initPrice;
         }
@@ -248,7 +248,7 @@ function getDaysDiff(dateStr1, dateStr2) {
     const d1 = new Date(dateStr1);
     const d2 = new Date(dateStr2);
     const diffTime = d2 - d1;
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     return diffDays > 0 ? diffDays : 0;
 }
 
@@ -260,7 +260,7 @@ function checkAndAdvanceDate() {
         if (daysElapsed < 0) daysElapsed = 1;
         return updateMarketDay(today, daysElapsed);
     }
-    return null; 
+    return null;
 }
 
 function updateMarketDay(todayStr, daysElapsed) {
@@ -318,7 +318,7 @@ function buyStock(userName, stockId, amount) {
     const info = STOCK_MASTER[stockId];
     // 今の株価 × 買う数
     const cost = market.prices[stockId] * amount;
-    
+
     // お金（ポイント or どんぐり）が足りるかチェックして支払う
     let success = false;
     if (info.currency === 'point') {
@@ -331,7 +331,7 @@ function buyStock(userName, stockId, amount) {
     if (success) {
         const allStocks = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
         if (!allStocks[userName]) allStocks[userName] = {};
-        
+
         allStocks[userName][stockId] = (allStocks[userName][stockId] || 0) + amount;
         localStorage.setItem(STOCK_KEY, JSON.stringify(allStocks));
         return true;
@@ -355,7 +355,7 @@ function sellStock(userName, stockId, amount) {
         const price = market.prices[stockId];
         const gain = price * amount;
         const info = STOCK_MASTER[stockId];
-        
+
         if (info.currency === 'point') {
             addPoints(userName, gain);
         } else {
@@ -375,8 +375,8 @@ function getTodayString() {
 }
 function setStamp(userName, dateStr, imageName) {
     const allStamps = getAllStamps();
-    if (!allStamps[userName]) allStamps[userName] = {}; 
-    allStamps[userName][dateStr] = imageName; 
+    if (!allStamps[userName]) allStamps[userName] = {};
+    allStamps[userName][dateStr] = imageName;
     localStorage.setItem(STAMP_KEY, JSON.stringify(allStamps));
 }
 function toggleStamp(userName, dateStr, forceAdd = false) {
@@ -416,7 +416,7 @@ function checkAndAwardPoints(userName, gameId, currentRecord) {
     const allPoints = JSON.parse(localStorage.getItem(_POINT_KEY) || '{}');
     const allHistory = JSON.parse(localStorage.getItem(_REWARDED_KEY) || '{}');
     const info = GAME_LIST[gameId];
-    
+
     // 達成判定（タイムなら「以下」、スコアなら「以上」）
     // 数値として比較するために parseFloat を使用
     let isAchieved = false;
@@ -425,24 +425,24 @@ function checkAndAwardPoints(userName, gameId, currentRecord) {
     } else {
         isAchieved = parseFloat(currentRecord) >= parseFloat(userGoal);
     }
-    
+
     // 「達成している」かつ「まだその目標値で報酬をもらっていない」場合
     // ※parseFloatで数値化して比較することで、"10" と 10 の違いによるミスを防ぐ
     if (isAchieved && allHistory[userName]?.[gameId] !== parseFloat(userGoal)) {
-        const reward = 100; // 報酬ポイント
+        const reward = 150; // 報酬ポイント
 
         // ポイント加算
         allPoints[userName] = (allPoints[userName] || 0) + reward;
-        
+
         // 履歴更新（今の目標値を記録する）
         if (!allHistory[userName]) allHistory[userName] = {};
         allHistory[userName][gameId] = parseFloat(userGoal);
-        
+
         // 保存
         localStorage.setItem(_POINT_KEY, JSON.stringify(allPoints));
         localStorage.setItem(_REWARDED_KEY, JSON.stringify(allHistory));
-        
-        return reward; // 獲得ポイント(100)を返す
+
+        return reward; // 獲得ポイント(150)を返す
     }
 
     return 0; // 条件を満たさなければ 0 を返す
@@ -452,12 +452,12 @@ function checkAndAwardPoints(userName, gameId, currentRecord) {
 // ★★★ セーブダイアログ (UI改善 & 全国ランキング & 日替わりミッション統合版) ★★★
 function showSaveDialog(gameId, resultValue) {
     const old = document.getElementById('ranking-overlay');
-    if(old) old.remove();
-    
+    if (old) old.remove();
+
     const gameInfo = GAME_LIST[gameId] || { name: 'このゲーム', unit: '' };
     const users = getUserNames(); // 既存の関数を使用
     const isGlobalRankingEnabled = (typeof window.uploadToWorldRanking === 'function');
-    const BONUS_PT = 200; // 日替わりボーナス点
+    const BONUS_PT = 150; // 日替わりボーナス点
 
     let usersHtml = '';
     if (users.length > 0) {
@@ -488,7 +488,7 @@ function showSaveDialog(gameId, resultValue) {
     const overlay = document.createElement('div');
     overlay.id = 'ranking-overlay';
     overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: sans-serif; text-align: center;`;
-    
+
     // 点滅アニメーション用スタイルを追加
     const styleTag = document.createElement('style');
     styleTag.innerHTML = `@keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }`;
@@ -506,7 +506,7 @@ function showSaveDialog(gameId, resultValue) {
     let missionHeader = "";
     if (typeof checkMissionStatus === 'function') {
         // 誰か一人でも対象ならアイコンを出す（簡易判定）
-        const targets = getTodayMissionIds(); 
+        const targets = getTodayMissionIds();
         if (targets.includes(gameId)) {
             missionHeader = `<div style="background:#ff9800; color:white; font-size:12px; padding:2px 8px; border-radius:10px; display:inline-block; margin-bottom:5px;">📅 今日のボーナス対象</div><br>`;
         }
@@ -538,13 +538,13 @@ function showSaveDialog(gameId, resultValue) {
         selectUser: (localName) => {
             // 1. 基本ポイント付与 (参加賞)
             addPoints(localName, 30);
-            
+
             // 2. 記録保存 & 自己ベスト判定
             const isNew = saveRecord(localName, gameId, resultValue);
-            
+
             // 3. 目標達成ポイント判定
             const earnedPoints = checkAndAwardPoints(localName, gameId, resultValue);
-            
+
             // --- ★ここを追加: ミッションボーナス付与処理 ---
             let missionBonus = 0;
             if (typeof checkMissionStatus === 'function') {
@@ -557,8 +557,8 @@ function showSaveDialog(gameId, resultValue) {
             }
             // ----------------------------------------------
 
-            if(typeof toggleStamp === 'function') toggleStamp(localName, getTodayString(), true);
-            
+            if (typeof toggleStamp === 'function') toggleStamp(localName, getTodayString(), true);
+
             // 全国ランキング送信
             let sentToRanking = false;
             if (isGlobalRankingEnabled) {
@@ -570,14 +570,14 @@ function showSaveDialog(gameId, resultValue) {
             }
 
             document.getElementById('ranking-overlay').remove();
-            
+
             // メッセージ生成
             setTimeout(() => {
                 let msg = `${localName}さんの記録として保存しました。\n💰 参加賞 30ポイント GET!`;
                 if (isNew) msg = `すごい！ ${localName}さんの\nじこベスト更新！🎉\n💰 参加賞 30ポイント GET!`;
-                
+
                 if (earnedPoints) msg += `\n🎁 目標クリア！さらに ${earnedPoints}ポイント！`;
-                
+
                 // ★ボーナスメッセージ追加
                 if (missionBonus > 0) {
                     msg += `\n\n🎉 デイリーミッション達成！\n特別ボーナス +${missionBonus}ポイント！！`;
@@ -594,7 +594,7 @@ function showSaveDialog(gameId, resultValue) {
         },
         registerNew: () => {
             const name = document.getElementById('new-username').value.trim();
-            if(!name) return;
+            if (!name) return;
             Ranking.selectUser(name);
         }
     };
@@ -602,7 +602,7 @@ function showSaveDialog(gameId, resultValue) {
 
 function showPointGetDialog(amount) {
     const old = document.getElementById('ranking-overlay');
-    if(old) old.remove();
+    if (old) old.remove();
     const users = getUserNames();
     let usersHtml = users.length > 0 ? users.map(u => `<button onclick="RankingPoint.selectUser('${u}', ${amount})" style="margin:5px; padding:12px 20px; font-size:18px; cursor:pointer; background:#ff9800; color:white; border:none; border-radius:30px; font-weight:bold;">${u}</button>`).join('') : '<p style="color:#aaa;">まだ ユーザーがいません</p>';
     const overlay = document.createElement('div');
@@ -610,7 +610,7 @@ function showPointGetDialog(amount) {
     overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: sans-serif; text-align: center;`;
     overlay.innerHTML = `<div style="background:white; color:#333; padding:25px; border-radius:20px; width:90%; max-width:400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);"><h2>🎁 クリアおめでとう！</h2><div style="background:#fff3e0; border-radius:10px; padding:15px; margin-bottom:20px;"><div>ごほうび</div><div style="font-size:36px; font-weight:bold;">${amount} ポイント</div></div>${usersHtml}<button onclick="document.getElementById('ranking-overlay').remove()" style="margin-top:20px; background:none; border:none; color:#999; text-decoration:underline; cursor:pointer;">とじる</button></div>`;
     document.body.appendChild(overlay);
-    window.RankingPoint = { selectUser: (name, pts) => { addPoints(name, pts); if(typeof toggleStamp === 'function') toggleStamp(name, getTodayString(), true); document.getElementById('ranking-overlay').remove(); alert(`${name}さんに ${pts}ポイント！`); } };
+    window.RankingPoint = { selectUser: (name, pts) => { addPoints(name, pts); if (typeof toggleStamp === 'function') toggleStamp(name, getTodayString(), true); document.getElementById('ranking-overlay').remove(); alert(`${name}さんに ${pts}ポイント！`); } };
 }
 
 // --- ガチャ・コレクション管理 ---
@@ -628,7 +628,7 @@ function getCollection(userName) {
 function addToCollection(userName, itemId) {
     const key = (typeof COLLECTION_KEY !== 'undefined') ? COLLECTION_KEY : 'papan_collection_v1';
     const allCollections = JSON.parse(localStorage.getItem(key) || '{}');
-    
+
     if (!allCollections[userName]) {
         allCollections[userName] = [];
     }
