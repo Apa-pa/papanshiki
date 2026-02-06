@@ -216,24 +216,50 @@ async function fetchRealMarketData() {
 // Asyncに変更
 async function checkAndAdvanceDate() {
     const today = getTodayString();
-    const market = getMarketData();
+    let market = getMarketData();
+    let isPriceUpdated = false;
+
+    // 1. リアル連動銘柄は「常に」最新データを取得して反映する（同日でも更新）
+    const realData = await fetchRealMarketData();
+    if (realData) {
+        for (let id in STOCK_MASTER) {
+            const info = STOCK_MASTER[id];
+            // 連動銘柄かつデータがある場合
+            if (info.type === 'linked' && realData[info.linkage]) {
+                const newPrice = Math.floor(realData[info.linkage] / info.divisor);
+                // 価格が変わっていたら更新
+                if (market.prices[id] !== newPrice) {
+                    market.prices[id] = newPrice;
+                    isPriceUpdated = true;
+                }
+            }
+        }
+        if (isPriceUpdated) {
+            localStorage.setItem(MARKET_KEY, JSON.stringify(market));
+        }
+    }
+
+    // 2. 日付変更チェック（配当や通常銘柄の変動）
     if (market.lastUpdate !== today) {
         let daysElapsed = market.lastUpdate ? getDaysDiff(market.lastUpdate, today) : 0;
         if (daysElapsed < 0) daysElapsed = 1;
 
-        // ここでawaitを使う
-        return await updateMarketDay(today, daysElapsed);
+        // updateMarketDay に realData を渡して再利用する
+        return await updateMarketDay(today, daysElapsed, realData);
     }
-    return null;
+
+    // 日付変更なしかつ価格更新があった場合は、空配列を返してUI更新だけトリガーする
+    return isPriceUpdated ? [] : null;
 }
 
 // Asyncに変更
-async function updateMarketDay(todayStr, daysElapsed) {
+async function updateMarketDay(todayStr, daysElapsed, preFetchedRealData = null) {
     const market = getMarketData();
     market.lastPrices = { ...market.prices };
 
-    // リアルデータの取得にトライ
-    const realData = await fetchRealMarketData();
+    // リアルデータの取得（checkAndAdvanceDateから渡されていればそれを使う）
+    const realData = preFetchedRealData || await fetchRealMarketData();
+
     const prevRealDataKey = 'papan_real_market_prev_v1';
     let prevRealData = JSON.parse(localStorage.getItem(prevRealDataKey) || '{}');
 
