@@ -138,7 +138,8 @@ const DAILY_MISSION_CANDIDATES = [
     'alphabet',       // アルファベット
     'romaji_hole',    // ローマ字
     'shopping',       // おかいもの
-    'rain_math'       // あめふり算数
+    'rain_math',      // あめふり算数
+    'daily_english',  // まいにちえいご
 ];
 
 const DAILY_MISSION_KEY = 'papan_daily_mission_v1';
