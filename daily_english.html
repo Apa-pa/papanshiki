@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>まいにちエイゴ</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #fff3e0;
+            /* やさしいオレンジ */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            height: 100dvh;
+            margin: 0;
+            overflow: hidden;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .active {
+            display: flex;
+        }
+
+        h1 {
+            color: #ff9800;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        /* 問題表示エリア */
+        .question-area {
+            background: #fff8e1;
+            border: 3px solid #ffcc80;
+            border-radius: 20px;
+            padding: 30px 20px;
+            margin: 20px 0;
+            width: 90%;
+            box-sizing: border-box;
+        }
+
+        .situation-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        /* 選択肢ボタン */
+        .choices-area {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 90%;
+            margin-top: 10px;
+        }
+
+        .choice-btn {
+            background: #e3f2fd;
+            border: 2px solid #90caf9;
+            border-radius: 15px;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #1565c0;
+            cursor: pointer;
+            transition: transform 0.1s;
+            text-align: left;
+            position: relative;
+        }
+
+        .choice-btn:active {
+            transform: scale(0.98);
+            background: #bbdefb;
+        }
+
+        .english-text {
+            font-size: 22px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .kana-text {
+            font-size: 14px;
+            color: #555;
+            display: block;
+        }
+
+        /* 共通ボタン */
+        .start-btn,
+        .retry-btn,
+        .next-btn {
+            font-size: 24px;
+            padding: 15px 50px;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            box-shadow: 0 5px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+
+        .start-btn {
+            background: #ff9800;
+        }
+
+        .retry-btn {
+            background: #4caf50;
+        }
+
+        .next-btn {
+            background: #2196f3;
+            display: none;
+        }
+
+        /* 初期は非表示 */
+
+        .back-btn {
+            background: #90a4ae;
+            font-size: 14px;
+            padding: 8px 20px;
+            color: white;
+            border-radius: 20px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+            box-shadow: 0 4px #78909c;
+        }
+
+        /* UIパーツ */
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            width: 90%;
+            font-size: 18px;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        /* 正解・不正解アニメーション */
+        .feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 150px;
+            display: none;
+            z-index: 100;
+            text-shadow: 3px 3px 0 white;
+            pointer-events: none;
+        }
+
+        /* 不正解時のボタンスタイル */
+        .wrong-btn {
+            background-color: #ffcdd2;
+            border-color: #ef5350;
+            color: #b71c1c;
+            opacity: 0.6;
+            pointer-events: none;
+            /* 押せなくする */
+        }
+
+        /* 正解時のボタンスタイル */
+        .correct-btn {
+            background-color: #c8e6c9;
+            border-color: #66bb6a;
+            color: #1b5e20;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <div id="feedback-mark" class="feedback">⭕</div>
+
+        <!-- スタート画面 -->
+        <div id="start-screen" class="screen active">
+            <div style="font-size: 80px;">🗣️</div>
+            <h1>まいにちエイゴ</h1>
+            <p>えいごで あいさつ できるかな？<br>ただしい えいごを えらんでね！</p>
+            <button class="start-btn" onclick="startGame()">スタート！</button>
+            <br>
+            <a href="index.html" class="back-btn">🏠 もどる</a>
+        </div>
+
+        <!-- ゲーム画面 -->
+        <div id="quiz-screen" class="screen">
+            <div class="hud">
+                <span id="timer-display">0.0びょう</span>
+                <span id="progress">1 / 10</span>
+            </div>
+
+            <div class="question-area">
+                <div id="situation-text" class="situation-text">ここに もんだい が でます</div>
+            </div>
+
+            <div id="choices-area" class="choices-area">
+                <!-- ボタンはJSで生成 -->
+            </div>
+
+            <a href="index.html" class="back-btn" style="background:#cfd8dc; color:#555;">🏠 やめる</a>
+        </div>
+
+        <!-- リザルト画面 -->
+        <div id="result-screen" class="screen">
+            <h1>✨ クリア！ ✨</h1>
+            <div style="font-size: 60px;">💮</div>
+            <p>かかった じかん</p>
+            <div id="final-time" style="font-size:36px; color:#e91e63; font-weight:bold;">0.0びょう</div>
+
+            <button class="retry-btn" onclick="startGame()">もういっかい！</button>
+            <br>
+            <a href="index.html" class="back-btn">🏠 もどる</a>
+        </div>
+    </div>
+
+    <script>
+        // ▼▼▼ 問題データ ▼▼▼
+        const ALL_QUESTIONS = [
+            // 1. 1日の流れ
+            { t: "あさ、おきたら パパとママに なんていう？", e: "Good morning.", k: "グッド モーニング" },
+            { t: "ごはんを たべるまえに いう ことばは？", e: "Let's eat.", k: "レッツ イート" },
+            { t: "「いってきます」は えいごで？", e: "See you later.", k: "シー ユー レイター" },
+            { t: "おうちに かえってきたときの「ただいま」は？", e: "I'm home.", k: "アイム ホーム" },
+            { t: "ねるまえの あいさつ「おやすみなさい」は？", e: "Good night.", k: "グッド ナイト" },
+            { t: "しゅくだいが おわったことを つたえよう！", e: "I finished my homework.", k: "アイ フィニッシュド マイ ホームワーク" },
+            { t: "これから ママと かいものに いくことを つたえよう！", e: "I'm going shopping with Mom.", k: "アイム ゴーイング ショッピング ウィズ マム" },
+
+            // 2. お店屋さん
+            { t: "おみせで「これを ください」と いうときは？", e: "This one, please.", k: "ディス ワン プリーズ" },
+            { t: "ものを わたすときの「はい、どうぞ」は？", e: "Here you are.", k: "ヒア ユー アー" },
+            { t: "「ありがとう」と いいたいときは？", e: "Thank you.", k: "サンキュー" },
+            { t: "「ありがとう」と いわれたら なんて かえす？", e: "You're welcome.", k: "ユア ウェルカム" },
+            { t: "ねだんを きくときの「いくらですか？」は？", e: "How much?", k: "ハウ マッチ？" },
+
+            // 3. 気持ち・状態
+            { t: "「おなかが すいたよ」と つたえよう", e: "I'm hungry.", k: "アイム ハングリー" },
+            { t: "「ねむいよ」と つたえよう", e: "I'm sleepy.", k: "アイム スリーピー" },
+            { t: "ケガをして「いたい！」ときは？", e: "Ouch!", k: "アウチ！" },
+            { t: "こまったとき「たすけて！」と いうときは？", e: "Help me.", k: "ヘルプ ミー" },
+            { t: "「うれしい！」という きもちは？", e: "I'm happy.", k: "アイム ハッピー" },
+
+            // 4. おしゃべり
+            { t: "「このペン きのう かったの」と いいたいときは？", e: "I bought this pen yesterday.", k: "アイ ボート ディス ペン イエスタデイ" },
+            { t: "おともだちの かみかざりが かわいいときは？", e: "That hair accessory is cute.", k: "ザット ヘア アクセサリー イズ キュート" },
+            { t: "パンやさんの パンが おいしそうなときは？", e: "That bread looks delicious.", k: "ザット ブレッド ルックス デリシャス" },
+            { t: "あしたは こうえんに いきたいな", e: "I want to go to the park tomorrow.", k: "アイ ウォント トゥ ゴー トゥ ザ パーク トゥモロー" }
+        ];
+
+        const MAX_QUESTIONS = 10;
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let startTime, timerInterval;
+        let canClick = true;
+
+        function changeScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function startGame() {
+            // ランダムに10問選出
+            currentQuestions = shuffleArray(ALL_QUESTIONS).slice(0, MAX_QUESTIONS);
+            currentIndex = 0;
+            canClick = true;
+
+            changeScreen('quiz-screen');
+            startTimer();
+            showQuestion();
+        }
+
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const t = ((Date.now() - startTime) / 1000).toFixed(1);
+                document.getElementById('timer-display').textContent = t + "びょう";
+            }, 100);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            return ((Date.now() - startTime) / 1000).toFixed(1);
+        }
+
+        function showQuestion() {
+            const q = currentQuestions[currentIndex];
+            document.getElementById('progress').textContent = `${currentIndex + 1} / ${MAX_QUESTIONS}`;
+            document.getElementById('situation-text').textContent = q.t;
+
+            const area = document.getElementById('choices-area');
+            area.innerHTML = '';
+
+            // 誤答の選択肢を作成（今の正解以外からランダムに2つ選ぶ）
+            const others = ALL_QUESTIONS.filter(item => item.e !== q.e);
+            const wrongChoices = shuffleArray(others).slice(0, 2);
+
+            // 正解 + 誤答2つ を混ぜる
+            const choices = shuffleArray([q, ...wrongChoices]);
+
+            choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.innerHTML = `<span class="english-text">${choice.e}</span><span class="kana-text">${choice.k}</span>`;
+
+                // 正解かどうか判定用
+                btn.onclick = () => checkAnswer(choice, btn);
+                area.appendChild(btn);
+            });
+
+            canClick = true;
+        }
+
+        function checkAnswer(selected, btnElement) {
+            if (!canClick) return;
+
+            const correct = currentQuestions[currentIndex];
+            const feedback = document.getElementById('feedback-mark');
+
+            if (selected.e === correct.e) {
+                // 正解！
+                canClick = false; // 連打防止
+                btnElement.classList.add('correct-btn');
+                feedback.textContent = '⭕';
+                feedback.style.color = '#ff3d00';
+                feedback.style.display = 'block';
+
+                setTimeout(() => {
+                    feedback.style.display = 'none';
+                    currentIndex++;
+                    if (currentIndex >= MAX_QUESTIONS) {
+                        finishGame();
+                    } else {
+                        showQuestion();
+                    }
+                }, 800);
+
+            } else {
+                // 不正解
+                btnElement.classList.add('wrong-btn'); // 赤くして押せなくする
+                feedback.textContent = '❌';
+                feedback.style.color = '#555';
+                feedback.style.display = 'block';
+
+                setTimeout(() => {
+                    feedback.style.display = 'none';
+                    // ペナルティなしで再選択可能（canClickはtrueのまま）
+                }, 500);
+            }
+        }
+
+        function finishGame() {
+            const time = stopTimer();
+            document.getElementById('final-time').textContent = time + "びょう";
+            changeScreen('result-screen');
+
+            if (typeof showSaveDialog === 'function') {
+                showSaveDialog('daily_english', time);
+            }
+        }
+
+        // 配列シャッフル用
+        function shuffleArray(array) {
+            const clone = array.slice();
+            for (let i = clone.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [clone[i], clone[j]] = [clone[j], clone[i]];
+            }
+            return clone;
+        }
+
+        // ダブルタップ拡大防止
+        document.addEventListener('dblclick', function (event) {
+            event.preventDefault();
+        }, { passive: false });
+    </script>
+
+</body>
+
+</html>

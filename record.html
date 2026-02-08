@@ -1,42 +1,48 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>がんばったきろく</title>
     <script src="ranking.js"></script>
     <style>
-        body { 
-            font-family: "UD Digital Kyokasho-tai-R", sans-serif; 
-            background: #e0f7fa; 
-            text-align: center; 
-            padding: 20px; 
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background: #e0f7fa;
+            text-align: center;
+            padding: 20px;
             margin: 0;
             color: #37474f;
         }
+
         .container {
             max-width: 700px;
             margin: 0 auto;
             background: white;
             padding: 20px;
             border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
-        h1 { color: #0097a7; margin-bottom: 20px; }
-        
+
+        h1 {
+            color: #0097a7;
+            margin-bottom: 20px;
+        }
+
         .user-select-area {
             background: #fff9c4;
             padding: 20px;
             border-radius: 15px;
             margin-bottom: 20px;
         }
-        
-        select { 
-            padding: 12px; 
-            font-size: 20px; 
-            border-radius: 10px; 
-            border: 2px solid #fbc02d; 
-            width: 80%; 
+
+        select {
+            padding: 12px;
+            font-size: 20px;
+            border-radius: 10px;
+            border: 2px solid #fbc02d;
+            width: 80%;
             background: white;
             font-weight: bold;
             color: #333;
@@ -60,6 +66,7 @@
         .auto-set-area {
             margin: 10px 0 20px 0;
         }
+
         .auto-btn {
             background: #29b6f6;
             color: white;
@@ -75,32 +82,46 @@
             align-items: center;
             gap: 5px;
         }
-        .auto-btn:active { transform: translateY(2px); box-shadow: none; }
-        .auto-btn:hover { background: #03a9f4; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        
-        th { 
+        .auto-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .auto-btn:hover {
+            background: #03a9f4;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
             background: #f5f5f5;
-            color: #777; 
-            font-size: 14px; 
+            color: #777;
+            font-size: 14px;
             padding: 10px;
         }
-        
-        td { 
-            border-bottom: 1px solid #eee; 
-            padding: 15px 5px; 
-            text-align: left; 
+
+        td {
+            border-bottom: 1px solid #eee;
+            padding: 15px 5px;
+            text-align: left;
             vertical-align: middle;
         }
 
-        .game-name { font-weight: bold; font-size: 16px; }
-        
-        td.score { 
-            text-align: right; 
-            font-weight: bold; 
-            color: #d84315; 
-            font-size: 20px; 
+        .game-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        td.score {
+            text-align: right;
+            font-weight: bold;
+            color: #d84315;
+            font-size: 20px;
             white-space: nowrap;
         }
 
@@ -113,9 +134,10 @@
             text-align: center;
             font-family: inherit;
             color: #555;
-            -webkit-appearance: none; /* iOSでの見た目調整 */
+            -webkit-appearance: none;
+            /* iOSでの見た目調整 */
         }
-        
+
         .goal-input:focus {
             border-color: #2196f3;
             outline: none;
@@ -134,6 +156,7 @@
             cursor: pointer;
             box-shadow: 0 2px #2e7d32;
         }
+
         .ok-btn:active {
             transform: translateY(2px);
             box-shadow: none;
@@ -143,18 +166,20 @@
         tr.achieved {
             background-color: #fffde7;
         }
+
         tr.achieved .score {
             color: #e65100;
             text-shadow: 0 0 5px rgba(255, 167, 38, 0.4);
         }
+
         tr.achieved .game-name::before {
             content: '🎉 ';
         }
-        
+
         /* ボタン共通スタイル */
-        .nav-link { 
-            display: inline-block; 
-            margin: 10px 5px; 
+        .nav-link {
+            display: inline-block;
+            margin: 10px 5px;
             padding: 15px 30px;
             color: white;
             text-decoration: none;
@@ -162,9 +187,13 @@
             font-weight: bold;
             transition: transform 0.1s;
         }
-        .nav-link:active { transform: translateY(2px); box-shadow: none; }
 
-        .back-link { 
+        .nav-link:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .back-link {
             background: #78909c;
             box-shadow: 0 4px #546e7a;
         }
@@ -175,7 +204,7 @@
             color: #b0bec5;
             border: none;
             border-radius: 50%;
-            width: 30px; 
+            width: 30px;
             height: 30px;
             font-size: 14px;
             cursor: pointer;
@@ -183,6 +212,7 @@
             transition: 0.2s;
             vertical-align: middle;
         }
+
         .delete-btn:hover {
             background: #ffcdd2;
             color: #d32f2f;
@@ -196,14 +226,18 @@
             box-shadow: 0 4px #c2185b;
         }
 
-        .empty-msg { color: #aaa; margin-top: 20px; }
+        .empty-msg {
+            color: #aaa;
+            margin-top: 20px;
+        }
     </style>
 </head>
+
 <body>
 
     <div class="container">
         <h1>🏆 がんばったきろく</h1>
-        
+
         <div class="user-select-area">
             <p style="margin-top:0; font-weight:bold;">だれの記録をみる？</p>
             <select id="user-select" onchange="showRecords()">
@@ -232,10 +266,10 @@
                     </tr>
                 </thead>
                 <tbody id="score-list">
-                    </tbody>
+                </tbody>
             </table>
         </div>
-        
+
         <div id="empty-msg" class="empty-msg">
             まだ 記録が ありません。<br>ゲームで遊んで 保存してね！
         </div>
@@ -280,17 +314,18 @@
             'pitch': 50,
             'rhythm': 50,
             'shopping': 90,     // 1分
-            'water': 90         // 1分
+            'water': 90,         // 1分
+            'daily_english': 180 // 3分
         };
 
-        window.onload = function() {
-            if(typeof getUserNames !== 'function') {
+        window.onload = function () {
+            if (typeof getUserNames !== 'function') {
                 alert('ranking.js が正しく読み込まれていません');
                 return;
             }
-            const users = getUserNames(); 
+            const users = getUserNames();
             const select = document.getElementById('user-select');
-            
+
             if (users.length > 0) {
                 document.getElementById('empty-msg').style.display = 'none';
                 users.forEach(u => {
@@ -307,7 +342,7 @@
             const display = document.getElementById('record-display');
             const list = document.getElementById('score-list');
             const pointDisplay = document.getElementById('total-points');
-            
+
             if (!userName) {
                 display.style.display = 'none';
                 return;
@@ -315,7 +350,7 @@
 
             display.style.display = 'block';
             list.innerHTML = '';
-            
+
             // データ取得
             const allRecords = getAllRecords();
             const allGoals = getAllGoals();
@@ -349,7 +384,7 @@
 
                 // 表示用のHTML作成（スコアがない時は「-」、ある時は「スコア＋ゴミ箱」）
                 let scoreHtml = '<span style="color:#ddd; font-size:14px;">-</span>';
-                
+
                 if (recordVal !== undefined) {
                     scoreHtml = `
                         ${recordVal} <span style="font-size:14px">${info.unit}</span>
@@ -379,18 +414,18 @@
         }
 
         function updateGoal(userName, gameId, value) {
-            if(typeof saveGoal !== 'function') return;
+            if (typeof saveGoal !== 'function') return;
             saveGoal(userName, gameId, value);
-            showRecords(); 
+            showRecords();
         }
 
         // ▼▼▼ おまかせ設定ロジック ▼▼▼
         function autoSetGoals() {
             const userName = document.getElementById('user-select').value;
-            if(!userName) return;
+            if (!userName) return;
 
             const confirmMsg = "目標を「おまかせ」で設定しますか？\n\n・達成したものは、ベスト記録より1%高く\n・未達成のものはそのまま\n・記録がないものは標準レベルに\n\n設定されます。";
-            if(!confirm(confirmMsg)) return;
+            if (!confirm(confirmMsg)) return;
 
             const userRecords = getAllRecords()[userName] || {};
             const userGoals = getAllGoals()[userName] || {};
@@ -422,7 +457,7 @@
                         // スコア：1%増やす
                         let increase = record * 0.01;
                         if (increase < 1) increase = 1; // 最小1点は上げる
-                        newGoal = Math.ceil(record + increase); 
+                        newGoal = Math.ceil(record + increase);
                     } else {
                         // タイム：1%減らす（速くする）
                         let decrease = record * 0.01;
@@ -454,7 +489,7 @@
 
         // ▼▼▼ 記録リセット機能 ▼▼▼
         function resetRecord(userName, gameId, gameName) {
-            if(!confirm(`${userName}さんの\n「${gameName}」の記録を消しますか？\n\n※消すと、もとにはもどりません！`)) return;
+            if (!confirm(`${userName}さんの\n「${gameName}」の記録を消しますか？\n\n※消すと、もとにはもどりません！`)) return;
 
             const STORAGE_KEY = 'papan_records_v1';
             const allRecords = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -462,10 +497,10 @@
             if (allRecords[userName] && allRecords[userName][gameId] !== undefined) {
                 // 記録を削除
                 delete allRecords[userName][gameId];
-                
+
                 // 保存
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(allRecords));
-                
+
                 // 画面更新
                 showRecords();
                 alert('記録をリセットしました🗑️');
@@ -473,4 +508,5 @@
         }
     </script>
 </body>
+
 </html>

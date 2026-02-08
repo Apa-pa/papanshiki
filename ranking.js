@@ -20,7 +20,8 @@ const GAME_LIST = {
     'eawase': { name: 'えあわせ', type: 'time', unit: '秒' },
     'shopping': { name: 'ぴったりしはらい', type: 'time', unit: '秒' },
     'water': { name: '水槽パズル', type: 'time', unit: '秒' },
-    'rail': { name: 'つなげて！トロッコ', type: 'time', unit: '秒' }
+    'rail': { name: 'つなげて！トロッコ', type: 'time', unit: '秒' },
+    'daily_english': { name: 'まいにちエイゴ', type: 'time', unit: '秒' }
 };
 
 // --- リアル株価連動設定 ---
@@ -714,7 +715,7 @@ function showSaveDialog(gameId, resultValue) {
     };
 }
 
-function showPointGetDialog(amount) {
+function showPointGetDialog(amount, onComplete = null) {
     const old = document.getElementById('ranking-overlay');
     if (old) old.remove();
     const users = getUserNames();
@@ -722,9 +723,18 @@ function showPointGetDialog(amount) {
     const overlay = document.createElement('div');
     overlay.id = 'ranking-overlay';
     overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: sans-serif; text-align: center;`;
-    overlay.innerHTML = `<div style="background:white; color:#333; padding:25px; border-radius:20px; width:90%; max-width:400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);"><h2>🎁 クリアおめでとう！</h2><div style="background:#fff3e0; border-radius:10px; padding:15px; margin-bottom:20px;"><div>ごほうび</div><div style="font-size:36px; font-weight:bold;">${amount} ポイント</div></div>${usersHtml}<button onclick="document.getElementById('ranking-overlay').remove()" style="margin-top:20px; background:none; border:none; color:#999; text-decoration:underline; cursor:pointer;">とじる</button></div>`;
+    overlay.innerHTML = `<div style="background:white; color:#333; padding:25px; border-radius:20px; width:90%; max-width:400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);"><h2>🎁 クリアおめでとう！</h2><div style="background:#fff3e0; border-radius:10px; padding:15px; margin-bottom:20px;"><div>ごほうび</div><div style="font-size:36px; font-weight:bold;">${amount} ポイント</div></div>${usersHtml}<button onclick="document.getElementById('ranking-overlay').remove(); if(typeof RankingPoint.onComplete === 'function') RankingPoint.onComplete();" style="margin-top:20px; background:none; border:none; color:#999; text-decoration:underline; cursor:pointer;">とじる</button></div>`;
     document.body.appendChild(overlay);
-    window.RankingPoint = { selectUser: (name, pts) => { addPoints(name, pts); if (typeof toggleStamp === 'function') toggleStamp(name, getTodayString(), true); document.getElementById('ranking-overlay').remove(); alert(`${name}さんに ${pts}ポイント！`); } };
+    window.RankingPoint = {
+        onComplete: onComplete,
+        selectUser: (name, pts) => {
+            addPoints(name, pts);
+            if (typeof toggleStamp === 'function') toggleStamp(name, getTodayString(), true);
+            document.getElementById('ranking-overlay').remove();
+            alert(`${name}さんに ${pts}ポイント！`);
+            if (typeof RankingPoint.onComplete === 'function') RankingPoint.onComplete();
+        }
+    };
 }
 
 // --- ガチャ・コレクション管理 ---

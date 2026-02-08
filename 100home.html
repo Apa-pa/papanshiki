@@ -1,44 +1,50 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>五色百人一首クイズ - ホーム</title>
     <style>
-        body { 
-            font-family: 'Helvetica Neue', Arial, sans-serif; 
-            background-color: #f0f4f8; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            margin: 0; 
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
             padding: 20px;
         }
-        #home-card { 
-            background: white; 
-            padding: 40px 30px; 
-            border-radius: 15px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
-            width: 100%; 
-            max-width: 500px; 
-            text-align: center; 
+
+        #home-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
         }
-        h1 { 
-            color: #333; 
-            font-size: 1.8em; 
+
+        h1 {
+            color: #333;
+            font-size: 1.8em;
             margin-bottom: 10px;
         }
+
         p {
             color: #666;
             margin-bottom: 30px;
         }
+
         .color-menu {
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
+
         .color-btn {
             display: block;
             padding: 18px;
@@ -48,18 +54,41 @@
             font-weight: bold;
             font-size: 1.1em;
             transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px rgba(0,0,0,0.1);
+            box-shadow: 0 4px rgba(0, 0, 0, 0.1);
         }
+
         .color-btn:active {
             transform: translateY(2px);
             box-shadow: none;
         }
+
         /* 各色の設定 */
-        .blue   { background-color: #3498db; } /* 青 */
-        .pink   { background-color: #ff6b6b; } /* 桃 */
-        .yellow { background-color: #f1c40f; color: #333; } /* 黄 */
-        .green  { background-color: #2ecc71; } /* 緑 */
-        .orange { background-color: #e67e22; } /* 橙 */
+        .blue {
+            background-color: #3498db;
+        }
+
+        /* 青 */
+        .pink {
+            background-color: #ff6b6b;
+        }
+
+        /* 桃 */
+        .yellow {
+            background-color: #f1c40f;
+            color: #333;
+        }
+
+        /* 黄 */
+        .green {
+            background-color: #2ecc71;
+        }
+
+        /* 緑 */
+        .orange {
+            background-color: #e67e22;
+        }
+
+        /* 橙 */
 
         .color-btn:hover {
             opacity: 0.9;
@@ -67,24 +96,40 @@
         }
     </style>
 </head>
+
 <body>
 
-<div id="home-card">
-    <h1>五色百人一首クイズ</h1>
-    <p>挑戦する色を選んでください</p>
-    
-    <div class="color-menu">
-        <a href="100blue.html" class="color-btn blue">青色（あお）</a>
-        <a href="100pink.html" class="color-btn pink">桃色（もも）</a>
-        <a href="100yellow.html" class="color-btn yellow">黄色（きいろ）</a>
-        <a href="100green.html" class="color-btn green">緑色（みどり）</a>
-        <a href="100orangekai.html" class="color-btn orange">橙色（だいだい）</a>
-    </div>
-</div>
+    <div id="home-card">
+        <h1>五色百人一首クイズ</h1>
+        <p>挑戦する色を選んでください</p>
 
-<div style="margin-top: 20px; color: #888; font-size: 0.9em;">
-    全100首を20首ずつに分けて練習できます
-</div>
+        <div class="color-menu">
+            <a href="100blue.html" class="color-btn blue">青色（あお）</a>
+            <a href="100pink.html" class="color-btn pink">桃色（もも）</a>
+            <a href="100yellow.html" class="color-btn yellow">黄色（きいろ）</a>
+            <a href="100green.html" class="color-btn green">緑色（みどり）</a>
+            <a href="100orangekai.html" class="color-btn orange">橙色（だいだい）</a>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="index.html" style="
+        display: inline-block;
+        padding: 10px 25px;
+        background-color: #ff9d00;
+        color: white;
+        text-decoration: none;
+        border-radius: 25px;
+        box-shadow: 0 4px #e68a00;
+        font-weight: bold;
+        transition: 0.2s;
+    ">🏠 ホームにもどる</a>
+    </div>
+
+    <div style="margin-top: 20px; color: #888; font-size: 0.9em;">
+        全100首を20首ずつに分けて練習できます
+    </div>
 
 </body>
+
 </html>
