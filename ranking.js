@@ -108,8 +108,17 @@ function getUserDonguri(userName) {
     return db[userName] || 0;
 }
 
+// 記録・目標設定関係
 function getAllRecords() { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
 function getAllGoals() { return JSON.parse(localStorage.getItem(GOAL_KEY) || '{}'); }
+
+function saveGoal(userName, gameId, value) {
+    const goals = getAllGoals();
+    if (!goals[userName]) goals[userName] = {};
+    goals[userName][gameId] = value;
+    localStorage.setItem(GOAL_KEY, JSON.stringify(goals));
+}
+
 function getAllStamps() { return JSON.parse(localStorage.getItem(STAMP_KEY) || '{}'); }
 
 // --- 日替わりミッション機能 (3つ版) ---
