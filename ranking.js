@@ -144,21 +144,43 @@ const DAILY_MISSION_CANDIDATES = [
 
 const DAILY_MISSION_KEY = 'papan_daily_mission_v1';
 function getDailyMissionData() { return JSON.parse(localStorage.getItem(DAILY_MISSION_KEY) || '{}'); }
+// Xorshiftアルゴリズムによるシード付き乱数生成器
+class SeededRandom {
+    constructor(seed) {
+        this.x = 123456789;
+        this.y = 362436069;
+        this.z = 521288629;
+        this.w = seed;
+    }
+
+    // 0以上1未満の乱数を返す
+    next() {
+        let t = this.x ^ (this.x << 11);
+        this.x = this.y; this.y = this.z; this.z = this.w;
+        this.w = (this.w ^ (this.w >>> 19)) ^ (t ^ (t >>> 8));
+        return (this.w >>> 0) / 4294967296;
+    }
+}
+
 function getTodayMissionIds() {
     const today = getTodayString();
-    // 日替わりロジック（日付から乱数シードっぽく決定）
+    // 日付文字列からシード値を生成 (例: 2024-02-09 -> 20240209)
     const seed = parseInt(today.replace(/-/g, ''));
 
-    // 修正: 全ゲームではなく、勉強系リストから選ぶ
-    const gameIds = DAILY_MISSION_CANDIDATES;
+    // その日のシードで乱数生成器を初期化
+    const rng = new SeededRandom(seed);
 
-    const count = 3; // 1日3つ
-    let missions = [];
-    for (let i = 0; i < count; i++) {
-        const idx = (seed + i * 13) % gameIds.length;
-        missions.push(gameIds[idx]);
+    // 候補リストをコピー
+    const candidates = [...DAILY_MISSION_CANDIDATES];
+
+    // Fisher-Yates シャッフル
+    for (let i = candidates.length - 1; i > 0; i--) {
+        const j = Math.floor(rng.next() * (i + 1));
+        [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
     }
-    return missions;
+
+    // 先頭3つを取得 (重複なし)
+    return candidates.slice(0, 3);
 }
 function checkMissionStatus(userName, gameId) {
     const today = getTodayString();
