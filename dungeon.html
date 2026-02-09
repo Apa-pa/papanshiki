@@ -801,10 +801,10 @@
 
             // 報酬計算
             if (gameState.floor === 100) {
-                currentReward = 1000;
+                currentReward = 3000;
                 document.getElementById('clear-msg').innerText = "地下100階 制覇！";
             } else if (enemy.isBoss) {
-                currentReward = 100;
+                currentReward = 300;
                 document.getElementById('clear-msg').innerText = "ボス撃破！";
             } else {
                 currentReward = 30;
