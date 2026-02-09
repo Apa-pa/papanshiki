@@ -115,6 +115,11 @@
             filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
         }
 
+        /* トマトだけ少し小さくする */
+        .ingredient img[src*="burger_tomato.svg"] {
+            transform: scale(0.85);
+        }
+
         /* プログラミングエリア */
         .coding-area {
             flex: 3;
@@ -381,6 +386,7 @@
             'bun_top': { img: 'image/burger_bun_top.svg', name: 'パン', type: 'bun' },
             'cheese': { img: 'image/burger_cheese.svg', name: 'チーズ', type: 'cheese' },
             'lettuce': { img: 'image/burger_lettuce.svg', name: 'やさい', type: 'vege' },
+            'tomato': { img: 'image/burger_tomato.svg', name: 'トマト', type: 'vege' },
             'trash': { img: 'image/burger_trash.svg', name: 'ゴミ', type: 'trash' },
             'bug_lettuce': { img: 'image/bug_lettuce.svg', name: 'むしくい野菜', type: 'trash' },
 
@@ -395,43 +401,98 @@
             'discard': { name: 'すてる', icon: '🗑️' }
         };
 
-        const STAGES = [
-            {
-                id: 1,
-                text: "お肉だけ焼いて、パンはそのまま はさもう！",
-                queue: ['bun', 'meat', 'meat', 'bun_top'],
-                available_conds: ['meat', 'bun', 'bun_top'],
-                available_actions: ['grill', 'stack'],
-                correct_logic: (ing, action) => {
-                    if (ing === 'meat') return action === 'grill';
-                    return action === 'stack';
+        const STAGE_POOLS = {
+            1: [
+                {
+                    text: "お肉だけ焼いて、パンはそのまま はさもう！",
+                    queue: ['bun', 'meat', 'meat', 'bun_top'],
+                    available_conds: ['meat', 'bun', 'bun_top'],
+                    available_actions: ['grill', 'stack'],
+                    correct_logic: (ing, action) => {
+                        if (ing === 'meat') return action === 'grill';
+                        return action === 'stack';
+                    }
+                },
+                {
+                    text: "お肉たっぷり！お肉だけ焼いてね。",
+                    queue: ['bun', 'meat', 'meat', 'meat', 'bun_top'],
+                    available_conds: ['meat', 'bun', 'bun_top'],
+                    available_actions: ['grill', 'stack'],
+                    correct_logic: (ing, action) => {
+                        if (ing === 'meat') return action === 'grill';
+                        return action === 'stack';
+                    }
                 }
-            },
-            {
-                id: 2,
-                text: "チーズバーガーを作ろう！チーズは そのまま のせてね。",
-                queue: ['bun', 'meat', 'cheese', 'meat', 'bun_top'],
-                available_conds: ['meat', 'cheese'],
-                available_actions: ['grill', 'stack'],
-                correct_logic: (ing, action) => {
-                    if (ing === 'meat') return action === 'grill';
-                    return action === 'stack';
+            ],
+            2: [
+                {
+                    text: "チーズバーガーを作ろう！チーズは そのまま のせてね。",
+                    queue: ['bun', 'meat', 'cheese', 'meat', 'bun_top'],
+                    available_conds: ['meat', 'cheese'],
+                    available_actions: ['grill', 'stack'],
+                    correct_logic: (ing, action) => {
+                        if (ing === 'meat') return action === 'grill';
+                        return action === 'stack';
+                    }
+                },
+                {
+                    text: "野菜バーガーを作ろう！野菜（レタス）は そのまま のせてね。",
+                    queue: ['bun', 'meat', 'lettuce', 'meat', 'bun_top'],
+                    available_conds: ['meat', 'lettuce'],
+                    available_actions: ['grill', 'stack'],
+                    correct_logic: (ing, action) => {
+                        if (ing === 'meat') return action === 'grill';
+                        return action === 'stack';
+                    }
+                },
+                {
+                    text: "トマトバーガー！トマトは そのまま のせてね。",
+                    queue: ['bun', 'meat', 'tomato', 'meat', 'bun_top'],
+                    available_conds: ['meat', 'tomato'],
+                    available_actions: ['grill', 'stack'],
+                    correct_logic: (ing, action) => {
+                        if (ing === 'meat') return action === 'grill';
+                        return action === 'stack';
+                    }
+                },
+                {
+                    text: "全部のせバーガー！チーズと野菜は そのまま のせてね。",
+                    queue: ['bun', 'lettuce', 'meat', 'cheese', 'tomato', 'meat', 'bun_top'],
+                    available_conds: ['meat', 'cheese', 'lettuce', 'tomato'],
+                    available_actions: ['grill', 'stack'],
+                    correct_logic: (ing, action) => {
+                        if (ing === 'meat') return action === 'grill';
+                        return action === 'stack';
+                    }
                 }
-            },
-            {
-                id: 3,
-                text: "むしくい野菜がまざってる！ むしくい野菜は すてて！",
-                queue: ['bun', 'meat', 'lettuce', 'bug_lettuce', 'bun_top'],
-                available_conds: ['meat', 'bug_lettuce'],
-                available_actions: ['grill', 'stack', 'discard'],
-                correct_logic: (ing, action) => {
-                    if (ing === 'bug_lettuce') return action === 'discard';
-                    if (ing === 'meat') return action === 'grill';
-                    return action === 'stack';
+            ],
+            3: [
+                {
+                    text: "むしくい野菜がまざってる！ むしくい野菜は すてて！",
+                    queue: ['bun', 'meat', 'lettuce', 'bug_lettuce', 'tomato', 'bun_top'],
+                    available_conds: ['meat', 'bug_lettuce'],
+                    available_actions: ['grill', 'stack', 'discard'],
+                    correct_logic: (ing, action) => {
+                        if (ing === 'bug_lettuce') return action === 'discard';
+                        if (ing === 'meat') return action === 'grill';
+                        return action === 'stack';
+                    }
+                },
+                {
+                    text: "ゴミがまざってる！ ゴミは すてて！",
+                    queue: ['bun', 'meat', 'trash', 'cheese', 'tomato', 'bun_top'],
+                    available_conds: ['meat', 'trash'],
+                    available_actions: ['grill', 'stack', 'discard'],
+                    correct_logic: (ing, action) => {
+                        if (ing === 'trash') return action === 'discard';
+                        if (ing === 'meat') return action === 'grill';
+                        return action === 'stack';
+                    }
                 }
-            }
-        ];
+            ]
+        };
 
+        let STAGES = [];
         let currentStageIndex = 0;
         let userProgram = [];
         let isRunning = false;
@@ -440,6 +501,12 @@
 
         function initGame() {
             try {
+                // 各レベルからランダムに1つずつ選出してゲームを構成
+                STAGES = [
+                    STAGE_POOLS[1][Math.floor(Math.random() * STAGE_POOLS[1].length)],
+                    STAGE_POOLS[2][Math.floor(Math.random() * STAGE_POOLS[2].length)],
+                    STAGE_POOLS[3][Math.floor(Math.random() * STAGE_POOLS[3].length)]
+                ];
                 loadStage(0);
             } catch (e) {
                 alert("エラーが発生しました: " + e.message);

@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>依存症（いぞんしょう）あるなしクイズ</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background-color: #f3e5f5;
+            /* 薄い紫系 */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            height: 100dvh;
+            touch-action: none;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 600px;
+            height: 100%;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        /* ヘッダー・博士エリア */
+        .header-area {
+            flex: 1;
+            background: #e1bee7;
+            display: flex;
+            align-items: flex-end;
+            /* 下揃え */
+            justify-content: center;
+            border-bottom: 5px solid #8e24aa;
+            position: relative;
+            padding-top: 10px;
+        }
+
+        .prof-img {
+            height: 120px;
+            object-fit: contain;
+            filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.1));
+            transition: transform 0.3s;
+        }
+
+        /* 吹き出し */
+        .bubble {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            left: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 20px;
+            border: 3px solid #8e24aa;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            z-index: 5;
+        }
+
+        .bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            border-width: 15px 15px 0;
+            border-style: solid;
+            border-color: #8e24aa transparent;
+            transform: translateX(-50%);
+        }
+
+        /* 問題エリア */
+        .question-area {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: #4a148c;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        /* 回答ボタンエリア */
+        .answer-area {
+            flex: 0.8;
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background: #fdf2e9;
+        }
+
+        .ans-btn {
+            flex: 1;
+            border: none;
+            border-radius: 20px;
+            font-size: 40px;
+            cursor: pointer;
+            box-shadow: 0 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-family: inherit;
+            font-weight: bold;
+        }
+
+        .ans-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-yes {
+            background: #ff5252;
+        }
+
+        .btn-no {
+            background: #448aff;
+        }
+
+        .btn-sub {
+            font-size: 16px;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+
+        /* 解説・結果オーバーレイ */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .result-mark {
+            font-size: 100px;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .correct {
+            color: #ff5252;
+        }
+
+        .wrong {
+            color: #448aff;
+        }
+
+        .explanation-box {
+            background: #f3e5f5;
+            border: 2px solid #8e24aa;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #4a148c;
+            font-weight: bold;
+            font-size: 18px;
+            max-width: 90%;
+            height: 180px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .next-btn {
+            padding: 15px 50px;
+            font-size: 20px;
+            background: #8e24aa;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px #6a1b9a;
+            margin-top: 10px;
+        }
+
+        .next-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        /* UIパーツ */
+        .hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-weight: bold;
+            color: #4a148c;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 10px;
+        }
+
+        .quit-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-weight: bold;
+            color: #fff;
+            z-index: 10;
+            background: #ef5350;
+            padding: 5px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 14px;
+            box-shadow: 0 2px #c62828;
+        }
+
+        /* スタート・スライド画面 */
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .slide-img {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .slide-title {
+            color: #8e24aa;
+            font-size: 28px;
+            margin: 0 0 20px 0;
+        }
+
+        .slide-text {
+            color: #333;
+            font-size: 18px;
+            line-height: 1.6;
+            margin: 0 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <div class="hud" id="hud" style="display:none;">もんだい: <span id="q-num">1</span> / 10</div>
+        <a href="index.html" class="quit-btn">🏠 やめる</a>
+
+        <div class="header-area">
+            <div id="msg-bubble" class="bubble">依存症（いぞんしょう）について まなぼう！</div>
+            <img src="hi-kagaku-410.png" class="prof-img" id="prof-img">
+        </div>
+
+        <div class="question-area" id="question-text">
+            ロード中...
+        </div>
+
+        <div class="answer-area" id="answer-area" style="visibility: hidden;">
+            <button class="ans-btn btn-yes" onclick="checkAnswer(true)">
+                〇
+                <span class="btn-sub">ある！</span>
+            </button>
+            <button class="ans-btn btn-no" onclick="checkAnswer(false)">
+                ×
+                <span class="btn-sub">ない！</span>
+            </button>
+        </div>
+
+        <!-- 解説画面 -->
+        <div id="explanation-screen" class="overlay" style="display:none;">
+            <div id="result-mark" class="result-mark"></div>
+            <div id="result-msg" style="font-size:24px; font-weight:bold; margin:10px 0;"></div>
+
+            <div class="explanation-box">
+                <span style="display:block; font-size:14px; color:#555; margin-bottom:5px;">💡 はかせの かいせつ</span>
+                <span id="explanation-text">ここに解説が入ります</span>
+            </div>
+
+            <button class="next-btn" onclick="nextQuestion()">つぎへ</button>
+        </div>
+
+        <!-- スタート＆スライド画面 -->
+        <div id="start-screen" class="overlay">
+            <!-- スライド1 -->
+            <div id="slide-1" class="slide-content">
+                <div class="slide-img">🤔</div>
+                <h1 class="slide-title">「依存症（いぞんしょう）」<br>って なに？</h1>
+                <p class="slide-text">
+                    すきなことが、いつのまにか<br>
+                    「やめられない！ とまらない！」<br>
+                    になってしまう こわい病気（びょうき）だよ。
+                </p>
+                <button class="next-btn" onclick="showSlide(2)">つぎへ</button>
+            </div>
+
+            <!-- スライド2 -->
+            <div id="slide-2" class="slide-content" style="display:none;">
+                <div class="slide-img">🧠</div>
+                <h1 class="slide-title">脳（のう）のなかの<br>「ドーパミン」</h1>
+                <p class="slide-text">
+                    たのしいことをすると<br>
+                    あたまの中で「ドーパミン」という<br>
+                    成分（せいぶん）が出るよ。<br>
+                    「やったー！」という きもちに なるんだ。
+                </p>
+                <button class="next-btn" onclick="showSlide(3)">つぎへ</button>
+            </div>
+
+            <!-- スライド3 -->
+            <div id="slide-3" class="slide-content" style="display:none;">
+                <div class="slide-img">😫</div>
+                <h1 class="slide-title">「もっと！」が<br>とまらない</h1>
+                <p class="slide-text">
+                    でも、やりすぎると<br>
+                    「もっとほしい！」と あたまが<br>
+                    暴走（ぼうそう）してしまう。<br>
+                    「中毒（ちゅうどく）」とも 言うよ。
+                </p>
+                <button class="next-btn" onclick="showSlide(4)">つぎへ</button>
+            </div>
+
+            <!-- スライド4（スタート） -->
+            <div id="slide-4" class="slide-content" style="display:none;">
+                <div class="slide-img">👻</div>
+                <h1 class="slide-title">どんな病気（びょうき）が<br>あるかな？</h1>
+                <p class="slide-text">
+                    ほんとうにある「依存症（いぞんしょう）」は<br>
+                    どっちかな？<br>
+                    クイズで まなぼう！
+                </p>
+                <button class="next-btn" style="background:#ff6f00;" onclick="startGame()">クイズ スタート</button>
+            </div>
+        </div>
+
+        <!-- 結果発表画面 -->
+        <div id="result-screen" class="overlay" style="display:none;">
+            <div style="font-size:80px;">🎓</div>
+            <h1 style="color:#8e24aa;">けっか はっぴょう！</h1>
+            <p style="font-size:24px; font-weight:bold; color:#333;">
+                <span id="score-display" style="font-size:40px; color:#e91e63;">0</span> / 10 点
+            </p>
+
+            <button id="reward-btn" class="next-btn" style="background:#ff9800; box-shadow:0 5px #f57c00;"
+                onclick="getReward()">
+                🎁 ポイントゲット
+            </button>
+            <br><br>
+            <button class="next-btn" style="background:#4caf50; box-shadow:0 5px #2e7d32; font-size:16px;"
+                onclick="location.reload()">🔄 もういちど</button>
+            <a href="index.html" style="margin-top:20px; color:#8e24aa;">🏠 ホームへ</a>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('gesturestart', e => e.preventDefault());
+        document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+
+        // ▼▼▼ 問題データ ▼▼▼
+        const ALL_QUESTIONS = [
+            {
+                q: "ギャンブル依存症（いぞんしょう）\n\nおかねを かける 遊びが\nやめられなくなる。",
+                a: true,
+                exp: "〇（ある）\n借金（しゃっきん）をしてでも やってしまう こわい病気じゃ。パチンコや競馬（けいば）などが有名じゃな。"
+            },
+            {
+                q: "ゲーム障害（しょうがい）\n\n一日中 ゲームばかりして\nご飯も 食べられなくなる。",
+                a: true,
+                exp: "〇（ある）\nWHO（世界保健機関）も みとめた 病気じゃ。生活ができなくなったら 注意が必要じゃぞ！"
+            },
+            {
+                q: "スマホ依存症（いぞんしょう）\n\nスマホが 手元にないと\n不安（ふあん）で しかたない。",
+                a: true,
+                exp: "〇（ある）\n脳（のう）が スマホに 支配（しはい）されてしまうぞ。寝る前は スマホを見ないほうが いいぞ。"
+            },
+            {
+                q: "砂糖中毒（さとうちゅうどく）\n\n甘（あま）い おかしやジュースが\nやめられない。",
+                a: true,
+                exp: "〇（ある）\n「マイルドドラッグ」とも よばれる。イライラして甘いものを食べていたら 注意じゃ。"
+            },
+            {
+                q: "カフェイン中毒（ちゅうどく）\n\nエナジードリンクの 飲みすぎで\n具合（ぐあい）が悪くなる。",
+                a: true,
+                exp: "〇（ある）\nカフェインのとりすぎで、心臓（しんぞう）が バクバクしたり、倒（たお）れてしまうこともあるぞ。飲みすぎ注意じゃ！"
+            },
+            {
+                q: "買い物依存症（かいものいぞんしょう）\n\n使わないものまで\nたくさん 買ってしまう。",
+                a: true,
+                exp: "〇（ある）\nストレス発散（はっさん）のつもりが、買うことが目的に なってしまい、止まらなくなるんだ。"
+            },
+            {
+                q: "アルコール依存症（いぞんしょう）\n\nお酒（さけ）が やめられない。",
+                a: true,
+                exp: "〇（ある）\n体（からだ）を 壊（こわ）しても 飲まずには いられなくなる 怖い病気じゃ。"
+            },
+            {
+                q: "ニコチン依存症（いぞんしょう）\n\nタバコが やめられない。",
+                a: true,
+                exp: "〇（ある）\nタバコの 成分（せいぶん）が 脳（のう）の 回路（かいろ）を 変えてしまうんだ。"
+            },
+            {
+                q: "運動（うんどう）しすぎ依存症\n\n怪我（けが）をしても\n運動してしまう。",
+                a: true,
+                exp: "〇（ある）\n健康（けんこう）に 良い 運動も、やりずぎは「依存（いぞん）」になって、体の毒（どく）に なるぞ。"
+            },
+            {
+                q: "勉強（べんきょう）依存症\n\n勉強しすぎて\n寝るのを わすれる 病気。",
+                a: false,
+                exp: "×（ない…かも？）\n「過集中（かしゅうちゅう）」などはあるが、一般的に 依存症とは 言わないのう。でも 無理（むり）は禁物（きんもつ）じゃ！"
+            },
+            {
+                q: "ブロッコリー依存症\n\nブロッコリーしか\n食べられない。",
+                a: false,
+                exp: "×（ない）\nそれは「偏食（へんしょく）」と言うかも しれんが、依存症ではないぞ。でも 野菜（やさい）を 食べるのは 良いことじゃ。"
+            },
+            {
+                q: "推（お）し活（かつ）依存症\n\nアイドルに お金を\n使いすぎてしまう。",
+                a: true,
+                exp: "〇（ある）\n楽しい「推し活」も、生活が できなくなったら 依存症の 入り口 かもしれんぞ。"
+            },
+            {
+                q: "うそつき依存症\n\nウソをつくのが\nやめられない。",
+                a: true,
+                exp: "〇（ある）\n「虚言癖（きょげんへき）」と言うぞ。注目（ちゅうもく）されたくて ウソを 重（かさ）ねてしまうんだ。"
+            },
+            {
+                q: "激辛（げきから）依存症\n\n辛（から）いものが\nやめられない。",
+                a: true,
+                exp: "〇（ある）\n辛い 刺激（しげき）で 脳（のう）が 興奮（こうふん）して、もっと 辛いものを 求（もと）めてしまうんだ。"
+            },
+            {
+                q: "日光（にっこう）依存症\n\n太陽（たいよう）を 浴（あ）びないと\n落ちつかない。",
+                a: true,
+                exp: "〇（ある）\n肌（はだ）を焼（や）くことに 執着（しゅうちゃく）してしまう心の病気じゃ。「日焼け依存症」とも言うぞ。"
+            },
+            {
+                q: "宿題（しゅくだい）依存症\n\n宿題をやらないと\n手がふるえる。",
+                a: false,
+                exp: "×（ない）\nそんな病気は ないぞ。でも、早めに おわらせると スッキリして「ドーパミン」が出るかもな！"
+            },
+            {
+                q: "薬物（やくぶつ）依存症\n\nあやしい おくすりが\nやめられなくなる。",
+                a: true,
+                exp: "〇（ある）\nぜったいに ダメじゃ！ 脳（のう）が こわれてしまう。「やせる薬（ぐすり）」などといって、だまされることもあるから 気をつけて！"
+            },
+            {
+                q: "ショート動画（どうが）中毒\n\nみじかい 動画を\nいつまでも 見てしまう。",
+                a: true,
+                exp: "〇（ある）\n「つぎを 見たくなる」ように 作られているんじゃ。「あと1回だけ」と おもっていると、時間がとけてしまうぞ。"
+            },
+            {
+                q: "二度寝（にどね）依存症\n\nあさ 起きても\nまた 寝てしまう。",
+                a: false,
+                exp: "×（ない）\nそれは ただの「寝坊（ねぼう）」じゃ！ はやく寝て、スッキリおきるんじゃ！"
+            },
+            {
+                q: "歯（は）みがき依存症\n\nまいにち 歯をみがかないと\n気がすまない。",
+                a: false,
+                exp: "×（ない）\nそれは 良い習慣（しゅうかん）じゃ！ むし歯に ならないように つづけるんじゃぞ。"
+            },
+            {
+                q: "テスト100点（てん）依存症\n\nテストで 100点を\nとりたくて しかたない。",
+                a: false,
+                exp: "×（ない）\nがんばり屋さんじゃな！ 勉強が たのしいのは 良いことじゃ。でも 点数（てんすう）だけが すべてではないぞ。"
+            }
+        ];
+
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+
+        // スライド切り替え
+        function showSlide(num) {
+            // 全スライド非表示
+            for (let i = 1; i <= 4; i++) {
+                const s = document.getElementById('slide-' + i);
+                if (s) s.style.display = 'none';
+            }
+            // 指定スライド表示
+            const target = document.getElementById('slide-' + num);
+            if (target) target.style.display = 'flex';
+
+            // 吹き出しメッセージ更新
+            const bubble = document.getElementById('msg-bubble');
+            if (num === 1) bubble.innerText = "依存症（いぞんしょう）について まなぼう！";
+            if (num === 2) bubble.innerText = "たのしい！は ドーパミンのおかげ";
+            if (num === 3) bubble.innerText = "「もっと！」が こわい…";
+            if (num === 4) bubble.innerText = "ほんとうにあるのは どっち？";
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('hud').style.display = 'block';
+            document.getElementById('answer-area').style.visibility = 'visible';
+
+            // ランダムに10問選ぶ
+            currentQuestions = shuffleArray(ALL_QUESTIONS).slice(0, 10);
+
+            currentIndex = 0;
+            score = 0;
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const qData = currentQuestions[currentIndex];
+            document.getElementById('q-num').innerText = currentIndex + 1;
+            document.getElementById('question-text').innerText = qData.q;
+
+            document.getElementById('msg-bubble').innerText = "ほんとうにある？ ない？";
+            document.getElementById('prof-img').style.transform = "scale(1)";
+        }
+
+        function checkAnswer(userAnswer) {
+            const qData = currentQuestions[currentIndex];
+            const isCorrect = (userAnswer === qData.a);
+
+            const screen = document.getElementById('explanation-screen');
+            const mark = document.getElementById('result-mark');
+            const msg = document.getElementById('result-msg');
+            const expText = document.getElementById('explanation-text');
+
+            if (isCorrect) {
+                score++;
+                mark.innerText = "⭕";
+                mark.className = "result-mark correct";
+                msg.innerText = "せいかい！";
+                msg.style.color = "#ff5252";
+                document.getElementById('prof-img').style.transform = "translateY(-10px) scale(1.1)";
+            } else {
+                mark.innerText = "❌";
+                mark.className = "result-mark wrong";
+                msg.innerText = "ざんねん！";
+                msg.style.color = "#448aff";
+                document.getElementById('prof-img').style.transform = "scale(0.9)";
+            }
+
+            expText.innerText = qData.exp;
+            screen.style.display = "flex";
+        }
+
+        function nextQuestion() {
+            document.getElementById('explanation-screen').style.display = 'none';
+            currentIndex++;
+
+            if (currentIndex < currentQuestions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('result-screen').style.display = 'flex';
+            document.getElementById('score-display').innerText = score;
+            document.getElementById('hud').style.display = 'none';
+            document.getElementById('answer-area').style.visibility = 'hidden';
+
+            if (score === 10) {
+                document.getElementById('msg-bubble').innerText = "なんと！ 依存症マスターじゃ！";
+            } else if (score >= 7) {
+                document.getElementById('msg-bubble').innerText = "よくしっているのう！";
+            } else {
+                document.getElementById('msg-bubble').innerText = "きみは だいじょうぶかな？";
+            }
+        }
+
+        function getReward() {
+            const btn = document.getElementById('reward-btn');
+            btn.disabled = true;
+            btn.style.background = '#ccc';
+            btn.innerText = "ゲットしました";
+
+            const points = score * 5;
+
+            if (typeof showPointGetDialog === 'function') {
+                showPointGetDialog(points);
+            } else {
+                alert(points + "ポイント ゲット！");
+            }
+        }
+
+        function shuffleArray(array) {
+            const clone = array.slice();
+            for (let i = clone.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [clone[i], clone[j]] = [clone[j], clone[i]];
+            }
+            return clone;
+        }
+    </script>
+</body>
+
+</html>
