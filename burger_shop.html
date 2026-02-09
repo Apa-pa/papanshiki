@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>バーガー・プログラミング</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap');
+
+        body {
+            font-family: "M PLUS Rounded 1c", "UD Digital Kyokasho-tai-R", sans-serif;
+            background-color: #fff3e0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            height: 100dvh;
+            touch-action: none;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 800px;
+            height: 100%;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ヘッダー */
+        header {
+            background: #ff9800;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .quit-btn {
+            background: #fff;
+            color: #ff9800;
+            padding: 5px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 2px #e65100;
+        }
+
+        /* メインエリア：コンベアとロボット */
+        .stage-area {
+            flex: 2;
+            background: #eefebe;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 5px solid #8bc34a;
+        }
+
+        .conveyor-belt {
+            position: absolute;
+            bottom: 40px;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background: repeating-linear-gradient(90deg, #555 0px, #555 20px, #333 20px, #333 40px);
+            animation: belt-move 2s linear infinite;
+        }
+
+        @keyframes belt-move {
+            from {
+                background-position: 0 0;
+            }
+
+            to {
+                background-position: 40px 0;
+            }
+        }
+
+        .robot-arm {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 180px;
+            background: url('image/robot_arm.svg') no-repeat center bottom;
+            background-size: contain;
+            transition: transform 0.2s;
+            z-index: 10;
+        }
+
+        .ingredient {
+            position: absolute;
+            bottom: 65px;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: left 0.1s linear, top 0.5s ease-in;
+        }
+
+        .ingredient img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
+        }
+
+        /* プログラミングエリア */
+        .coding-area {
+            flex: 3;
+            background: #fafafa;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+        }
+
+        .block-palette {
+            display: flex;
+            gap: 10px;
+            padding: 5px;
+            background: #eee;
+            border-radius: 10px;
+            overflow-x: auto;
+            min-height: 50px;
+            align-items: center;
+        }
+
+        .block {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 3px rgba(0, 0, 0, 0.2);
+            font-size: 14px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .block img {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+        }
+
+        .block:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .block-if {
+            background: #2196f3;
+        }
+
+        .block-action {
+            background: #e91e63;
+        }
+
+        .block-cond {
+            background: #4caf50;
+        }
+
+        .program-slot {
+            background: #fff;
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 10px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        .slot-delete-btn {
+            margin-left: auto;
+            background: #ff5252;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 24px;
+            text-align: center;
+        }
+
+        .run-btn {
+            background: #4caf50;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            padding: 15px;
+            border-radius: 50px;
+            box-shadow: 0 5px #2e7d32;
+            cursor: pointer;
+            margin-top: auto;
+        }
+
+        .run-btn:active {
+            transform: translateY(3px);
+            box-shadow: none;
+        }
+
+        /* オーバーレイ */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: white;
+            display: none;
+            text-align: center;
+        }
+
+        .hint-box {
+            background: white;
+            color: #333;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 80%;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .next-btn {
+            margin-top: 20px;
+            padding: 10px 30px;
+            font-size: 20px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px #e65100;
+        }
+
+        /* ゴミ箱とトレイ */
+        #trash-bin {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+        }
+
+        #trash-bin img {
+            width: 100%;
+            height: 100%;
+        }
+
+        #plate {
+            position: absolute;
+            bottom: 25px;
+            left: 20px;
+            width: 100px;
+            height: 20px;
+            background: #ddd;
+            border-radius: 10px;
+            border: 2px solid #bbb;
+        }
+
+        .burger-stack {
+            position: absolute;
+            bottom: 35px;
+            /* 皿の上 */
+            left: 30px;
+            display: flex;
+            flex-direction: column-reverse;
+            /* 下から積み上げ */
+            align-items: center;
+            width: 80px;
+        }
+
+        .stack-item {
+            width: 80px;
+            height: 25px;
+            /* 重なり具合を調整 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: -10px;
+            /* 少し重ねる */
+            z-index: 1;
+        }
+
+        .stack-item img {
+            width: 80px;
+            height: auto;
+            max-height: 60px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <header>
+            <div style="font-weight:bold; font-size:18px;">🍔 バーガー・プログラミング</div>
+            <a href="index.html" class="quit-btn">🏠 もどる</a>
+        </header>
+
+        <div class="stage-area">
+            <div class="conveyor-belt" id="belt"></div>
+            <div class="robot-arm" id="robot"></div>
+            <div id="plate"></div>
+            <div class="burger-stack" id="stack"></div>
+            <div id="trash-bin"><img src="image/burger_trash.svg" alt="trash"></div>
+        </div>
+
+        <!-- ステージ説明 -->
+        <div style="padding: 10px; background: #fff3e0; color: #e65100; font-weight: bold; text-align: center;"
+            id="mission-text">
+            ミッション：お肉だけ焼（や）いて、パンはそのままはさもう！
+        </div>
+
+        <div class="coding-area">
+            <div class="block-palette" id="palette">
+                <!-- ブロックはJSで生成 -->
+            </div>
+
+            <div id="program-container">
+                <!-- プログラムスロット -->
+            </div>
+
+            <button class="run-btn" onclick="runProgram()">▶ スタート！</button>
+        </div>
+    </div>
+
+    <!-- クリア画面 -->
+    <div id="result-screen" class="overlay">
+        <div class="hint-box">
+            <div style="font-size: 60px;">🎉</div>
+            <h2 style="color:#e91e63">ステージクリア！</h2>
+            <p>かんぺきなハンバーガーができたね！</p>
+            <button class="next-btn" onclick="nextStage()">つぎへ</button>
+        </div>
+    </div>
+
+    <!-- 失敗画面 -->
+    <div id="fail-screen" class="overlay">
+        <div class="hint-box">
+            <div style="font-size: 60px;">😱</div>
+            <h2 style="color:#333">しっぱい...</h2>
+            <p id="fail-reason">へんなハンバーガーになっちゃった</p>
+            <button class="next-btn" style="background:#607d8b;" onclick="resetLevel()">もういちど</button>
+        </div>
+    </div>
+
+    <script>
+        // ゲームデータ
+        const INGREDIENTS = {
+            'meat': { img: 'image/burger_meat_raw.svg', name: 'お肉', type: 'meat' },
+            'bun': { img: 'image/burger_bun_bottom.svg', name: 'パン', type: 'bun' }, // 便宜上bottom
+            'bun_top': { img: 'image/burger_bun_top.svg', name: 'パン', type: 'bun' },
+            'cheese': { img: 'image/burger_cheese.svg', name: 'チーズ', type: 'cheese' },
+            'lettuce': { img: 'image/burger_lettuce.svg', name: 'やさい', type: 'vege' },
+            'trash': { img: 'image/burger_trash.svg', name: 'ゴミ', type: 'trash' },
+            'bug_lettuce': { img: 'image/bug_lettuce.svg', name: 'むしくい野菜', type: 'trash' },
+
+            // 調理後
+            'cooked_meat': { img: 'image/burger_meat_cooked.svg', name: 'やいたお肉', type: 'meat' },
+            'burnt_bun': { img: 'image/burnt_bun.svg', name: 'こげたパン', type: 'bun' },
+        };
+
+        const ACTIONS = {
+            'grill': { name: 'やく', icon: '🔥' },
+            'stack': { name: 'のせる', icon: '🤲' },
+            'discard': { name: 'すてる', icon: '🗑️' }
+        };
+
+        const STAGES = [
+            {
+                id: 1,
+                text: "お肉だけ焼いて、パンはそのまま はさもう！",
+                queue: ['bun', 'meat', 'meat', 'bun_top'],
+                available_conds: ['meat', 'bun', 'bun_top'],
+                available_actions: ['grill', 'stack'],
+                correct_logic: (ing, action) => {
+                    if (ing === 'meat') return action === 'grill';
+                    return action === 'stack';
+                }
+            },
+            {
+                id: 2,
+                text: "チーズバーガーを作ろう！チーズは そのまま のせてね。",
+                queue: ['bun', 'meat', 'cheese', 'meat', 'bun_top'],
+                available_conds: ['meat', 'cheese'],
+                available_actions: ['grill', 'stack'],
+                correct_logic: (ing, action) => {
+                    if (ing === 'meat') return action === 'grill';
+                    return action === 'stack';
+                }
+            },
+            {
+                id: 3,
+                text: "むしくい野菜がまざってる！ むしくい野菜は すてて！",
+                queue: ['bun', 'meat', 'lettuce', 'bug_lettuce', 'bun_top'],
+                available_conds: ['meat', 'bug_lettuce'],
+                available_actions: ['grill', 'stack', 'discard'],
+                correct_logic: (ing, action) => {
+                    if (ing === 'bug_lettuce') return action === 'discard';
+                    if (ing === 'meat') return action === 'grill';
+                    return action === 'stack';
+                }
+            }
+        ];
+
+        let currentStageIndex = 0;
+        let userProgram = [];
+        let isRunning = false;
+
+        window.onload = initGame;
+
+        function initGame() {
+            try {
+                loadStage(0);
+            } catch (e) {
+                alert("エラーが発生しました: " + e.message);
+                console.error(e);
+            }
+        }
+
+        function loadStage(idx) {
+            currentStageIndex = idx;
+            const stage = STAGES[idx];
+
+            document.getElementById('mission-text').innerText = `ステージ${idx + 1}: ${stage.text}`;
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('fail-screen').style.display = 'none';
+
+            userProgram = [];
+            renderProgramSlots();
+            renderPalette();
+            resetField();
+        }
+
+        function resetField() {
+            document.getElementById('stack').innerHTML = '';
+            document.querySelectorAll('.ingredient').forEach(e => e.remove());
+        }
+
+        function renderPalette() {
+            const p = document.getElementById('palette');
+            p.innerHTML = '';
+            const stage = STAGES[currentStageIndex];
+
+            // 「もし〜」ブロック
+            stage.available_conds.forEach(c => {
+                const btn = document.createElement('div');
+                btn.className = 'block block-cond';
+                // アイコン画像を含める
+                const imgTag = `<img src="${INGREDIENTS[c].img}">`;
+                btn.innerHTML = `もし ${imgTag}${INGREDIENTS[c].name} なら`;
+                btn.onclick = () => addBlock('if', c);
+                p.appendChild(btn);
+            });
+
+            // アクションブロック
+            stage.available_actions.forEach(a => {
+                const btn = document.createElement('div');
+                btn.className = 'block block-action';
+                btn.innerHTML = `${ACTIONS[a].icon} ${ACTIONS[a].name}`;
+                btn.onclick = () => addBlock('action', a);
+                p.appendChild(btn);
+            });
+        }
+
+        function renderProgramSlots() {
+            const container = document.getElementById('program-container');
+            container.innerHTML = '';
+
+            userProgram.forEach((rule, index) => {
+                const slot = document.createElement('div');
+                slot.className = 'program-slot';
+
+                const ifPart = document.createElement('div');
+                ifPart.className = 'block block-if';
+                ifPart.innerHTML = `もし <img src="${INGREDIENTS[rule.cond].img}">（${INGREDIENTS[rule.cond].name}） なら`;
+                slot.appendChild(ifPart);
+
+                const arrow = document.createElement('span');
+                arrow.innerText = '➡';
+                slot.appendChild(arrow);
+
+                const actionPart = document.createElement('div');
+                actionPart.className = 'block block-action';
+                actionPart.innerHTML = `${ACTIONS[rule.action].icon} ${ACTIONS[rule.action].name}`;
+                slot.appendChild(actionPart);
+
+                const delBtn = document.createElement('button');
+                delBtn.className = 'slot-delete-btn';
+                delBtn.innerText = '×';
+                delBtn.onclick = () => removeRule(index);
+                slot.appendChild(delBtn);
+
+                container.appendChild(slot);
+            });
+
+            const defaultSlot = document.createElement('div');
+            defaultSlot.className = 'program-slot';
+            defaultSlot.style.opacity = "0.7";
+            defaultSlot.style.borderStyle = "solid";
+            defaultSlot.innerHTML = `<span style="font-weight:bold; color:#555;">それいがいの ときは ➡ 🤲 そのままのせる</span>`;
+            container.appendChild(defaultSlot);
+        }
+
+        let pendingCond = null;
+
+        function addBlock(type, val) {
+            if (isRunning) return;
+
+            if (type === 'if') {
+                if (pendingCond) {
+                    alert("さっき選んだ条件のアクションを決めてね！");
+                    return;
+                }
+                pendingCond = val;
+
+                const container = document.getElementById('program-container');
+                const tempSlot = document.createElement('div');
+                tempSlot.id = 'temp-slot';
+                tempSlot.className = 'program-slot';
+                tempSlot.style.background = '#e3f2fd';
+                tempSlot.innerHTML = `<div class="block block-if">もし <img src="${INGREDIENTS[val].img}">（${INGREDIENTS[val].name}） なら</div> <span>➡</span> <span style="color:#aaa;">どうする？</span>`;
+                container.insertBefore(tempSlot, container.lastChild);
+
+            } else if (type === 'action') {
+                if (!pendingCond) {
+                    alert("先に「もし〜」のブロックをえらんでね！");
+                    return;
+                }
+                userProgram.push({ cond: pendingCond, action: val });
+                pendingCond = null;
+                renderProgramSlots();
+            }
+        }
+
+        function removeRule(index) {
+            if (isRunning) return;
+            userProgram.splice(index, 1);
+            renderProgramSlots();
+            pendingCond = null;
+        }
+
+        function resetLevel() {
+            document.getElementById('fail-screen').style.display = 'none';
+            resetField();
+        }
+
+        async function runProgram() {
+            if (isRunning) return;
+            if (pendingCond) {
+                alert("作りかけのブロックがあるよ！");
+                return;
+            }
+
+            isRunning = true;
+            resetField();
+
+            const stage = STAGES[currentStageIndex];
+
+            for (const ingKey of stage.queue) {
+                const ingElem = document.createElement('div');
+                ingElem.className = 'ingredient';
+                // imgタグで表示
+                ingElem.innerHTML = `<img src="${INGREDIENTS[ingKey].img}">`;
+                ingElem.style.left = '-60px';
+                document.querySelector('.stage-area').appendChild(ingElem);
+
+                await moveElement(ingElem, '50%', 2000);
+
+                let chosenAction = 'stack';
+                for (const rule of userProgram) {
+                    if (rule.cond === ingKey) {
+                        chosenAction = rule.action;
+                        break;
+                    }
+                }
+
+                await robotAction(chosenAction);
+
+                let resultKey = ingKey;
+
+                if (chosenAction === 'grill') {
+                    if (ingKey === 'meat') resultKey = 'cooked_meat';
+                    else if (ingKey === 'bun' || ingKey === 'bun_top') resultKey = 'burnt_bun';
+                    else if (ingKey === 'cheese') resultKey = null;
+                } else if (chosenAction === 'discard') {
+                    resultKey = null;
+                }
+
+                const isCorrect = stage.correct_logic(ingKey, chosenAction);
+
+                if (!isCorrect) {
+                    if (chosenAction === 'discard') {
+                        throwItemToTrash(ingElem);
+                        await fail("あ！ひつようなものをすてちゃった！");
+                        return;
+                    } else if (chosenAction === 'grill' && resultKey === 'burnt_bun') {
+                        ingElem.innerHTML = `<img src="${INGREDIENTS['burnt_bun'].img}">`;
+                        await fail("パンを焼いたら まっくろコゲになっちゃった！");
+                        return;
+                    } else if (chosenAction === 'stack' && (ingKey === 'trash' || ingKey === 'bug_lettuce')) {
+                        await moveElement(ingElem, '80%', 1000);
+                        addToStack(ingKey);
+                        await fail("あ！ゴミが入っちゃった！");
+                        return;
+                    } else if (chosenAction === 'stack' && ingKey === 'meat') {
+                        await moveElement(ingElem, '80%', 1000);
+                        addToStack(ingKey);
+                        await fail("お肉が生だよ！やかないと！");
+                        return;
+                    } else {
+                        await fail("調理のしかたが ちがうみたい...");
+                        return;
+                    }
+                }
+
+                if (chosenAction === 'discard') {
+                    throwItemToTrash(ingElem);
+                } else {
+                    if (resultKey && INGREDIENTS[resultKey]) {
+                        ingElem.innerHTML = `<img src="${INGREDIENTS[resultKey].img}">`;
+                    }
+
+                    ingElem.style.opacity = 0;
+                    addToStack(resultKey);
+
+                    await new Promise(r => setTimeout(r, 500));
+                    ingElem.remove();
+                }
+            }
+
+            await new Promise(r => setTimeout(r, 500));
+            await clearStage();
+            isRunning = false;
+        }
+
+        function moveElement(el, targetLeft, duration) {
+            return new Promise(resolve => {
+                el.animate([
+                    { left: el.style.left },
+                    { left: targetLeft }
+                ], {
+                    duration: duration,
+                    fill: 'forwards',
+                    easing: 'linear'
+                }).onfinish = () => {
+                    el.style.left = targetLeft;
+                    resolve();
+                };
+            });
+        }
+
+        async function robotAction(action) {
+            const robot = document.getElementById('robot');
+            robot.style.transform = "translateX(-50%) scaleY(0.8)";
+            await new Promise(r => setTimeout(r, 200));
+
+            if (action === 'grill') {
+                const fire = document.createElement('div');
+                fire.innerText = '🔥';
+                fire.style.position = 'absolute';
+                fire.style.left = '50%';
+                fire.style.bottom = '80px';
+                fire.style.fontSize = '40px';
+                fire.style.transform = 'translateX(-50%)';
+                document.querySelector('.stage-area').appendChild(fire);
+                await new Promise(r => setTimeout(r, 500));
+                fire.remove();
+            } else {
+                await new Promise(r => setTimeout(r, 300));
+            }
+
+            robot.style.transform = "translateX(-50%) scaleY(1)";
+            await new Promise(r => setTimeout(r, 200));
+        }
+
+        function throwItemToTrash(el) {
+            el.animate([
+                { top: el.style.top, left: el.style.left, opacity: 1 },
+                { top: '80%', left: '90%', opacity: 0 }
+            ], {
+                duration: 500,
+                fill: 'forwards'
+            }).onfinish = () => el.remove();
+        }
+
+        function addToStack(key) {
+            if (!key) return;
+            const stack = document.getElementById('stack');
+            const item = document.createElement('div');
+            item.className = 'stack-item';
+            item.innerHTML = `<img src="${INGREDIENTS[key].img}">`;
+            stack.appendChild(item);
+        }
+
+        async function fail(msg) {
+            document.getElementById('fail-reason').innerText = msg;
+            document.getElementById('fail-screen').style.display = 'flex';
+            isRunning = false;
+        }
+
+        async function clearStage() {
+            document.getElementById('result-screen').style.display = 'flex';
+        }
+
+        function nextStage() {
+            if (currentStageIndex < STAGES.length - 1) {
+                loadStage(currentStageIndex + 1);
+            } else {
+                alert("おめでとう！ぜんぶのステージをクリアしたよ！");
+
+                if (typeof showPointGetDialog === 'function') {
+                    showPointGetDialog(50);
+                }
+                loadStage(0);
+            }
+        }
+    </script>
+    <script src="ranking.js"></script>
+</body>
+
+</html>
