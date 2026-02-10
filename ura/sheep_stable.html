@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ひつじ厩舎・トレーニング</title>
     <script src="../ranking.js"></script>
+    <script type="module" src="../firebase-ranking.js"></script>
     <style>
         body {
             font-family: 'Arial Black', sans-serif;
@@ -28,7 +30,7 @@
         }
 
         .balance-box {
-            background: rgba(0,0,0,0.6);
+            background: rgba(0, 0, 0, 0.6);
             padding: 5px 15px;
             border-radius: 20px;
             border: 2px solid #ffd700;
@@ -38,12 +40,12 @@
         .current-sheep-card {
             width: 100%;
             max-width: 450px;
-            background: rgba(255,255,255,0.95);
+            background: rgba(255, 255, 255, 0.95);
             color: #333;
             border-radius: 25px;
             padding: 20px;
             box-sizing: border-box;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
             margin-bottom: 30px;
             text-align: center;
             border: 5px solid #ffca28;
@@ -62,7 +64,7 @@
             top: 20%;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
+            background: rgba(0, 0, 0, 0.8);
             color: #fff;
             padding: 8px 16px;
             border-radius: 20px;
@@ -72,7 +74,11 @@
             transition: all 0.3s;
             z-index: 10;
         }
-        .toast-msg.show { top: 10%; opacity: 1; }
+
+        .toast-msg.show {
+            top: 10%;
+            opacity: 1;
+        }
 
         .name-input {
             font-size: 20px;
@@ -100,77 +106,221 @@
             padding: 15px;
             border-radius: 15px;
         }
-        .stat-row { margin-bottom: 10px; }
-        .stat-label { font-size: 11px; font-weight: bold; color: #555; display: flex; justify-content: space-between; }
-        .stat-bar-bg { background: #ddd; height: 10px; border-radius: 6px; overflow: hidden; margin-top: 4px; border: 1px solid #ccc; }
-        .stat-bar-fill { height: 100%; width: 0%; transition: width 0.5s; }
-        .bar-speed { background: linear-gradient(to right, #e91e63, #ff4081); }
-        .bar-stamina { background: linear-gradient(to right, #2196f3, #03a9f4); }
-        .bar-tenacity { background: linear-gradient(to right, #4caf50, #8bc34a); }
 
-        .total-cap-info { font-size: 12px; color: #666; margin-bottom: 5px; font-weight: bold; }
-
-        .train-area { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 10px; }
-        .train-btn {
-            padding: 8px 2px; border: none; border-radius: 10px;
-            font-weight: bold; cursor: pointer; color: white;
-            box-shadow: 0 3px rgba(0,0,0,0.2); font-size: 10px; line-height: 1.2;
+        .stat-row {
+            margin-bottom: 10px;
         }
-        .btn-speed { background: #e91e63; }
-        .btn-stamina { background: #2196f3; }
-        .btn-tenacity { background: #4caf50; }
-        .train-btn:active { transform: translateY(2px); box-shadow: none; }
-        .train-btn:disabled { background: #bbb; opacity: 0.7; cursor: not-allowed; }
 
-        .scout-list { width: 100%; max-width: 500px; display: grid; gap: 10px; }
-        .scout-card { background: rgba(0,0,0,0.8); border: 2px solid #ffd700; border-radius: 15px; padding: 10px; display: flex; align-items: center; }
-        .scout-info { flex: 1; margin-left: 10px; }
-        .rank-label { font-size: 9px; padding: 2px 5px; border-radius: 4px; margin-bottom: 2px; display: inline-block; color: #fff; }
-        .rank-rookie { background: #81c784; }
-        .rank-pro { background: #64b5f6; }
-        .rank-legend { background: #ffb74d; }
+        .stat-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #555;
+            display: flex;
+            justify-content: space-between;
+        }
 
-        .contract-btn { background: #ff5252; color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 4px #c62828; }
+        .stat-bar-bg {
+            background: #ddd;
+            height: 10px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 4px;
+            border: 1px solid #ccc;
+        }
 
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
-        .user-btn { margin: 5px; padding: 15px 30px; font-size: 18px; background: #4caf50; color: white; border: none; border-radius: 30px; }
-        .back-link { color: #fff; margin-top: 20px; text-decoration: underline; font-size: 14px; }
+        .stat-bar-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        .bar-speed {
+            background: linear-gradient(to right, #e91e63, #ff4081);
+        }
+
+        .bar-stamina {
+            background: linear-gradient(to right, #2196f3, #03a9f4);
+        }
+
+        .bar-tenacity {
+            background: linear-gradient(to right, #4caf50, #8bc34a);
+        }
+
+        .total-cap-info {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .train-area {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .train-btn {
+            padding: 8px 2px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            box-shadow: 0 3px rgba(0, 0, 0, 0.2);
+            font-size: 10px;
+            line-height: 1.2;
+        }
+
+        .btn-speed {
+            background: #e91e63;
+        }
+
+        .btn-stamina {
+            background: #2196f3;
+        }
+
+        .btn-tenacity {
+            background: #4caf50;
+        }
+
+        .train-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .train-btn:disabled {
+            background: #bbb;
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .scout-list {
+            width: 100%;
+            max-width: 500px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .scout-card {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .scout-info {
+            flex: 1;
+            margin-left: 10px;
+        }
+
+        .rank-label {
+            font-size: 9px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            margin-bottom: 2px;
+            display: inline-block;
+            color: #fff;
+        }
+
+        .rank-rookie {
+            background: #81c784;
+        }
+
+        .rank-pro {
+            background: #64b5f6;
+        }
+
+        .rank-legend {
+            background: #ffb74d;
+        }
+
+        .contract-btn {
+            background: #ff5252;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px #c62828;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .user-btn {
+            margin: 5px;
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 30px;
+        }
+
+        .back-link {
+            color: #fff;
+            margin-top: 20px;
+            text-decoration: underline;
+            font-size: 14px;
+        }
     </style>
 </head>
+
 <body>
 
     <div class="header">
         <div id="user-display" style="font-weight:bold;">名前: ---</div>
-        <div class="balance-box">💰 <span id="balance">0</span></div>
+        <div class="balance-box">🌰 <span id="balance">0</span></div>
     </div>
 
     <div id="current-sheep-area" class="current-sheep-card">
         <div id="toast" class="toast-msg"></div>
         <div id="no-sheep-msg" style="padding:40px; font-weight:bold; color:#888;">ひつじがいません。</div>
-        
+
         <div id="sheep-details" style="display:none;">
             <p style="margin:0; font-size:11px; color:#ff9800; font-weight:bold;">🏆 契約中のアスリート</p>
             <input type="text" id="my-sheep-name" class="name-input" onchange="renameSheep()">
             <div id="remaining-races" class="contract-info">残り契約レース: -- 回</div>
-            
+
             <img src="hitsuji_shomen.png" class="sheep-main-img" id="my-sheep-img">
-            
+
             <div id="total-status" class="total-cap-info">合計能力: 0 / 0</div>
 
             <div class="stat-container">
                 <div class="stat-row">
                     <div class="stat-label"><span>スピード</span><span id="speed-val">0</span></div>
-                    <div class="stat-bar-bg"><div id="my-stat-speed" class="stat-bar-fill bar-speed"></div></div>
+                    <div class="stat-bar-bg">
+                        <div id="my-stat-speed" class="stat-bar-fill bar-speed"></div>
+                    </div>
                 </div>
                 <div class="stat-row">
                     <div class="stat-label"><span>スタミナ</span><span id="stamina-val">0</span></div>
-                    <div class="stat-bar-bg"><div id="my-stat-stamina" class="stat-bar-fill bar-stamina"></div></div>
+                    <div class="stat-bar-bg">
+                        <div id="my-stat-stamina" class="stat-bar-fill bar-stamina"></div>
+                    </div>
                 </div>
                 <div class="stat-row">
                     <div class="stat-label"><span>根性</span><span id="tenacity-val">0</span></div>
-                    <div class="stat-bar-bg"><div id="my-stat-tenacity" class="stat-bar-fill bar-tenacity"></div></div>
+                    <div class="stat-bar-bg">
+                        <div id="my-stat-tenacity" class="stat-bar-fill bar-tenacity"></div>
+                    </div>
                 </div>
-                
+
                 <div class="train-area">
                     <button class="train-btn btn-speed" onclick="trainSheep('speed')">💨 スピード<br>(1🌰)</button>
                     <button class="train-btn btn-stamina" onclick="trainSheep('stamina')">🍖 スタミナ<br>(1🌰)</button>
@@ -178,13 +328,17 @@
                 </div>
             </div>
 
-            <button class="contract-btn" style="background:#4caf50; box-shadow:0 4px #2e7d32; width:100%; margin-bottom:10px;" onclick="startLocalRace()">🏁 ローカルレースに出る (5🌰)</button>
-            <button class="contract-btn" style="background:#2196f3; box-shadow:0 4px #1565c0; width:100%;" onclick="entryNationalRace()">全国レースに出走登録！</button>
+            <button class="contract-btn"
+                style="background:#4caf50; box-shadow:0 4px #2e7d32; width:100%; margin-bottom:10px;"
+                onclick="startLocalRace()">🏁 ローカルレースに出る (5🌰)</button>
+            <button class="contract-btn" style="background:#2196f3; box-shadow:0 4px #1565c0; width:100%;"
+                onclick="entryNationalRace()">全国レースに出走登録！</button>
             <p id="entry-status" style="font-size:12px; color:#e91e63; margin-top:10px; font-weight:bold;"></p>
         </div>
     </div>
 
-    <h3 style="margin: 10px 0; border-left: 5px solid #ffd700; padding-left: 10px; width: 100%; max-width: 500px;">新しく契約を結ぶ（24レース契約）</h3>
+    <h3 style="margin: 10px 0; border-left: 5px solid #ffd700; padding-left: 10px; width: 100%; max-width: 500px;">
+        新しく契約を結ぶ（24レース契約）</h3>
     <div class="scout-list" id="scout-list"></div>
 
     <a href="secret_home.html" class="back-link">カジノロビーに戻る</a>
@@ -194,88 +348,88 @@
         <div id="user-list"></div>
     </div>
 
-<script>
-    let currentUserName = "";
-    const SHEEP_STORAGE_KEY = "papan_my_sheep_v3";
+    <script>
+        let currentUserName = "";
+        const SHEEP_STORAGE_KEY = "papan_my_sheep_v3";
 
-    // --- ★ 不足していたヘルパー関数を追加 ---
-    function getUserData() { 
-        // 厩舎のデータは専用のキーを使用
-        return JSON.parse(localStorage.getItem(SHEEP_STORAGE_KEY) || "{}"); 
-    }
-    function saveUserData(data) { 
-        localStorage.setItem(SHEEP_STORAGE_KEY, JSON.stringify(data)); 
-    }
-    function generateUuid() {
-        return 'u_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
-    }
-
-    const MASTERS = [
-        { rank: "Rookie", name: "もふもふ新人", cost: 24, speed: 30, stamina: 30, tenacity: 30, totalMax: 200, desc: "合計限界: 200" },
-        { rank: "Pro", name: "ウール・スター", cost: 60, speed: 60, stamina: 60, tenacity: 60, totalMax: 240, desc: "合計限界: 240" },
-        { rank: "Legend", name: "ゼウス・メェー", cost: 200, speed: 85, stamina: 85, tenacity: 85, totalMax: 280, desc: "合計限界: 280" }
-    ];
-
-    window.onload = () => {
-        const users = (typeof getUserNames === 'function') ? getUserNames() : [];
-        const list = document.getElementById('user-list');
-        users.forEach(u => {
-            const b = document.createElement('button');
-            b.className = 'user-btn';
-            b.innerText = u;
-            b.onclick = () => selectUser(u);
-            list.appendChild(b);
-        });
-        renderScoutList();
-    };
-
-    function selectUser(name) {
-        currentUserName = name;
-        document.getElementById('user-overlay').style.display = 'none';
-        document.getElementById('user-display').innerText = "オーナー: " + name;
-        updateUI();
-    }
-
-    function updateUI() {
-        const bal = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
-        document.getElementById('balance').innerText = bal;
-        const allData = getUserData();
-        const s = allData[currentUserName];
-        const details = document.getElementById('sheep-details');
-        const msg = document.getElementById('no-sheep-msg');
-
-        if (s) {
-            msg.style.display = "none";
-            details.style.display = "block";
-            document.getElementById('my-sheep-name').value = s.name;
-            document.getElementById('my-stat-speed').style.width = s.speed + "%";
-            document.getElementById('my-stat-stamina').style.width = s.stamina + "%";
-            document.getElementById('my-stat-tenacity').style.width = s.tenacity + "%";
-            document.getElementById('speed-val').innerText = s.speed;
-            document.getElementById('stamina-val').innerText = s.stamina;
-            document.getElementById('tenacity-val').innerText = s.tenacity;
-            const currentTotal = s.speed + s.stamina + s.tenacity;
-            document.getElementById('total-status').innerText = `合計能力: ${currentTotal} / ${s.totalMax}`;
-            
-            const rem = s.contractRaces !== undefined ? s.contractRaces : 24;
-            document.getElementById('remaining-races').innerText = `残り契約レース: ${rem} 回`;
-
-            const isMax = (currentTotal >= s.totalMax);
-            document.querySelectorAll('.train-btn').forEach(btn => btn.disabled = isMax);
-            document.getElementById('entry-status').innerText = s.entry ? "📢 全国レースに登録済み！" : "";
-        } else {
-            msg.style.display = "block";
-            details.style.display = "none";
+        // --- ★ 不足していたヘルパー関数を追加 ---
+        function getUserData() {
+            // 厩舎のデータは専用のキーを使用
+            return JSON.parse(localStorage.getItem(SHEEP_STORAGE_KEY) || "{}");
         }
-    }
+        function saveUserData(data) {
+            localStorage.setItem(SHEEP_STORAGE_KEY, JSON.stringify(data));
+        }
+        function generateUuid() {
+            return 'u_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
+        }
 
-    function renderScoutList() {
-        const list = document.getElementById('scout-list');
-        list.innerHTML = "";
-        MASTERS.forEach(m => {
-            const card = document.createElement('div');
-            card.className = 'scout-card';
-            card.innerHTML = `
+        const MASTERS = [
+            { rank: "Rookie", name: "もふもふ新人", cost: 24, speed: 30, stamina: 30, tenacity: 30, totalMax: 200, desc: "合計限界: 200" },
+            { rank: "Pro", name: "ウール・スター", cost: 60, speed: 60, stamina: 60, tenacity: 60, totalMax: 240, desc: "合計限界: 240" },
+            { rank: "Legend", name: "ゼウス・メェー", cost: 200, speed: 85, stamina: 85, tenacity: 85, totalMax: 280, desc: "合計限界: 280" }
+        ];
+
+        window.onload = () => {
+            const users = (typeof getUserNames === 'function') ? getUserNames() : [];
+            const list = document.getElementById('user-list');
+            users.forEach(u => {
+                const b = document.createElement('button');
+                b.className = 'user-btn';
+                b.innerText = u;
+                b.onclick = () => selectUser(u);
+                list.appendChild(b);
+            });
+            renderScoutList();
+        };
+
+        function selectUser(name) {
+            currentUserName = name;
+            document.getElementById('user-overlay').style.display = 'none';
+            document.getElementById('user-display').innerText = "オーナー: " + name;
+            updateUI();
+        }
+
+        function updateUI() {
+            const bal = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
+            document.getElementById('balance').innerText = bal;
+            const allData = getUserData();
+            const s = allData[currentUserName];
+            const details = document.getElementById('sheep-details');
+            const msg = document.getElementById('no-sheep-msg');
+
+            if (s) {
+                msg.style.display = "none";
+                details.style.display = "block";
+                document.getElementById('my-sheep-name').value = s.name;
+                document.getElementById('my-stat-speed').style.width = s.speed + "%";
+                document.getElementById('my-stat-stamina').style.width = s.stamina + "%";
+                document.getElementById('my-stat-tenacity').style.width = s.tenacity + "%";
+                document.getElementById('speed-val').innerText = s.speed;
+                document.getElementById('stamina-val').innerText = s.stamina;
+                document.getElementById('tenacity-val').innerText = s.tenacity;
+                const currentTotal = s.speed + s.stamina + s.tenacity;
+                document.getElementById('total-status').innerText = `合計能力: ${currentTotal} / ${s.totalMax}`;
+
+                const rem = s.contractRaces !== undefined ? s.contractRaces : 24;
+                document.getElementById('remaining-races').innerText = `残り契約レース: ${rem} 回`;
+
+                const isMax = (currentTotal >= s.totalMax);
+                document.querySelectorAll('.train-btn').forEach(btn => btn.disabled = isMax);
+                document.getElementById('entry-status').innerText = s.entry ? "📢 全国レースに登録済み！" : "";
+            } else {
+                msg.style.display = "block";
+                details.style.display = "none";
+            }
+        }
+
+        function renderScoutList() {
+            const list = document.getElementById('scout-list');
+            list.innerHTML = "";
+            MASTERS.forEach(m => {
+                const card = document.createElement('div');
+                card.className = 'scout-card';
+                card.innerHTML = `
                 <div style="font-size:28px;">🐑</div>
                 <div class="scout-info">
                     <span class="rank-label rank-${m.rank.toLowerCase()}">${m.rank}</span>
@@ -285,174 +439,175 @@
                 </div>
                 <button class="contract-btn" onclick="signContract('${m.rank}')">契約</button>
             `;
-            list.appendChild(card);
-        });
-    }
-
-    function signContract(rank) {
-        const target = MASTERS.find(m => m.rank === rank);
-        const bal = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
-        if (bal < target.cost) { alert("どんぐりが足りません！"); return; }
-        if (!confirm(`${target.name} と契約しますか？ (24レース契約)`)) return;
-        if (typeof spendDonguri === 'function') spendDonguri(currentUserName, target.cost);
-        const allData = getUserData();
-        
-        allData[currentUserName] = { 
-            rank: target.rank, 
-            name: target.name, 
-            speed: target.speed, 
-            stamina: target.stamina, 
-            tenacity: target.tenacity, 
-            totalMax: target.totalMax, 
-            entry: false,
-            contractRaces: 24 
-        };
-        
-        saveUserData(allData);
-        playActionAnimation("hitsuji_eat.png", "契約完了！");
-    }
-
-    function renameSheep() {
-        const newName = document.getElementById('my-sheep-name').value.trim();
-        if(!newName) return;
-        const allData = getUserData();
-        if(allData[currentUserName]) {
-            allData[currentUserName].name = newName;
-            saveUserData(allData);
+                list.appendChild(card);
+            });
         }
-    }
 
-    function trainSheep(type) {
-        const allData = getUserData();
-        const s = allData[currentUserName];
-        if (!s) return;
-        const currentTotal = s.speed + s.stamina + s.tenacity;
-        if (currentTotal >= s.totalMax) { showToast("限界です！"); return; }
-        const bal = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
-        if (bal < 1) { showToast("どんぐり不足！"); return; }
+        function signContract(rank) {
+            const target = MASTERS.find(m => m.rank === rank);
+            const bal = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
+            if (bal < target.cost) { alert("どんぐりが足りません！"); return; }
+            if (!confirm(`${target.name} と契約しますか？ (24レース契約)`)) return;
+            if (typeof spendDonguri === 'function') spendDonguri(currentUserName, target.cost);
+            const allData = getUserData();
 
-        let trainImg = "hitsuji_eat.png";
-        if(type === 'speed') { s.speed += 2; trainImg = "hitsuji_run2.png"; }
-        else if(type === 'stamina') { s.stamina += 2; trainImg = "hitsuji_eat.png"; }
-        else if(type === 'tenacity') { s.tenacity += 2; trainImg = "hitsuji_run1.png"; }
+            allData[currentUserName] = {
+                rank: target.rank,
+                name: target.name,
+                speed: target.speed,
+                stamina: target.stamina,
+                tenacity: target.tenacity,
+                totalMax: target.totalMax,
+                entry: false,
+                contractRaces: 24
+            };
 
-        const newTotal = s.speed + s.stamina + s.tenacity;
-        if (newTotal > s.totalMax) { s[type] -= (newTotal - s.totalMax); }
+            saveUserData(allData);
+            playActionAnimation("hitsuji_eat.png", "契約完了！");
+        }
 
-        if (typeof spendDonguri === 'function') spendDonguri(currentUserName, 1);
-        saveUserData(allData);
-        playActionAnimation(trainImg, "ナイス特訓！");
-    }
+        function renameSheep() {
+            const newName = document.getElementById('my-sheep-name').value.trim();
+            if (!newName) return;
+            const allData = getUserData();
+            if (allData[currentUserName]) {
+                allData[currentUserName].name = newName;
+                saveUserData(allData);
+            }
+        }
 
-    function showToast(msg) {
-        const toast = document.getElementById('toast');
-        toast.innerText = msg;
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 1500);
-    }
-
-    function playActionAnimation(imgSrc, msg) {
-        const img = document.getElementById('my-sheep-img');
-        if(!img) return;
-        const originalSrc = "hitsuji_shomen.png";
-        img.src = imgSrc;
-        if(msg) showToast(msg);
-        setTimeout(() => {
-            img.src = originalSrc;
-            updateUI();
-        }, 800);
-    }
-
-    function startLocalRace() {
-        const bal = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
-        if (bal < 5) { alert("出走料が足りません！"); return; }
-        
-        if (confirm(`出走料 5 🌰 を払って出場しますか？`)) {
-            if (typeof spendDonguri === 'function') spendDonguri(currentUserName, 5);
+        function trainSheep(type) {
             const allData = getUserData();
             const s = allData[currentUserName];
-            location.href = `sheep_stable_race.html?user=${encodeURIComponent(currentUserName)}&rank=${encodeURIComponent(s.rank)}`;
+            if (!s) return;
+            const currentTotal = s.speed + s.stamina + s.tenacity;
+            if (currentTotal >= s.totalMax) { showToast("限界です！"); return; }
+            const bal = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
+            if (bal < 1) { showToast("どんぐり不足！"); return; }
+
+            let trainImg = "hitsuji_eat.png";
+            if (type === 'speed') { s.speed += 2; trainImg = "hitsuji_run2.png"; }
+            else if (type === 'stamina') { s.stamina += 2; trainImg = "hitsuji_eat.png"; }
+            else if (type === 'tenacity') { s.tenacity += 2; trainImg = "hitsuji_run1.png"; }
+
+            const newTotal = s.speed + s.stamina + s.tenacity;
+            if (newTotal > s.totalMax) { s[type] -= (newTotal - s.totalMax); }
+
+            if (typeof spendDonguri === 'function') spendDonguri(currentUserName, 1);
+            saveUserData(allData);
+            playActionAnimation(trainImg, "ナイス特訓！");
         }
-    }
 
-    async function entryNationalRace() {
-        const allData = getUserData();
-        const s = allData[currentUserName];
-        if (!s) return;
-
-        // すでに登録済みかチェック
-        if (s.entry) {
-            alert("すでに今週のレースにはエントリー済みです！");
-            return;
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 1500);
         }
 
-        const publicName = prompt("全国レースに登録するオーナー名を入力してね", currentUserName);
-        if (!publicName) return;
+        function playActionAnimation(imgSrc, msg) {
+            const img = document.getElementById('my-sheep-img');
+            if (!img) return;
+            const originalSrc = "hitsuji_shomen.png";
+            img.src = imgSrc;
+            if (msg) showToast(msg);
+            setTimeout(() => {
+                img.src = originalSrc;
+                updateUI();
+            }, 800);
+        }
 
-        // 現在は「無料」であることを明示
-        if (confirm(`「${s.name}」を全国レースに登録しますか？\n（今だけ出走料：無料！ 🌰）`)) {
-            
-            // IDがない場合は発行
-            if (!s.uid) {
-                s.uid = generateUuid();
+        function startLocalRace() {
+            const bal = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
+            if (bal < 5) { alert("出走料が足りません！"); return; }
+
+            if (confirm(`出走料 5 🌰 を払って出場しますか？`)) {
+                if (typeof spendDonguri === 'function') spendDonguri(currentUserName, 5);
+                const allData = getUserData();
+                const s = allData[currentUserName];
+                location.href = `sheep_stable_race.html?user=${encodeURIComponent(currentUserName)}&rank=${encodeURIComponent(s.rank)}`;
+            }
+        }
+
+        async function entryNationalRace() {
+            const allData = getUserData();
+            const s = allData[currentUserName];
+            if (!s) return;
+
+            // すでに登録済みかチェック
+            if (s.entry) {
+                alert("すでに今週のレースにはエントリー済みです！");
+                return;
             }
 
-            // Firebaseへ送信
-            if (typeof window.registerNationalRaceEntry === 'function') {
-                const success = await window.registerNationalRaceEntry(s.uid, s, publicName);
-                if (success) {
-                    s.entry = true;
-                    allData[currentUserName] = s;
+            const publicName = prompt("全国レースに登録するオーナー名を入力してね", currentUserName);
+            if (!publicName) return;
+
+            // 現在は「無料」であることを明示
+            if (confirm(`「${s.name}」を全国レースに登録しますか？\n（今だけ出走料：無料！ 🌰）`)) {
+
+                // IDがない場合は発行
+                if (!s.uid) {
+                    s.uid = generateUuid();
+                }
+
+                // Firebaseへ送信
+                if (typeof window.registerNationalRaceEntry === 'function') {
+                    const success = await window.registerNationalRaceEntry(s.uid, s, publicName);
+                    if (success) {
+                        s.entry = true;
+                        allData[currentUserName] = s;
+                        saveUserData(allData);
+                        updateUI();
+                        showToast("全国レースにエントリー完了！🌏");
+                    } else {
+                        alert("通信エラーで登録できませんでした。");
+                    }
+                }
+            }
+        }
+
+        async function initNationalRaceSystem() {
+            const allData = getUserData();
+            const s = allData[currentUserName];
+            if (!s) return;
+
+            if (typeof window.checkAndRunNationalRace === 'function') {
+                const res = await window.checkAndRunNationalRace();
+
+                if (res.status === "new_result" || res.status === "finished") {
+                    const data = res.data;
+                    if (s.lastAwardedRace === data.raceId) return;
+
+                    let myRank = 0;
+                    let prize = 0;
+
+                    [...data.rookie, ...data.pro, ...data.legend].forEach(win => {
+                        if (win.uid === s.uid) {
+                            myRank = win.rank;
+                        }
+                    });
+
+                    if (myRank > 0) {
+                        prize = (myRank === 1) ? 10 : 5;
+                        if (typeof addDonguri === 'function') {
+                            addDonguri(currentUserName, prize);
+                            alert(`🏆全国レース結果発表！\nあなたは第${myRank}位でした！\n賞金 ${prize} 🌰 を受け取りました！`);
+                        }
+                    }
+
+                    s.lastAwardedRace = data.raceId;
+                    s.entry = false;
                     saveUserData(allData);
                     updateUI();
-                    showToast("全国レースにエントリー完了！🌏");
-                } else {
-                    alert("通信エラーで登録できませんでした。");
                 }
             }
         }
-    }
 
-    async function initNationalRaceSystem() {
-        const allData = getUserData();
-        const s = allData[currentUserName];
-        if (!s) return;
-
-        if (typeof window.checkAndRunNationalRace === 'function') {
-            const res = await window.checkAndRunNationalRace();
-            
-            if (res.status === "new_result" || res.status === "finished") {
-                const data = res.data;
-                if (s.lastAwardedRace === data.raceId) return;
-
-                let myRank = 0;
-                let prize = 0;
-                
-                [...data.rookie, ...data.pro, ...data.legend].forEach(win => {
-                    if (win.uid === s.uid) {
-                        myRank = win.rank;
-                    }
-                });
-
-                if (myRank > 0) {
-                    prize = (myRank === 1) ? 10 : 5;
-                    if (typeof addDonguri === 'function') {
-                        addDonguri(currentUserName, prize);
-                        alert(`🏆全国レース結果発表！\nあなたは第${myRank}位でした！\n賞金 ${prize} 🌰 を受け取りました！`);
-                    }
-                }
-
-                s.lastAwardedRace = data.raceId;
-                s.entry = false; 
-                saveUserData(allData);
-                updateUI();
-            }
-        }
-    }
-
-    window.addEventListener('load', () => {
-        setTimeout(initNationalRaceSystem, 1000);
-    });
-</script>
+        window.addEventListener('load', () => {
+            setTimeout(initNationalRaceSystem, 1000);
+        });
+    </script>
 </body>
+
 </html>
