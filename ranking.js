@@ -36,7 +36,7 @@ const STOCK_MASTER = {
     // ▼ 追加分 ▼
     'nikkei': { name: 'ぱぱんの森平均株価', type: 'linked', linkage: 'NI225', currency: 'point', initPrice: 1000, volatility: 0.0, dividendRate: 0.005, divisor: 100, desc: 'ぱぱんの森の平均株価と連動するよ' },
     'sp500': { name: 'とおくの山SP500', type: 'linked', linkage: 'SP500', currency: 'point', initPrice: 100, volatility: 0.0, dividendRate: 0.005, divisor: 10, desc: 'とおくの山を代表する500社の株価と連動するよ' },
-    'wheat': { name: '小麦 (10kg)', type: 'linked', linkage: 'WEAT', currency: 'point', initPrice: 200, volatility: 0.0, dividendRate: 0.005, divisor: 0.1, desc: 'パンや麺(めん)の材料になるよ' }
+    'wheat': { name: '小麦 (10kg)', type: 'linked', linkage: 'WHEAT', currency: 'point', initPrice: 200, volatility: 0.0, dividendRate: 0.005, divisor: 0.1, desc: 'パンや麺(めん)の材料になるよ' }
 };
 
 // --- 定数定義 ---
