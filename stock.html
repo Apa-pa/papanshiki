@@ -245,9 +245,9 @@
             <a href="bank.html" class="btn-link to-bank">🏦 ぱぱん銀行へいく</a>
         </div>
 
-        <!-- <div class="debug-area">
+        <div class="debug-area">
             <button onclick="debugResetDate()" style="font-size:10px;">[DEBUG] 日付をリセットする</button>
-        </div> -->
+        </div>
 
     </div>
 
@@ -376,15 +376,15 @@
         }
 
         // デバッグ用: 保存された日付を消す（＝次回アクセス時に必ず更新が走る）
-        /*
-                function debugResetDate() {
-                    const market = getMarketData();
-                    market.lastUpdate = "";
-                    localStorage.setItem('papan_market_v1', JSON.stringify(market));
-                    alert("日付データをリセットしました。\nページをリロードすると「次の日」になります。");
-                    location.reload();
-                }
-        */
+
+        function debugResetDate() {
+            const market = getMarketData();
+            market.lastUpdate = "";
+            localStorage.setItem('papan_market_v1', JSON.stringify(market));
+            alert("日付データをリセットしました。\nページをリロードすると「次の日」になります。");
+            location.reload();
+        }
+
 
     </script>
 
