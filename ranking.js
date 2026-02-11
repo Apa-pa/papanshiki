@@ -147,10 +147,18 @@ function getDailyMissionData() { return JSON.parse(localStorage.getItem(DAILY_MI
 // Xorshiftアルゴリズムによるシード付き乱数生成器
 class SeededRandom {
     constructor(seed) {
-        this.x = 123456789;
-        this.y = 362436069;
-        this.z = 521288629;
-        this.w = seed;
+        // LCG (Linear Congruential Generator) で初期状態を撹拌する
+        // これにより、seedが1違うだけでも全く異なる初期状態を作り出す
+        let s = seed;
+        const nextLCG = () => {
+            s = (s * 1664525 + 1013904223) >>> 0;
+            return s;
+        };
+
+        this.x = nextLCG();
+        this.y = nextLCG();
+        this.z = nextLCG();
+        this.w = nextLCG();
     }
 
     // 0以上1未満の乱数を返す
