@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ドキドキ人体模型（あやしいレントゲン室） | ぱぱん式</title>
+    <link rel="stylesheet" href="css/human_model.css">
+</head>
+
+<body>
+    <div class="game-container">
+        <!-- ヘッダー -->
+        <header class="game-header">
+            <h1>💀 ドキドキ人体模型</h1>
+            <div class="header-center">
+                <h2 id="guide-text" class="guide-text">まずは腎臓から！</h2>
+            </div>
+            <a href="index.html" class="btn-home">🏠 ホームへ</a>
+        </header>
+
+        <div class="main-area">
+            <!-- プレイエリア（人体模型・骨格） -->
+            <div class="model-area-wrapper">
+                <div class="model-area" id="model-area">
+                    <!-- 背景（仮）: CSSで設定 -->
+                    <!-- 骨格（仮） -->
+                    <!-- 骨格（body.png） -->
+                    <img src="organ/body.png" class="skeleton-img" id="skeleton" alt="人体骨格">
+
+                    <!-- ドロップゾーン（正解の位置） -->
+                    <!-- 座標・サイズ・重なり順はCSSで定義 -->
+                    <div class="drop-zone" data-organ="jinzo"></div> <!-- 腎臓 (奥) -->
+                    <div class="drop-zone" data-organ="suizo"></div> <!-- 膵臓 (奥) -->
+                    <div class="drop-zone" data-organ="daicho"></div> <!-- 大腸 -->
+                    <div class="drop-zone" data-organ="shocho"></div> <!-- 小腸 -->
+                    <div class="drop-zone" data-organ="i"></div> <!-- 胃 -->
+                    <div class="drop-zone" data-organ="kanzo"></div> <!-- 肝臓 -->
+                    <div class="drop-zone" data-organ="hai"></div> <!-- 肺 (最前面) -->
+                    <div class="drop-zone" data-organ="shinzo"></div> <!-- 心臓 (最前面) -->
+                </div>
+            </div>
+
+            <!-- パーツトレイ（部品置き場） -->
+            <div class="parts-tray" id="parts-tray">
+                <div class="parts-scroll">
+                    <!-- ユーザー提供画像 -->
+                    <img src="organ/suizo.png" class="organ-part" id="part-suizo" draggable="true" alt="膵臓"
+                        data-organ="suizo">
+                    <img src="organ/shinzo.png" class="organ-part" id="part-shinzo" draggable="true" alt="心臓"
+                        data-organ="shinzo">
+                    <img src="organ/hai.png" class="organ-part" id="part-hai" draggable="true" alt="肺" data-organ="hai">
+                    <img src="organ/i.png" class="organ-part" id="part-i" draggable="true" alt="胃" data-organ="i">
+                    <img src="organ/kanzo.png" class="organ-part" id="part-kanzo" draggable="true" alt="肝臓"
+                        data-organ="kanzo">
+                    <img src="organ/shocho.png" class="organ-part" id="part-shocho" draggable="true" alt="小腸"
+                        data-organ="shocho">
+                    <img src="organ/daicho.png" class="organ-part" id="part-daicho" draggable="true" alt="大腸"
+                        data-organ="daicho">
+                    <img src="organ/jinzo.png" class="organ-part" id="part-jinzo" draggable="true" alt="腎臓"
+                        data-organ="jinzo">
+                </div>
+            </div>
+        </div>
+
+        <!-- 豆知識ポップアップ -->
+        <div id="info-popup" class="info-popup" style="display:none;">
+            <div class="popup-content">
+                <h3 id="info-title">心臓</h3>
+                <p id="info-text">ドキドキ...</p>
+                <div class="popup-btn-area">
+                    <button class="btn-ok" onclick="closePopup()">OK!</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- クリア画面 -->
+        <div id="clear-screen" class="overlay" style="display:none;">
+            <div class="message-box">
+                <h2>🎉 完成！ 🎉</h2>
+                <p>人体模型が完成したよ！<br>君はもう体の博士だ！</p>
+                <button class="btn-retry" onclick="location.reload()">もう一度あそぶ</button>
+                <a href="index.html" class="btn-home-large">🏠 ホームへ戻る</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS読み込み -->
+    <!-- ranking.js はランキング機能を使う場合に必要 -->
+    <script src="ranking.js"></script>
+    <script src="js/human_model.js"></script>
+</body>
+
+</html>

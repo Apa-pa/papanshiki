@@ -21,8 +21,7 @@ const GAME_LIST = {
     'shopping': { name: 'ぴったりしはらい', type: 'time', unit: '秒' },
     'water': { name: '水槽パズル', type: 'time', unit: '秒' },
     'rail': { name: 'つなげて！トロッコ', type: 'time', unit: '秒' },
-    'daily_english': { name: 'まいにちエイゴ', type: 'time', unit: '秒' },
-    'english_profile': { name: '英語で自己紹介', type: 'score', unit: 'pt' }
+    'daily_english': { name: 'まいにちエイゴ', type: 'time', unit: '秒' }
 };
 
 // --- リアル株価連動設定 ---
