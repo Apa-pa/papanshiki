@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>英語でじこしょうかい</title>
+    <title>また会えたね - えいごでおしゃべり</title>
     <script src="ranking.js"></script>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
-            background-color: #fff3e0;
+            background-color: #e3f2fd;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -35,7 +35,7 @@
         }
 
         header {
-            background: #ffa726;
+            background: #42a5f5;
             color: white;
             padding: 15px;
             text-align: center;
@@ -57,7 +57,7 @@
 
         h2 {
             text-align: center;
-            color: #d84315;
+            color: #1565c0;
             margin-bottom: 20px;
         }
 
@@ -70,14 +70,14 @@
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
-            color: #5d4037;
+            color: #37474f;
         }
 
         input,
         select {
             width: 100%;
             padding: 12px;
-            border: 2px solid #ffcc80;
+            border: 2px solid #90caf9;
             border-radius: 10px;
             font-size: 1.1rem;
             box-sizing: border-box;
@@ -85,9 +85,9 @@
         }
 
         input:focus {
-            border-color: #ff9800;
+            border-color: #42a5f5;
             outline: none;
-            background: #fff8e1;
+            background: #e3f2fd;
         }
 
         /* 補助ボタン */
@@ -117,7 +117,7 @@
         }
 
         .action-btn {
-            background: #ff9800;
+            background: #42a5f5;
             color: white;
             border: none;
             padding: 15px;
@@ -127,7 +127,7 @@
             cursor: pointer;
             margin-top: 20px;
             width: 100%;
-            box-shadow: 0 4px #e65100;
+            box-shadow: 0 4px #1565c0;
         }
 
         .action-btn:active {
@@ -182,9 +182,9 @@
 
         .bubble-ann {
             background: #fff;
-            border: 2px solid #ffcc80;
+            border: 2px solid #90caf9;
             border-bottom-left-radius: 0;
-            color: #5d4037;
+            color: #37474f;
         }
 
         .bubble-me {
@@ -208,7 +208,6 @@
             display: block;
             font-size: 0.9rem;
             color: #0277bd;
-            /* 読みやすい青 */
             font-weight: bold;
             margin-top: 2px;
         }
@@ -225,7 +224,7 @@
         /* 完了画面 */
         .script-box {
             background: #fff;
-            border: 2px dashed #ffb74d;
+            border: 2px dashed #64b5f6;
             padding: 20px;
             border-radius: 15px;
             margin-top: 20px;
@@ -287,17 +286,17 @@
         }
 
         .list-item {
-            background: #f0f4c3;
+            background: #e1f5fe;
             margin: 5px 0;
             padding: 10px;
             border-radius: 10px;
             text-align: left;
             cursor: pointer;
-            border: 1px solid #dce775;
+            border: 1px solid #81d4fa;
         }
 
         .list-item:hover {
-            background: #dce775;
+            background: #81d4fa;
         }
 
         .list-jp {
@@ -306,7 +305,7 @@
         }
 
         .list-en {
-            color: #d84315;
+            color: #1565c0;
             font-weight: bold;
             float: right;
         }
@@ -331,12 +330,12 @@
 <body>
 
     <div id="game-container">
-        <header>英語でじこしょうかい</header>
+        <header>😊 また会えたね</header>
 
         <!-- スタート画面（プロフィール入力） -->
         <div id="input-screen" class="screen active">
-            <h2>プロフィールをおしえてね</h2>
-            <p style="text-align:center; font-size:0.9rem; color:#666;">えいごで おしゃべりするよ！<br>おたすけボタンも つかってね。</p>
+            <h2>きょうの おしゃべり じゅんび</h2>
+            <p style="text-align:center; font-size:0.9rem; color:#666;">アンと また会えたよ！<br>ふだんの ことを おしえてね。</p>
 
             <div class="input-group">
                 <label>おなまえ</label>
@@ -346,38 +345,24 @@
             </div>
 
             <div class="input-group">
-                <label>なんさい？ (Age)</label>
-                <select id="input-age">
-                    <option value="6">6 years old (6さい)</option>
-                    <option value="7" selected>7 years old (7さい)</option>
-                    <option value="8">8 years old (8さい)</option>
-                    <option value="9">9 years old (9さい)</option>
-                    <option value="10">10 years old (10さい)</option>
-                    <option value="11">11 years old (11さい)</option>
-                    <option value="12">12 years old (12さい)</option>
-                </select>
-            </div>
-
-            <div class="input-group">
-                <label>すきな たべもの</label>
-                <button class="help-btn" onclick="openHelp('food')">💡おたすけ</button>
-                <input type="text" id="input-food" placeholder="英語: Pizza / Sushi" autocomplete="off">
-                <input type="text" id="input-food-kana" placeholder="カタカナ: ピザ / スシ" class="sub-input"
+                <label>ふだん 何してる？</label>
+                <button class="help-btn" onclick="openHelp('usual')">💡おたすけ</button>
+                <input type="text" id="input-usual" placeholder="英語: play video games" autocomplete="off">
+                <input type="text" id="input-usual-kana" placeholder="カタカナ: プレイ ビデオ ゲームズ" class="sub-input"
                     autocomplete="off">
             </div>
 
             <div class="input-group">
-                <label>すきな あそび・スポーツ</label>
-                <button class="help-btn" onclick="openHelp('play')">💡おたすけ</button>
-                <input type="text" id="input-play" placeholder="英語: Soccer / Piano" autocomplete="off">
-                <input type="text" id="input-play-kana" placeholder="カタカナ: サッカー / ピアノ" class="sub-input"
+                <label>この前の休みに したこと</label>
+                <button class="help-btn" onclick="openHelp('weekend')">💡おたすけ</button>
+                <input type="text" id="input-weekend" placeholder="英語: went to the park" autocomplete="off">
+                <input type="text" id="input-weekend-kana" placeholder="カタカナ: ウェント トゥ ザ パーク" class="sub-input"
                     autocomplete="off">
             </div>
 
             <button class="action-btn" onclick="startScenario()">おしゃべり スタート！</button>
             <br>
             <a href="english_talk.html" class="nav-btn">📚 シナリオ一覧へ</a>
-            <a href="index.html" class="nav-btn">🏠 もどる</a>
         </div>
 
         <!-- シナリオ画面 -->
@@ -393,7 +378,7 @@
         <div id="result-screen" class="screen" style="text-align: center;">
             <div style="font-size: 60px;">🎉</div>
             <h2>Good Job!</h2>
-            <p>じょうずに おしゃべりできたね！<br>これが あなただけの えいごスクリプトだよ。</p>
+            <p>アンと たくさん おしゃべり できたね！<br>こんどの週末が たのしみだね。</p>
 
             <div class="script-box" id="final-script"></div>
 
@@ -421,19 +406,48 @@
     </div>
 
     <script>
-        // 設定データ
+        // ユーザープロフィール
         let userProfile = {
             name: "",
             nameKana: "",
-            age: "",
-            food: "",
-            foodKana: "",
-            play: "",
-            playKana: ""
+            usual: "",
+            usualKana: "",
+            weekend: "",
+            weekendKana: ""
         };
 
         const CHAR_IMG = "hari-an.png";
         const PLAYER_IMG = "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%%22 y=%2250%%22 style=%22dominant-baseline:central;text-anchor:middle;font-size:80px;%22>🐿️</text></svg>";
+
+        // おたすけデータ
+        const HELP_DATA = {
+            usual: [
+                { jp: "ゲームをする", en: "play video games", kana: "プレイ ビデオ ゲームズ" },
+                { jp: "本を読む", en: "read books", kana: "リード ブックス" },
+                { jp: "友だちと遊ぶ", en: "play with friends", kana: "プレイ ウィズ フレンズ" },
+                { jp: "テレビを見る", en: "watch TV", kana: "ウォッチ ティービー" },
+                { jp: "自転車にのる", en: "ride my bike", kana: "ライド マイ バイク" },
+                { jp: "絵をかく", en: "draw pictures", kana: "ドロー ピクチャーズ" },
+                { jp: "サッカーをする", en: "play soccer", kana: "プレイ サッカー" },
+                { jp: "音楽をきく", en: "listen to music", kana: "リスン トゥ ミュージック" }
+            ],
+            weekend: [
+                { jp: "公園に行った", en: "went to the park", kana: "ウェント トゥ ザ パーク" },
+                { jp: "映画を見た", en: "watched a movie", kana: "ウォッチト ア ムービー" },
+                { jp: "友だちと遊んだ", en: "played with friends", kana: "プレイド ウィズ フレンズ" },
+                { jp: "買い物に行った", en: "went shopping", kana: "ウェント ショッピング" },
+                { jp: "料理をした", en: "cooked food", kana: "クックト フード" },
+                { jp: "家族とでかけた", en: "went out with my family", kana: "ウェント アウト ウィズ マイ ファミリー" },
+                { jp: "ゲームをした", en: "played video games", kana: "プレイド ビデオ ゲームズ" },
+                { jp: "宿題をした", en: "did my homework", kana: "ディド マイ ホームワーク" }
+            ]
+        };
+
+        let currentHelpType = "";
+
+        // シナリオデータ
+        let scenarioData = [];
+        let currentLineStep = 0;
 
         // 音声品質改善：最適な英語音声を選択
         let bestVoice = null;
@@ -452,42 +466,9 @@
                 || null;
         }
 
+        // 音声リストは非同期で読み込まれることがあるため、両方のタイミングで取得
         speechSynthesis.onvoiceschanged = loadBestVoice;
         loadBestVoice();
-
-        // おたすけデータ
-        const HELP_DATA = {
-            food: [
-                { jp: "カレーライス", en: "curry and rice", kana: "カリー アンド ライス" },
-                { jp: "おすし", en: "sushi", kana: "スシ" },
-                { jp: "ハンバーグ", en: "hamburger steak", kana: "ハンバーガー ステイク" },
-                { jp: "ハンバーガー", en: "hamburger", kana: "ハンバーガー" },
-                { jp: "ピザ", en: "pizza", kana: "ピザ" },
-                { jp: "ラーメン", en: "ramen", kana: "ラーメン" },
-                { jp: "うどん", en: "udon noodles", kana: "ウドン ヌードルズ" },
-                { jp: "スパゲッティ", en: "spaghetti", kana: "スパゲッティ" },
-                { jp: "アイスクリーム", en: "ice cream", kana: "アイス クリーム" },
-                { jp: "りんご", en: "apples", kana: "アップルズ" }
-            ],
-            play: [
-                { jp: "サッカー", en: "soccer", kana: "サッカー" },
-                { jp: "やきゅう", en: "baseball", kana: "ベースボール" },
-                { jp: "おにごっこ", en: "tag", kana: "タグ" },
-                { jp: "かくれんぼ", en: "hide-and-seek", kana: "ハイド アンド シーク" },
-                { jp: "ゲーム", en: "video games", kana: "ビデオ ゲームズ" },
-                { jp: "ピアノ", en: "piano", kana: "ピアノ" },
-                { jp: "おえかき", en: "drawing", kana: "ドローウィング" },
-                { jp: "すいえい", en: "swimming", kana: "スウィミング" },
-                { jp: "なわとび", en: "jump rope", kana: "ジャンプ ロープ" },
-                { jp: "ダンス", en: "dancing", kana: "ダンシング" }
-            ]
-        };
-
-        let currentHelpType = "";
-
-        // シナリオデータ
-        let scenarioData = [];
-        let currentLineStep = 0;
 
         // モーダル操作
         function openHelp(type) {
@@ -495,7 +476,7 @@
             const list = HELP_DATA[type];
             const container = document.getElementById('modal-list');
             container.innerHTML = "";
-            document.getElementById('modal-title').textContent = (type === 'food' ? "たべもの" : "あそび") + "リスト";
+            document.getElementById('modal-title').textContent = (type === 'usual' ? "ふだん していること" : "休みに したこと") + " リスト";
 
             list.forEach(item => {
                 const div = document.createElement('div');
@@ -516,43 +497,40 @@
 
         function startScenario() {
             const name = document.getElementById('input-name').value.trim();
-            const nameKana = document.getElementById('input-name-kana').value.trim() || name; // カタカナなければ英語そのまま
-            const age = document.getElementById('input-age').value;
-            const food = document.getElementById('input-food').value.trim();
-            const foodKana = document.getElementById('input-food-kana').value.trim() || food;
-            const play = document.getElementById('input-play').value.trim();
-            const playKana = document.getElementById('input-play-kana').value.trim() || play;
+            const nameKana = document.getElementById('input-name-kana').value.trim() || name;
+            const usual = document.getElementById('input-usual').value.trim();
+            const usualKana = document.getElementById('input-usual-kana').value.trim() || usual;
+            const weekend = document.getElementById('input-weekend').value.trim();
+            const weekendKana = document.getElementById('input-weekend-kana').value.trim() || weekend;
 
-            if (!name || !food || !play) {
+            if (!name || !usual || !weekend) {
                 alert("ぜんぶ 入力（にゅうりょく）してね！");
                 return;
             }
 
-            userProfile = { name, nameKana, age, food, foodKana, play, playKana };
+            userProfile = { name, nameKana, usual, usualKana, weekend, weekendKana };
 
             // シナリオ構築
             scenarioData = [
-                // 1. 挨拶
-                { speaker: "ann", en: "Hello! My name is Ann. Nice to meet you.", kana: "ハロー！ マイ ネイム イズ アン。 ナイス トゥ ミート ユー。", jp: "こんにちは！わたしはアン。よろしくね。" },
-                { speaker: "me", en: `Hello Ann! My name is ${userProfile.name}. Nice to meet you too.`, kana: `ハロー アン！ マイ ネイム イズ ${userProfile.nameKana}。 ナイス トゥ ミート ユー トゥー。`, jp: `こんにちはアン！わたしは${userProfile.name}。こちらこそよろしく。` },
+                // 1. 再会の挨拶
+                { speaker: "ann", en: `Hey, ${userProfile.name}! Nice to see you again!`, kana: `ヘイ、${userProfile.nameKana}！ ナイス トゥ シー ユー アゲイン！`, jp: `やあ、${userProfile.name}！また会えてうれしいな！` },
+                { speaker: "me", en: "Hi, Ann! Nice to see you again, too!", kana: "ハイ、アン！ ナイス トゥ シー ユー アゲイン、トゥー！", jp: "こんにちは、アン！わたしも会えてうれしい！" },
 
-                // 2. 年齢
-                { speaker: "ann", en: "I am 7 years old. How old are you?", kana: "アイ アム セブン イヤーズ オールド。 ハウ オールド アー ユー？", jp: "わたしは7さいだよ。あなたは何さい？" },
-                { speaker: "me", en: `I am ${userProfile.age} years old.`, kana: `アイ アム ${userProfile.age} イヤーズ オールド。`, jp: `わたしは${userProfile.age}さいだよ。` },
+                // 2. ふだん何してる？
+                { speaker: "ann", en: "What do you usually do after school?", kana: "ホワット ドゥ ユー ユージュアリー ドゥ アフター スクール？", jp: "いつも放課後は何してるの？" },
+                { speaker: "me", en: `I usually ${userProfile.usual}.`, kana: `アイ ユージュアリー ${userProfile.usualKana}。`, jp: `わたしはふだん [${userProfile.usual}] をしているよ。` },
 
-                // 3. 食べ物
-                { speaker: "ann", en: `I like apple pie. What food do you like?`, kana: "アイ ライク アップル パイ。 ホワット フード ドゥ ユー ライク？", jp: "わたしはアップルパイが好き。どんな食べものが好き？" },
-                { speaker: "me", en: `I like ${userProfile.food}.`, kana: `アイ ライク ${userProfile.foodKana}。`, jp: `わたしは [${userProfile.food}] が好きだよ。` },
-                { speaker: "ann", en: "Ooh! That sounds yummy!", kana: "ウー！ ザット サウンズ ヤミー！", jp: "わあ！ おいしそうだね！" },
+                // 3. この前の休みは？
+                { speaker: "ann", en: "That's cool! What did you do last weekend?", kana: "ザッツ クール！ ホワット ディド ユー ドゥ ラスト ウィークエンド？", jp: "いいね！この前の休みは何したの？" },
+                { speaker: "me", en: `I ${userProfile.weekend}.`, kana: `アイ ${userProfile.weekendKana}。`, jp: `わたしは [${userProfile.weekend}] をしたよ。` },
 
-                // 4. 遊び
-                { speaker: "ann", en: "I like playing soccer. What do you like to do?", kana: "アイ ライク プレイング サッカー。 ホワット ドゥ ユー ライク トゥ ドゥ？", jp: "わたしはサッカーをするのが好き。何をするのが好き？" },
-                { speaker: "me", en: `I like playing ${userProfile.play}.`, kana: `アイ ライク プレイング ${userProfile.playKana}。`, jp: `わたしは [${userProfile.play}] をするのが好きだよ。` },
-                { speaker: "ann", en: "That sounds fun!", kana: "ザット サウンズ ファン！", jp: "それは楽しそうだね！" },
+                // 4. 週末の約束
+                { speaker: "ann", en: "Sounds like fun! Do you want to play together next weekend?", kana: "サウンズ ライク ファン！ ドゥ ユー ウォント トゥ プレイ トゥギャザー ネクスト ウィークエンド？", jp: "楽しそう！こんどの週末、いっしょに遊ばない？" },
+                { speaker: "me", en: "Yes! Where should we go?", kana: "イエス！ ウェア シュッド ウィー ゴー？", jp: "うん！どこに行こうか？" },
 
-                // 5. 締め
-                { speaker: "ann", en: "Let's play together sometime!", kana: "レッツ プレイ トゥギャザー サムタイム！", jp: "こんど いっしょに あそぼうね！" },
-                { speaker: "me", en: "Yes, let's play!", kana: "イエス、 レッツ プレイ！", jp: "うん、あそぼう！" }
+                // 5. ぱぱん公園で約束
+                { speaker: "ann", en: "Let's go to Papan Park! It's really fun there!", kana: "レッツ ゴー トゥ パパン パーク！ イッツ リアリー ファン ゼア！", jp: "ぱぱん公園に行こうよ！すっごく楽しいよ！" },
+                { speaker: "me", en: "Great! See you next weekend at Papan Park!", kana: "グレイト！ シー ユー ネクスト ウィークエンド アット パパン パーク！", jp: "いいね！週末にぱぱん公園でね！" }
             ];
 
             // 画面切り替え
@@ -602,7 +580,7 @@
 
             // 英語テキスト
             const enText = document.createElement('div');
-            enText.innerHTML = `<strong>${data.en}</strong> <button class="sound-btn" onclick="speakText('${data.en.replace(/'/g, "\\'")}')">🔊</button>`;
+            enText.innerHTML = `<strong>${data.en}</strong> <button class="sound-btn" onclick="speakText('${data.en.replace(/'/g, "\\'")}')" title="もういちど聞く">🔊</button>`;
 
             // カタカナ読み
             const kanaText = document.createElement('div');
@@ -630,12 +608,13 @@
             container.scrollTop = container.scrollHeight;
         }
 
+        // 音声品質改善版の読み上げ
         function speakText(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 const uttr = new SpeechSynthesisUtterance(text);
                 uttr.lang = 'en-US';
-                uttr.rate = 0.9; // 少しゆっくり
+                uttr.rate = 0.9;  // 少しゆっくり
                 uttr.pitch = 1.0;
                 // 最適な音声が見つかっていれば使用
                 if (bestVoice) {
@@ -657,6 +636,11 @@
             });
             document.getElementById('final-script').textContent = scriptHtml;
         }
+
+        // ダブルタップ拡大防止
+        document.addEventListener('dblclick', function (event) {
+            event.preventDefault();
+        }, { passive: false });
 
     </script>
 </body>

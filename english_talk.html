@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>えいごでおしゃべり</title>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #fff3e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #444;
+            touch-action: manipulation;
+        }
+
+        #hub-container {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* ヘッダーエリア */
+        .hub-header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .hub-header h1 {
+            font-size: 1.6rem;
+            color: #e65100;
+            margin: 0 0 5px 0;
+        }
+
+        .hub-header p {
+            font-size: 0.95rem;
+            color: #888;
+            margin: 0;
+        }
+
+        /* キャラクターアイコン */
+        .hub-char {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #ffcc80;
+            object-fit: contain;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.2);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        /* シナリオカード */
+        .scenario-card {
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: block;
+        }
+
+        .scenario-card:active {
+            transform: scale(0.97);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-banner {
+            height: 8px;
+            width: 100%;
+        }
+
+        .banner-orange {
+            background: linear-gradient(90deg, #ff9800, #ffb74d);
+        }
+
+        .banner-blue {
+            background: linear-gradient(90deg, #42a5f5, #90caf9);
+        }
+
+        .banner-green {
+            background: linear-gradient(90deg, #66bb6a, #a5d6a7);
+        }
+
+        .card-body {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .card-icon {
+            font-size: 40px;
+            flex-shrink: 0;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff8e1;
+            border-radius: 15px;
+        }
+
+        .card-info {
+            flex-grow: 1;
+        }
+
+        .card-number {
+            font-size: 0.75rem;
+            color: #ff9800;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #5d4037;
+            margin-bottom: 4px;
+        }
+
+        .card-desc {
+            font-size: 0.85rem;
+            color: #999;
+            line-height: 1.4;
+        }
+
+        .card-arrow {
+            font-size: 1.5rem;
+            color: #ccc;
+            flex-shrink: 0;
+        }
+
+        /* 準備中カード */
+        .scenario-card.coming-soon {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .coming-soon-badge {
+            background: #eee;
+            color: #aaa;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+            font-weight: bold;
+        }
+
+        /* ナビゲーション */
+        .nav-btn {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 10px 25px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #666;
+            display: inline-block;
+            margin-top: 5px;
+            text-align: center;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="hub-container">
+
+        <!-- ヘッダー -->
+        <div class="hub-header">
+            <h1>🔤 えいごでおしゃべり</h1>
+            <p>アンといっしょに えいごで はなそう！</p>
+        </div>
+
+        <!-- キャラクターアイコン -->
+        <img src="hari-an.png" alt="アン" class="hub-char">
+
+        <!-- シナリオ1: じこしょうかい -->
+        <a href="english_profile.html" class="scenario-card">
+            <div class="card-banner banner-orange"></div>
+            <div class="card-body">
+                <div class="card-icon">👋</div>
+                <div class="card-info">
+                    <div class="card-number">SCENARIO 1</div>
+                    <div class="card-title">じこしょうかい</div>
+                    <div class="card-desc">はじめまして！ なまえや すきなものを つたえよう</div>
+                </div>
+                <div class="card-arrow">▶</div>
+            </div>
+        </a>
+
+        <!-- シナリオ2: また会えたね -->
+        <a href="english_talk2.html" class="scenario-card">
+            <div class="card-banner banner-blue"></div>
+            <div class="card-body">
+                <div class="card-icon">😊</div>
+                <div class="card-info">
+                    <div class="card-number">SCENARIO 2</div>
+                    <div class="card-title">また会えたね</div>
+                    <div class="card-desc">ふだん何してる？ こんどの週末 いっしょに遊ぼう！</div>
+                </div>
+                <div class="card-arrow">▶</div>
+            </div>
+        </a>
+
+        <!-- シナリオ3: 準備中 -->
+        <div class="scenario-card coming-soon">
+            <div class="card-banner banner-green"></div>
+            <div class="card-body">
+                <div class="card-icon">🔮</div>
+                <div class="card-info">
+                    <div class="card-number">SCENARIO 3</div>
+                    <div class="card-title">つぎのおはなし <span class="coming-soon-badge">準備中</span></div>
+                    <div class="card-desc">おたのしみに！</div>
+                </div>
+                <div class="card-arrow">▶</div>
+            </div>
+        </div>
+
+        <!-- ナビゲーション -->
+        <a href="index.html" class="nav-btn">🏠 ホームへもどる</a>
+
+    </div>
+
+    <script>
+        // ダブルタップ拡大防止
+        document.addEventListener('dblclick', function (event) {
+            event.preventDefault();
+        }, { passive: false });
+    </script>
+</body>
+
+</html>
