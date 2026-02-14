@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>コラム一覧 | ぱぱん式</title>
+    <meta name="description" content="ぱぱん式のコラム記事一覧です。学習についての考え方やお金の教育、サイトの仕組みについて紹介しています。">
+    <style>
+        body {
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.8;
+            color: #333;
+            margin: 0;
+            background-color: #f4f8fb;
+        }
+
+        header {
+            background-color: #fff;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 2px solid #88cdf6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 30px;
+        }
+
+        h1 {
+            font-size: 24px;
+            border-bottom: 3px solid #ffcc00;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        /* パンくずリスト */
+        .breadcrumb {
+            font-size: 0.9em;
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        .breadcrumb a {
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        /* 記事カード */
+        .article-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .article-card {
+            text-decoration: none;
+            color: #333;
+            background: #fff;
+            padding: 20px 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+            transition: 0.3s;
+            display: block;
+            border-left: 5px solid #88cdf6;
+        }
+
+        .article-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
+        }
+
+        .article-title {
+            font-weight: bold;
+            font-size: 1.15em;
+            color: #007bff;
+            margin-bottom: 8px;
+        }
+
+        .article-summary {
+            font-size: 0.9em;
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .article-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8em;
+            color: #aaa;
+        }
+
+        /* スマホ対応 */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="../index.html"
+            style="text-decoration: none; color: #333; font-weight: bold; font-size: 1.2em;">ぱぱん式</a>
+    </header>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="../index.html">トップ</a> &gt; コラム一覧
+        </div>
+
+        <h1>📝 コラム一覧</h1>
+        <p class="subtitle">ぱぱん式についての考え方や、学習・お金の教育に関する読みものです。</p>
+
+        <div class="article-list">
+
+            <a href="article003.html" class="article-card">
+                <div class="article-title">ぱぱん式は現実同様に甘くない</div>
+                <div class="article-summary">
+                    裏コンテンツのギャンブル要素、二つの通貨の仕組みについて。勉強と消費のサイクルが自然にできあがる理由。
+                </div>
+                <div class="article-meta">
+                    <span>2026年2月14日</span>
+                    <span>記事を読む &gt;</span>
+                </div>
+            </a>
+
+            <a href="article002.html" class="article-card">
+                <div class="article-title">こどものお金の教育について</div>
+                <div class="article-summary">
+                    ぱぱん式で銀行・為替・株式投資を体験できることの意義。失敗しても痛くない場所で学ぶ大切さ。
+                </div>
+                <div class="article-meta">
+                    <span>2026年1月25日</span>
+                    <span>記事を読む &gt;</span>
+                </div>
+            </a>
+
+            <a href="article001.html" class="article-card">
+                <div class="article-title">こどもの学習で大事なこと</div>
+                <div class="article-summary">
+                    ぱぱん式の目的と誕生の理由。こどもが自分で選んで学ぶことの大切さと、無料で使えるこだわり。
+                </div>
+                <div class="article-meta">
+                    <span>2026年1月17日</span>
+                    <span>記事を読む &gt;</span>
+                </div>
+            </a>
+
+        </div>
+
+        <div style="text-align: center; margin-top: 50px; margin-bottom: 20px;">
+            <a href="../index.html" style="
+                text-decoration: none;
+                background: #fff;
+                color: #88cdf6;
+                border: 2px solid #88cdf6;
+                padding: 12px 40px;
+                border-radius: 30px;
+                font-weight: bold;
+                font-size: 1.1em;
+                transition: 0.3s;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                display: inline-block;
+            " onmouseover="this.style.background='#88cdf6'; this.style.color='#fff';"
+                onmouseout="this.style.background='#fff'; this.style.color='#88cdf6';">
+                🏠 ホームへもどる
+            </a>
+        </div>
+    </div>
+
+    <footer style="text-align: center; padding: 20px; color: #999; font-size: 12px;">
+        <p><a href="../privacy.html">プライバシーポリシー</a></p>
+        <p>&copy; 2026 Papan-shiki</p>
+    </footer>
+
+</body>
+
+</html>
