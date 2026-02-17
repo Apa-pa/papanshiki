@@ -297,7 +297,7 @@
             <input type="text" id="my-sheep-name" class="name-input" onchange="renameSheep()">
             <div id="remaining-races" class="contract-info">残り契約レース: -- 回</div>
 
-            <img src="hitsuji_shomen.png" class="sheep-main-img" id="my-sheep-img">
+            <img src="hitsuji_shomen.webp" class="sheep-main-img" id="my-sheep-img">
 
             <div id="total-status" class="total-cap-info">合計能力: 0 / 0</div>
 
@@ -463,7 +463,7 @@
             };
 
             saveUserData(allData);
-            playActionAnimation("hitsuji_eat.png", "契約完了！");
+            playActionAnimation("hitsuji_eat.webp", "契約完了！");
         }
 
         function renameSheep() {
@@ -485,10 +485,10 @@
             const bal = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
             if (bal < 1) { showToast("どんぐり不足！"); return; }
 
-            let trainImg = "hitsuji_eat.png";
-            if (type === 'speed') { s.speed += 2; trainImg = "hitsuji_run2.png"; }
-            else if (type === 'stamina') { s.stamina += 2; trainImg = "hitsuji_eat.png"; }
-            else if (type === 'tenacity') { s.tenacity += 2; trainImg = "hitsuji_run1.png"; }
+            let trainImg = "hitsuji_eat.webp";
+            if (type === 'speed') { s.speed += 2; trainImg = "hitsuji_run2.webp"; }
+            else if (type === 'stamina') { s.stamina += 2; trainImg = "hitsuji_eat.webp"; }
+            else if (type === 'tenacity') { s.tenacity += 2; trainImg = "hitsuji_run1.webp"; }
 
             const newTotal = s.speed + s.stamina + s.tenacity;
             if (newTotal > s.totalMax) { s[type] -= (newTotal - s.totalMax); }
@@ -508,7 +508,7 @@
         function playActionAnimation(imgSrc, msg) {
             const img = document.getElementById('my-sheep-img');
             if (!img) return;
-            const originalSrc = "hitsuji_shomen.png";
+            const originalSrc = "hitsuji_shomen.webp";
             img.src = imgSrc;
             if (msg) showToast(msg);
             setTimeout(() => {
