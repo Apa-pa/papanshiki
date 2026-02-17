@@ -820,14 +820,14 @@
 
                 const bossNum = gameState.floor / 10;
                 const bossNumStr = bossNum < 10 ? '0' + bossNum : bossNum;
-                const imgPath = `image/monster${bossNumStr}.png`;
+                const imgPath = `image/monster${bossNumStr}.webp`;
                 enemyDisplay.innerHTML = `<img src="${imgPath}" class="boss-img-file" alt="ボス">`;
                 field.classList.add('boss-floor');
 
             } else if (gameState.floor === 1) {
                 // 1階スライム
                 hpVal = 50;
-                enemyDisplay.innerHTML = '<img src="slime.png" class="enemy-img-file" alt="スライム">';
+                enemyDisplay.innerHTML = '<img src="slime.webp" class="enemy-img-file" alt="スライム">';
                 field.classList.remove('boss-floor');
 
             } else {

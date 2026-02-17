@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -28,7 +29,7 @@
             background: #ffffff;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             position: relative;
         }
 
@@ -37,7 +38,8 @@
             flex: 1;
             background: #b2ebf2;
             display: flex;
-            align-items: flex-end; /* 下揃え */
+            align-items: flex-end;
+            /* 下揃え */
             justify-content: center;
             border-bottom: 5px solid #00acc1;
             position: relative;
@@ -45,9 +47,10 @@
         }
 
         .prof-img {
-            height: 120px; /* サイズ調整済み */
+            height: 120px;
+            /* サイズ調整済み */
             object-fit: contain;
-            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));
+            filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.1));
             transition: transform 0.3s;
         }
 
@@ -64,12 +67,18 @@
             font-weight: bold;
             color: #333;
             text-align: center;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
         }
+
         .bubble::after {
-            content: ''; position: absolute; bottom: -15px; left: 50%;
-            border-width: 15px 15px 0; border-style: solid;
-            border-color: #00acc1 transparent; transform: translateX(-50%);
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            border-width: 15px 15px 0;
+            border-style: solid;
+            border-color: #00acc1 transparent;
+            transform: translateX(-50%);
         }
 
         /* 問題エリア */
@@ -101,7 +110,7 @@
             border-radius: 20px;
             font-size: 60px;
             cursor: pointer;
-            box-shadow: 0 8px rgba(0,0,0,0.2);
+            box-shadow: 0 8px rgba(0, 0, 0, 0.2);
             transition: transform 0.1s;
             display: flex;
             justify-content: center;
@@ -109,24 +118,51 @@
             color: white;
             font-family: Arial, sans-serif;
         }
-        .ans-btn:active { transform: translateY(4px); box-shadow: 0 4px rgba(0,0,0,0.2); }
 
-        .btn-yes { background: #ff5252; } 
-        .btn-no { background: #448aff; } 
+        .ans-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-yes {
+            background: #ff5252;
+        }
+
+        .btn-no {
+            background: #448aff;
+        }
 
         /* 解説・結果オーバーレイ */
         .overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(255, 255, 255, 0.95);
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            z-index: 100; text-align: center;
-            padding: 20px; box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
-        .result-mark { font-size: 100px; margin: 0; line-height: 1; }
-        .correct { color: #ff5252; }
-        .wrong { color: #448aff; }
+        .result-mark {
+            font-size: 100px;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .correct {
+            color: #ff5252;
+        }
+
+        .wrong {
+            color: #448aff;
+        }
 
         .explanation-box {
             background: #e0f7fa;
@@ -138,8 +174,10 @@
             font-weight: bold;
             font-size: 18px;
             max-width: 90%;
-            height: 150px;      /* 追加: 解説エリアの高さを確保 */
-            overflow-y: auto;   /* 追加: 長い解説はスクロール */
+            height: 150px;
+            /* 追加: 解説エリアの高さを確保 */
+            overflow-y: auto;
+            /* 追加: 長い解説はスクロール */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -157,22 +195,37 @@
             cursor: pointer;
             box-shadow: 0 5px #00838f;
         }
-        .next-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        .next-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
 
         /* UIパーツ */
         .hud {
-            position: absolute; top: 10px; left: 10px;
-            font-weight: bold; color: #006064; z-index: 10;
-            background: rgba(255,255,255,0.8);
-            padding: 5px 10px; border-radius: 10px;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-weight: bold;
+            color: #006064;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 10px;
         }
 
         .quit-btn {
-            position: absolute; top: 10px; right: 10px;
-            font-weight: bold; color: #fff; z-index: 10;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-weight: bold;
+            color: #fff;
+            z-index: 10;
             background: #ef5350;
-            padding: 5px 15px; border-radius: 20px;
-            text-decoration: none; font-size: 14px;
+            padding: 5px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 14px;
             box-shadow: 0 2px #c62828;
         }
 
@@ -184,329 +237,333 @@
         }
     </style>
 </head>
+
 <body>
 
-<div id="game-container">
-    <div class="hud">もんだい: <span id="q-num">1</span> / 10</div>
-    <a href="index.html" class="quit-btn">🏠 やめる</a>
+    <div id="game-container">
+        <div class="hud">もんだい: <span id="q-num">1</span> / 10</div>
+        <a href="index.html" class="quit-btn">🏠 やめる</a>
 
-    <div class="header-area">
-        <div id="msg-bubble" class="bubble">かがくの世界へ ようこそ！</div>
-        <img src="hi-kagaku-410.png" class="prof-img" id="prof-img">
-    </div>
-
-    <div class="question-area" id="question-text">
-        ここに問題がでます
-    </div>
-
-    <div class="answer-area">
-        <button class="ans-btn btn-yes" onclick="checkAnswer(true)">〇</button>
-        <button class="ans-btn btn-no" onclick="checkAnswer(false)">×</button>
-    </div>
-
-    <div id="explanation-screen" class="overlay" style="display:none;">
-        <div id="result-mark" class="result-mark"></div>
-        <div id="result-msg" style="font-size:24px; font-weight:bold; margin:10px 0;"></div>
-        
-        <div class="explanation-box">
-            <span style="display:block; font-size:14px; color:#555; margin-bottom:5px;">💡 博士の解説</span>
-            <span id="explanation-text">ここに解説が入ります</span>
+        <div class="header-area">
+            <div id="msg-bubble" class="bubble">かがくの世界へ ようこそ！</div>
+            <img src="hi-kagaku-410.webp" class="prof-img" id="prof-img">
         </div>
 
-        <button class="next-btn" onclick="nextQuestion()">つぎへ</button>
+        <div class="question-area" id="question-text">
+            ここに問題がでます
+        </div>
+
+        <div class="answer-area">
+            <button class="ans-btn btn-yes" onclick="checkAnswer(true)">〇</button>
+            <button class="ans-btn btn-no" onclick="checkAnswer(false)">×</button>
+        </div>
+
+        <div id="explanation-screen" class="overlay" style="display:none;">
+            <div id="result-mark" class="result-mark"></div>
+            <div id="result-msg" style="font-size:24px; font-weight:bold; margin:10px 0;"></div>
+
+            <div class="explanation-box">
+                <span style="display:block; font-size:14px; color:#555; margin-bottom:5px;">💡 博士の解説</span>
+                <span id="explanation-text">ここに解説が入ります</span>
+            </div>
+
+            <button class="next-btn" onclick="nextQuestion()">つぎへ</button>
+        </div>
+
+        <div id="start-screen" class="overlay">
+            <div style="font-size:60px;">🧪</div>
+            <h1 class="start-title">ヒー先生の<br>かがくクイズ</h1>
+            <p style="color:#006064; margin:20px; font-weight:bold;">
+                〇か ×か えらんでね。<br>
+                全もん正解できるかな？
+            </p>
+            <button class="next-btn" style="background:#ff6f00; box-shadow:0 5px #e65100;"
+                onclick="startGame()">スタート</button>
+            <a href="index.html" style="margin-top:20px; color:#00838f;">🏠 もどる</a>
+        </div>
+
+        <div id="result-screen" class="overlay" style="display:none;">
+            <div style="font-size:80px;">🎓</div>
+            <h1 style="color:#00838f;">けっか はっぴょう！</h1>
+            <p style="font-size:24px; font-weight:bold; color:#333;">
+                <span id="score-display" style="font-size:40px; color:#e91e63;">0</span> / 10 点
+            </p>
+
+            <button id="reward-btn" class="next-btn" style="background:#ff9800; box-shadow:0 5px #f57c00;"
+                onclick="getReward()">
+                🎁 ポイントゲット
+            </button>
+            <br><br>
+            <button class="next-btn" style="background:#4caf50; box-shadow:0 5px #2e7d32; font-size:16px;"
+                onclick="location.reload()">🔄 もういちど</button>
+            <a href="index.html" style="margin-top:20px; color:#00838f;">🏠 ホームへ</a>
+        </div>
+
     </div>
 
-    <div id="start-screen" class="overlay">
-        <div style="font-size:60px;">🧪</div>
-        <h1 class="start-title">ヒー先生の<br>かがくクイズ</h1>
-        <p style="color:#006064; margin:20px; font-weight:bold;">
-            〇か ×か えらんでね。<br>
-            全もん正解できるかな？
-        </p>
-        <button class="next-btn" style="background:#ff6f00; box-shadow:0 5px #e65100;" onclick="startGame()">スタート</button>
-        <a href="index.html" style="margin-top:20px; color:#00838f;">🏠 もどる</a>
-    </div>
+    <script>
+        document.addEventListener('gesturestart', e => e.preventDefault());
+        document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 
-    <div id="result-screen" class="overlay" style="display:none;">
-        <div style="font-size:80px;">🎓</div>
-        <h1 style="color:#00838f;">けっか はっぴょう！</h1>
-        <p style="font-size:24px; font-weight:bold; color:#333;">
-            <span id="score-display" style="font-size:40px; color:#e91e63;">0</span> / 10 点
-        </p>
-        
-        <button id="reward-btn" class="next-btn" style="background:#ff9800; box-shadow:0 5px #f57c00;" 
-            onclick="getReward()">
-            🎁 ポイントゲット
-        </button>
-        <br><br>
-        <button class="next-btn" style="background:#4caf50; box-shadow:0 5px #2e7d32; font-size:16px;" onclick="location.reload()">🔄 もういちど</button>
-        <a href="index.html" style="margin-top:20px; color:#00838f;">🏠 ホームへ</a>
-    </div>
+        // ▼▼▼ 問題データ（全33問） ▼▼▼
+        const ALL_QUESTIONS = [
+            {
+                q: "アリがエサをせっせと巣（す）に運ぶのは、自分ひとりで食べるためである。",
+                a: false,
+                exp: "×じゃ。巣のみんなで食べたり、冬にそなえて貯めておくために運んでいるんじゃ。"
+            },
+            {
+                q: "テレビの画面を虫眼鏡（むしめがね）で見ると、赤・青・緑の 小さな光の粒（つぶ）が見える。",
+                a: true,
+                exp: "〇じゃ。これを「光の三原色（さんげんしょく）」といって、この3色でいろいろな色を作っているんじゃ。"
+            },
+            {
+                q: "冬に池が凍（こお）るとき、底（そこ）の方から順に 凍っていく。",
+                a: false,
+                exp: "×じゃ。氷は水より軽いから、表面（上の方）から凍るんじゃ。だから魚は底で生きられるぞ。"
+            },
+            {
+                q: "四角い形のストローで吹くと、四角い形のシャボン玉ができる。",
+                a: false,
+                exp: "×じゃ！ どんな形の枠で吹いても、空中に飛び出すと「丸（球）」になるんじゃ。全方向から同じだけの力が加わるから丸い形になるんじゃ。"
+            },
+            {
+                q: "レモンに金属（きんぞく）の板をさすと、電気をつくることができる。",
+                a: true,
+                exp: "〇じゃ！ レモンの酸（すっぱい成分）と金属が反応して電気が起きる。「レモン電池」と言うぞ。"
+            },
+            {
+                q: "水は、凍（こお）って氷になると、体積（大きさ）が ふえる。",
+                a: true,
+                exp: "〇じゃ！ 水は凍ると少し膨らむんじゃ。だから瓶（びん）に水をいっぱいにいれて凍らせると割れてしまうぞ。"
+            },
+            {
+                q: "空気（くうき）のない宇宙（うちゅう）空間でも、マッチで火をつけることができる。",
+                a: false,
+                exp: "×じゃ。物が燃えるには「酸素（さんそ）」が必要じゃ。空気がなければ火はつかないぞ。"
+            },
+            {
+                q: "パパのひげをこすると熱くなるのは、「摩擦（まさつ）」の熱である。",
+                a: true,
+                exp: "〇じゃ。手や物をこすり合わせると、摩擦熱（まさつねつ）で温かくなるんじゃ。"
+            },
+            {
+                q: "流れ星（ながれぼし）は、星が寿命（じゅみょう）で死（し）んで、落ちてきたものである。",
+                a: false,
+                exp: "×じゃ！ あれは宇宙の小さなチリが、地球の空気にぶつかって燃えている光なんじゃ。"
+            },
+            {
+                q: "氷（こおり）に水をかけると、氷がとける。",
+                a: true,
+                exp: "〇じゃ。水は氷よりも温度が高いから、氷に熱が伝わってとけるんじゃ。"
+            },
+            {
+                q: "赤くしたさとう水と ただの水をまぜると、さとう水が上にたまる。",
+                a: false,
+                exp: "×じゃ。さとう水は重いから、下に沈むぞ。下が赤、上が透明に分かれるんじゃ。"
+            },
+            {
+                q: "空気（くうき）には、重さは ない。",
+                a: false,
+                exp: "×じゃ。空気にも重さはあるんじゃ。見えないけれど わたしたちを おしているぞ。"
+            },
+            {
+                q: "方位磁針（ほういじしん）の 赤い針は、北（きた）を さす。",
+                a: true,
+                exp: "〇じゃ。赤い針は N極（エヌきょく）といって、北を さすようになっているんじゃ。"
+            },
+            {
+                q: "植物（しょくぶつ）が 育つのに、日光（おひさま）は いらない。",
+                a: false,
+                exp: "×じゃ。植物は おひさまの 光をあびて 栄養（えいよう）をつくるんじゃ。"
+            },
+            {
+                q: "虹（にじ）は、太陽と 反対（はんたい）のほうに できる。",
+                a: true,
+                exp: "〇じゃ。太陽の光が 雨つぶに はねかえって できるから、反対側に見えるんじゃ。"
+            },
+            {
+                q: "影（かげ）の 長さは、一日じゅう 変わらない。",
+                a: false,
+                exp: "×じゃ。太陽の高さで 変わるぞ。朝や 夕方は長く、お昼は 短くなるんじゃ。"
+            },
+            {
+                q: "音（おと）は、空気のない 宇宙（うちゅう）でも 聞こえる。",
+                a: false,
+                exp: "×じゃ。音は 空気が ゆれて 伝わるんじゃ。だから 宇宙では 聞こえないぞ。"
+            },
+            {
+                q: "お風呂(ふろ）で、カボチャを丸ごといれると、水に浮く。",
+                a: true,
+                exp: "〇じゃ。カボチャは中身が詰まっているようで、実は水より軽いからプカプカ浮くんじゃ！"
+            },
+            {
+                q: "サツマイモを丸ごといれると、水に浮く。",
+                a: false,
+                exp: "×じゃ。サツマイモは水より少し重いから、沈んでしまうんじゃよ。空洞がどのくらいあるかがポイントじゃ。"
+            },
+            {
+                q: "磁石（じしゃく）には、10円玉も くっつく。",
+                a: false,
+                exp: "×じゃ。10円玉は「銅（どう）」だからつかない。つくのは「鉄（てつ）」じゃ。"
+            },
+            {
+                q: "虫眼鏡（むしめがね）で太陽の光を集めるとき、白い紙のほうが すぐに燃える。",
+                a: false,
+                exp: "×じゃ。「黒い紙」のほうが光を吸収（きゅうしゅう）して熱くなるから、早く燃えるぞ。"
+            },
+            {
+                q: "鏡（かがみ）にうつった時計は、左右が反対に見える。",
+                a: true,
+                exp: "〇じゃ。鏡の世界では、右と左が ぎゃくになって見えるんじゃ。"
+            },
+            {
+                q: "あたたかい空気は、上の方へとのぼっていく。",
+                a: true,
+                exp: "〇じゃ。お風呂でも、上の方が熱いじゃろう？ あたたかい空気や水は軽くて上にいくんじゃ。"
+            },
+            {
+                q: "雷（かみなり）がピカッと光ってから、音が聞こえるまで時間がかかることがある。",
+                a: true,
+                exp: "〇じゃ。「光」は一瞬で届くけど、「音」は届くのが少し遅いからなんじゃよ。音速より光速の方がだんちがいにはやいぞ！"
+            },
+            {
+                q: "ダンゴムシは、昆虫（こんちゅう）の仲間である。",
+                a: false,
+                exp: "×じゃ。昆虫は足が6本だけど、ダンゴムシは14本もある。エビやカニに近い仲間なんじゃ。"
+            },
+            {
+                q: "人間の体は、半分以上が「水」でできている。",
+                a: true,
+                exp: "〇じゃ。大人の体だと、体重の60％くらいが水なんじゃよ。水は大事じゃのう。"
+            },
+            {
+                q: "月（つき）は、自分で光っている。",
+                a: false,
+                exp: "×じゃ。月は太陽の光を反射（はんしゃ）して、光っているように見えるだけなんじゃ。"
+            },
+            {
+                q: "人間の血（ち）は、体の中を一周（いっしゅう）するのに 1時間かかる。",
+                a: false,
+                exp: "×じゃ。血はとても速いぞ！ たったの「1分」くらいで 体の中を一周して戻ってくるんじゃ。"
+            },
+            {
+                q: "パンがふわふわに ふくらむのは、「菌（きん）」の力である。",
+                a: true,
+                exp: "〇じゃ。「イースト菌」という小さな菌が、パンの中でガスを出して ふくらませているんじゃよ。"
+            },
+            {
+                q: "納豆（なっとう）は、大豆（だいず）が くさったものである。",
+                a: false,
+                exp: "×じゃ。「くさる」ではなく「発酵（はっこう）」と言うぞ。納豆菌という「良い菌」が美味しくしてくれているんじゃ。"
+            },
+            {
+                q: "ペットボトルロケットは、縮（ちぢ）こまった「空気」の力で飛んでいる。",
+                a: true,
+                exp: "〇じゃ。ぎゅうぎゅうに おし縮められた空気が、元に戻ろうとして 水をいきおいよく押し出すから 飛ぶんじゃ。"
+            },
+        ];
 
-</div>
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
 
-<script>
-    document.addEventListener('gesturestart', e => e.preventDefault());
-    document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
 
-    // ▼▼▼ 問題データ（全33問） ▼▼▼
-    const ALL_QUESTIONS = [
-        {
-            q: "アリがエサをせっせと巣（す）に運ぶのは、自分ひとりで食べるためである。",
-            a: false,
-            exp: "×じゃ。巣のみんなで食べたり、冬にそなえて貯めておくために運んでいるんじゃ。"
-        },
-        {
-            q: "テレビの画面を虫眼鏡（むしめがね）で見ると、赤・青・緑の 小さな光の粒（つぶ）が見える。",
-            a: true,
-            exp: "〇じゃ。これを「光の三原色（さんげんしょく）」といって、この3色でいろいろな色を作っているんじゃ。"
-        },
-        {
-            q: "冬に池が凍（こお）るとき、底（そこ）の方から順に 凍っていく。",
-            a: false,
-            exp: "×じゃ。氷は水より軽いから、表面（上の方）から凍るんじゃ。だから魚は底で生きられるぞ。"
-        },
-        {
-            q: "四角い形のストローで吹くと、四角い形のシャボン玉ができる。",
-            a: false,
-            exp: "×じゃ！ どんな形の枠で吹いても、空中に飛び出すと「丸（球）」になるんじゃ。全方向から同じだけの力が加わるから丸い形になるんじゃ。"
-        },
-        {
-            q: "レモンに金属（きんぞく）の板をさすと、電気をつくることができる。",
-            a: true,
-            exp: "〇じゃ！ レモンの酸（すっぱい成分）と金属が反応して電気が起きる。「レモン電池」と言うぞ。"
-        },
-        {
-            q: "水は、凍（こお）って氷になると、体積（大きさ）が ふえる。",
-            a: true,
-            exp: "〇じゃ！ 水は凍ると少し膨らむんじゃ。だから瓶（びん）に水をいっぱいにいれて凍らせると割れてしまうぞ。"
-        },
-        {
-            q: "空気（くうき）のない宇宙（うちゅう）空間でも、マッチで火をつけることができる。",
-            a: false,
-            exp: "×じゃ。物が燃えるには「酸素（さんそ）」が必要じゃ。空気がなければ火はつかないぞ。"
-        },
-        {
-            q: "パパのひげをこすると熱くなるのは、「摩擦（まさつ）」の熱である。",
-            a: true,
-            exp: "〇じゃ。手や物をこすり合わせると、摩擦熱（まさつねつ）で温かくなるんじゃ。"
-        },
-        {
-            q: "流れ星（ながれぼし）は、星が寿命（じゅみょう）で死（し）んで、落ちてきたものである。",
-            a: false,
-            exp: "×じゃ！ あれは宇宙の小さなチリが、地球の空気にぶつかって燃えている光なんじゃ。"
-        },
-        {
-            q: "氷（こおり）に水をかけると、氷がとける。",
-            a: true,
-            exp: "〇じゃ。水は氷よりも温度が高いから、氷に熱が伝わってとけるんじゃ。"
-        },
-        {
-            q: "赤くしたさとう水と ただの水をまぜると、さとう水が上にたまる。",
-            a: false,
-            exp: "×じゃ。さとう水は重いから、下に沈むぞ。下が赤、上が透明に分かれるんじゃ。"
-        },
-        {
-            q: "空気（くうき）には、重さは ない。",
-            a: false,
-            exp: "×じゃ。空気にも重さはあるんじゃ。見えないけれど わたしたちを おしているぞ。"
-        },
-        {
-            q: "方位磁針（ほういじしん）の 赤い針は、北（きた）を さす。",
-            a: true,
-            exp: "〇じゃ。赤い針は N極（エヌきょく）といって、北を さすようになっているんじゃ。"
-        },
-        {
-            q: "植物（しょくぶつ）が 育つのに、日光（おひさま）は いらない。",
-            a: false,
-            exp: "×じゃ。植物は おひさまの 光をあびて 栄養（えいよう）をつくるんじゃ。"
-        },
-        {
-            q: "虹（にじ）は、太陽と 反対（はんたい）のほうに できる。",
-            a: true,
-            exp: "〇じゃ。太陽の光が 雨つぶに はねかえって できるから、反対側に見えるんじゃ。"
-        },
-        {
-            q: "影（かげ）の 長さは、一日じゅう 変わらない。",
-            a: false,
-            exp: "×じゃ。太陽の高さで 変わるぞ。朝や 夕方は長く、お昼は 短くなるんじゃ。"
-        },
-        {
-            q: "音（おと）は、空気のない 宇宙（うちゅう）でも 聞こえる。",
-            a: false,
-            exp: "×じゃ。音は 空気が ゆれて 伝わるんじゃ。だから 宇宙では 聞こえないぞ。"
-        },
-        {
-            q: "お風呂(ふろ）で、カボチャを丸ごといれると、水に浮く。",
-            a: true,
-            exp: "〇じゃ。カボチャは中身が詰まっているようで、実は水より軽いからプカプカ浮くんじゃ！"
-        },
-        {
-            q: "サツマイモを丸ごといれると、水に浮く。",
-            a: false,
-            exp: "×じゃ。サツマイモは水より少し重いから、沈んでしまうんじゃよ。空洞がどのくらいあるかがポイントじゃ。"
-        },
-        {
-            q: "磁石（じしゃく）には、10円玉も くっつく。",
-            a: false,
-            exp: "×じゃ。10円玉は「銅（どう）」だからつかない。つくのは「鉄（てつ）」じゃ。"
-        },
-        {
-            q: "虫眼鏡（むしめがね）で太陽の光を集めるとき、白い紙のほうが すぐに燃える。",
-            a: false,
-            exp: "×じゃ。「黒い紙」のほうが光を吸収（きゅうしゅう）して熱くなるから、早く燃えるぞ。"
-        },
-        {
-            q: "鏡（かがみ）にうつった時計は、左右が反対に見える。",
-            a: true,
-            exp: "〇じゃ。鏡の世界では、右と左が ぎゃくになって見えるんじゃ。"
-        },
-        {
-            q: "あたたかい空気は、上の方へとのぼっていく。",
-            a: true,
-            exp: "〇じゃ。お風呂でも、上の方が熱いじゃろう？ あたたかい空気や水は軽くて上にいくんじゃ。"
-        },
-        {
-            q: "雷（かみなり）がピカッと光ってから、音が聞こえるまで時間がかかることがある。",
-            a: true,
-            exp: "〇じゃ。「光」は一瞬で届くけど、「音」は届くのが少し遅いからなんじゃよ。音速より光速の方がだんちがいにはやいぞ！"
-        },
-        {
-            q: "ダンゴムシは、昆虫（こんちゅう）の仲間である。",
-            a: false,
-            exp: "×じゃ。昆虫は足が6本だけど、ダンゴムシは14本もある。エビやカニに近い仲間なんじゃ。"
-        },
-        {
-            q: "人間の体は、半分以上が「水」でできている。",
-            a: true,
-            exp: "〇じゃ。大人の体だと、体重の60％くらいが水なんじゃよ。水は大事じゃのう。"
-        },
-        {
-            q: "月（つき）は、自分で光っている。",
-            a: false,
-            exp: "×じゃ。月は太陽の光を反射（はんしゃ）して、光っているように見えるだけなんじゃ。"
-        },
-        {
-            q: "人間の血（ち）は、体の中を一周（いっしゅう）するのに 1時間かかる。",
-            a: false,
-            exp: "×じゃ。血はとても速いぞ！ たったの「1分」くらいで 体の中を一周して戻ってくるんじゃ。"
-        },
-        {
-            q: "パンがふわふわに ふくらむのは、「菌（きん）」の力である。",
-            a: true,
-            exp: "〇じゃ。「イースト菌」という小さな菌が、パンの中でガスを出して ふくらませているんじゃよ。"
-        },
-        {
-            q: "納豆（なっとう）は、大豆（だいず）が くさったものである。",
-            a: false,
-            exp: "×じゃ。「くさる」ではなく「発酵（はっこう）」と言うぞ。納豆菌という「良い菌」が美味しくしてくれているんじゃ。"
-        },
-        {
-            q: "ペットボトルロケットは、縮（ちぢ）こまった「空気」の力で飛んでいる。",
-            a: true,
-            exp: "〇じゃ。ぎゅうぎゅうに おし縮められた空気が、元に戻ろうとして 水をいきおいよく押し出すから 飛ぶんじゃ。"
-        },
-    ];
+            // 29問の中からランダムに10問選ぶ
+            currentQuestions = shuffleArray(ALL_QUESTIONS).slice(0, 10);
 
-    let currentQuestions = [];
-    let currentIndex = 0;
-    let score = 0;
-
-    function startGame() {
-        document.getElementById('start-screen').style.display = 'none';
-        
-        // 29問の中からランダムに10問選ぶ
-        currentQuestions = shuffleArray(ALL_QUESTIONS).slice(0, 10);
-        
-        currentIndex = 0;
-        score = 0;
-        showQuestion();
-    }
-
-    function showQuestion() {
-        const qData = currentQuestions[currentIndex];
-        document.getElementById('q-num').innerText = currentIndex + 1;
-        document.getElementById('question-text').innerText = qData.q;
-        
-        document.getElementById('msg-bubble').innerText = "わかるかな？";
-        document.getElementById('prof-img').style.transform = "scale(1)";
-    }
-
-    function checkAnswer(userAnswer) {
-        const qData = currentQuestions[currentIndex];
-        const isCorrect = (userAnswer === qData.a);
-
-        const screen = document.getElementById('explanation-screen');
-        const mark = document.getElementById('result-mark');
-        const msg = document.getElementById('result-msg');
-        const expText = document.getElementById('explanation-text');
-
-        if (isCorrect) {
-            score++;
-            mark.innerText = "⭕";
-            mark.className = "result-mark correct";
-            msg.innerText = "せいかい！";
-            msg.style.color = "#ff5252";
-            document.getElementById('prof-img').style.transform = "translateY(-10px) scale(1.1)";
-        } else {
-            mark.innerText = "❌";
-            mark.className = "result-mark wrong";
-            msg.innerText = "ざんねん！";
-            msg.style.color = "#448aff";
-            document.getElementById('prof-img').style.transform = "scale(0.9)";
-        }
-
-        expText.innerText = qData.exp;
-        screen.style.display = "flex";
-    }
-
-    function nextQuestion() {
-        document.getElementById('explanation-screen').style.display = 'none';
-        currentIndex++;
-
-        if (currentIndex < currentQuestions.length) {
+            currentIndex = 0;
+            score = 0;
             showQuestion();
-        } else {
-            showResult();
         }
-    }
 
-    function showResult() {
-        document.getElementById('result-screen').style.display = 'flex';
-        document.getElementById('score-display').innerText = score;
-        
-        if(score === 10){
-            document.getElementById('msg-bubble').innerText = "なんと！ 全問正解じゃ！";
-        } else if(score >= 7) {
-            document.getElementById('msg-bubble').innerText = "よくがんばったのう！";
-        } else {
-            document.getElementById('msg-bubble').innerText = "また チャレンジするのじゃ！";
-        }
-    }
+        function showQuestion() {
+            const qData = currentQuestions[currentIndex];
+            document.getElementById('q-num').innerText = currentIndex + 1;
+            document.getElementById('question-text').innerText = qData.q;
 
-    function getReward() {
-        const btn = document.getElementById('reward-btn');
-        btn.disabled = true;
-        btn.style.background = '#ccc';
-        btn.innerText = "ゲットしました";
-        
-        const points = score * 5; 
-        
-        if(typeof showPointGetDialog === 'function'){
-            showPointGetDialog(points);
-        } else {
-            alert(points + "ポイント ゲット！");
+            document.getElementById('msg-bubble').innerText = "わかるかな？";
+            document.getElementById('prof-img').style.transform = "scale(1)";
         }
-    }
 
-    function shuffleArray(array) {
-        const clone = array.slice();
-        for (let i = clone.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [clone[i], clone[j]] = [clone[j], clone[i]];
+        function checkAnswer(userAnswer) {
+            const qData = currentQuestions[currentIndex];
+            const isCorrect = (userAnswer === qData.a);
+
+            const screen = document.getElementById('explanation-screen');
+            const mark = document.getElementById('result-mark');
+            const msg = document.getElementById('result-msg');
+            const expText = document.getElementById('explanation-text');
+
+            if (isCorrect) {
+                score++;
+                mark.innerText = "⭕";
+                mark.className = "result-mark correct";
+                msg.innerText = "せいかい！";
+                msg.style.color = "#ff5252";
+                document.getElementById('prof-img').style.transform = "translateY(-10px) scale(1.1)";
+            } else {
+                mark.innerText = "❌";
+                mark.className = "result-mark wrong";
+                msg.innerText = "ざんねん！";
+                msg.style.color = "#448aff";
+                document.getElementById('prof-img').style.transform = "scale(0.9)";
+            }
+
+            expText.innerText = qData.exp;
+            screen.style.display = "flex";
         }
-        return clone;
-    }
-</script>
+
+        function nextQuestion() {
+            document.getElementById('explanation-screen').style.display = 'none';
+            currentIndex++;
+
+            if (currentIndex < currentQuestions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('result-screen').style.display = 'flex';
+            document.getElementById('score-display').innerText = score;
+
+            if (score === 10) {
+                document.getElementById('msg-bubble').innerText = "なんと！ 全問正解じゃ！";
+            } else if (score >= 7) {
+                document.getElementById('msg-bubble').innerText = "よくがんばったのう！";
+            } else {
+                document.getElementById('msg-bubble').innerText = "また チャレンジするのじゃ！";
+            }
+        }
+
+        function getReward() {
+            const btn = document.getElementById('reward-btn');
+            btn.disabled = true;
+            btn.style.background = '#ccc';
+            btn.innerText = "ゲットしました";
+
+            const points = score * 5;
+
+            if (typeof showPointGetDialog === 'function') {
+                showPointGetDialog(points);
+            } else {
+                alert(points + "ポイント ゲット！");
+            }
+        }
+
+        function shuffleArray(array) {
+            const clone = array.slice();
+            for (let i = clone.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [clone[i], clone[j]] = [clone[j], clone[i]];
+            }
+            return clone;
+        }
+    </script>
 </body>
+
 </html>

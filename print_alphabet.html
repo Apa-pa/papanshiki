@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,7 +35,11 @@
             font-weight: bold;
             margin-right: 10px;
         }
-        .print-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        .print-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
 
         .back-btn {
             background: #90a4ae;
@@ -53,7 +58,7 @@
             min-height: 297mm;
             padding: 15mm;
             box-sizing: border-box;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             position: relative;
             border: 1px solid #ddd;
         }
@@ -66,8 +71,18 @@
             padding-bottom: 10px;
             margin-bottom: 15px;
         }
-        .brand-name { font-size: 24px; font-weight: bold; color: #ff9800; }
-        .sheet-title { font-size: 32px; font-weight: bold; color: #333; }
+
+        .brand-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff9800;
+        }
+
+        .sheet-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
 
         .alphabet-grid {
             display: grid;
@@ -102,8 +117,17 @@
             line-height: 1;
         }
 
-        .upper { font-size: 38px; font-weight: bold; color: #e91e63; }
-        .lower { font-size: 38px; font-weight: bold; color: #3f51b5; }
+        .upper {
+            font-size: 38px;
+            font-weight: bold;
+            color: #e91e63;
+        }
+
+        .lower {
+            font-size: 38px;
+            font-weight: bold;
+            color: #3f51b5;
+        }
 
         .hiragana-yomi {
             font-size: 14px;
@@ -118,9 +142,24 @@
             flex-direction: column;
             align-items: center;
         }
-        .icon { font-size: 28px; line-height: 1.1; }
-        .word { font-size: 11px; font-weight: bold; color: #555; margin-top: 1px; }
-        .yomi { font-size: 9px; color: #888; line-height: 1; }
+
+        .icon {
+            font-size: 28px;
+            line-height: 1.1;
+        }
+
+        .word {
+            font-size: 11px;
+            font-weight: bold;
+            color: #555;
+            margin-top: 1px;
+        }
+
+        .yomi {
+            font-size: 9px;
+            color: #888;
+            line-height: 1;
+        }
 
         /* 追加：マスコットキャラクター表示エリア */
         .mascot-card {
@@ -132,12 +171,15 @@
             padding: 0;
             /* 必要であればここにも height を指定できます */
         }
-        
+
         /* --- 【修正】画像の高さを指定 --- */
         .mascot-img {
-            height: 110px;   /* ★ここで高さを指定（他のカードと同じくらいの高さ） */
-            width: auto;     /* 横幅はなりゆきで */
-            max-width: 100%; /* カードからはみ出さないように */
+            height: 110px;
+            /* ★ここで高さを指定（他のカードと同じくらいの高さ） */
+            width: auto;
+            /* 横幅はなりゆきで */
+            max-width: 100%;
+            /* カードからはみ出さないように */
             object-fit: contain;
         }
 
@@ -152,14 +194,20 @@
 
         /* --- 印刷時の特別ルール --- */
         @media print {
-            body { 
-                background: none; 
+            body {
+                background: none;
                 padding: 0;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
-            .nav-area { display: none; }
-            .sheet-header { display: none; }
+
+            .nav-area {
+                display: none;
+            }
+
+            .sheet-header {
+                display: none;
+            }
 
             .sheet {
                 width: 100%;
@@ -169,11 +217,18 @@
                 padding: 5mm;
                 margin: 0;
             }
-            
-            .alphabet-grid { gap: 5px; }
-            .char-card { border-width: 1px; }
 
-            .mascot-card { display: flex !important; }
+            .alphabet-grid {
+                gap: 5px;
+            }
+
+            .char-card {
+                border-width: 1px;
+            }
+
+            .mascot-card {
+                display: flex !important;
+            }
 
             .sheet-footer {
                 display: block;
@@ -190,6 +245,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="nav-area">
@@ -205,49 +261,49 @@
         </header>
 
         <div class="alphabet-grid" id="grid-container">
-            </div>
+        </div>
 
         <div class="sheet-footer">
             ぱぱん式 アルファベット表
         </div>
     </div>
 
-<script>
-    const alphaData = [
-        { u:'A', l:'a', h:'えー', icon:'🍎', w:'Apple', y:'アップル' },
-        { u:'B', l:'b', h:'びー', icon:'🐻', w:'Bear', y:'ベア' },
-        { u:'C', l:'c', h:'しー', icon:'🐱', w:'Cat', y:'キャット' },
-        { u:'D', l:'d', h:'でぃー', icon:'🐶', w:'Dog', y:'ドッグ' },
-        { u:'E', l:'e', h:'いー', icon:'🥚', w:'Egg', y:'エッグ' },
-        { u:'F', l:'f', h:'えふ', icon:'🐟', w:'Fish', y:'フィッシュ' },
-        { u:'G', l:'g', h:'じー', icon:'🍇', w:'Grape', y:'グレープ' },
-        { u:'H', l:'h', h:'えいち', icon:'🏠', w:'House', y:'ハウス' },
-        { u:'I', l:'i', h:'あい', icon:'🍦', w:'Ice cream', y:'アイス' },
-        { u:'J', l:'j', h:'じぇい', icon:'🧃', w:'Juice', y:'ジュース' },
-        { u:'K', l:'k', h:'けー', icon:'👑', w:'King', y:'キング' },
-        { u:'L', l:'l', h:'える', icon:'🦁', w:'Lion', y:'ライオン' },
-        { u:'M', l:'m', h:'えむ', icon:'🌙', w:'Moon', y:'ムーン' },
-        { u:'N', l:'n', h:'えぬ', icon:'📓', w:'Note', y:'ノート' },
-        { u:'O', l:'o', h:'おー', icon:'🐙', w:'Octopus', y:'オクトパス' },
-        { u:'P', l:'p', h:'ぴー', icon:'🐼', w:'Panda', y:'パンダ' },
-        { u:'Q', l:'q', h:'きゅー', icon:'👸', w:'Queen', y:'クイーン' },
-        { u:'R', l:'r', h:'あーる', icon:'🐰', w:'Rabbit', y:'ラビット' },
-        { u:'S', l:'s', h:'えす', icon:'☀️', w:'Sun', y:'サン' },
-        { u:'T', l:'t', h:'てぃー', icon:'🐯', w:'Tiger', y:'タイガー' },
-        { u:'U', l:'u', h:'ゆー', icon:'☂️', w:'Umbrella', y:'アンブレラ' },
-        { u:'V', l:'v', h:'ぶい', icon:'🎻', w:'Violin', y:'バイオリン' },
-        { u:'W', l:'w', h:'だぶりゅー', icon:'⌚', w:'Watch', y:'ウォッチ' },
-        { u:'X', l:'x', h:'えっくす', icon:'🎄', w:'Xmas', y:'クリスマス' },
-        { u:'Y', l:'y', h:'わい', icon:'🛥️', w:'Yacht', y:'ヨット' },
-        { u:'Z', l:'z', h:'ずぃー/ぜっと', icon:'🦓', w:'Zebra', y:'ゼブラ' },
-    ];
+    <script>
+        const alphaData = [
+            { u: 'A', l: 'a', h: 'えー', icon: '🍎', w: 'Apple', y: 'アップル' },
+            { u: 'B', l: 'b', h: 'びー', icon: '🐻', w: 'Bear', y: 'ベア' },
+            { u: 'C', l: 'c', h: 'しー', icon: '🐱', w: 'Cat', y: 'キャット' },
+            { u: 'D', l: 'd', h: 'でぃー', icon: '🐶', w: 'Dog', y: 'ドッグ' },
+            { u: 'E', l: 'e', h: 'いー', icon: '🥚', w: 'Egg', y: 'エッグ' },
+            { u: 'F', l: 'f', h: 'えふ', icon: '🐟', w: 'Fish', y: 'フィッシュ' },
+            { u: 'G', l: 'g', h: 'じー', icon: '🍇', w: 'Grape', y: 'グレープ' },
+            { u: 'H', l: 'h', h: 'えいち', icon: '🏠', w: 'House', y: 'ハウス' },
+            { u: 'I', l: 'i', h: 'あい', icon: '🍦', w: 'Ice cream', y: 'アイス' },
+            { u: 'J', l: 'j', h: 'じぇい', icon: '🧃', w: 'Juice', y: 'ジュース' },
+            { u: 'K', l: 'k', h: 'けー', icon: '👑', w: 'King', y: 'キング' },
+            { u: 'L', l: 'l', h: 'える', icon: '🦁', w: 'Lion', y: 'ライオン' },
+            { u: 'M', l: 'm', h: 'えむ', icon: '🌙', w: 'Moon', y: 'ムーン' },
+            { u: 'N', l: 'n', h: 'えぬ', icon: '📓', w: 'Note', y: 'ノート' },
+            { u: 'O', l: 'o', h: 'おー', icon: '🐙', w: 'Octopus', y: 'オクトパス' },
+            { u: 'P', l: 'p', h: 'ぴー', icon: '🐼', w: 'Panda', y: 'パンダ' },
+            { u: 'Q', l: 'q', h: 'きゅー', icon: '👸', w: 'Queen', y: 'クイーン' },
+            { u: 'R', l: 'r', h: 'あーる', icon: '🐰', w: 'Rabbit', y: 'ラビット' },
+            { u: 'S', l: 's', h: 'えす', icon: '☀️', w: 'Sun', y: 'サン' },
+            { u: 'T', l: 't', h: 'てぃー', icon: '🐯', w: 'Tiger', y: 'タイガー' },
+            { u: 'U', l: 'u', h: 'ゆー', icon: '☂️', w: 'Umbrella', y: 'アンブレラ' },
+            { u: 'V', l: 'v', h: 'ぶい', icon: '🎻', w: 'Violin', y: 'バイオリン' },
+            { u: 'W', l: 'w', h: 'だぶりゅー', icon: '⌚', w: 'Watch', y: 'ウォッチ' },
+            { u: 'X', l: 'x', h: 'えっくす', icon: '🎄', w: 'Xmas', y: 'クリスマス' },
+            { u: 'Y', l: 'y', h: 'わい', icon: '🛥️', w: 'Yacht', y: 'ヨット' },
+            { u: 'Z', l: 'z', h: 'ずぃー/ぜっと', icon: '🦓', w: 'Zebra', y: 'ゼブラ' },
+        ];
 
-    const container = document.getElementById('grid-container');
+        const container = document.getElementById('grid-container');
 
-    alphaData.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'char-card';
-        card.innerHTML = `
+        alphaData.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'char-card';
+            card.innerHTML = `
             <div class="letters-area">
                 <div class="letters">
                     <span class="upper">${item.u}</span>
@@ -261,17 +317,18 @@
                 <div class="yomi">${item.y}</div>
             </div>
         `;
-        container.appendChild(card);
-    });
+            container.appendChild(card);
+        });
 
-    const mascotCard = document.createElement('div');
-    mascotCard.className = 'mascot-card'; 
-    mascotCard.innerHTML = `
-        <img src="icon.png" alt="ぱぱん式キャラクター" class="mascot-img">
+        const mascotCard = document.createElement('div');
+        mascotCard.className = 'mascot-card';
+        mascotCard.innerHTML = `
+        <img src="icon.webp" alt="ぱぱん式キャラクター" class="mascot-img">
     `;
-    container.appendChild(mascotCard);
+        container.appendChild(mascotCard);
 
-</script>
+    </script>
 
 </body>
+
 </html>

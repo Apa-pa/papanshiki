@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -8,7 +9,8 @@
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
-            background-color: #fff9c4; /* やさしい黄色 */
+            background-color: #fff9c4;
+            /* やさしい黄色 */
             margin: 0;
             padding: 0;
             display: flex;
@@ -16,12 +18,15 @@
             align-items: center;
             height: 100vh;
             height: 100dvh;
-            
+
             /* ▼▼▼ ここを修正（強力な設定に変更） ▼▼▼ */
-            touch-action: none;       /* 画面全体のズーム・スクロールを禁止 */
-            -webkit-user-select: none; /* 文字選択を禁止 */
+            touch-action: none;
+            /* 画面全体のズーム・スクロールを禁止 */
+            -webkit-user-select: none;
+            /* 文字選択を禁止 */
             user-select: none;
-            overflow: hidden;         /* はみ出しを禁止 */
+            overflow: hidden;
+            /* はみ出しを禁止 */
             /* ▲▲▲ ここまで ▲▲▲ */
         }
 
@@ -33,7 +38,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
 
         /* 先生エリア（上半分） */
@@ -53,8 +58,10 @@
             width: 160px;
             height: auto;
             transition: transform 0.1s;
-            pointer-events: none; /* 画像を長押しできないようにする */
+            pointer-events: none;
+            /* 画像を長押しできないようにする */
         }
+
         .char-teacher.playing {
             transform: scale(1.1) rotate(-5deg);
         }
@@ -97,16 +104,19 @@
             font-size: 60px;
             color: white;
             transition: transform 0.05s, background 0.1s;
-            
+
             /*念のための設定*/
             -webkit-tap-highlight-color: transparent;
             touch-action: none;
         }
-        .rhythm-btn:active, .rhythm-btn.active {
+
+        .rhythm-btn:active,
+        .rhythm-btn.active {
             transform: scale(0.95) translateY(4px);
             box-shadow: 0 4px #01579b;
             background: #4fc3f7;
         }
+
         .rhythm-btn.disabled {
             background: #b0bec5;
             border-color: #78909c;
@@ -118,7 +128,8 @@
         /* 判定表示 */
         #feedback {
             position: absolute;
-            top: 50%; left: 50%;
+            top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
             font-size: 120px;
             font-weight: bold;
@@ -127,22 +138,36 @@
             text-shadow: 0 0 10px white;
             display: none;
         }
-        .perfect { color: #ff3d00; }
-        .good { color: #4caf50; }
-        .bad { color: #555; }
+
+        .perfect {
+            color: #ff3d00;
+        }
+
+        .good {
+            color: #4caf50;
+        }
+
+        .bad {
+            color: #555;
+        }
 
         /* UI */
         .hud {
             position: absolute;
-            top: 10px; left: 10px;
-            font-weight: bold; color: #5d4037;
+            top: 10px;
+            left: 10px;
+            font-weight: bold;
+            color: #5d4037;
             z-index: 10;
         }
 
         /* スタート・結果画面 */
         .overlay {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(255, 249, 196, 0.95);
             display: flex;
             flex-direction: column;
@@ -151,15 +176,24 @@
             z-index: 100;
             text-align: center;
         }
+
         .start-btn {
-            font-size: 24px; padding: 15px 50px;
-            background: #ff6f00; color: white;
-            border: none; border-radius: 50px;
-            font-weight: bold; cursor: pointer;
+            font-size: 24px;
+            padding: 15px 50px;
+            background: #ff6f00;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
             box-shadow: 0 5px #e65100;
             margin-top: 30px;
         }
-        .start-btn:active { transform: scale(0.95); box-shadow: none; }
+
+        .start-btn:active {
+            transform: scale(0.95);
+            box-shadow: none;
+        }
 
         .result-img {
             width: 180px;
@@ -169,7 +203,8 @@
 
         .progress-bar {
             position: absolute;
-            bottom: 0; left: 0;
+            bottom: 0;
+            left: 0;
             height: 10px;
             background: #4caf50;
             width: 0%;
@@ -178,345 +213,351 @@
 
         /* ポイントボタン用 */
         .btn {
-            font-size: 20px; padding: 10px 30px; 
-            background: #ff9800; color: white; 
-            border: none; border-radius: 30px; 
-            margin: 10px; font-weight: bold; cursor: pointer;
+            font-size: 20px;
+            padding: 10px 30px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            margin: 10px;
+            font-weight: bold;
+            cursor: pointer;
         }
-
     </style>
 </head>
+
 <body>
 
-<div id="game-container">
-    <div class="hud">ステージ: <span id="level-disp">1</span> / 5</div>
+    <div id="game-container">
+        <div class="hud">ステージ: <span id="level-disp">1</span> / 5</div>
 
-    <div class="teacher-area">
-        <div id="msg-bubble" class="bubble">よく きいてね！</div>
-        
-        <img id="teacher-char" src="hari-an.png" class="char-teacher">
-        
-        <div style="margin-top:10px; font-weight:bold; color:#f57f17;">アン先生</div>
+        <div class="teacher-area">
+            <div id="msg-bubble" class="bubble">よく きいてね！</div>
+
+            <img id="teacher-char" src="hari-an.webp" class="char-teacher">
+
+            <div style="margin-top:10px; font-weight:bold; color:#f57f17;">アン先生</div>
+        </div>
+
+        <div class="player-area">
+            <div id="feedback"></div>
+            <div id="rhythm-btn" class="rhythm-btn disabled">🐾</div>
+            <div style="margin-top:20px; font-weight:bold; color:#0277bd;">あなた</div>
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <div id="start-screen" class="overlay">
+            <div style="font-size: 60px; margin-bottom: 10px;">🎵</div>
+            <h1 style="color:#f57f17; margin:0;">アンの<br>リズム教室</h1>
+            <p style="margin: 20px; color:#5d4037;">
+                アン先生のマネをして<br>ボタンを たたこう！<br>
+                全5ステージ<br>
+                <span style="font-size:14px;">（音が出ます）</span>
+            </p>
+            <button class="start-btn" onclick="initAudioAndStart()">スタート</button>
+            <br>
+            <a href="index.html" style="color:#8d6e63; margin-top:20px; text-decoration: underline;">🏠 もどる</a>
+        </div>
+
+        <div id="gameover-screen" class="overlay" style="display:none;">
+            <img src="hari-an-zannen.webp" class="result-img">
+            <h1 style="color:#5d4037;">ざんねん...</h1>
+            <p>タイミングが ずれちゃったみたい。</p>
+            <button class="start-btn" onclick="retryLevel()">もういっかい</button>
+            <br>
+            <a href="index.html" style="color:#8d6e63; margin-top:20px; text-decoration: underline;">🏠 ホームへ</a>
+        </div>
+
+        <div id="clear-screen" class="overlay" style="display:none;">
+            <div style="font-size: 80px;">💮</div>
+            <h1 style="color:#e65100;">たいへん<br>よくできました！</h1>
+            <p>リズム感 バッチリだね！</p>
+            <button class="btn"
+                onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; if(typeof showPointGetDialog==='function'){showPointGetDialog(30)}else{alert('ranking.jsを更新してね')}">
+                🎁 ポイントをもらう
+            </button>
+            <button class="start-btn" onclick="startGame()">さいしょから</button>
+            <br>
+            <a href="index.html" style="color:#8d6e63; margin-top:20px; text-decoration: underline;">🏠 ホームへ</a>
+        </div>
     </div>
 
-    <div class="player-area">
-        <div id="feedback"></div>
-        <div id="rhythm-btn" class="rhythm-btn disabled">🐾</div>
-        <div style="margin-top:20px; font-weight:bold; color:#0277bd;">あなた</div>
-        <div id="progress-bar" class="progress-bar"></div>
-    </div>
+    <script>
+        // ▼▼▼ iPad/iPhone用の強力なズーム防止スクリプト ▼▼▼
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+        document.addEventListener('dblclick', function (e) {
+            e.preventDefault();
+        }, { passive: false });
+        // ▲▲▲ 追加ここまで ▲▲▲
 
-    <div id="start-screen" class="overlay">
-        <div style="font-size: 60px; margin-bottom: 10px;">🎵</div>
-        <h1 style="color:#f57f17; margin:0;">アンの<br>リズム教室</h1>
-        <p style="margin: 20px; color:#5d4037;">
-            アン先生のマネをして<br>ボタンを たたこう！<br>
-            全5ステージ<br>
-            <span style="font-size:14px;">（音が出ます）</span>
-        </p>
-        <button class="start-btn" onclick="initAudioAndStart()">スタート</button>
-        <br>
-        <a href="index.html" style="color:#8d6e63; margin-top:20px; text-decoration: underline;">🏠 もどる</a>
-    </div>
+        let audioCtx;
 
-    <div id="gameover-screen" class="overlay" style="display:none;">
-        <img src="hari-an-zannen.png" class="result-img">
-        <h1 style="color:#5d4037;">ざんねん...</h1>
-        <p>タイミングが ずれちゃったみたい。</p>
-        <button class="start-btn" onclick="retryLevel()">もういっかい</button>
-        <br>
-        <a href="index.html" style="color:#8d6e63; margin-top:20px; text-decoration: underline;">🏠 ホームへ</a>
-    </div>
-
-    <div id="clear-screen" class="overlay" style="display:none;">
-        <div style="font-size: 80px;">💮</div>
-        <h1 style="color:#e65100;">たいへん<br>よくできました！</h1>
-        <p>リズム感 バッチリだね！</p>
-        <button class="btn" 
-            onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; if(typeof showPointGetDialog==='function'){showPointGetDialog(30)}else{alert('ranking.jsを更新してね')}">
-            🎁 ポイントをもらう
-        </button>
-        <button class="start-btn" onclick="startGame()">さいしょから</button>
-        <br>
-        <a href="index.html" style="color:#8d6e63; margin-top:20px; text-decoration: underline;">🏠 ホームへ</a>
-    </div>
-</div>
-
-<script>
-    // ▼▼▼ iPad/iPhone用の強力なズーム防止スクリプト ▼▼▼
-    document.addEventListener('gesturestart', function(e) {
-        e.preventDefault();
-    });
-    document.addEventListener('dblclick', function(e) {
-        e.preventDefault();
-    }, { passive: false });
-    // ▲▲▲ 追加ここまで ▲▲▲
-
-    let audioCtx;
-    
-    function initAudioAndStart() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (audioCtx.state === 'suspended') {
-            audioCtx.resume();
-        }
-        startGame();
-    }
-
-    function playSound(type) {
-        if (!audioCtx) return;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        const now = audioCtx.currentTime;
-
-        if (type === 'teacher') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(523.25, now);
-            gain.gain.setValueAtTime(0.5, now);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-            osc.start(now);
-            osc.stop(now + 0.3);
-        } else if (type === 'player') {
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(150, now);
-            osc.frequency.exponentialRampToValueAtTime(50, now + 0.1);
-            gain.gain.setValueAtTime(0.8, now);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-            osc.start(now);
-            osc.stop(now + 0.2);
-        } else if (type === 'ok') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(660, now);
-            osc.frequency.setValueAtTime(880, now + 0.1);
-            gain.gain.setValueAtTime(0.3, now);
-            gain.gain.linearRampToValueAtTime(0, now + 0.4);
-            osc.start(now);
-            osc.stop(now + 0.4);
-        } else if (type === 'ng') {
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(100, now);
-            osc.frequency.linearRampToValueAtTime(80, now + 0.3);
-            gain.gain.setValueAtTime(0.3, now);
-            gain.gain.linearRampToValueAtTime(0, now + 0.3);
-            osc.start(now);
-            osc.stop(now + 0.3);
-        }
-    }
-
-    const allLevels = [
-        [0, 1000],
-        [0, 500, 1000],
-        [0, 1000, 1500],
-        [0, 500, 1000, 1500],
-        [0, 500, 1000, 1250],
-        [0, 250, 1000, 1500],
-        [0, 250, 500, 1000],
-        [0, 500, 750, 1250],
-        [0, 250, 500, 750, 1000],
-        [0, 250, 750, 1000, 1250],
-        [0, 500, 750, 1250, 1500],
-        [0, 250, 500, 750, 1000, 1250, 1500, 1750]
-    ];
-
-    let gameLevels = [];
-    let currentLevelIndex = 0;
-    
-    let targetRhythm = [];
-    let playerInputs = [];
-    let isPlayerTurn = false;
-    let turnStartTime = 0;
-    let measureLength = 3000; 
-
-    const btn = document.getElementById('rhythm-btn');
-    const teacherChar = document.getElementById('teacher-char');
-    const msgBubble = document.getElementById('msg-bubble');
-    const progressBar = document.getElementById('progress-bar');
-
-    function startGame() {
-        document.getElementById('start-screen').style.display = 'none';
-        document.getElementById('clear-screen').style.display = 'none';
-        
-        selectRandomLevels();
-
-        currentLevelIndex = 0;
-        updateLevelDisp();
-        startRound();
-    }
-
-    function selectRandomLevels() {
-        let indices = [];
-        for(let i=0; i<allLevels.length; i++) {
-            indices.push(i);
-        }
-        indices.sort(() => Math.random() - 0.5);
-        let selectedIndices = indices.slice(0, 5);
-        selectedIndices.sort((a, b) => a - b);
-        gameLevels = selectedIndices.map(i => allLevels[i]);
-    }
-
-    function retryLevel() {
-        document.getElementById('gameover-screen').style.display = 'none';
-        updateLevelDisp();
-        startRound();
-    }
-
-    function updateLevelDisp() {
-        document.getElementById('level-disp').textContent = (currentLevelIndex + 1);
-    }
-
-    async function startRound() {
-        isPlayerTurn = false;
-        btn.classList.add('disabled');
-        progressBar.style.width = '0%';
-        msgBubble.textContent = "よく きいてね！";
-        
-        targetRhythm = gameLevels[currentLevelIndex];
-        playerInputs = [];
-
-        await wait(1000);
-        
-        const startT = performance.now();
-        
-        for (let time of targetRhythm) {
-            const now = performance.now();
-            const delay = (startT + time) - now;
-            if (delay > 0) await wait(delay);
-            
-            playSound('teacher');
-            teacherChar.classList.add('playing');
-            setTimeout(() => teacherChar.classList.remove('playing'), 100);
+        function initAudioAndStart() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            startGame();
         }
 
-        const endDelay = (startT + 2000) - performance.now();
-        if (endDelay > 0) await wait(endDelay);
+        function playSound(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
 
-        startPlayerTurn();
-    }
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
 
-    function startPlayerTurn() {
-        isPlayerTurn = true;
-        btn.classList.remove('disabled');
-        msgBubble.textContent = "マネして たたこう！";
-        msgBubble.style.color = "#0277bd";
-        msgBubble.style.borderColor = "#0277bd";
-        
-        turnStartTime = performance.now();
+            const now = audioCtx.currentTime;
 
-        progressBar.style.transition = `width ${measureLength}ms linear`;
-        progressBar.style.width = "100%";
-
-        setTimeout(() => {
-            evaluate();
-        }, measureLength + 500);
-    }
-
-    function handleInput(e) {
-        if(e) e.preventDefault();
-        if (!isPlayerTurn) return;
-
-        const timing = performance.now() - turnStartTime;
-        playerInputs.push(timing);
-        
-        playSound('player');
-        
-        const b = document.getElementById('rhythm-btn');
-        b.classList.remove('active');
-        void b.offsetWidth;
-        b.classList.add('active');
-    }
-
-    btn.addEventListener('pointerdown', handleInput);
-
-    function evaluate() {
-        if (!isPlayerTurn) return;
-        isPlayerTurn = false;
-        btn.classList.add('disabled');
-        progressBar.style.width = '0%';
-        progressBar.style.transition = 'none';
-
-        let isSuccess = true;
-        
-        if (playerInputs.length !== targetRhythm.length) {
-            isSuccess = false;
-        } else {
-            if (playerInputs.length > 0) {
-                const offset = playerInputs[0] - targetRhythm[0];
-                
-                for (let i = 0; i < targetRhythm.length; i++) {
-                    const relativeTime = playerInputs[i] - offset;
-                    const target = targetRhythm[i];
-                    const diff = Math.abs(relativeTime - target);
-                    
-                    if (diff > 300) {
-                        isSuccess = false;
-                        break;
-                    }
-                }
+            if (type === 'teacher') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now);
+                gain.gain.setValueAtTime(0.5, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'player') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.1);
+                gain.gain.setValueAtTime(0.8, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'ok') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(660, now);
+                osc.frequency.setValueAtTime(880, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else if (type === 'ng') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(80, now + 0.3);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
             }
         }
 
-        showFeedback(isSuccess);
-    }
+        const allLevels = [
+            [0, 1000],
+            [0, 500, 1000],
+            [0, 1000, 1500],
+            [0, 500, 1000, 1500],
+            [0, 500, 1000, 1250],
+            [0, 250, 1000, 1500],
+            [0, 250, 500, 1000],
+            [0, 500, 750, 1250],
+            [0, 250, 500, 750, 1000],
+            [0, 250, 750, 1000, 1250],
+            [0, 500, 750, 1250, 1500],
+            [0, 250, 500, 750, 1000, 1250, 1500, 1750]
+        ];
 
-    function showFeedback(isSuccess) {
-        const fb = document.getElementById('feedback');
-        msgBubble.style.color = "#5d4037";
-        msgBubble.style.borderColor = "#5d4037";
+        let gameLevels = [];
+        let currentLevelIndex = 0;
 
-        if (isSuccess) {
-            fb.textContent = "⭕";
-            fb.className = "perfect";
-            fb.style.display = "block";
-            playSound('ok');
-            msgBubble.textContent = "すごい！";
+        let targetRhythm = [];
+        let playerInputs = [];
+        let isPlayerTurn = false;
+        let turnStartTime = 0;
+        let measureLength = 3000;
 
-            setTimeout(() => {
-                fb.style.display = "none";
-                nextLevel();
-            }, 1500);
-        } else {
-            fb.textContent = "❌";
-            fb.className = "bad";
-            fb.style.display = "block";
-            playSound('ng');
-            msgBubble.textContent = "おしい！";
+        const btn = document.getElementById('rhythm-btn');
+        const teacherChar = document.getElementById('teacher-char');
+        const msgBubble = document.getElementById('msg-bubble');
+        const progressBar = document.getElementById('progress-bar');
 
-            setTimeout(() => {
-                fb.style.display = "none";
-                gameOver();
-            }, 1500);
-        }
-    }
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('clear-screen').style.display = 'none';
 
-    function nextLevel() {
-        currentLevelIndex++;
-        if (currentLevelIndex >= gameLevels.length) {
-            gameClear();
-        } else {
+            selectRandomLevels();
+
+            currentLevelIndex = 0;
             updateLevelDisp();
             startRound();
         }
-    }
 
-    function gameOver() {
-        const screen = document.getElementById('gameover-screen');
-        screen.style.display = "flex";
-    }
+        function selectRandomLevels() {
+            let indices = [];
+            for (let i = 0; i < allLevels.length; i++) {
+                indices.push(i);
+            }
+            indices.sort(() => Math.random() - 0.5);
+            let selectedIndices = indices.slice(0, 5);
+            selectedIndices.sort((a, b) => a - b);
+            gameLevels = selectedIndices.map(i => allLevels[i]);
+        }
 
-    function gameClear() {
-        const screen = document.getElementById('clear-screen');
-        screen.style.display = "flex";
-    }
+        function retryLevel() {
+            document.getElementById('gameover-screen').style.display = 'none';
+            updateLevelDisp();
+            startRound();
+        }
 
-    function wait(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
+        function updateLevelDisp() {
+            document.getElementById('level-disp').textContent = (currentLevelIndex + 1);
+        }
 
-</script>
+        async function startRound() {
+            isPlayerTurn = false;
+            btn.classList.add('disabled');
+            progressBar.style.width = '0%';
+            msgBubble.textContent = "よく きいてね！";
+
+            targetRhythm = gameLevels[currentLevelIndex];
+            playerInputs = [];
+
+            await wait(1000);
+
+            const startT = performance.now();
+
+            for (let time of targetRhythm) {
+                const now = performance.now();
+                const delay = (startT + time) - now;
+                if (delay > 0) await wait(delay);
+
+                playSound('teacher');
+                teacherChar.classList.add('playing');
+                setTimeout(() => teacherChar.classList.remove('playing'), 100);
+            }
+
+            const endDelay = (startT + 2000) - performance.now();
+            if (endDelay > 0) await wait(endDelay);
+
+            startPlayerTurn();
+        }
+
+        function startPlayerTurn() {
+            isPlayerTurn = true;
+            btn.classList.remove('disabled');
+            msgBubble.textContent = "マネして たたこう！";
+            msgBubble.style.color = "#0277bd";
+            msgBubble.style.borderColor = "#0277bd";
+
+            turnStartTime = performance.now();
+
+            progressBar.style.transition = `width ${measureLength}ms linear`;
+            progressBar.style.width = "100%";
+
+            setTimeout(() => {
+                evaluate();
+            }, measureLength + 500);
+        }
+
+        function handleInput(e) {
+            if (e) e.preventDefault();
+            if (!isPlayerTurn) return;
+
+            const timing = performance.now() - turnStartTime;
+            playerInputs.push(timing);
+
+            playSound('player');
+
+            const b = document.getElementById('rhythm-btn');
+            b.classList.remove('active');
+            void b.offsetWidth;
+            b.classList.add('active');
+        }
+
+        btn.addEventListener('pointerdown', handleInput);
+
+        function evaluate() {
+            if (!isPlayerTurn) return;
+            isPlayerTurn = false;
+            btn.classList.add('disabled');
+            progressBar.style.width = '0%';
+            progressBar.style.transition = 'none';
+
+            let isSuccess = true;
+
+            if (playerInputs.length !== targetRhythm.length) {
+                isSuccess = false;
+            } else {
+                if (playerInputs.length > 0) {
+                    const offset = playerInputs[0] - targetRhythm[0];
+
+                    for (let i = 0; i < targetRhythm.length; i++) {
+                        const relativeTime = playerInputs[i] - offset;
+                        const target = targetRhythm[i];
+                        const diff = Math.abs(relativeTime - target);
+
+                        if (diff > 300) {
+                            isSuccess = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            showFeedback(isSuccess);
+        }
+
+        function showFeedback(isSuccess) {
+            const fb = document.getElementById('feedback');
+            msgBubble.style.color = "#5d4037";
+            msgBubble.style.borderColor = "#5d4037";
+
+            if (isSuccess) {
+                fb.textContent = "⭕";
+                fb.className = "perfect";
+                fb.style.display = "block";
+                playSound('ok');
+                msgBubble.textContent = "すごい！";
+
+                setTimeout(() => {
+                    fb.style.display = "none";
+                    nextLevel();
+                }, 1500);
+            } else {
+                fb.textContent = "❌";
+                fb.className = "bad";
+                fb.style.display = "block";
+                playSound('ng');
+                msgBubble.textContent = "おしい！";
+
+                setTimeout(() => {
+                    fb.style.display = "none";
+                    gameOver();
+                }, 1500);
+            }
+        }
+
+        function nextLevel() {
+            currentLevelIndex++;
+            if (currentLevelIndex >= gameLevels.length) {
+                gameClear();
+            } else {
+                updateLevelDisp();
+                startRound();
+            }
+        }
+
+        function gameOver() {
+            const screen = document.getElementById('gameover-screen');
+            screen.style.display = "flex";
+        }
+
+        function gameClear() {
+            const screen = document.getElementById('clear-screen');
+            screen.style.display = "flex";
+        }
+
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+    </script>
 </body>
+
 </html>

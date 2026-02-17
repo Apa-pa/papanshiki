@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,49 +24,103 @@
             background: white;
             padding: 20px;
             border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
 
-        h1 { margin: 0 0 10px 0; color: #ff6f00; font-size: 24px; }
+        h1 {
+            margin: 0 0 10px 0;
+            color: #ff6f00;
+            font-size: 24px;
+        }
 
         /* 店員さんエリア */
         .shop-header {
-            display: flex; flex-direction: column; align-items: center; margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 15px;
         }
+
         .pippi-img {
-            width: 80px; height: 80px; object-fit: cover;
-            border-radius: 50%; border: 3px solid #ffca28;
-            background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #ffca28;
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
+
         .speech-bubble {
-            position: relative; background: #ffecb3; border-radius: 10px;
-            padding: 5px 15px; font-size: 14px; font-weight: bold; color: #ff6f00;
+            position: relative;
+            background: #ffecb3;
+            border-radius: 10px;
+            padding: 5px 15px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #ff6f00;
             margin-top: 5px;
         }
+
         .speech-bubble::after {
-            content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-            border-width: 0 10px 10px; border-style: solid; border-color: #ffecb3 transparent;
-            display: block; width: 0;
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 10px 10px;
+            border-style: solid;
+            border-color: #ffecb3 transparent;
+            display: block;
+            width: 0;
         }
 
         /* レベル選択 */
-        .level-select { margin-bottom: 20px; }
-        .lvl-btn {
-            background: #fff; border: 2px solid #ffca28; color: #ff6f00;
-            padding: 5px 12px; border-radius: 20px; font-weight: bold; cursor: pointer;
-            margin: 0 3px; font-size: 12px;
+        .level-select {
+            margin-bottom: 20px;
         }
-        .lvl-btn.active { background: #ffca28; color: #fff; }
+
+        .lvl-btn {
+            background: #fff;
+            border: 2px solid #ffca28;
+            color: #ff6f00;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 3px;
+            font-size: 12px;
+        }
+
+        .lvl-btn.active {
+            background: #ffca28;
+            color: #fff;
+        }
 
         /* 商品表示 */
         .target-display {
-            background: #3e2723; color: #fff; padding: 15px;
-            border-radius: 10px; display: flex; justify-content: center; align-items: center;
-            gap: 15px; margin-bottom: 10px;
+            background: #3e2723;
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
             box-shadow: inset 0 0 10px #000;
         }
-        .target-icon { font-size: 40px; }
-        .target-price { font-size: 32px; font-weight: bold; color: #ffeb3b; font-family: monospace; }
+
+        .target-icon {
+            font-size: 40px;
+        }
+
+        .target-price {
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffeb3b;
+            font-family: monospace;
+        }
 
         /* トレイ（出したお金） */
         .tray-area {
@@ -76,324 +131,470 @@
             padding: 10px;
             margin-bottom: 10px;
             position: relative;
-            display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 5px;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
         }
+
         .tray-label {
-            position: absolute; top: 5px; left: 10px; font-size: 12px; color: #d7ccc8;
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            font-size: 12px;
+            color: #d7ccc8;
         }
+
         .tray-total {
-            position: absolute; bottom: 5px; right: 10px; 
-            font-size: 18px; font-weight: bold; color: #fff; 
-            background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 5px;
+            position: absolute;
+            bottom: 5px;
+            right: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 8px;
+            border-radius: 5px;
         }
 
         /* 操作ボタン */
         .action-area {
-            display: flex; gap: 10px; margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
         }
+
         .act-btn {
-            flex: 1; padding: 12px; border: none; border-radius: 30px;
-            font-weight: bold; font-size: 16px; cursor: pointer; color: white;
-            box-shadow: 0 4px rgba(0,0,0,0.2);
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            color: white;
+            box-shadow: 0 4px rgba(0, 0, 0, 0.2);
         }
-        .btn-reset { background: #ef5350; }
-        .btn-pay { background: #43a047; }
-        .act-btn:active { transform: translateY(2px); box-shadow: none; }
+
+        .btn-reset {
+            background: #ef5350;
+        }
+
+        .btn-pay {
+            background: #43a047;
+        }
+
+        .act-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
 
         /* 財布（お金パレット） */
         .wallet-area {
-            background: #f5f5f5; border: 2px dashed #ccc;
-            padding: 15px; border-radius: 15px;
+            background: #f5f5f5;
+            border: 2px dashed #ccc;
+            padding: 15px;
+            border-radius: 15px;
         }
-        .wallet-label { font-size: 12px; color: #888; margin-bottom: 10px; display: block; }
-        
+
+        .wallet-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 10px;
+            display: block;
+        }
+
         .money-grid {
-            display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
         }
 
         /* ▼▼▼ CSSでお金を描画 ▼▼▼ */
         .money {
-            display: flex; justify-content: center; align-items: center;
-            font-weight: bold; font-family: sans-serif;
-            cursor: pointer; position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-family: sans-serif;
+            cursor: pointer;
+            position: relative;
             transition: transform 0.1s;
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
             user-select: none;
-            box-sizing: border-box; /* パディングを含めたサイズ計算 */
+            box-sizing: border-box;
+            /* パディングを含めたサイズ計算 */
         }
-        .money:active { transform: scale(0.95); }
+
+        .money:active {
+            transform: scale(0.95);
+        }
 
         /* 硬貨共通 */
-        .coin { border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
-        
-        /* 1円 */
-        .m-1 { width: 36px; height: 36px; background: #e0e0e0; color: #555; font-size: 12px; }
-        
-        /* 5円 (穴あき・数字ずらし) */
-        .m-5 { 
-            width: 38px; height: 38px; background: #fdd835; color: #5d4037; font-size: 12px;
-            border: 1px solid #fbc02d;
-            align-items: flex-start; /* 数字を上に */
-            padding-top: 1px;        /* ずらす量 */
-        }
-        .m-5::after {
-            content: ''; position: absolute; width: 6px; height: 6px; 
-            background: #8d6e63; /* トレイの色に合わせる簡易的な穴表現 */
+        .coin {
             border-radius: 50%;
-            top: 50%; left: 50%; transform: translate(-50%, -50%); /* ど真ん中 */
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
-        
+
+        /* 1円 */
+        .m-1 {
+            width: 36px;
+            height: 36px;
+            background: #e0e0e0;
+            color: #555;
+            font-size: 12px;
+        }
+
+        /* 5円 (穴あき・数字ずらし) */
+        .m-5 {
+            width: 38px;
+            height: 38px;
+            background: #fdd835;
+            color: #5d4037;
+            font-size: 12px;
+            border: 1px solid #fbc02d;
+            align-items: flex-start;
+            /* 数字を上に */
+            padding-top: 1px;
+            /* ずらす量 */
+        }
+
+        .m-5::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #8d6e63;
+            /* トレイの色に合わせる簡易的な穴表現 */
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* ど真ん中 */
+        }
+
         /* 10円 */
-        .m-10 { width: 40px; height: 40px; background: #d87a48; color: #5d2807; font-size: 14px; }
-        
+        .m-10 {
+            width: 40px;
+            height: 40px;
+            background: #d87a48;
+            color: #5d2807;
+            font-size: 14px;
+        }
+
         /* 50円 (穴あき・数字ずらし) */
-        .m-50 { 
-            width: 38px; height: 38px; background: #fafafa; color: #555; font-size: 12px;
+        .m-50 {
+            width: 38px;
+            height: 38px;
+            background: #fafafa;
+            color: #555;
+            font-size: 12px;
             border: 1px solid #ccc;
-            align-items: flex-start; /* 数字を上に */
-            padding-top: 1px;        /* ずらす量 */
+            align-items: flex-start;
+            /* 数字を上に */
+            padding-top: 1px;
+            /* ずらす量 */
         }
+
         .m-50::after {
-            content: ''; position: absolute; width: 6px; height: 6px; 
-            background: #8d6e63; border-radius: 50%;
-            top: 50%; left: 50%; transform: translate(-50%, -50%); /* ど真ん中 */
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #8d6e63;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* ど真ん中 */
         }
-        
+
         /* 100円 */
-        .m-100 { width: 42px; height: 42px; background: #f5f5f5; color: #333; font-size: 14px; border: 2px solid #ddd; }
-        
+        .m-100 {
+            width: 42px;
+            height: 42px;
+            background: #f5f5f5;
+            color: #333;
+            font-size: 14px;
+            border: 2px solid #ddd;
+        }
+
         /* 500円 */
-        .m-500 { width: 46px; height: 46px; background: #e6c15c; color: #fff; text-shadow:0 0 1px #886812; font-size: 16px; border: 2px solid #d4ac0d; }
-        
+        .m-500 {
+            width: 46px;
+            height: 46px;
+            background: #e6c15c;
+            color: #fff;
+            text-shadow: 0 0 1px #886812;
+            font-size: 16px;
+            border: 2px solid #d4ac0d;
+        }
+
         /* 1000円札 */
         .bill {
-            width: 100px; height: 50px; border-radius: 4px;
-            background: #e3f2fd; border: 1px solid #90caf9;
-            color: #1565c0; font-size: 16px; letter-spacing: 1px;
+            width: 100px;
+            height: 50px;
+            border-radius: 4px;
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            color: #1565c0;
+            font-size: 16px;
+            letter-spacing: 1px;
         }
+
         .bill::before {
-            content: '💴'; position: absolute; left: 5px; font-size: 20px; opacity: 0.5;
+            content: '💴';
+            position: absolute;
+            left: 5px;
+            font-size: 20px;
+            opacity: 0.5;
         }
+
         .bill::after {
-            content: '1000'; position: absolute; right: 5px; bottom: 2px; font-size: 10px;
+            content: '1000';
+            position: absolute;
+            right: 5px;
+            bottom: 2px;
+            font-size: 10px;
         }
 
         /* トレイの中の穴の色調整（背景に合わせる） */
-        .tray-area .m-5::after, .tray-area .m-50::after { background: #8d6e63; }
-        .wallet-area .m-5::after, .wallet-area .m-50::after { background: #f5f5f5; }
+        .tray-area .m-5::after,
+        .tray-area .m-50::after {
+            background: #8d6e63;
+        }
 
-        .progress { margin-top: 10px; font-size: 14px; color: #888; }
-        .back-link { display: inline-block; margin-top: 30px; color: #ff6f00; text-decoration: underline; }
+        .wallet-area .m-5::after,
+        .wallet-area .m-50::after {
+            background: #f5f5f5;
+        }
 
+        .progress {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: #ff6f00;
+            text-decoration: underline;
+        }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h1>🛒 ピッピ商店</h1>
-    
-    <div class="shop-header">
-        <img src="pippi192.png" alt="くまのピッピ" class="pippi-img">
-        <div class="speech-bubble" id="pippi-msg">ぴったり はらえるかな？</div>
-    </div>
+    <div class="container">
+        <h1>🛒 ピッピ商店</h1>
 
-    <div class="level-select">
-        <button class="lvl-btn active" onclick="setLevel(1)">Lv1 (100円まで)</button>
-        <button class="lvl-btn" onclick="setLevel(2)">Lv2 (1000円まで)</button>
-        <button class="lvl-btn" onclick="setLevel(3)">Lv3 (おさつ)</button>
-    </div>
-
-    <div id="game-area">
-        <div class="target-display">
-            <span id="item-icon" class="target-icon">🍎</span>
-            <div>
-                <div style="font-size:12px; text-align:left;">ごうけい</div>
-                <div class="target-price"><span id="target-val">0</span>円</div>
-            </div>
+        <div class="shop-header">
+            <img src="pippi192.webp" alt="くまのピッピ" class="pippi-img">
+            <div class="speech-bubble" id="pippi-msg">ぴったり はらえるかな？</div>
         </div>
 
-        <div class="tray-area" id="tray">
-            <div class="tray-label">ここにお金をだしてね</div>
-            <div class="tray-total">いま <span id="current-total">0</span>円</div>
-            </div>
-
-        <div class="action-area">
-            <button class="act-btn btn-reset" onclick="resetTray()">やりなおし</button>
-            <button class="act-btn btn-pay" onclick="checkPayment()">はい、どうぞ！</button>
+        <div class="level-select">
+            <button class="lvl-btn active" onclick="setLevel(1)">Lv1 (100円まで)</button>
+            <button class="lvl-btn" onclick="setLevel(2)">Lv2 (1000円まで)</button>
+            <button class="lvl-btn" onclick="setLevel(3)">Lv3 (おさつ)</button>
         </div>
 
-        <div class="wallet-area">
-            <span class="wallet-label">さいふ (タッチしてね)</span>
-            <div class="money-grid" id="wallet-grid">
+        <div id="game-area">
+            <div class="target-display">
+                <span id="item-icon" class="target-icon">🍎</span>
+                <div>
+                    <div style="font-size:12px; text-align:left;">ごうけい</div>
+                    <div class="target-price"><span id="target-val">0</span>円</div>
                 </div>
+            </div>
+
+            <div class="tray-area" id="tray">
+                <div class="tray-label">ここにお金をだしてね</div>
+                <div class="tray-total">いま <span id="current-total">0</span>円</div>
+            </div>
+
+            <div class="action-area">
+                <button class="act-btn btn-reset" onclick="resetTray()">やりなおし</button>
+                <button class="act-btn btn-pay" onclick="checkPayment()">はい、どうぞ！</button>
+            </div>
+
+            <div class="wallet-area">
+                <span class="wallet-label">さいふ (タッチしてね)</span>
+                <div class="money-grid" id="wallet-grid">
+                </div>
+            </div>
+
+            <div class="progress"><span id="q-count">1</span> / 5 問目</div>
         </div>
-        
-        <div class="progress"><span id="q-count">1</span> / 5 問目</div>
+
+        <div id="result-area" style="display:none;">
+            <h2 style="font-size:60px; margin:20px 0;">🎉</h2>
+            <p style="font-size:20px; font-weight:bold;">おかいもの じょうず！</p>
+            <p style="font-size:24px; color:#e65100;">タイム: <span id="final-time">0</span>秒</p>
+            <button onclick="location.reload()"
+                style="padding:15px 30px; font-size:18px; background:#ffca28; border:none; border-radius:30px; font-weight:bold; cursor:pointer;">もういっかい</button>
+        </div>
+
+        <br>
+        <a href="index.html" class="back-link">🏠 ホームへもどる</a>
     </div>
-    
-    <div id="result-area" style="display:none;">
-        <h2 style="font-size:60px; margin:20px 0;">🎉</h2>
-        <p style="font-size:20px; font-weight:bold;">おかいもの じょうず！</p>
-        <p style="font-size:24px; color:#e65100;">タイム: <span id="final-time">0</span>秒</p>
-        <button onclick="location.reload()" style="padding:15px 30px; font-size:18px; background:#ffca28; border:none; border-radius:30px; font-weight:bold; cursor:pointer;">もういっかい</button>
-    </div>
 
-    <br>
-    <a href="index.html" class="back-link">🏠 ホームへもどる</a>
-</div>
+    <script>
+        const ITEMS = [
+            { icon: '🍎', name: 'りんご' }, { icon: '🍌', name: 'バナナ' }, { icon: '🍇', name: 'ぶどう' },
+            { icon: '🍞', name: 'パン' }, { icon: '🍰', name: 'ケーキ' }, { icon: '🍬', name: 'アメ' },
+            { icon: '🍦', name: 'アイス' }, { icon: '✏️', name: 'えんぴつ' }, { icon: '📓', name: 'ノート' },
+            { icon: '🧸', name: 'くま' }, { icon: '🤖', name: 'ロボ' }, { icon: '🧢', name: 'ぼうし' }
+        ];
 
-<script>
-    const ITEMS = [
-        { icon: '🍎', name: 'りんご' }, { icon: '🍌', name: 'バナナ' }, { icon: '🍇', name: 'ぶどう' },
-        { icon: '🍞', name: 'パン' }, { icon: '🍰', name: 'ケーキ' }, { icon: '🍬', name: 'アメ' },
-        { icon: '🍦', name: 'アイス' }, { icon: '✏️', name: 'えんぴつ' }, { icon: '📓', name: 'ノート' },
-        { icon: '🧸', name: 'くま' }, { icon: '🤖', name: 'ロボ' }, { icon: '🧢', name: 'ぼうし' }
-    ];
+        let currentLevel = 1;
+        let questionCount = 0;
+        const MAX_QUESTIONS = 5;
+        let startTime = 0;
+        let targetAmount = 0;
+        let currentTrayTotal = 0;
 
-    let currentLevel = 1;
-    let questionCount = 0;
-    const MAX_QUESTIONS = 5;
-    let startTime = 0;
-    let targetAmount = 0;
-    let currentTrayTotal = 0;
+        function setLevel(lv) {
+            currentLevel = lv;
+            document.querySelectorAll('.lvl-btn').forEach((b, i) => {
+                b.className = (i + 1 === lv) ? 'lvl-btn active' : 'lvl-btn';
+            });
 
-    function setLevel(lv) {
-        currentLevel = lv;
-        document.querySelectorAll('.lvl-btn').forEach((b, i) => {
-            b.className = (i + 1 === lv) ? 'lvl-btn active' : 'lvl-btn';
-        });
-        
-        // レベルに応じて財布の中身を変える
-        updateWalletDisplay();
-        document.getElementById('pippi-msg').innerText = "がんばってね！";
-        startGame();
-    }
-
-    function updateWalletDisplay() {
-        const grid = document.getElementById('wallet-grid');
-        grid.innerHTML = '';
-        
-        // Lv1: 1, 5, 10, 50, 100
-        const coins = [100, 50, 10, 5, 1];
-        if (currentLevel >= 2) coins.unshift(500); // Lv2+: 500円追加
-        if (currentLevel >= 3) coins.unshift(1000); // Lv3: 1000円追加
-
-        coins.forEach(val => {
-            const el = createMoneyElement(val);
-            // 財布の中のコインをクリックするとトレイに追加
-            el.onclick = () => addToTray(val);
-            grid.appendChild(el);
-        });
-    }
-
-    function createMoneyElement(val) {
-        const div = document.createElement('div');
-        div.innerText = val;
-        
-        if (val === 1000) {
-            div.className = 'money bill';
-        } else {
-            div.className = `money coin m-${val}`;
+            // レベルに応じて財布の中身を変える
+            updateWalletDisplay();
+            document.getElementById('pippi-msg').innerText = "がんばってね！";
+            startGame();
         }
-        return div;
-    }
 
-    function startGame() {
-        questionCount = 0;
-        document.getElementById('game-area').style.display = 'block';
-        document.getElementById('result-area').style.display = 'none';
-        startTime = Date.now();
-        nextQuestion();
-    }
+        function updateWalletDisplay() {
+            const grid = document.getElementById('wallet-grid');
+            grid.innerHTML = '';
 
-    function nextQuestion() {
-        if (questionCount >= MAX_QUESTIONS) {
-            finishGame();
-            return;
+            // Lv1: 1, 5, 10, 50, 100
+            const coins = [100, 50, 10, 5, 1];
+            if (currentLevel >= 2) coins.unshift(500); // Lv2+: 500円追加
+            if (currentLevel >= 3) coins.unshift(1000); // Lv3: 1000円追加
+
+            coins.forEach(val => {
+                const el = createMoneyElement(val);
+                // 財布の中のコインをクリックするとトレイに追加
+                el.onclick = () => addToTray(val);
+                grid.appendChild(el);
+            });
         }
-        questionCount++;
-        document.getElementById('q-count').innerText = questionCount;
-        resetTray();
 
-        // 問題生成
-        const item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
-        document.getElementById('item-icon').innerText = item.icon;
+        function createMoneyElement(val) {
+            const div = document.createElement('div');
+            div.innerText = val;
 
-        if (currentLevel === 1) {
-            // 100円未満 (10~99円)
-            targetAmount = Math.floor(Math.random() * 90) + 10;
-        } else if (currentLevel === 2) {
-            // 1000円未満 (100~999円)
-            targetAmount = Math.floor(Math.random() * 900) + 100;
-        } else {
-            // 2000円未満 (500~1999円)
-            targetAmount = Math.floor(Math.random() * 1500) + 500;
+            if (val === 1000) {
+                div.className = 'money bill';
+            } else {
+                div.className = `money coin m-${val}`;
+            }
+            return div;
         }
-        document.getElementById('target-val').innerText = targetAmount;
-    }
 
-    function addToTray(val) {
-        // トレイに追加
-        currentTrayTotal += val;
-        document.getElementById('current-total').innerText = currentTrayTotal;
-        
-        const el = createMoneyElement(val);
-        // トレイのコインをクリックすると消せるようにする
-        el.onclick = function() {
-            this.remove();
-            currentTrayTotal -= val;
+        function startGame() {
+            questionCount = 0;
+            document.getElementById('game-area').style.display = 'block';
+            document.getElementById('result-area').style.display = 'none';
+            startTime = Date.now();
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            if (questionCount >= MAX_QUESTIONS) {
+                finishGame();
+                return;
+            }
+            questionCount++;
+            document.getElementById('q-count').innerText = questionCount;
+            resetTray();
+
+            // 問題生成
+            const item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
+            document.getElementById('item-icon').innerText = item.icon;
+
+            if (currentLevel === 1) {
+                // 100円未満 (10~99円)
+                targetAmount = Math.floor(Math.random() * 90) + 10;
+            } else if (currentLevel === 2) {
+                // 1000円未満 (100~999円)
+                targetAmount = Math.floor(Math.random() * 900) + 100;
+            } else {
+                // 2000円未満 (500~1999円)
+                targetAmount = Math.floor(Math.random() * 1500) + 500;
+            }
+            document.getElementById('target-val').innerText = targetAmount;
+        }
+
+        function addToTray(val) {
+            // トレイに追加
+            currentTrayTotal += val;
             document.getElementById('current-total').innerText = currentTrayTotal;
+
+            const el = createMoneyElement(val);
+            // トレイのコインをクリックすると消せるようにする
+            el.onclick = function () {
+                this.remove();
+                currentTrayTotal -= val;
+                document.getElementById('current-total').innerText = currentTrayTotal;
+            };
+
+            // アニメーション用
+            el.style.transform = 'scale(0)';
+            document.getElementById('tray').appendChild(el);
+            setTimeout(() => el.style.transform = 'scale(1)', 10);
+        }
+
+        function resetTray() {
+            currentTrayTotal = 0;
+            document.getElementById('current-total').innerText = 0;
+            // tray-label と tray-total 以外を削除
+            const tray = document.getElementById('tray');
+            const items = tray.querySelectorAll('.money');
+            items.forEach(i => i.remove());
+        }
+
+        function checkPayment() {
+            if (currentTrayTotal === targetAmount) {
+                document.getElementById('pippi-msg').innerText = "ちょうどだね！ありがとう！";
+                // playSound('correct');
+                setTimeout(nextQuestion, 800);
+            } else if (currentTrayTotal > targetAmount) {
+                document.getElementById('pippi-msg').innerText = "おおいよ！ おつりは ないよ";
+                alert("おおいよ！\nぴったり 払ってね。");
+            } else {
+                document.getElementById('pippi-msg').innerText = "あれ？ お金がたりないよ";
+                alert("お金が たりないよ！");
+            }
+        }
+
+        function finishGame() {
+            const endTime = Date.now();
+            const timeSec = ((endTime - startTime) / 1000).toFixed(1);
+
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('result-area').style.display = 'block';
+            document.getElementById('final-time').innerText = timeSec;
+            document.getElementById('pippi-msg').innerText = "まいどありー！";
+
+            if (typeof showSaveDialog === 'function') {
+                showSaveDialog('shopping', timeSec);
+            }
+        }
+
+        window.onload = function () {
+            updateWalletDisplay(); // 初期表示用
+            startGame();
         };
-        
-        // アニメーション用
-        el.style.transform = 'scale(0)';
-        document.getElementById('tray').appendChild(el);
-        setTimeout(() => el.style.transform = 'scale(1)', 10);
-    }
-
-    function resetTray() {
-        currentTrayTotal = 0;
-        document.getElementById('current-total').innerText = 0;
-        // tray-label と tray-total 以外を削除
-        const tray = document.getElementById('tray');
-        const items = tray.querySelectorAll('.money');
-        items.forEach(i => i.remove());
-    }
-
-    function checkPayment() {
-        if (currentTrayTotal === targetAmount) {
-            document.getElementById('pippi-msg').innerText = "ちょうどだね！ありがとう！";
-            // playSound('correct');
-            setTimeout(nextQuestion, 800);
-        } else if (currentTrayTotal > targetAmount) {
-            document.getElementById('pippi-msg').innerText = "おおいよ！ おつりは ないよ";
-            alert("おおいよ！\nぴったり 払ってね。");
-        } else {
-            document.getElementById('pippi-msg').innerText = "あれ？ お金がたりないよ";
-            alert("お金が たりないよ！");
-        }
-    }
-
-    function finishGame() {
-        const endTime = Date.now();
-        const timeSec = ((endTime - startTime) / 1000).toFixed(1);
-        
-        document.getElementById('game-area').style.display = 'none';
-        document.getElementById('result-area').style.display = 'block';
-        document.getElementById('final-time').innerText = timeSec;
-        document.getElementById('pippi-msg').innerText = "まいどありー！";
-
-        if (typeof showSaveDialog === 'function') {
-            showSaveDialog('shopping', timeSec);
-        }
-    }
-
-    window.onload = function() {
-        updateWalletDisplay(); // 初期表示用
-        startGame();
-    };
-</script>
+    </script>
 
 </body>
+
 </html>

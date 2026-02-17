@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,7 +23,7 @@
             background: #00838f;
             padding: 10px 0;
             text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -55,25 +56,36 @@
             position: relative;
             box-sizing: border-box;
             /* 余白を少し戻してバランスをとる */
-            padding: 10mm 12mm; 
+            padding: 10mm 12mm;
             display: flex;
             flex-direction: column;
         }
 
         @media screen {
             .sheet {
-                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
                 margin: 20px auto;
                 transform-origin: top center;
             }
-            @media (max-width: 1150px) { .sheet { zoom: 0.8; } }
-            @media (max-width: 800px) { .sheet { zoom: 0.5; } }
+
+            @media (max-width: 1150px) {
+                .sheet {
+                    zoom: 0.8;
+                }
+            }
+
+            @media (max-width: 800px) {
+                .sheet {
+                    zoom: 0.5;
+                }
+            }
         }
 
         /* グリッドレイアウト */
         .grid-container {
             display: flex;
-            gap: 15px; /* 左右のエリア間隔を少し広げる */
+            gap: 15px;
+            /* 左右のエリア間隔を少し広げる */
             flex: 1;
             height: 100%;
         }
@@ -84,8 +96,9 @@
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             /* ▼ここがポイント：縦11行（ヘッダー+あ〜わ+ん）を均等に広げる */
-            grid-template-rows: repeat(11, 1fr); 
-            gap: 4px; /* マス同士の隙間を広げて窮屈さを解消 */
+            grid-template-rows: repeat(11, 1fr);
+            gap: 4px;
+            /* マス同士の隙間を広げて窮屈さを解消 */
             height: 100%;
         }
 
@@ -101,7 +114,8 @@
         .dakuon-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 4px; /* 隙間を広げる */
+            gap: 4px;
+            /* 隙間を広げる */
         }
 
         /* セル設定 */
@@ -114,9 +128,13 @@
             align-items: center;
             background-color: #fff;
             width: 100%;
-            height: 100%; /* 高さを親グリッドに合わせる */
+            height: 100%;
+            /* 高さを親グリッドに合わせる */
         }
-        .cell:nth-child(odd) { background-color: #f0fdff; }
+
+        .cell:nth-child(odd) {
+            background-color: #f0fdff;
+        }
 
         /* ヘッダーセル */
         .header-cell {
@@ -133,6 +151,7 @@
             color: #444;
             line-height: 1.1;
         }
+
         .romaji {
             font-size: 14pt;
             font-weight: bold;
@@ -152,15 +171,18 @@
 
         /* アイコン配置用（わ行の間） */
         .icon-cell {
-            grid-column: 2 / 5; /* 2〜4列目を結合 */
+            grid-column: 2 / 5;
+            /* 2〜4列目を結合 */
             border: none !important;
             background: none !important;
             display: flex;
             justify-content: center;
             align-items: center;
         }
+
         .icon-img {
-            max-height: 50px; /* 少し大きく */
+            max-height: 50px;
+            /* 少し大きく */
             width: auto;
             opacity: 0.9;
         }
@@ -182,12 +204,14 @@
             border-radius: 8px;
             padding: 8px;
             background: #f1f8e9;
-            flex: 1; /* 残りの高さを全て使う */
+            flex: 1;
+            /* 残りの高さを全て使う */
             display: flex;
             flex-direction: column;
-            justify-content: space-evenly; /* 均等に配置 */
+            justify-content: space-evenly;
+            /* 均等に配置 */
         }
-        
+
         .small-title {
             font-size: 11pt;
             font-weight: bold;
@@ -196,6 +220,7 @@
             text-align: center;
             margin-bottom: 5px;
         }
+
         .rule-row {
             display: flex;
             justify-content: center;
@@ -205,178 +230,403 @@
             border-radius: 4px;
             padding: 3px;
         }
-        .rule-ex { font-size: 12pt; font-weight: bold; color: #333; }
-        .rule-romaji { font-size: 14pt; color: #d84315; font-weight: bold; font-family: Arial; }
-        .tips { font-size: 9pt; color: #555; text-align: center; }
 
-        @media print {
-            body { background: none; display: block; }
-            .control-bar { display: none !important; }
-            .sheet { margin: 0; box-shadow: none; width: 100%; height: 100%; zoom: 1; }
+        .rule-ex {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #333;
         }
 
+        .rule-romaji {
+            font-size: 14pt;
+            color: #d84315;
+            font-weight: bold;
+            font-family: Arial;
+        }
+
+        .tips {
+            font-size: 9pt;
+            color: #555;
+            text-align: center;
+        }
+
+        @media print {
+            body {
+                background: none;
+                display: block;
+            }
+
+            .control-bar {
+                display: none !important;
+            }
+
+            .sheet {
+                margin: 0;
+                box-shadow: none;
+                width: 100%;
+                height: 100%;
+                zoom: 1;
+            }
+        }
     </style>
 </head>
+
 <body>
 
-<div class="control-bar">
-    <a href="index.html" class="ctrl-btn">🏠 ホームにもどる</a>
-    <button onclick="window.print()" class="ctrl-btn btn-print">🖨️ プリントする</button>
-</div>
+    <div class="control-bar">
+        <a href="index.html" class="ctrl-btn">🏠 ホームにもどる</a>
+        <button onclick="window.print()" class="ctrl-btn btn-print">🖨️ プリントする</button>
+    </div>
 
-<div class="sheet">
-    <div class="grid-container">
-        
-        <div class="seion-area">
-            <div class="cell header-cell">あ a</div>
-            <div class="cell header-cell">い i</div>
-            <div class="cell header-cell">う u</div>
-            <div class="cell header-cell">え e</div>
-            <div class="cell header-cell">お o</div>
+    <div class="sheet">
+        <div class="grid-container">
 
-            <div class="cell"><div class="kana">か</div><div class="romaji">ka</div></div>
-            <div class="cell"><div class="kana">き</div><div class="romaji">ki</div></div>
-            <div class="cell"><div class="kana">く</div><div class="romaji">ku</div></div>
-            <div class="cell"><div class="kana">け</div><div class="romaji">ke</div></div>
-            <div class="cell"><div class="kana">こ</div><div class="romaji">ko</div></div>
+            <div class="seion-area">
+                <div class="cell header-cell">あ a</div>
+                <div class="cell header-cell">い i</div>
+                <div class="cell header-cell">う u</div>
+                <div class="cell header-cell">え e</div>
+                <div class="cell header-cell">お o</div>
 
-            <div class="cell"><div class="kana">さ</div><div class="romaji">sa</div></div>
-            <div class="cell"><div class="kana">し</div><div class="romaji">shi</div></div>
-            <div class="cell"><div class="kana">す</div><div class="romaji">su</div></div>
-            <div class="cell"><div class="kana">せ</div><div class="romaji">se</div></div>
-            <div class="cell"><div class="kana">そ</div><div class="romaji">so</div></div>
+                <div class="cell">
+                    <div class="kana">か</div>
+                    <div class="romaji">ka</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">き</div>
+                    <div class="romaji">ki</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">く</div>
+                    <div class="romaji">ku</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">け</div>
+                    <div class="romaji">ke</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">こ</div>
+                    <div class="romaji">ko</div>
+                </div>
 
-            <div class="cell"><div class="kana">た</div><div class="romaji">ta</div></div>
-            <div class="cell"><div class="kana">ち</div><div class="romaji">chi</div></div>
-            <div class="cell"><div class="kana">つ</div><div class="romaji">tsu</div></div>
-            <div class="cell"><div class="kana">て</div><div class="romaji">te</div></div>
-            <div class="cell"><div class="kana">と</div><div class="romaji">to</div></div>
+                <div class="cell">
+                    <div class="kana">さ</div>
+                    <div class="romaji">sa</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">し</div>
+                    <div class="romaji">shi</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">す</div>
+                    <div class="romaji">su</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">せ</div>
+                    <div class="romaji">se</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">そ</div>
+                    <div class="romaji">so</div>
+                </div>
 
-            <div class="cell"><div class="kana">な</div><div class="romaji">na</div></div>
-            <div class="cell"><div class="kana">に</div><div class="romaji">ni</div></div>
-            <div class="cell"><div class="kana">ぬ</div><div class="romaji">nu</div></div>
-            <div class="cell"><div class="kana">ね</div><div class="romaji">ne</div></div>
-            <div class="cell"><div class="kana">の</div><div class="romaji">no</div></div>
+                <div class="cell">
+                    <div class="kana">た</div>
+                    <div class="romaji">ta</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">ち</div>
+                    <div class="romaji">chi</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">つ</div>
+                    <div class="romaji">tsu</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">て</div>
+                    <div class="romaji">te</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">と</div>
+                    <div class="romaji">to</div>
+                </div>
 
-            <div class="cell"><div class="kana">は</div><div class="romaji">ha</div></div>
-            <div class="cell"><div class="kana">ひ</div><div class="romaji">hi</div></div>
-            <div class="cell"><div class="kana">ふ</div><div class="romaji">fu</div></div>
-            <div class="cell"><div class="kana">へ</div><div class="romaji">he</div></div>
-            <div class="cell"><div class="kana">ほ</div><div class="romaji">ho</div></div>
+                <div class="cell">
+                    <div class="kana">な</div>
+                    <div class="romaji">na</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">に</div>
+                    <div class="romaji">ni</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">ぬ</div>
+                    <div class="romaji">nu</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">ね</div>
+                    <div class="romaji">ne</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">の</div>
+                    <div class="romaji">no</div>
+                </div>
 
-            <div class="cell"><div class="kana">ま</div><div class="romaji">ma</div></div>
-            <div class="cell"><div class="kana">み</div><div class="romaji">mi</div></div>
-            <div class="cell"><div class="kana">む</div><div class="romaji">mu</div></div>
-            <div class="cell"><div class="kana">め</div><div class="romaji">me</div></div>
-            <div class="cell"><div class="kana">も</div><div class="romaji">mo</div></div>
+                <div class="cell">
+                    <div class="kana">は</div>
+                    <div class="romaji">ha</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">ひ</div>
+                    <div class="romaji">hi</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">ふ</div>
+                    <div class="romaji">fu</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">へ</div>
+                    <div class="romaji">he</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">ほ</div>
+                    <div class="romaji">ho</div>
+                </div>
 
-            <div class="cell"><div class="kana">や</div><div class="romaji">ya</div></div>
-            <div class="cell" style="background:#f9f9f9; border:none;"></div>
-            <div class="cell"><div class="kana">ゆ</div><div class="romaji">yu</div></div>
-            <div class="cell" style="background:#f9f9f9; border:none;"></div>
-            <div class="cell"><div class="kana">よ</div><div class="romaji">yo</div></div>
+                <div class="cell">
+                    <div class="kana">ま</div>
+                    <div class="romaji">ma</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">み</div>
+                    <div class="romaji">mi</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">む</div>
+                    <div class="romaji">mu</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">め</div>
+                    <div class="romaji">me</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">も</div>
+                    <div class="romaji">mo</div>
+                </div>
 
-            <div class="cell"><div class="kana">ら</div><div class="romaji">ra</div></div>
-            <div class="cell"><div class="kana">り</div><div class="romaji">ri</div></div>
-            <div class="cell"><div class="kana">る</div><div class="romaji">ru</div></div>
-            <div class="cell"><div class="kana">れ</div><div class="romaji">re</div></div>
-            <div class="cell"><div class="kana">ろ</div><div class="romaji">ro</div></div>
+                <div class="cell">
+                    <div class="kana">や</div>
+                    <div class="romaji">ya</div>
+                </div>
+                <div class="cell" style="background:#f9f9f9; border:none;"></div>
+                <div class="cell">
+                    <div class="kana">ゆ</div>
+                    <div class="romaji">yu</div>
+                </div>
+                <div class="cell" style="background:#f9f9f9; border:none;"></div>
+                <div class="cell">
+                    <div class="kana">よ</div>
+                    <div class="romaji">yo</div>
+                </div>
 
-            <div class="cell"><div class="kana">わ</div><div class="romaji">wa</div></div>
-            <div class="icon-cell">
-                <img src="icon.png" class="icon-img" alt="logo">
+                <div class="cell">
+                    <div class="kana">ら</div>
+                    <div class="romaji">ra</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">り</div>
+                    <div class="romaji">ri</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">る</div>
+                    <div class="romaji">ru</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">れ</div>
+                    <div class="romaji">re</div>
+                </div>
+                <div class="cell">
+                    <div class="kana">ろ</div>
+                    <div class="romaji">ro</div>
+                </div>
+
+                <div class="cell">
+                    <div class="kana">わ</div>
+                    <div class="romaji">wa</div>
+                </div>
+                <div class="icon-cell">
+                    <img src="icon.webp" class="icon-img" alt="logo">
+                </div>
+                <div class="cell">
+                    <div class="kana">を</div>
+                    <div class="romaji">wo</div>
+                </div>
+
+                <div class="cell special-n">
+                    <div class="kana" style="font-size:20pt;">ん</div>
+                    <div class="romaji" style="font-size:24pt;">nn</div>
+                </div>
             </div>
-            <div class="cell"><div class="kana">を</div><div class="romaji">wo</div></div>
 
-            <div class="cell special-n">
-                <div class="kana" style="font-size:20pt;">ん</div>
-                <div class="romaji" style="font-size:24pt;">nn</div>
-            </div>
-        </div>
+            <div class="right-area">
 
-        <div class="right-area">
-            
-            <div class="section-label">濁音（だくおん）</div>
-            <div class="dakuon-grid">
-                <div class="cell"><div class="kana">が</div><div class="romaji">ga</div></div>
-                <div class="cell"><div class="kana">ぎ</div><div class="romaji">gi</div></div>
-                <div class="cell"><div class="kana">ぐ</div><div class="romaji">gu</div></div>
-                <div class="cell"><div class="kana">げ</div><div class="romaji">ge</div></div>
-                <div class="cell"><div class="kana">ご</div><div class="romaji">go</div></div>
+                <div class="section-label">濁音（だくおん）</div>
+                <div class="dakuon-grid">
+                    <div class="cell">
+                        <div class="kana">が</div>
+                        <div class="romaji">ga</div>
+                    </div>
+                    <div class="cell">
+                        <div class="kana">ぎ</div>
+                        <div class="romaji">gi</div>
+                    </div>
+                    <div class="cell">
+                        <div class="kana">ぐ</div>
+                        <div class="romaji">gu</div>
+                    </div>
+                    <div class="cell">
+                        <div class="kana">げ</div>
+                        <div class="romaji">ge</div>
+                    </div>
+                    <div class="cell">
+                        <div class="kana">ご</div>
+                        <div class="romaji">go</div>
+                    </div>
 
-                <div class="cell"><div class="kana">ざ</div><div class="romaji">za</div></div>
-                <div class="cell"><div class="kana">じ</div><div class="romaji">ji</div></div>
-                <div class="cell"><div class="kana">ず</div><div class="romaji">zu</div></div>
-                <div class="cell"><div class="kana">ぜ</div><div class="romaji">ze</div></div>
-                <div class="cell"><div class="kana">ぞ</div><div class="romaji">zo</div></div>
+                    <div class="cell">
+                        <div class="kana">ざ</div>
+                        <div class="romaji">za</div>
+                    </div>
+                    <div class="cell">
+                        <div class="kana">じ</div>
+                        <div class="romaji">ji</div>
+                    </div>
+                    <div class="cell">
+                        <div class="kana">ず</div>
+                        <div class="romaji">zu</div>
+                    </div>
+                    <div class="cell">
+                        <div class="kana">ぜ</div>
+                        <div class="romaji">ze</div>
+                    </div>
+                    <div class="cell">
+                        <div class="kana">ぞ</div>
+                        <div class="romaji">zo</div>
+                    </div>
 
-                <div class="cell"><div class="kana">だ</div><div class="romaji">da</div></div>
-                <div class="cell"><div class="kana">ぢ</div><div class="romaji">ji</div></div>
-                <div class="cell"><div class="kana">づ</div><div class="romaji">du</div></div>
-                <div class="cell"><div class="kana">で</div><div class="romaji">de</div></div>
-                <div class="cell"><div class="kana">ど</div><div class="romaji">do</div></div>
+                    <div class="cell">
+                        <div class="kana">だ</div>
+                        <div class="romaji">da</div>
+                    </div>
+                    <div class="cell">
+                        <div class="kana">ぢ</div>
+                        <div class="romaji">ji</div>
+                    </div>
+                    <div class="cell">
+                        <div class="kana">づ</div>
+                        <div class="romaji">du</div>
+                    </div>
+                    <div class="cell">
+                        <div class="kana">で</div>
+                        <div class="romaji">de</div>
+                    </div>
+                    <div class="cell">
+                        <div class="kana">ど</div>
+                        <div class="romaji">do</div>
+                    </div>
 
-                <div class="cell"><div class="kana">ば</div><div class="romaji">ba</div></div>
-                <div class="cell"><div class="kana">び</div><div class="romaji">bi</div></div>
-                <div class="cell"><div class="kana">ぶ</div><div class="romaji">bu</div></div>
-                <div class="cell"><div class="kana">べ</div><div class="romaji">be</div></div>
-                <div class="cell"><div class="kana">ぼ</div><div class="romaji">bo</div></div>
-            </div>
-
-            <div class="section-label" style="margin-top:5px; background:#e91e63;">半濁音（はんだくおん）</div>
-            <div class="dakuon-grid">
-                <div class="cell" style="border-color:#f8bbd0; background:#fce4ec;"><div class="kana">ぱ</div><div class="romaji">pa</div></div>
-                <div class="cell" style="border-color:#f8bbd0; background:#fce4ec;"><div class="kana">ぴ</div><div class="romaji">pi</div></div>
-                <div class="cell" style="border-color:#f8bbd0; background:#fce4ec;"><div class="kana">ぷ</div><div class="romaji">pu</div></div>
-                <div class="cell" style="border-color:#f8bbd0; background:#fce4ec;"><div class="kana">ぺ</div><div class="romaji">pe</div></div>
-                <div class="cell" style="border-color:#f8bbd0; background:#fce4ec;"><div class="kana">ぽ</div><div class="romaji">po</div></div>
-            </div>
-
-            <div class="section-label" style="margin-top:5px; background:#4caf50;">小さい文字の入力</div>
-            <div class="small-char-box">
-                <div class="small-title">小さい「ゃ・ゅ・ょ」</div>
-                <div class="rule-row">
-                    <span class="rule-ex">きゃ</span>
-                    <span class="rule-romaji">kya</span>
-                    <span class="rule-ex">しゃ</span>
-                    <span class="rule-romaji">sha</span>
-                    <span class="rule-ex">ちゃ</span>
-                    <span class="rule-romaji">cha</span>
+                    <div class="cell">
+                        <div class="kana">ば</div>
+                        <div class="romaji">ba</div>
+                    </div>
+                    <div class="cell">
+                        <div class="kana">び</div>
+                        <div class="romaji">bi</div>
+                    </div>
+                    <div class="cell">
+                        <div class="kana">ぶ</div>
+                        <div class="romaji">bu</div>
+                    </div>
+                    <div class="cell">
+                        <div class="kana">べ</div>
+                        <div class="romaji">be</div>
+                    </div>
+                    <div class="cell">
+                        <div class="kana">ぼ</div>
+                        <div class="romaji">bo</div>
+                    </div>
                 </div>
-                <div class="rule-row">
-                    <span class="rule-ex">しゅ</span>
-                    <span class="rule-romaji">shu</span>
-                    <span class="rule-ex">びゅ</span>
-                    <span class="rule-romaji">byu</span>
-                    <span class="rule-ex">ぴゅ</span>
-                    <span class="rule-romaji">pyu</span>
-                </div>
-                <div class="rule-row">
-                    <span class="rule-ex">みょ</span>
-                    <span class="rule-romaji">myo</span>
-                    <span class="rule-ex">びょ</span>
-                    <span class="rule-romaji">byo</span>
-                    <span class="rule-ex">じょ</span>
-                    <span class="rule-romaji">jo</span>
+
+                <div class="section-label" style="margin-top:5px; background:#e91e63;">半濁音（はんだくおん）</div>
+                <div class="dakuon-grid">
+                    <div class="cell" style="border-color:#f8bbd0; background:#fce4ec;">
+                        <div class="kana">ぱ</div>
+                        <div class="romaji">pa</div>
+                    </div>
+                    <div class="cell" style="border-color:#f8bbd0; background:#fce4ec;">
+                        <div class="kana">ぴ</div>
+                        <div class="romaji">pi</div>
+                    </div>
+                    <div class="cell" style="border-color:#f8bbd0; background:#fce4ec;">
+                        <div class="kana">ぷ</div>
+                        <div class="romaji">pu</div>
+                    </div>
+                    <div class="cell" style="border-color:#f8bbd0; background:#fce4ec;">
+                        <div class="kana">ぺ</div>
+                        <div class="romaji">pe</div>
+                    </div>
+                    <div class="cell" style="border-color:#f8bbd0; background:#fce4ec;">
+                        <div class="kana">ぽ</div>
+                        <div class="romaji">po</div>
+                    </div>
                 </div>
 
-                <div class="small-title">小さい「っ」</div>
-                <div class="rule-row">
-                    <span class="rule-ex">きって</span>
-                    <span class="rule-romaji">kitte</span>
-                </div>
-                <div class="tips">つぎの文字を 2回うつ</div>
+                <div class="section-label" style="margin-top:5px; background:#4caf50;">小さい文字の入力</div>
+                <div class="small-char-box">
+                    <div class="small-title">小さい「ゃ・ゅ・ょ」</div>
+                    <div class="rule-row">
+                        <span class="rule-ex">きゃ</span>
+                        <span class="rule-romaji">kya</span>
+                        <span class="rule-ex">しゃ</span>
+                        <span class="rule-romaji">sha</span>
+                        <span class="rule-ex">ちゃ</span>
+                        <span class="rule-romaji">cha</span>
+                    </div>
+                    <div class="rule-row">
+                        <span class="rule-ex">しゅ</span>
+                        <span class="rule-romaji">shu</span>
+                        <span class="rule-ex">びゅ</span>
+                        <span class="rule-romaji">byu</span>
+                        <span class="rule-ex">ぴゅ</span>
+                        <span class="rule-romaji">pyu</span>
+                    </div>
+                    <div class="rule-row">
+                        <span class="rule-ex">みょ</span>
+                        <span class="rule-romaji">myo</span>
+                        <span class="rule-ex">びょ</span>
+                        <span class="rule-romaji">byo</span>
+                        <span class="rule-ex">じょ</span>
+                        <span class="rule-romaji">jo</span>
+                    </div>
 
-                <div class="small-title">なんでも小さくする</div>
-                <div class="rule-row">
-                    <span class="rule-ex">ぁ / っ</span>
-                    <span class="rule-romaji">xa / xtu</span>
+                    <div class="small-title">小さい「っ」</div>
+                    <div class="rule-row">
+                        <span class="rule-ex">きって</span>
+                        <span class="rule-romaji">kitte</span>
+                    </div>
+                    <div class="tips">つぎの文字を 2回うつ</div>
+
+                    <div class="small-title">なんでも小さくする</div>
+                    <div class="rule-row">
+                        <span class="rule-ex">ぁ / っ</span>
+                        <span class="rule-romaji">xa / xtu</span>
+                    </div>
+                    <div class="tips">「x」か「l」をさきにうつ</div>
                 </div>
-                <div class="tips">「x」か「l」をさきにうつ</div>
             </div>
         </div>
     </div>
-</div>
 
 </body>
+
 </html>

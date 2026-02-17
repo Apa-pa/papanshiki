@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -8,27 +9,31 @@
     <script type="module" src="firebase-ranking.js"></script>
     <style>
         /* ▼▼▼ CSS：画面固定とゲームのスタイル ▼▼▼ */
-        html, body {
+        html,
+        body {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden; /* スクロールバーを消す */
-            
+            overflow: hidden;
+            /* スクロールバーを消す */
+
             /* 最強の固定設定 */
             position: fixed;
             inset: 0;
-            overscroll-behavior: none; /* バウンド禁止 */
-            
-            background-color: #a5d6a7; /* 緑色の背景 */
+            overscroll-behavior: none;
+            /* バウンド禁止 */
+
+            background-color: #a5d6a7;
+            /* 緑色の背景 */
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
-            
+
             /* タッチ操作の無効化（ボタンなどは個別に有効化される） */
             touch-action: none;
             -webkit-user-select: none;
             user-select: none;
             -webkit-touch-callout: none;
-            
+
             display: flex;
             justify-content: center;
             align-items: center;
@@ -39,11 +44,11 @@
             width: 100%;
             max-width: 500px;
             /* 画面いっぱいに広げる設定 */
-            height: 100%; 
+            height: 100%;
             max-height: 900px;
-            
+
             background-color: #e8f5e9;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -65,7 +70,8 @@
 
         canvas {
             display: block;
-            touch-action: none; /* キャンバス内の操作もブラウザに邪魔させない */
+            touch-action: none;
+            /* キャンバス内の操作もブラウザに邪魔させない */
         }
 
         /* ボタンやオーバーレイのスタイル（消えていたらここで復活） */
@@ -75,7 +81,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.85);
+            background-color: rgba(0, 0, 0, 0.85);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -97,21 +103,32 @@
             box-shadow: 0 4px 0 #2e7d32;
             transition: transform 0.1s;
             font-family: inherit;
-            
+
             /* ボタンは押せるようにする */
             pointer-events: auto;
             touch-action: manipulation;
         }
+
         .btn:active {
             transform: translateY(4px);
             box-shadow: none;
         }
 
         /* 文字サイズ調整 */
-        h1 { font-size: 40px; margin-bottom: 10px; color: #ffeb3b; text-shadow: 2px 2px 0 #f57f17; }
-        p { font-size: 18px; line-height: 1.6; }
+        h1 {
+            font-size: 40px;
+            margin-bottom: 10px;
+            color: #ffeb3b;
+            text-shadow: 2px 2px 0 #f57f17;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.6;
+        }
     </style>
 </head>
+
 <body>
 
     <div id="game-container">
@@ -119,7 +136,7 @@
             <div class="status-item">レベル: <span id="level-disp">1</span></div>
             <div class="status-item">タイム: <span id="time-disp">0.0</span>s</div>
         </div>
-        
+
         <canvas id="gameCanvas"></canvas>
 
         <div id="start-screen" class="overlay">
@@ -149,7 +166,7 @@
             <h1 style="color:#ffeb3b; text-shadow:0 0 10px #f57f17;">かんぜん<br>クリア！</h1>
             <div style="font-size:100px;">⏱️</div>
             <p style="font-size:20px;">さいごまで ありがとう！<br>きみは 線路マスターだ！</p>
-            
+
             <div style="font-size:24px; font-weight:bold; margin:20px;">
                 タイム: <span id="final-score">0.00</span> 秒
             </div>
@@ -164,496 +181,497 @@
         </div>
     </div>
 
-<script>
-    // ▼▼▼ 画面ズレ・ズーム完全防止コード ▼▼▼
-    document.addEventListener('touchmove', function(e) {
-        if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A') { 
-            e.preventDefault();
-        }
-    }, { passive: false });
-
-    document.addEventListener('dblclick', function(e) { e.preventDefault(); }, { passive: false });
-    document.addEventListener('touchstart', function(e) {
-        if (e.touches.length > 1) { e.preventDefault(); }
-    }, { passive: false });
-    // ▲▲▲ ここまで ▲▲▲
-
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-
-    const playerImg = new Image();
-    playerImg.src = "player.png"; 
-
-    const COLS = 5;
-    const ROWS = 6;
-    const MAX_LEVEL = 5; 
-    
-    let tileSize = 0;
-    let offsetX = 0;
-    let offsetY = 0;
-
-    let isPlaying = false;
-    let level = 1;
-    let gameStartTime = 0; 
-    let finalTime = 0;
-
-    let grid = []; 
-    let train = { x: 0, y: 0, dir: 1, progress: 0, speed: 0.005 }; 
-    let isSpeedUp = false;
-    
-    let countdownVal = 0;
-    let countdownTimer = null;
-
-    const TYPES = {
-        STRAIGHT: [ { type: 'I_VER', c: [1,0,1,0] }, { type: 'I_HOR', c: [0,1,0,1] } ],
-        CURVE: [
-            { type: 'C_UR', c: [1,1,0,0] }, 
-            { type: 'C_RD', c: [0,1,1,0] }, 
-            { type: 'C_DL', c: [0,0,1,1] }, 
-            { type: 'C_LU', c: [1,0,0,1] }  
-        ]
-    };
-
-    function resize() {
-        const container = document.getElementById('game-container');
-        // ヘッダーの高さを引いた分をキャンバスにする
-        const headerHeight = 50; 
-        
-        canvas.width = container.clientWidth;
-        canvas.height = container.clientHeight - headerHeight; 
-        
-        // キャンバスの位置調整（ヘッダーの下に配置）
-        canvas.style.top = headerHeight + "px";
-
-        const padding = 10;
-        const availableW = canvas.width - padding * 2;
-        const availableH = canvas.height - padding * 2;
-        
-        tileSize = Math.min(availableW / COLS, availableH / ROWS);
-        offsetX = (canvas.width - tileSize * COLS) / 2;
-        offsetY = (canvas.height - tileSize * ROWS) / 2;
-        
-        draw();
-    }
-    window.addEventListener('resize', resize);
-
-    function startGame() {
-        document.getElementById('start-screen').style.display = 'none';
-        level = 1;
-        gameStartTime = Date.now();
-        initLevel();
-    }
-
-    function retryGame() {
-        document.getElementById('gameover-screen').style.display = 'none';
-        initLevel(); 
-    }
-
-    function nextLevel() {
-        if(level >= MAX_LEVEL) {
-            document.getElementById('clear-screen').style.display = 'none';
-            finalTime = ((Date.now() - gameStartTime) / 1000).toFixed(2); 
-            
-            document.getElementById('final-score').textContent = finalTime;
-            document.getElementById('all-clear-screen').style.display = 'flex';
-        } else {
-            document.getElementById('clear-screen').style.display = 'none';
-            level++;
-            initLevel();
-        }
-    }
-
-    function saveScoreToRanking() {
-        if (typeof showSaveDialog === 'function') {
-            showSaveDialog('rail', finalTime);
-        } else {
-            alert('ranking.js が読み込まれていません');
-        }
-    }
-
-    function generatePath() {
-        let path = [];
-        for(let attempt = 0; attempt < 200; attempt++) {
-            path = [{x:0, y:0}];
-            let visited = Array(ROWS).fill().map(() => Array(COLS).fill(false));
-            visited[0][0] = true;
-
-            let curr = {x:1, y:0};
-            path.push(curr);
-            visited[0][1] = true;
-
-            if (solveMaze(curr, visited, path)) return path; 
-        }
-        return [{x:0,y:0}, {x:1,y:0}, {x:2,y:0}, {x:3,y:0}, {x:4,y:0}, 
-                {x:4,y:1}, {x:4,y:2}, {x:4,y:3}, {x:4,y:4}, {x:4,y:5}];
-    }
-
-    function solveMaze(curr, visited, path) {
-        if(curr.x === COLS-1 && curr.y === ROWS-1) return true;
-        const dirs = [{dx:0, dy:-1}, {dx:1, dy:0}, {dx:0, dy:1}, {dx:-1, dy:0}].sort(() => Math.random() - 0.5);
-
-        for(let d of dirs) {
-            let nx = curr.x + d.dx;
-            let ny = curr.y + d.dy;
-            if(nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS && !visited[ny][nx]) {
-                visited[ny][nx] = true;
-                path.push({x:nx, y:ny});
-                if(solveMaze({x:nx, y:ny}, visited, path)) return true;
-                path.pop();
-                visited[ny][nx] = false;
+    <script>
+        // ▼▼▼ 画面ズレ・ズーム完全防止コード ▼▼▼
+        document.addEventListener('touchmove', function (e) {
+            if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A') {
+                e.preventDefault();
             }
-        }
-        return false;
-    }
+        }, { passive: false });
 
-    function initLevel() {
-        isPlaying = true;
-        isSpeedUp = false;
-        
-        countdownVal = 3;
-        if(countdownTimer) clearInterval(countdownTimer);
-        countdownTimer = setInterval(() => {
-            countdownVal--;
-            if(countdownVal < 0) clearInterval(countdownTimer);
-        }, 1000); 
+        document.addEventListener('dblclick', function (e) { e.preventDefault(); }, { passive: false });
+        document.addEventListener('touchstart', function (e) {
+            if (e.touches.length > 1) { e.preventDefault(); }
+        }, { passive: false });
+        // ▲▲▲ ここまで ▲▲▲
 
-        grid = [];
-        for(let r=0; r<ROWS; r++) {
-            let row = [];
-            for(let c=0; c<COLS; c++) row.push({ type: null, fixed: false });
-            grid.push(row);
-        }
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-        const path = generatePath();
+        const playerImg = new Image();
+        playerImg.src = "player.webp";
 
-        for(let i=0; i<path.length; i++) {
-            const curr = path[i];
-            const prev = i > 0 ? path[i-1] : {x: -1, y: 0};
-            const next = i < path.length - 1 ? path[i+1] : {x: COLS, y: ROWS-1}; 
+        const COLS = 5;
+        const ROWS = 6;
+        const MAX_LEVEL = 5;
 
-            const fromDir = getDir(curr, prev); 
-            const toDir = getDir(curr, next);
+        let tileSize = 0;
+        let offsetX = 0;
+        let offsetY = 0;
 
-            let requiredC = [0,0,0,0];
-            requiredC[fromDir] = 1;
-            requiredC[toDir] = 1;
+        let isPlaying = false;
+        let level = 1;
+        let gameStartTime = 0;
+        let finalTime = 0;
 
-            const correctTile = findTileByConnect(requiredC);
-            grid[curr.y][curr.x].type = correctTile;
-            
-            if(i === 0 || i === path.length - 1) {
-                grid[curr.y][curr.x].fixed = true;
-            } else {
-                const isStraight = (correctTile.c[0] === 1 && correctTile.c[2] === 1) || (correctTile.c[1] === 1 && correctTile.c[3] === 1);
-                if(isStraight) {
-                    grid[curr.y][curr.x].type = TYPES.STRAIGHT[Math.floor(Math.random()*2)];
-                } else {
-                    grid[curr.y][curr.x].type = TYPES.CURVE[Math.floor(Math.random()*4)];
-                }
-            }
-        }
+        let grid = [];
+        let train = { x: 0, y: 0, dir: 1, progress: 0, speed: 0.005 };
+        let isSpeedUp = false;
 
-        for(let r=0; r<ROWS; r++) {
-            for(let c=0; c<COLS; c++) {
-                if(!grid[r][c].type) {
-                    const group = Math.random() > 0.5 ? TYPES.STRAIGHT : TYPES.CURVE;
-                    grid[r][c].type = group[Math.floor(Math.random() * group.length)];
-                }
-            }
-        }
+        let countdownVal = 0;
+        let countdownTimer = null;
 
-        train = { 
-            x: 0, y: 0, dir: 1, 
-            progress: 0.0, 
-            speed: 0.005 + (level * 0.001) 
+        const TYPES = {
+            STRAIGHT: [{ type: 'I_VER', c: [1, 0, 1, 0] }, { type: 'I_HOR', c: [0, 1, 0, 1] }],
+            CURVE: [
+                { type: 'C_UR', c: [1, 1, 0, 0] },
+                { type: 'C_RD', c: [0, 1, 1, 0] },
+                { type: 'C_DL', c: [0, 0, 1, 1] },
+                { type: 'C_LU', c: [1, 0, 0, 1] }
+            ]
         };
 
-        updateUI();
-        resize(); 
-        // ▼▼▼ 追加・修正: スピードアップボタンの再配置 ▼▼▼
-        createSpeedButton(); // ボタンを作る関数を呼ぶ
-        
-        gameLoop();
-    }
+        function resize() {
+            const container = document.getElementById('game-container');
+            // ヘッダーの高さを引いた分をキャンバスにする
+            const headerHeight = 50;
 
-    function createSpeedButton() {
-        // 古いボタンがあれば消す
-        const oldBtn = document.getElementById('speed-btn');
-        if (oldBtn) oldBtn.remove();
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight - headerHeight;
 
-        const btn = document.createElement('button');
-        btn.id = 'speed-btn';
-        btn.textContent = '⏩'; // 早送りアイコン
-        
-        // スタイル設定（画面右下に固定）
-        Object.assign(btn.style, {
-            position: 'absolute',
-            bottom: '20px',
-            right: '20px',
-            width: '60px',
-            height: '60px',
-            fontSize: '30px',
-            borderRadius: '50%',
-            backgroundColor: '#ff9800',
-            color: 'white',
-            border: 'none',
-            boxShadow: '0 4px 0 #e65100',
-            cursor: 'pointer',
-            zIndex: '100', // 一番手前に表示
-            touchAction: 'manipulation' // タッチ操作を許可
-        });
+            // キャンバスの位置調整（ヘッダーの下に配置）
+            canvas.style.top = headerHeight + "px";
 
-        // 押している間だけスピードアップ
-        const startSpeedUp = (e) => { e.preventDefault(); isSpeedUp = true; btn.style.transform = 'scale(0.9)'; };
-        const endSpeedUp = (e) => { e.preventDefault(); isSpeedUp = false; btn.style.transform = 'scale(1)'; };
+            const padding = 10;
+            const availableW = canvas.width - padding * 2;
+            const availableH = canvas.height - padding * 2;
 
-        btn.addEventListener('mousedown', startSpeedUp);
-        btn.addEventListener('mouseup', endSpeedUp);
-        btn.addEventListener('mouseleave', endSpeedUp);
-        
-        btn.addEventListener('touchstart', startSpeedUp, { passive: false });
-        btn.addEventListener('touchend', endSpeedUp, { passive: false });
+            tileSize = Math.min(availableW / COLS, availableH / ROWS);
+            offsetX = (canvas.width - tileSize * COLS) / 2;
+            offsetY = (canvas.height - tileSize * ROWS) / 2;
 
-        document.getElementById('game-container').appendChild(btn);
-    }
-
-
-    function getDir(from, to) {
-        if(to.y < from.y) return 0; 
-        if(to.x > from.x) return 1; 
-        if(to.y > from.y) return 2; 
-        if(to.x < from.x) return 3; 
-        return -1;
-    }
-
-    function findTileByConnect(req) {
-        const all = [...TYPES.STRAIGHT, ...TYPES.CURVE];
-        return all.find(t => t.c[0] == req[0] && t.c[1] == req[1] && t.c[2] == req[2] && t.c[3] == req[3]);
-    }
-
-    canvas.addEventListener('pointerdown', (e) => {
-        e.preventDefault(); 
-        if(!isPlaying) return;
-        const rect = canvas.getBoundingClientRect();
-        const clickX = e.clientX - rect.left - offsetX;
-        const clickY = e.clientY - rect.top - offsetY;
-        const c = Math.floor(clickX / tileSize);
-        const r = Math.floor(clickY / tileSize);
-
-        if(c >= 0 && c < COLS && r >= 0 && r < ROWS) {
-            rotateTile(c, r);
+            draw();
         }
-    });
+        window.addEventListener('resize', resize);
 
-    function rotateTile(c, r) {
-        const cell = grid[r][c];
-        if(cell.fixed) return; 
-        if(train.x === c && train.y === r) return; 
-
-        const currentType = cell.type;
-        const sIdx = TYPES.STRAIGHT.indexOf(currentType);
-        if(sIdx >= 0) {
-            cell.type = TYPES.STRAIGHT[(sIdx + 1) % 2];
-            draw(); return;
-        }
-        const cIdx = TYPES.CURVE.indexOf(currentType);
-        if(cIdx >= 0) {
-            cell.type = TYPES.CURVE[(cIdx + 1) % 4];
-            draw(); return;
-        }
-    }
-
-    function gameLoop() {
-        if(!isPlaying) return;
-        
-        if(gameStartTime > 0) {
-            let currentSec = ((Date.now() - gameStartTime) / 1000).toFixed(1);
-            let timeDisp = document.getElementById('time-disp');
-            if(timeDisp) timeDisp.textContent = currentSec;
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            level = 1;
+            gameStartTime = Date.now();
+            initLevel();
         }
 
-        if (countdownVal < 0) {
-            updateTrain();
+        function retryGame() {
+            document.getElementById('gameover-screen').style.display = 'none';
+            initLevel();
         }
-        
-        draw();
-        requestAnimationFrame(gameLoop);
-    }
 
-    function updateTrain() {
-        let currentSpeed = train.speed;
-        if(isSpeedUp) currentSpeed *= 4;
+        function nextLevel() {
+            if (level >= MAX_LEVEL) {
+                document.getElementById('clear-screen').style.display = 'none';
+                finalTime = ((Date.now() - gameStartTime) / 1000).toFixed(2);
 
-        train.progress += currentSpeed;
+                document.getElementById('final-score').textContent = finalTime;
+                document.getElementById('all-clear-screen').style.display = 'flex';
+            } else {
+                document.getElementById('clear-screen').style.display = 'none';
+                level++;
+                initLevel();
+            }
+        }
 
-        if(train.progress >= 1.0) {
-            let nextX = train.x;
-            let nextY = train.y;
+        function saveScoreToRanking() {
+            if (typeof showSaveDialog === 'function') {
+                showSaveDialog('rail', finalTime);
+            } else {
+                alert('ranking.js が読み込まれていません');
+            }
+        }
 
-            if(train.dir === 0) nextY--;
-            if(train.dir === 1) nextX++;
-            if(train.dir === 2) nextY++;
-            if(train.dir === 3) nextX--;
+        function generatePath() {
+            let path = [];
+            for (let attempt = 0; attempt < 200; attempt++) {
+                path = [{ x: 0, y: 0 }];
+                let visited = Array(ROWS).fill().map(() => Array(COLS).fill(false));
+                visited[0][0] = true;
 
-            if(nextX < 0 || nextX >= COLS || nextY < 0 || nextY >= ROWS) {
-                gameOver(); return;
+                let curr = { x: 1, y: 0 };
+                path.push(curr);
+                visited[0][1] = true;
+
+                if (solveMaze(curr, visited, path)) return path;
+            }
+            return [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 },
+            { x: 4, y: 1 }, { x: 4, y: 2 }, { x: 4, y: 3 }, { x: 4, y: 4 }, { x: 4, y: 5 }];
+        }
+
+        function solveMaze(curr, visited, path) {
+            if (curr.x === COLS - 1 && curr.y === ROWS - 1) return true;
+            const dirs = [{ dx: 0, dy: -1 }, { dx: 1, dy: 0 }, { dx: 0, dy: 1 }, { dx: -1, dy: 0 }].sort(() => Math.random() - 0.5);
+
+            for (let d of dirs) {
+                let nx = curr.x + d.dx;
+                let ny = curr.y + d.dy;
+                if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS && !visited[ny][nx]) {
+                    visited[ny][nx] = true;
+                    path.push({ x: nx, y: ny });
+                    if (solveMaze({ x: nx, y: ny }, visited, path)) return true;
+                    path.pop();
+                    visited[ny][nx] = false;
+                }
+            }
+            return false;
+        }
+
+        function initLevel() {
+            isPlaying = true;
+            isSpeedUp = false;
+
+            countdownVal = 3;
+            if (countdownTimer) clearInterval(countdownTimer);
+            countdownTimer = setInterval(() => {
+                countdownVal--;
+                if (countdownVal < 0) clearInterval(countdownTimer);
+            }, 1000);
+
+            grid = [];
+            for (let r = 0; r < ROWS; r++) {
+                let row = [];
+                for (let c = 0; c < COLS; c++) row.push({ type: null, fixed: false });
+                grid.push(row);
             }
 
-            const nextTile = grid[nextY][nextX].type;
-            const enterDir = (train.dir + 2) % 4;
+            const path = generatePath();
 
-            if(nextTile.c[enterDir] === 1) {
-                train.x = nextX;
-                train.y = nextY;
-                train.progress = 0;
+            for (let i = 0; i < path.length; i++) {
+                const curr = path[i];
+                const prev = i > 0 ? path[i - 1] : { x: -1, y: 0 };
+                const next = i < path.length - 1 ? path[i + 1] : { x: COLS, y: ROWS - 1 };
 
-                for(let i=0; i<4; i++) {
-                    if(i !== enterDir && nextTile.c[i] === 1) {
-                        train.dir = i; break;
+                const fromDir = getDir(curr, prev);
+                const toDir = getDir(curr, next);
+
+                let requiredC = [0, 0, 0, 0];
+                requiredC[fromDir] = 1;
+                requiredC[toDir] = 1;
+
+                const correctTile = findTileByConnect(requiredC);
+                grid[curr.y][curr.x].type = correctTile;
+
+                if (i === 0 || i === path.length - 1) {
+                    grid[curr.y][curr.x].fixed = true;
+                } else {
+                    const isStraight = (correctTile.c[0] === 1 && correctTile.c[2] === 1) || (correctTile.c[1] === 1 && correctTile.c[3] === 1);
+                    if (isStraight) {
+                        grid[curr.y][curr.x].type = TYPES.STRAIGHT[Math.floor(Math.random() * 2)];
+                    } else {
+                        grid[curr.y][curr.x].type = TYPES.CURVE[Math.floor(Math.random() * 4)];
                     }
                 }
-                if(train.x === COLS-1 && train.y === ROWS-1) gameClear();
-            } else {
-                gameOver();
+            }
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (!grid[r][c].type) {
+                        const group = Math.random() > 0.5 ? TYPES.STRAIGHT : TYPES.CURVE;
+                        grid[r][c].type = group[Math.floor(Math.random() * group.length)];
+                    }
+                }
+            }
+
+            train = {
+                x: 0, y: 0, dir: 1,
+                progress: 0.0,
+                speed: 0.005 + (level * 0.001)
+            };
+
+            updateUI();
+            resize();
+            // ▼▼▼ 追加・修正: スピードアップボタンの再配置 ▼▼▼
+            createSpeedButton(); // ボタンを作る関数を呼ぶ
+
+            gameLoop();
+        }
+
+        function createSpeedButton() {
+            // 古いボタンがあれば消す
+            const oldBtn = document.getElementById('speed-btn');
+            if (oldBtn) oldBtn.remove();
+
+            const btn = document.createElement('button');
+            btn.id = 'speed-btn';
+            btn.textContent = '⏩'; // 早送りアイコン
+
+            // スタイル設定（画面右下に固定）
+            Object.assign(btn.style, {
+                position: 'absolute',
+                bottom: '20px',
+                right: '20px',
+                width: '60px',
+                height: '60px',
+                fontSize: '30px',
+                borderRadius: '50%',
+                backgroundColor: '#ff9800',
+                color: 'white',
+                border: 'none',
+                boxShadow: '0 4px 0 #e65100',
+                cursor: 'pointer',
+                zIndex: '100', // 一番手前に表示
+                touchAction: 'manipulation' // タッチ操作を許可
+            });
+
+            // 押している間だけスピードアップ
+            const startSpeedUp = (e) => { e.preventDefault(); isSpeedUp = true; btn.style.transform = 'scale(0.9)'; };
+            const endSpeedUp = (e) => { e.preventDefault(); isSpeedUp = false; btn.style.transform = 'scale(1)'; };
+
+            btn.addEventListener('mousedown', startSpeedUp);
+            btn.addEventListener('mouseup', endSpeedUp);
+            btn.addEventListener('mouseleave', endSpeedUp);
+
+            btn.addEventListener('touchstart', startSpeedUp, { passive: false });
+            btn.addEventListener('touchend', endSpeedUp, { passive: false });
+
+            document.getElementById('game-container').appendChild(btn);
+        }
+
+
+        function getDir(from, to) {
+            if (to.y < from.y) return 0;
+            if (to.x > from.x) return 1;
+            if (to.y > from.y) return 2;
+            if (to.x < from.x) return 3;
+            return -1;
+        }
+
+        function findTileByConnect(req) {
+            const all = [...TYPES.STRAIGHT, ...TYPES.CURVE];
+            return all.find(t => t.c[0] == req[0] && t.c[1] == req[1] && t.c[2] == req[2] && t.c[3] == req[3]);
+        }
+
+        canvas.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            if (!isPlaying) return;
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left - offsetX;
+            const clickY = e.clientY - rect.top - offsetY;
+            const c = Math.floor(clickX / tileSize);
+            const r = Math.floor(clickY / tileSize);
+
+            if (c >= 0 && c < COLS && r >= 0 && r < ROWS) {
+                rotateTile(c, r);
+            }
+        });
+
+        function rotateTile(c, r) {
+            const cell = grid[r][c];
+            if (cell.fixed) return;
+            if (train.x === c && train.y === r) return;
+
+            const currentType = cell.type;
+            const sIdx = TYPES.STRAIGHT.indexOf(currentType);
+            if (sIdx >= 0) {
+                cell.type = TYPES.STRAIGHT[(sIdx + 1) % 2];
+                draw(); return;
+            }
+            const cIdx = TYPES.CURVE.indexOf(currentType);
+            if (cIdx >= 0) {
+                cell.type = TYPES.CURVE[(cIdx + 1) % 4];
+                draw(); return;
             }
         }
-    }
 
-    function speedUp(on) { isSpeedUp = on; }
-    function gameOver() { isPlaying = false; document.getElementById('gameover-screen').style.display = 'flex'; }
-    function gameClear() { isPlaying = false; updateUI(); document.getElementById('clear-screen').style.display = 'flex'; }
-    
-    function updateUI() { 
-        document.getElementById('level-disp').textContent = level; 
-    }
+        function gameLoop() {
+            if (!isPlaying) return;
 
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for(let r=0; r<ROWS; r++) {
-            for(let c=0; c<COLS; c++) drawTile(c, r, grid[r][c]);
-        }
-        drawTrain();
-
-        if(countdownVal >= 0) {
-            ctx.fillStyle = "rgba(0,0,0,0.5)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "white";
-            ctx.strokeStyle = "#2e7d32";
-            ctx.lineWidth = 5;
-            ctx.font = "bold 100px sans-serif";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            const text = (countdownVal === 0) ? "GO!" : countdownVal;
-            ctx.strokeText(text, canvas.width/2, canvas.height/2);
-            ctx.fillText(text, canvas.width/2, canvas.height/2);
-        }
-    }
-
-    function drawTile(c, r, cell) {
-        const x = offsetX + c * tileSize;
-        const y = offsetY + r * tileSize;
-        const cx = x + tileSize/2;
-        const cy = y + tileSize/2;
-        const w = tileSize;
-
-        ctx.fillStyle = (c+r)%2 === 0 ? '#dcedc8' : '#f1f8e9'; 
-        if(c === 0 && r === 0) ctx.fillStyle = '#b3e5fc';
-        if(c === COLS-1 && r === ROWS-1) ctx.fillStyle = '#ffcdd2'; 
-
-        ctx.fillRect(x, y, w, w);
-        ctx.strokeStyle = '#aed581';
-        ctx.strokeRect(x, y, w, w);
-
-        if(c === 0 && r === 0) drawText(cx, cy, "🏠");
-        if(c === COLS-1 && r === ROWS-1) drawText(cx, cy, "🏁");
-
-        if(cell.type) {
-            ctx.lineWidth = tileSize * 0.3;
-            ctx.lineCap = 'round';
-            ctx.strokeStyle = '#795548'; 
-            ctx.beginPath();
-            const conn = cell.type.c; 
-            if(conn[0] && conn[2]) { ctx.moveTo(cx, y); ctx.lineTo(cx, y+w); } 
-            else if(conn[1] && conn[3]) { ctx.moveTo(x, cy); ctx.lineTo(x+w, cy); }
-            else {
-                if(conn[0] && conn[1]) { ctx.moveTo(cx, y); ctx.lineTo(cx, cy); ctx.lineTo(x+w, cy); }
-                else if(conn[1] && conn[2]) { ctx.moveTo(x+w, cy); ctx.lineTo(cx, cy); ctx.lineTo(cx, y+w); }
-                else if(conn[2] && conn[3]) { ctx.moveTo(cx, y+w); ctx.lineTo(cx, cy); ctx.lineTo(x, cy); }
-                else if(conn[3] && conn[0]) { ctx.moveTo(x, cy); ctx.lineTo(cx, cy); ctx.lineTo(cx, y); }
+            if (gameStartTime > 0) {
+                let currentSec = ((Date.now() - gameStartTime) / 1000).toFixed(1);
+                let timeDisp = document.getElementById('time-disp');
+                if (timeDisp) timeDisp.textContent = currentSec;
             }
-            ctx.stroke();
-            ctx.lineWidth = tileSize * 0.2;
-            ctx.strokeStyle = '#d7ccc8';
-            ctx.stroke();
-            if(cell.fixed) {
-                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+
+            if (countdownVal < 0) {
+                updateTrain();
+            }
+
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function updateTrain() {
+            let currentSpeed = train.speed;
+            if (isSpeedUp) currentSpeed *= 4;
+
+            train.progress += currentSpeed;
+
+            if (train.progress >= 1.0) {
+                let nextX = train.x;
+                let nextY = train.y;
+
+                if (train.dir === 0) nextY--;
+                if (train.dir === 1) nextX++;
+                if (train.dir === 2) nextY++;
+                if (train.dir === 3) nextX--;
+
+                if (nextX < 0 || nextX >= COLS || nextY < 0 || nextY >= ROWS) {
+                    gameOver(); return;
+                }
+
+                const nextTile = grid[nextY][nextX].type;
+                const enterDir = (train.dir + 2) % 4;
+
+                if (nextTile.c[enterDir] === 1) {
+                    train.x = nextX;
+                    train.y = nextY;
+                    train.progress = 0;
+
+                    for (let i = 0; i < 4; i++) {
+                        if (i !== enterDir && nextTile.c[i] === 1) {
+                            train.dir = i; break;
+                        }
+                    }
+                    if (train.x === COLS - 1 && train.y === ROWS - 1) gameClear();
+                } else {
+                    gameOver();
+                }
+            }
+        }
+
+        function speedUp(on) { isSpeedUp = on; }
+        function gameOver() { isPlaying = false; document.getElementById('gameover-screen').style.display = 'flex'; }
+        function gameClear() { isPlaying = false; updateUI(); document.getElementById('clear-screen').style.display = 'flex'; }
+
+        function updateUI() {
+            document.getElementById('level-disp').textContent = level;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) drawTile(c, r, grid[r][c]);
+            }
+            drawTrain();
+
+            if (countdownVal >= 0) {
+                ctx.fillStyle = "rgba(0,0,0,0.5)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "white";
+                ctx.strokeStyle = "#2e7d32";
+                ctx.lineWidth = 5;
+                ctx.font = "bold 100px sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                const text = (countdownVal === 0) ? "GO!" : countdownVal;
+                ctx.strokeText(text, canvas.width / 2, canvas.height / 2);
+                ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+            }
+        }
+
+        function drawTile(c, r, cell) {
+            const x = offsetX + c * tileSize;
+            const y = offsetY + r * tileSize;
+            const cx = x + tileSize / 2;
+            const cy = y + tileSize / 2;
+            const w = tileSize;
+
+            ctx.fillStyle = (c + r) % 2 === 0 ? '#dcedc8' : '#f1f8e9';
+            if (c === 0 && r === 0) ctx.fillStyle = '#b3e5fc';
+            if (c === COLS - 1 && r === ROWS - 1) ctx.fillStyle = '#ffcdd2';
+
+            ctx.fillRect(x, y, w, w);
+            ctx.strokeStyle = '#aed581';
+            ctx.strokeRect(x, y, w, w);
+
+            if (c === 0 && r === 0) drawText(cx, cy, "🏠");
+            if (c === COLS - 1 && r === ROWS - 1) drawText(cx, cy, "🏁");
+
+            if (cell.type) {
+                ctx.lineWidth = tileSize * 0.3;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = '#795548';
                 ctx.beginPath();
-                ctx.arc(cx, cy, 6, 0, Math.PI*2);
-                ctx.fill();
+                const conn = cell.type.c;
+                if (conn[0] && conn[2]) { ctx.moveTo(cx, y); ctx.lineTo(cx, y + w); }
+                else if (conn[1] && conn[3]) { ctx.moveTo(x, cy); ctx.lineTo(x + w, cy); }
+                else {
+                    if (conn[0] && conn[1]) { ctx.moveTo(cx, y); ctx.lineTo(cx, cy); ctx.lineTo(x + w, cy); }
+                    else if (conn[1] && conn[2]) { ctx.moveTo(x + w, cy); ctx.lineTo(cx, cy); ctx.lineTo(cx, y + w); }
+                    else if (conn[2] && conn[3]) { ctx.moveTo(cx, y + w); ctx.lineTo(cx, cy); ctx.lineTo(x, cy); }
+                    else if (conn[3] && conn[0]) { ctx.moveTo(x, cy); ctx.lineTo(cx, cy); ctx.lineTo(cx, y); }
+                }
+                ctx.stroke();
+                ctx.lineWidth = tileSize * 0.2;
+                ctx.strokeStyle = '#d7ccc8';
+                ctx.stroke();
+                if (cell.fixed) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
         }
-    }
 
-    function drawText(x, y, text) {
-        ctx.font = `${tileSize * 0.4}px serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(text, x, y);
-    }
-
-    function drawTrain() {
-        const tx = offsetX + train.x * tileSize;
-        const ty = offsetY + train.y * tileSize;
-        const half = tileSize/2;
-        const p = train.progress;
-        let px = tx + half;
-        let py = ty + half;
-        
-        const enterDir = (train.dir + 2) % 4;
-        let startX=px, startY=py, endX=px, endY=py;
-        if(enterDir === 0) startY -= half; 
-        if(enterDir === 1) startX += half; 
-        if(enterDir === 2) startY += half; 
-        if(enterDir === 3) startX -= half; 
-        if(train.dir === 0) endY -= half;
-        if(train.dir === 1) endX += half;
-        if(train.dir === 2) endY += half;
-        if(train.dir === 3) endX -= half;
-
-        let drawX, drawY;
-        if(p < 0.5) {
-            const pp = p * 2;
-            drawX = startX + (px - startX) * pp;
-            drawY = startY + (py - startY) * pp;
-        } else {
-            const pp = (p - 0.5) * 2;
-            drawX = px + (endX - px) * pp;
-            drawY = py + (endY - py) * pp;
+        function drawText(x, y, text) {
+            ctx.font = `${tileSize * 0.4}px serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, x, y);
         }
 
-        ctx.save();
-        ctx.translate(drawX, drawY);
-        ctx.fillStyle = '#6d4c41';
-        const cartSize = tileSize * 0.7;
-        ctx.fillRect(-cartSize/2, -cartSize/2, cartSize, cartSize);
-        ctx.fillStyle = '#3e2723';
-        const wheelSize = cartSize * 0.3;
-        ctx.fillRect(-cartSize/2 - 2, -cartSize/2, wheelSize, wheelSize);
-        ctx.fillRect(cartSize/2 - wheelSize + 2, -cartSize/2, wheelSize, wheelSize);
-        ctx.fillRect(-cartSize/2 - 2, cartSize/2 - wheelSize, wheelSize, wheelSize);
-        ctx.fillRect(cartSize/2 - wheelSize + 2, cartSize/2 - wheelSize, wheelSize, wheelSize);
-        const imgSize = tileSize * 0.8;
-        const imgY = -cartSize/2 - imgSize/2 + (tileSize * 0.1); 
-        ctx.drawImage(playerImg, -imgSize/2, imgY, imgSize, imgSize);
-        ctx.restore();
-    }
+        function drawTrain() {
+            const tx = offsetX + train.x * tileSize;
+            const ty = offsetY + train.y * tileSize;
+            const half = tileSize / 2;
+            const p = train.progress;
+            let px = tx + half;
+            let py = ty + half;
 
-    // ▼▼▼ 修正：ロード完了を待ってからスタート ▼▼▼
-    window.addEventListener('load', () => {
-        resize();
-        initLevel();
-    });
+            const enterDir = (train.dir + 2) % 4;
+            let startX = px, startY = py, endX = px, endY = py;
+            if (enterDir === 0) startY -= half;
+            if (enterDir === 1) startX += half;
+            if (enterDir === 2) startY += half;
+            if (enterDir === 3) startX -= half;
+            if (train.dir === 0) endY -= half;
+            if (train.dir === 1) endX += half;
+            if (train.dir === 2) endY += half;
+            if (train.dir === 3) endX -= half;
 
-</script>
+            let drawX, drawY;
+            if (p < 0.5) {
+                const pp = p * 2;
+                drawX = startX + (px - startX) * pp;
+                drawY = startY + (py - startY) * pp;
+            } else {
+                const pp = (p - 0.5) * 2;
+                drawX = px + (endX - px) * pp;
+                drawY = py + (endY - py) * pp;
+            }
+
+            ctx.save();
+            ctx.translate(drawX, drawY);
+            ctx.fillStyle = '#6d4c41';
+            const cartSize = tileSize * 0.7;
+            ctx.fillRect(-cartSize / 2, -cartSize / 2, cartSize, cartSize);
+            ctx.fillStyle = '#3e2723';
+            const wheelSize = cartSize * 0.3;
+            ctx.fillRect(-cartSize / 2 - 2, -cartSize / 2, wheelSize, wheelSize);
+            ctx.fillRect(cartSize / 2 - wheelSize + 2, -cartSize / 2, wheelSize, wheelSize);
+            ctx.fillRect(-cartSize / 2 - 2, cartSize / 2 - wheelSize, wheelSize, wheelSize);
+            ctx.fillRect(cartSize / 2 - wheelSize + 2, cartSize / 2 - wheelSize, wheelSize, wheelSize);
+            const imgSize = tileSize * 0.8;
+            const imgY = -cartSize / 2 - imgSize / 2 + (tileSize * 0.1);
+            ctx.drawImage(playerImg, -imgSize / 2, imgY, imgSize, imgSize);
+            ctx.restore();
+        }
+
+        // ▼▼▼ 修正：ロード完了を待ってからスタート ▼▼▼
+        window.addEventListener('load', () => {
+            resize();
+            initLevel();
+        });
+
+    </script>
 </body>
+
 </html>

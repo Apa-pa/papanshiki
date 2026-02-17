@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,33 +16,62 @@
             color: #004d40;
             margin: 0;
         }
+
         .container {
             max-width: 800px;
             margin: 0 auto;
             background: white;
             padding: 20px;
             border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             position: relative;
         }
-        h1 { color: #00897b; margin-bottom: 10px; }
+
+        h1 {
+            color: #00897b;
+            margin-bottom: 10px;
+        }
 
         .help-btn {
-            position: absolute; top: 15px; right: 15px;
-            width: 40px; height: 40px; background: #80cbc4; color: white;
-            border: none; border-radius: 50%; font-size: 20px; font-weight: bold;
-            cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            display: flex; align-items: center; justify-content: center; transition: 0.2s;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: #80cbc4;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
         }
-        .help-btn:hover { background: #4db6ac; transform: scale(1.1); }
+
+        .help-btn:hover {
+            background: #4db6ac;
+            transform: scale(1.1);
+        }
 
         .user-select-area {
-            background: #b2dfdb; padding: 15px; border-radius: 15px;
-            margin-bottom: 20px; margin-top: 20px;
+            background: #b2dfdb;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            margin-top: 20px;
         }
+
         select {
-            padding: 10px; font-size: 18px; border-radius: 10px;
-            border: 2px solid #009688; width: 80%; max-width: 300px;
+            padding: 10px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: 2px solid #009688;
+            width: 80%;
+            max-width: 300px;
         }
 
         /* 🏠 お部屋エリア */
@@ -69,11 +99,15 @@
             width: 300px;
             height: 300px;
             object-fit: contain;
-            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.2));
+            filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.2));
             transition: 0.3s;
             z-index: 10;
         }
-        .my-avatar:hover { transform: translateX(-50%) scale(1.05); cursor: pointer; }
+
+        .my-avatar:hover {
+            transform: translateX(-50%) scale(1.05);
+            cursor: pointer;
+        }
 
         /* 🏆 勲章 (z-index 4) */
         .medal-item {
@@ -82,213 +116,263 @@
             width: 80px;
             height: 80px;
             object-fit: contain;
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
             z-index: 4;
         }
+
         /* 左側（内・外） */
-        .medal-left-1 { left: 25%; } /* 内側 */
-        .medal-left-2 { left: 8%; }  /* 外側 */
-        
+        .medal-left-1 {
+            left: 25%;
+        }
+
+        /* 内側 */
+        .medal-left-2 {
+            left: 8%;
+        }
+
+        /* 外側 */
+
         /* 右側（内・外） */
-        .medal-right-1 { right: 25%; } /* 内側 */
-        .medal-right-2 { right: 8%; }  /* 外側 */
+        .medal-right-1 {
+            right: 25%;
+        }
+
+        /* 内側 */
+        .medal-right-2 {
+            right: 8%;
+        }
+
+        /* 外側 */
 
         /* 🪑 家具の配置設定 (z-index 5) */
         .furniture-item {
             position: absolute;
-            bottom: -5px;       /* 地面に密着するように下げました */
-            width: 310px;      /* 横幅を大きくしました */
+            bottom: -5px;
+            /* 地面に密着するように下げました */
+            width: 310px;
+            /* 横幅を大きくしました */
             height: auto;
             max-height: 310px;
             object-fit: contain;
-            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
-            z-index: 5;        /* アバターの後ろ */
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+            z-index: 5;
+            /* アバターの後ろ */
         }
-        .furniture-left { left: 2%; }
-        .furniture-right { right: 2%; transform: scaleX(-1); }
+
+        .furniture-left {
+            left: 2%;
+        }
+
+        .furniture-right {
+            right: 2%;
+            transform: scaleX(-1);
+        }
 
         .nav-btn {
-            display: inline-block; margin: 5px; padding: 15px 30px;
-            text-decoration: none; border-radius: 30px; font-weight: bold;
-            color: white; box-shadow: 0 4px rgba(0,0,0,0.2); transition: transform 0.1s;
+            display: inline-block;
+            margin: 5px;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 4px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s;
         }
-        .nav-btn:active { transform: translateY(2px); box-shadow: none; }
-        .btn-shop { background: #ff9800; box-shadow: 0 4px #e65100; }
-        .btn-interior { background: #4caf50; box-shadow: 0 4px #2e7d32; }
-        .btn-home { background: #78909c; box-shadow: 0 4px #546e7a; }
 
+        .nav-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .btn-shop {
+            background: #ff9800;
+            box-shadow: 0 4px #e65100;
+        }
+
+        .btn-interior {
+            background: #4caf50;
+            box-shadow: 0 4px #2e7d32;
+        }
+
+        .btn-home {
+            background: #78909c;
+            box-shadow: 0 4px #546e7a;
+        }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <button class="help-btn" onclick="showHelp()">？</button>
-    <h1>🏠 マイルーム</h1>
-    
-    <div class="user-select-area">
-        <label>だれのお部屋？</label><br>
-        <select id="user-select" onchange="loadRoom()">
-            <option value="">(えらんでね)</option>
-        </select>
-    </div>
+    <div class="container">
+        <button class="help-btn" onclick="showHelp()">？</button>
+        <h1>🏠 マイルーム</h1>
 
-    <div id="room-content" style="display:none;">
-        <div class="room-stage" id="my-room-bg">
-            <img id="medal-left-2" class="medal-item medal-left-2" style="display:none;">
-            <img id="medal-left-1" class="medal-item medal-left-1" style="display:none;">
-            <img id="medal-right-1" class="medal-item medal-right-1" style="display:none;">
-            <img id="medal-right-2" class="medal-item medal-right-2" style="display:none;">
-
-            <img id="furn-left" class="furniture-item furniture-left" style="display:none;">
-            <img id="furn-right" class="furniture-item furniture-right" style="display:none;">
-
-            <img id="avatar-img" src="" class="my-avatar">
+        <div class="user-select-area">
+            <label>だれのお部屋？</label><br>
+            <select id="user-select" onchange="loadRoom()">
+                <option value="">(えらんでね)</option>
+            </select>
         </div>
-        <p id="welcome-msg" style="font-weight:bold; font-size:18px;">ようこそ！</p>
+
+        <div id="room-content" style="display:none;">
+            <div class="room-stage" id="my-room-bg">
+                <img id="medal-left-2" class="medal-item medal-left-2" style="display:none;">
+                <img id="medal-left-1" class="medal-item medal-left-1" style="display:none;">
+                <img id="medal-right-1" class="medal-item medal-right-1" style="display:none;">
+                <img id="medal-right-2" class="medal-item medal-right-2" style="display:none;">
+
+                <img id="furn-left" class="furniture-item furniture-left" style="display:none;">
+                <img id="furn-right" class="furniture-item furniture-right" style="display:none;">
+
+                <img id="avatar-img" src="" class="my-avatar">
+            </div>
+            <p id="welcome-msg" style="font-weight:bold; font-size:18px;">ようこそ！</p>
+        </div>
+
+        <div style="margin-top:30px;">
+            <a href="room_shop.html" class="nav-btn btn-interior">🪑 インテリアショップ</a>
+            <a href="avatar_shop.html" class="nav-btn btn-shop">👕 アバターショップ</a>
+            <br>
+            <button id="upload-btn" onclick="uploadRoom()" class="nav-btn"
+                style="background:#e91e63; border:none; cursor:pointer; font-size:16px;">
+                🌏 みんなにみせる（公開する）
+            </button>
+            <br>
+            <a href="room_list.html" class="nav-btn" style="background:#03a9f4; box-shadow: 0 4px #0277bd;">
+                👀 みんなのルームをみる</a>
+            <br>
+            <a href="index.html" class="nav-btn btn-home">🏠 ホームへもどる</a>
+        </div>
     </div>
 
-    <div style="margin-top:30px;">
-        <a href="room_shop.html" class="nav-btn btn-interior">🪑 インテリアショップ</a>
-        <a href="avatar_shop.html" class="nav-btn btn-shop">👕 アバターショップ</a>
-        <br>
-        <button id="upload-btn" onclick="uploadRoom()" class="nav-btn" style="background:#e91e63; border:none; cursor:pointer; font-size:16px;">
-        🌏 みんなにみせる（公開する）
-        </button>
-        <br>
-        <a href="room_list.html" class="nav-btn" style="background:#03a9f4; box-shadow: 0 4px #0277bd;">
-        👀 みんなのルームをみる</a>
-        <br>
-        <a href="index.html" class="nav-btn btn-home">🏠 ホームへもどる</a>        
-    </div>
-</div>
+    <script>
+        const DATA_KEY = 'papan_avatar_v1';
+        let isVisitorMode = false; // 訪問モードかどうかのフラグ
 
-<script>
-    const DATA_KEY = 'papan_avatar_v1';
-    let isVisitorMode = false; // 訪問モードかどうかのフラグ
+        // ローカル保存用
+        function getUserData() { return JSON.parse(localStorage.getItem(DATA_KEY) || '{}'); }
+        function saveUserData(data) { localStorage.setItem(DATA_KEY, JSON.stringify(data)); }
+        function generateUuid() { return 'u_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36); }
 
-    // ローカル保存用
-    function getUserData() { return JSON.parse(localStorage.getItem(DATA_KEY) || '{}'); }
-    function saveUserData(data) { localStorage.setItem(DATA_KEY, JSON.stringify(data)); }
-    function generateUuid() { return 'u_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36); }
+        window.onload = async function () {
+            // URLのパラメータ(?uid=...)をチェック
+            const urlParams = new URLSearchParams(window.location.search);
+            const targetUid = urlParams.get('uid');
 
-    window.onload = async function() {
-        // URLのパラメータ(?uid=...)をチェック
-        const urlParams = new URLSearchParams(window.location.search);
-        const targetUid = urlParams.get('uid');
+            if (targetUid) {
+                // --- 🌏 訪問モード ---
+                isVisitorMode = true;
+                document.querySelector('.user-select-area').style.display = 'none'; // 選択肢を隠す
+                document.getElementById('upload-btn').style.display = 'none';       // 公開ボタンを隠す
 
-        if (targetUid) {
-            // --- 🌏 訪問モード ---
-            isVisitorMode = true;
-            document.querySelector('.user-select-area').style.display = 'none'; // 選択肢を隠す
-            document.getElementById('upload-btn').style.display = 'none';       // 公開ボタンを隠す
-            
-            // 読み込み中表示
-            document.getElementById('welcome-msg').innerText = "通信中...お部屋にお邪魔しています...";
-            document.getElementById('room-content').style.display = 'block';
+                // 読み込み中表示
+                document.getElementById('welcome-msg').innerText = "通信中...お部屋にお邪魔しています...";
+                document.getElementById('room-content').style.display = 'block';
 
-            // Firebaseの読み込み待ち
-            setTimeout(async () => {
-                if (typeof window.fetchPublicRoom === 'function') {
-                    const roomData = await window.fetchPublicRoom(targetUid);
-                    if (roomData) {
-                        // 取得したデータで描画
-                        renderRoom(roomData, roomData.name + " (訪問中)");
+                // Firebaseの読み込み待ち
+                setTimeout(async () => {
+                    if (typeof window.fetchPublicRoom === 'function') {
+                        const roomData = await window.fetchPublicRoom(targetUid);
+                        if (roomData) {
+                            // 取得したデータで描画
+                            renderRoom(roomData, roomData.name + " (訪問中)");
+                        } else {
+                            document.getElementById('welcome-msg').innerText = "お部屋が見つかりませんでした😢";
+                        }
                     } else {
-                        document.getElementById('welcome-msg').innerText = "お部屋が見つかりませんでした😢";
+                        alert("通信エラー: 再読み込みしてください");
                     }
-                } else {
-                    alert("通信エラー: 再読み込みしてください");
-                }
-            }, 500);
+                }, 500);
 
-        } else {
-            // --- 🏠 通常モード (自分の部屋) ---
-            if(typeof getUserNames !== 'function') { return; }
-            const users = getUserNames();
-            const select = document.getElementById('user-select');
-            users.forEach(u => {
-                const opt = document.createElement('option');
-                opt.value = u; opt.innerText = u;
-                select.appendChild(opt);
-            });
-        }
-    };
-
-    // ユーザー選択切り替え（通常モード用）
-    function loadRoom() {
-        if(isVisitorMode) return; // 訪問中は無視
-
-        const userName = document.getElementById('user-select').value;
-        if(!userName) {
-            document.getElementById('room-content').style.display = 'none';
-            return;
-        }
-        document.getElementById('room-content').style.display = 'block';
-
-        const allData = getUserData();
-        const userData = allData[userName] || {};
-        
-        // 描画関数を呼ぶ
-        renderRoom(userData, userName);
-    }
-
-    // ★共通の描画関数 (データをもらって画面に表示するだけ)
-    function renderRoom(data, displayName) {
-        const roomBg = document.getElementById('my-room-bg');
-        const avatarImg = document.getElementById('avatar-img');
-        const furnLeft = document.getElementById('furn-left');
-        const furnRight = document.getElementById('furn-right');
-        const msg = document.getElementById('welcome-msg');
-
-        // 名前表示
-        msg.innerText = `${displayName}さんの お部屋です！`;
-
-        // アバター (訪問データの場合は data.avatar、ローカルの場合は data.current)
-        // どちらにも対応できるように調整
-        const avatarId = data.avatar || data.current || 'none';
-        avatarImg.src = `avatar/${avatarId}.png`;
-
-        // 壁紙
-        const roomId = data.bg || data.currentRoom || 'none';
-        if (roomId === 'none') {
-            roomBg.style.backgroundImage = 'none';
-        } else {
-            roomBg.style.backgroundImage = `url('room/${roomId}.jpg')`;
-        }
-
-        // 家具
-        const furniture = data.furniture || {};
-        if(furniture.left) { furnLeft.src = `room/${furniture.left}.png`; furnLeft.style.display = 'block'; } else { furnLeft.style.display = 'none'; }
-        if(furniture.right) { furnRight.src = `room/${furniture.right}.png`; furnRight.style.display = 'block'; } else { furnRight.style.display = 'none'; }
-
-        // 勲章
-        const medals = data.medals || {};
-        const setMedal = (elementId, key, fallbackKey) => {
-            const el = document.getElementById(elementId);
-            const itemId = medals[key] || medals[fallbackKey];
-            if(itemId) {
-                el.src = `room/${itemId}.png`;
-                el.style.display = 'block';
             } else {
-                el.style.display = 'none';
+                // --- 🏠 通常モード (自分の部屋) ---
+                if (typeof getUserNames !== 'function') { return; }
+                const users = getUserNames();
+                const select = document.getElementById('user-select');
+                users.forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u; opt.innerText = u;
+                    select.appendChild(opt);
+                });
             }
         };
 
-        setMedal('medal-left-1', 'left1', 'left');
-        setMedal('medal-left-2', 'left2', null);
-        setMedal('medal-right-1', 'right1', 'right');
-        setMedal('medal-right-2', 'right2', null);
-    }
+        // ユーザー選択切り替え（通常モード用）
+        function loadRoom() {
+            if (isVisitorMode) return; // 訪問中は無視
 
-    // ヘルプ表示（変更なし）
-    function showHelp() {
-        // ... (前のコードと同じなので省略してもOKですが、念のため残してください) ...
-        const old = document.getElementById('help-overlay');
-        if(old) { old.remove(); return; }
-        const overlay = document.createElement('div');
-        overlay.id = 'help-overlay';
-        overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; justify-content: center; align-items: center;`;
-        overlay.innerHTML = `
+            const userName = document.getElementById('user-select').value;
+            if (!userName) {
+                document.getElementById('room-content').style.display = 'none';
+                return;
+            }
+            document.getElementById('room-content').style.display = 'block';
+
+            const allData = getUserData();
+            const userData = allData[userName] || {};
+
+            // 描画関数を呼ぶ
+            renderRoom(userData, userName);
+        }
+
+        // ★共通の描画関数 (データをもらって画面に表示するだけ)
+        function renderRoom(data, displayName) {
+            const roomBg = document.getElementById('my-room-bg');
+            const avatarImg = document.getElementById('avatar-img');
+            const furnLeft = document.getElementById('furn-left');
+            const furnRight = document.getElementById('furn-right');
+            const msg = document.getElementById('welcome-msg');
+
+            // 名前表示
+            msg.innerText = `${displayName}さんの お部屋です！`;
+
+            // アバター (訪問データの場合は data.avatar、ローカルの場合は data.current)
+            // どちらにも対応できるように調整
+            const avatarId = data.avatar || data.current || 'none';
+            avatarImg.src = `avatar/${avatarId}.webp`;
+
+            // 壁紙
+            const roomId = data.bg || data.currentRoom || 'none';
+            if (roomId === 'none') {
+                roomBg.style.backgroundImage = 'none';
+            } else {
+                roomBg.style.backgroundImage = `url('room/${roomId}.jpg')`;
+            }
+
+            // 家具
+            const furniture = data.furniture || {};
+            if (furniture.left) { furnLeft.src = `room/${furniture.left}.webp`; furnLeft.style.display = 'block'; } else { furnLeft.style.display = 'none'; }
+            if (furniture.right) { furnRight.src = `room/${furniture.right}.webp`; furnRight.style.display = 'block'; } else { furnRight.style.display = 'none'; }
+
+            // 勲章
+            const medals = data.medals || {};
+            const setMedal = (elementId, key, fallbackKey) => {
+                const el = document.getElementById(elementId);
+                const itemId = medals[key] || medals[fallbackKey];
+                if (itemId) {
+                    el.src = `room/${itemId}.webp`;
+                    el.style.display = 'block';
+                } else {
+                    el.style.display = 'none';
+                }
+            };
+
+            setMedal('medal-left-1', 'left1', 'left');
+            setMedal('medal-left-2', 'left2', null);
+            setMedal('medal-right-1', 'right1', 'right');
+            setMedal('medal-right-2', 'right2', null);
+        }
+
+        // ヘルプ表示（変更なし）
+        function showHelp() {
+            // ... (前のコードと同じなので省略してもOKですが、念のため残してください) ...
+            const old = document.getElementById('help-overlay');
+            if (old) { old.remove(); return; }
+            const overlay = document.createElement('div');
+            overlay.id = 'help-overlay';
+            overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; justify-content: center; align-items: center;`;
+            overlay.innerHTML = `
             <div style="background:white; padding:25px; border-radius:20px; max-width:90%; width:400px; text-align:center; position:relative; box-shadow:0 0 20px rgba(255,255,255,0.2);">
                 <button onclick="document.getElementById('help-overlay').remove()" style="position:absolute; top:10px; right:10px; background:#ddd; border:none; border-radius:50%; width:30px; height:30px; font-weight:bold; cursor:pointer;">×</button>
                 <h2 style="color:#00897b; margin-top:0;">マイルームの つかいかた</h2>
@@ -299,41 +383,42 @@
                 <button onclick="document.getElementById('help-overlay').remove()" style="margin-top:20px; padding:10px 30px; background:#009688; color:white; border:none; border-radius:30px; font-weight:bold; cursor:pointer; font-size:16px;">わかった！</button>
             </div>
         `;
-        overlay.onclick = (e) => { if(e.target === overlay) overlay.remove(); };
-        document.body.appendChild(overlay);
-    }
-
-    // 公開ボタン（ID付与してアップロード）
-    function uploadRoom() {
-        // 訪問モード中は押せないはずですが念のため
-        if(isVisitorMode) return;
-
-        const userName = document.getElementById('user-select').value;
-        if(!userName) { alert("ユーザーを選んでね"); return; }
-        
-        const publicName = prompt("公開する名前を入力してね！", userName);
-        if (publicName === null) return; 
-        if (publicName.trim() === "") { alert("名前を入力してね"); return; }
-
-        if(!confirm(`「${publicName}」という名前で\nインターネットに公開しますか？`)) return;
-
-        const allData = getUserData();
-        const myData = allData[userName] || {};
-
-        if (!myData.uid) {
-            myData.uid = generateUuid();
-            allData[userName] = myData;
-            saveUserData(allData);
-            console.log("新しいIDを発行しました:", myData.uid);
+            overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+            document.body.appendChild(overlay);
         }
 
-        if (typeof window.publishMyRoom === 'function') {
-            window.publishMyRoom(myData.uid, myData, publicName);
-        } else {
-            alert("通信の準備中です…少し待ってから押してね");
+        // 公開ボタン（ID付与してアップロード）
+        function uploadRoom() {
+            // 訪問モード中は押せないはずですが念のため
+            if (isVisitorMode) return;
+
+            const userName = document.getElementById('user-select').value;
+            if (!userName) { alert("ユーザーを選んでね"); return; }
+
+            const publicName = prompt("公開する名前を入力してね！", userName);
+            if (publicName === null) return;
+            if (publicName.trim() === "") { alert("名前を入力してね"); return; }
+
+            if (!confirm(`「${publicName}」という名前で\nインターネットに公開しますか？`)) return;
+
+            const allData = getUserData();
+            const myData = allData[userName] || {};
+
+            if (!myData.uid) {
+                myData.uid = generateUuid();
+                allData[userName] = myData;
+                saveUserData(allData);
+                console.log("新しいIDを発行しました:", myData.uid);
+            }
+
+            if (typeof window.publishMyRoom === 'function') {
+                window.publishMyRoom(myData.uid, myData, publicName);
+            } else {
+                alert("通信の準備中です…少し待ってから押してね");
+            }
         }
-    }
-</script>
+    </script>
 
 </body>
+
 </html>

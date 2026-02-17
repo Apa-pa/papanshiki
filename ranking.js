@@ -521,7 +521,7 @@ function setStamp(userName, dateStr, imageName) {
 function toggleStamp(userName, dateStr, forceAdd = false) {
     const allStamps = getAllStamps();
     const current = allStamps[userName] ? allStamps[userName][dateStr] : null;
-    if (forceAdd || !current) setStamp(userName, dateStr, 'hi-an-192.png');
+    if (forceAdd || !current) setStamp(userName, dateStr, 'hi-an-192.webp');
     else { delete allStamps[userName][dateStr]; localStorage.setItem(STAMP_KEY, JSON.stringify(allStamps)); }
 }
 
