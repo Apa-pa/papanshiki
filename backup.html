@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,21 +8,31 @@
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
-            background-color: #e3f2fd; /* 空色 */
+            background-color: #e3f2fd;
+            /* 空色 */
             text-align: center;
             padding: 20px;
             color: #0d47a1;
         }
+
         .container {
             max-width: 600px;
             margin: 0 auto;
             background: white;
             padding: 30px;
             border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
-        h1 { color: #1565c0; margin-bottom: 10px; }
-        p { margin-bottom: 20px; line-height: 1.6; }
+
+        h1 {
+            color: #1565c0;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
 
         .input-area {
             background: #bbdefb;
@@ -29,205 +40,252 @@
             border-radius: 15px;
             margin-bottom: 30px;
         }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
         input {
-            padding: 12px; font-size: 18px; border-radius: 10px;
-            border: 2px solid #64b5f6; width: 80%; max-width: 300px;
-            text-align: center; margin-bottom: 15px;
+            padding: 12px;
+            font-size: 18px;
+            border-radius: 10px;
+            border: 2px solid #64b5f6;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+            margin-bottom: 15px;
         }
 
         .btn-group {
-            display: flex; flex-direction: column; gap: 15px; align-items: center;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
         }
 
         .btn {
-            width: 80%; max-width: 300px; padding: 15px;
-            border: none; border-radius: 30px; font-weight: bold; font-size: 18px;
-            cursor: pointer; transition: 0.2s; color: white;
-            box-shadow: 0 4px rgba(0,0,0,0.2);
+            width: 80%;
+            max-width: 300px;
+            padding: 15px;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: white;
+            box-shadow: 0 4px rgba(0, 0, 0, 0.2);
         }
-        .btn:active { transform: translateY(2px); box-shadow: none; }
 
-        .btn-save { background: #ff9800; box-shadow: 0 4px #e65100; } /* オレンジ */
-        .btn-load { background: #4caf50; box-shadow: 0 4px #2e7d32; } /* 緑 */
-        .btn-home { background: #78909c; box-shadow: 0 4px #546e7a; margin-top: 30px;}
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .btn-save {
+            background: #ff9800;
+            box-shadow: 0 4px #e65100;
+        }
+
+        /* オレンジ */
+        .btn-load {
+            background: #4caf50;
+            box-shadow: 0 4px #2e7d32;
+        }
+
+        /* 緑 */
+        .btn-home {
+            background: #78909c;
+            box-shadow: 0 4px #546e7a;
+            margin-top: 30px;
+        }
 
         .status-msg {
-            margin-top: 20px; font-weight: bold; min-height: 1.5em; color: #d81b60;
+            margin-top: 20px;
+            font-weight: bold;
+            min-height: 1.5em;
+            color: #d81b60;
         }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h1>🚚 データのひっこし</h1>
-    <p>
-        今のデータを クラウド(インターネット)に あずけたり、<br>
-        あずけたデータを もどしたりできます。<br>
-        <span style="color:red; font-size:14px;">※機種変更(きしゅへんこう)のときに 使ってね！</span>
-    </p>
+    <div class="container">
+        <h1>🚚 データのひっこし</h1>
+        <p>
+            今のデータを クラウド(インターネット)に あずけたり、<br>
+            あずけたデータを もどしたりできます。<br>
+            <span style="color:red; font-size:14px;">※機種変更(きしゅへんこう)のときに 使ってね！</span>
+        </p>
 
-    <div class="input-area">
-        <label>① あいことばの 名前</label>
-        <input type="text" id="backup-id" placeholder="例: ぱぱん01" maxlength="10">
-        
-        <label>② ひみつの パスワード</label>
-        <input type="text" id="backup-pass" placeholder="数字4ケタ (例: 1234)" maxlength="8">
-        
-        <div style="font-size:12px; color:#555;">
-            ※この2つを わすれると データはもどりません！<br>
-            メモを しておいてね。
+        <div class="input-area">
+            <label>① あいことばの 名前</label>
+            <input type="text" id="backup-id" placeholder="例: ぱぱん01" maxlength="10">
+
+            <label>② ひみつの パスワード</label>
+            <input type="text" id="backup-pass" placeholder="数字4ケタ (例: 1234)" maxlength="8">
+
+            <div style="font-size:12px; color:#555;">
+                ※この2つを わすれると データはもどりません！<br>
+                メモを しておいてね。
+            </div>
         </div>
+
+        <div class="btn-group">
+            <button class="btn btn-save" onclick="saveToCloud()">☁️ データを あずける (保存)</button>
+            <button class="btn btn-load" onclick="loadFromCloud()">📥 データを受け取る (復元)</button>
+        </div>
+
+        <div id="status" class="status-msg"></div>
+
+        <a href="index.html" class="btn btn-home" style="text-decoration:none; display:inline-block;">🏠 ホームへもどる</a>
     </div>
 
-    <div class="btn-group">
-        <button class="btn btn-save" onclick="saveToCloud()">☁️ データを あずける (保存)</button>
-        <button class="btn btn-load" onclick="loadFromCloud()">📥 データを受け取る (復元)</button>
-    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
-    <div id="status" class="status-msg"></div>
+        // 設定 (ranking.jsと同じもの)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCYHfZ5ya_HuhutF6eI5vtbXugYb4zKC9g",
+            authDomain: "papan-shiki.firebaseapp.com",
+            projectId: "papan-shiki",
+            storageBucket: "papan-shiki.firebasestorage.app",
+            messagingSenderId: "157576103115",
+            appId: "1:157576103115:web:1278e7167cbb60ee71c74e"
+        };
 
-    <a href="index.html" class="btn btn-home" style="text-decoration:none; display:inline-block;">🏠 ホームへもどる</a>
-</div>
+        // 初期化
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+        // 保存対象のキーリスト (全13種)
+        const TARGET_KEYS = [
+            'papan_records_v1',           // スコア
+            'papan_goals_v1',             // 目標
+            'papan_points_v1',            // ポイント
+            'papan_donguri_v1',           // どんぐり
+            'papan_rewarded_goals_v1',    // ごほうび履歴
+            'papan_stamps_v3',            // スタンプ
+            'papan_collection_v1',        // コレクション
+            'papan_stocks_v1',            // 株:所持数
+            'papan_market_v1',            // 株:市場データ
+            'papan_real_market_prev_v1',  // 株:実データ(前回値)
+            'papan_avatar_v1',            // アバター
+            'papan_daily_mission_v1',     // デイリーミッション
+            'papan_my_sheep_v3'           // 羊牧場データ
+        ];
 
-    // 設定 (ranking.jsと同じもの)
-    const firebaseConfig = {
-        apiKey: "AIzaSyCYHfZ5ya_HuhutF6eI5vtbXugYb4zKC9g",
-        authDomain: "papan-shiki.firebaseapp.com",
-        projectId: "papan-shiki",
-        storageBucket: "papan-shiki.firebasestorage.app",
-        messagingSenderId: "157576103115",
-        appId: "1:157576103115:web:1278e7167cbb60ee71c74e"
-    };
-
-    // 初期化
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // 保存対象のキーリスト (全10種)
-    const TARGET_KEYS = [
-        'papan_records_v1',         // スコア
-        'papan_goals_v1',           // 目標
-        'papan_points_v1',          // ポイント
-        'papan_donguri_v1',         // どんぐり
-        'papan_rewarded_history_v1',// ごほうび履歴
-        'papan_stamps_v3',          // スタンプ
-        'papan_collection_v1',      // コレクション
-        'papan_stocks_v1',          // 株:所持数
-        'papan_market_v3',          // 株:市場データ
-        'papan_avatar_v1'           // アバター
-    ];
-
-    // ステータス表示
-    function showStatus(msg) {
-        document.getElementById('status').innerText = msg;
-    }
-
-    // --- データをあずける (Upload) ---
-    window.saveToCloud = async function() {
-        const id = document.getElementById('backup-id').value.trim();
-        const pass = document.getElementById('backup-pass').value.trim();
-
-        if(!id || !pass) {
-            alert("「名前」と「パスワード」の両方を入力してください");
-            return;
+        // ステータス表示
+        function showStatus(msg) {
+            document.getElementById('status').innerText = msg;
         }
-        
-        if(!confirm(`今のデータをクラウドにあずけますか？\n\n名前: ${id}\nパス: ${pass}\n\n※同じ名前だと上書きされます！`)) return;
 
-        showStatus("通信中... データを送っています 📤");
+        // --- データをあずける (Upload) ---
+        window.saveToCloud = async function () {
+            const id = document.getElementById('backup-id').value.trim();
+            const pass = document.getElementById('backup-pass').value.trim();
 
-        try {
-            // 1. ローカルストレージから全データを吸い出す
-            const backupData = {};
-            let hasData = false;
-            
-            TARGET_KEYS.forEach(key => {
-                const val = localStorage.getItem(key);
-                if(val) {
-                    backupData[key] = val; // JSON文字列のまま保存
-                    hasData = true;
-                }
-            });
-
-            if(!hasData) {
-                alert("保存するデータがなにもありません！");
-                showStatus("");
+            if (!id || !pass) {
+                alert("「名前」と「パスワード」の両方を入力してください");
                 return;
             }
 
-            // 日付も入れておく
-            backupData['backup_date'] = new Date().toISOString();
+            if (!confirm(`今のデータをクラウドにあずけますか？\n\n名前: ${id}\nパス: ${pass}\n\n※同じ名前だと上書きされます！`)) return;
 
-            // 2. ドキュメントIDを作る (名前_パスワード)
-            // これにより、名前とパスワードが一致しないとデータにアクセスできない(簡易セキュリティ)
-            const docId = `${id}_${pass}`;
+            showStatus("通信中... データを送っています 📤");
 
-            // 3. Firestoreに保存 (setDocで上書き)
-            await setDoc(doc(db, "backups", docId), backupData);
+            try {
+                // 1. ローカルストレージから全データを吸い出す
+                const backupData = {};
+                let hasData = false;
 
-            showStatus("✅ データの保存に成功しました！");
-            alert("クラウドにデータをあずけました！\n機種変更先で、同じ名前とパスワードを入力してね。");
-
-        } catch (e) {
-            console.error(e);
-            showStatus("❌ エラー: 保存できませんでした");
-            alert("エラーが発生しました。\n通信環境を確認してください。");
-        }
-    };
-
-    // --- データを受け取る (Download) ---
-    window.loadFromCloud = async function() {
-        const id = document.getElementById('backup-id').value.trim();
-        const pass = document.getElementById('backup-pass').value.trim();
-
-        if(!id || !pass) {
-            alert("データを取り出すための「名前」と「パスワード」を入力してください");
-            return;
-        }
-
-        if(!confirm(`⚠️ 注意 ⚠️\n\nクラウドからデータを受け取って、今のデータに上書きします。\n\n今のデータは消えてしまいますが、よろしいですか？`)) return;
-
-        showStatus("通信中... データを探しています 📥");
-
-        try {
-            // 1. ドキュメントIDを作る
-            const docId = `${id}_${pass}`;
-
-            // 2. Firestoreから取得
-            const docRef = doc(db, "backups", docId);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                
-                // 3. ローカルストレージに書き戻す
-                let count = 0;
                 TARGET_KEYS.forEach(key => {
-                    if (data[key]) {
-                        localStorage.setItem(key, data[key]);
-                        count++;
+                    const val = localStorage.getItem(key);
+                    if (val) {
+                        backupData[key] = val; // JSON文字列のまま保存
+                        hasData = true;
                     }
                 });
 
-                showStatus(`✅ 復元完了！ (${count}個のデータ)`);
-                alert(`データを受け取りました！\nおかえりなさい！\n(${count}種類のデータを復元しました)`);
-            } else {
-                showStatus("⚠️ データが見つかりません");
-                alert("その名前とパスワードのデータは見つかりませんでした。\n入力ミスがないか確認してください。");
+                if (!hasData) {
+                    alert("保存するデータがなにもありません！");
+                    showStatus("");
+                    return;
+                }
+
+                // 日付も入れておく
+                backupData['backup_date'] = new Date().toISOString();
+
+                // 2. ドキュメントIDを作る (名前_パスワード)
+                // これにより、名前とパスワードが一致しないとデータにアクセスできない(簡易セキュリティ)
+                const docId = `${id}_${pass}`;
+
+                // 3. Firestoreに保存 (setDocで上書き)
+                await setDoc(doc(db, "backups", docId), backupData);
+
+                showStatus("✅ データの保存に成功しました！");
+                alert("クラウドにデータをあずけました！\n機種変更先で、同じ名前とパスワードを入力してね。");
+
+            } catch (e) {
+                console.error(e);
+                showStatus("❌ エラー: 保存できませんでした");
+                alert("エラーが発生しました。\n通信環境を確認してください。");
+            }
+        };
+
+        // --- データを受け取る (Download) ---
+        window.loadFromCloud = async function () {
+            const id = document.getElementById('backup-id').value.trim();
+            const pass = document.getElementById('backup-pass').value.trim();
+
+            if (!id || !pass) {
+                alert("データを取り出すための「名前」と「パスワード」を入力してください");
+                return;
             }
 
-        } catch (e) {
-            console.error(e);
-            showStatus("❌ エラー: 受信できませんでした");
-            alert("通信エラーが発生しました。");
-        }
-    };
-</script>
+            if (!confirm(`⚠️ 注意 ⚠️\n\nクラウドからデータを受け取って、今のデータに上書きします。\n\n今のデータは消えてしまいますが、よろしいですか？`)) return;
+
+            showStatus("通信中... データを探しています 📥");
+
+            try {
+                // 1. ドキュメントIDを作る
+                const docId = `${id}_${pass}`;
+
+                // 2. Firestoreから取得
+                const docRef = doc(db, "backups", docId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+
+                    // 3. ローカルストレージに書き戻す
+                    let count = 0;
+                    TARGET_KEYS.forEach(key => {
+                        if (data[key]) {
+                            localStorage.setItem(key, data[key]);
+                            count++;
+                        }
+                    });
+
+                    showStatus(`✅ 復元完了！ (${count}個のデータ)`);
+                    alert(`データを受け取りました！\nおかえりなさい！\n(${count}種類のデータを復元しました)`);
+                } else {
+                    showStatus("⚠️ データが見つかりません");
+                    alert("その名前とパスワードのデータは見つかりませんでした。\n入力ミスがないか確認してください。");
+                }
+
+            } catch (e) {
+                console.error(e);
+                showStatus("❌ エラー: 受信できませんでした");
+                alert("通信エラーが発生しました。");
+            }
+        };
+    </script>
 
 </body>
+
 </html>

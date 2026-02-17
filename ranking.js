@@ -684,7 +684,8 @@ function showSaveDialog(gameId, resultValue) {
     window.Ranking = {
         selectUser: (localName) => {
             // 1. 基本ポイント付与 (参加賞)
-            addPoints(localName, 30);
+            const basePoint = (gameId === 'rail') ? 100 : 30;
+            addPoints(localName, basePoint);
 
             // 2. 記録保存 & 自己ベスト判定
             const isNew = saveRecord(localName, gameId, resultValue);
@@ -720,8 +721,8 @@ function showSaveDialog(gameId, resultValue) {
 
             // メッセージ生成
             setTimeout(() => {
-                let msg = `${localName}さんの記録として保存しました。\n💰 参加賞 30ポイント GET!`;
-                if (isNew) msg = `すごい！ ${localName}さんの\nじこベスト更新！🎉\n💰 参加賞 30ポイント GET!`;
+                let msg = `${localName}さんの記録として保存しました。\n💰 参加賞 ${basePoint}ポイント GET!`;
+                if (isNew) msg = `すごい！ ${localName}さんの\nじこベスト更新！🎉\n💰 参加賞 ${basePoint}ポイント GET!`;
 
                 if (earnedPoints) msg += `\n🎁 目標クリア！さらに ${earnedPoints}ポイント！`;
 
