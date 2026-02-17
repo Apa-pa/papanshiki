@@ -439,6 +439,49 @@ body {
     font-size: 2rem;
 }
 
+/* ポイント獲得ボタン（クリア画面） */
+.btn-reward {
+    background: linear-gradient(135deg, #ff9800, #f57c00);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 30px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    font-weight: bold;
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+    box-shadow: 0 4px #e65100;
+    animation: rewardPulse 1.5s ease-in-out infinite;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.btn-reward:active {
+    transform: translateY(2px);
+    box-shadow: none;
+}
+
+.btn-reward:disabled {
+    background: #ccc;
+    box-shadow: none;
+    cursor: default;
+    animation: none;
+}
+
+@keyframes rewardPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.03);
+    }
+}
+
 .btn-retry {
     background: #ff9800;
     color: white;
