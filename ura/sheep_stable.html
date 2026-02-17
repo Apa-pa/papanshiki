@@ -589,7 +589,7 @@
                     });
 
                     if (myRank > 0) {
-                        prize = (myRank === 1) ? 10 : 5;
+                        prize = (myRank === 1) ? 20 : (myRank === 2) ? 10 : 5;
                         if (typeof addDonguri === 'function') {
                             addDonguri(currentUserName, prize);
                             alert(`🏆全国レース結果発表！\nあなたは第${myRank}位でした！\n賞金 ${prize} 🌰 を受け取りました！`);
