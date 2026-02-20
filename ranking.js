@@ -148,6 +148,9 @@ const DAILY_MISSION_CANDIDATES = [
     'water', // 水槽パズル
     'frac_add_easy', // 分数足し算
     'frac_sub_easy', // 分数引き算
+    'rain_consonant', // あめふり子音
+    'rain_vowel', // あめふり母音
+    'tsumitsumi', // 漢字つみつみ
 ];
 
 const DAILY_MISSION_KEY = 'papan_daily_mission_v1';
