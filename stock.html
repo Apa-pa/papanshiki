@@ -41,12 +41,64 @@
             border: 2px solid #ffe0b2;
             padding: 10px;
             border-radius: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .asset-val {
             font-weight: bold;
             font-size: 18px;
+            color: #e65100;
+        }
+
+        /* 持ち株評価額 */
+        .valuation-area {
+            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+            border: 2px solid #a5d6a7;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .valuation-title {
+            font-size: 13px;
+            color: #2e7d32;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .valuation-row {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+
+        .valuation-item {
+            text-align: center;
+        }
+
+        .valuation-label {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .valuation-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1b5e20;
+        }
+
+        .valuation-total {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #a5d6a7;
+            font-size: 12px;
+            color: #555;
+        }
+
+        .valuation-total-value {
+            font-size: 22px;
+            font-weight: bold;
             color: #e65100;
         }
 
@@ -229,6 +281,26 @@
             <div>🌰 <span id="my-don" class="asset-val">0</span></div>
         </div>
 
+        <!-- 持ち株評価額 -->
+        <div id="valuation-area" class="valuation-area">
+            <div class="valuation-title">📊 持ち株の評価額</div>
+            <div class="valuation-row">
+                <div class="valuation-item">
+                    <div class="valuation-label">ポイント建て</div>
+                    <div>💰 <span id="val-pts" class="valuation-value">0</span> <span style="font-size:12px">pt</span>
+                    </div>
+                </div>
+                <div class="valuation-item">
+                    <div class="valuation-label">どんぐり建て</div>
+                    <div>🌰 <span id="val-don" class="valuation-value">0</span></div>
+                </div>
+            </div>
+            <div class="valuation-total">
+                手持ち＋株の合計 → 💰 <span id="val-total-pts" class="valuation-total-value">0</span> pt ／ 🌰 <span
+                    id="val-total-don" class="valuation-total-value">0</span>
+            </div>
+        </div>
+
         <div class="news-box">
             <div id="news-text" class="news-text">ニュースを読み込み中...</div>
         </div>
@@ -292,11 +364,36 @@
             document.getElementById('news-text').innerText = market.news;
 
             if (userName) {
-                document.getElementById('my-pts').innerText = getUserPoints(userName);
-                document.getElementById('my-don').innerText = getUserDonguri(userName);
+                const userPts = getUserPoints(userName);
+                const userDon = getUserDonguri(userName);
+                document.getElementById('my-pts').innerText = userPts;
+                document.getElementById('my-don').innerText = userDon;
+
+                // 持ち株の評価額を計算
+                const stocks = getUserStocks(userName) || {};
+                let valPts = 0; // ポイント建て銘柄の評価額合計
+                let valDon = 0; // どんぐり建て銘柄の評価額合計
+                for (let key in stocks) {
+                    const count = stocks[key] || 0;
+                    if (count > 0 && STOCK_MASTER[key]) {
+                        const price = market.prices[key];
+                        if (STOCK_MASTER[key].currency === 'point') {
+                            valPts += price * count;
+                        } else {
+                            valDon += price * count;
+                        }
+                    }
+                }
+
+                document.getElementById('val-pts').innerText = valPts;
+                document.getElementById('val-don').innerText = valDon;
+                document.getElementById('val-total-pts').innerText = userPts + valPts;
+                document.getElementById('val-total-don').innerText = userDon + valDon;
+                document.getElementById('valuation-area').style.display = 'block';
             } else {
                 document.getElementById('my-pts').innerText = 0;
                 document.getElementById('my-don').innerText = 0;
+                document.getElementById('valuation-area').style.display = 'none';
             }
 
             const container = document.getElementById('stock-list');
