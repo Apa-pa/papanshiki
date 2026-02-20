@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,7 +11,8 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: #e0e0e0; /* PCなどの背景色（枠外） */
+            background-color: #e0e0e0;
+            /* PCなどの背景色（枠外） */
             font-family: "UD Digital Kyokasho-tai-R", "Zen Kaku Gothic New", sans-serif;
             touch-action: manipulation;
             height: 100vh;
@@ -23,40 +25,52 @@
         #game-container {
             position: relative;
             width: 100%;
-            max-width: 500px; /* 最大幅を制限 */
+            max-width: 500px;
+            /* 最大幅を制限 */
             height: 100%;
             max-height: 900px;
-            background-color: #fffbe6; /* ゲーム画面の背景 */
+            background-color: #fffbe6;
+            /* ゲーム画面の背景 */
             overflow: hidden;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2); /* 影をつけて浮き上がらせる */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            /* 影をつけて浮き上がらせる */
         }
 
         /* UIレイヤー */
         .ui-layer {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
             z-index: 10;
         }
 
         .hud {
             position: absolute;
-            top: 20px; left: 20px;
-            font-size: 24px; font-weight: bold;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            font-weight: bold;
             color: #5d4037;
             text-shadow: 2px 2px 0 #fff;
         }
 
         .life-area {
             position: absolute;
-            top: 20px; right: 20px;
+            top: 20px;
+            right: 20px;
             font-size: 24px;
         }
 
         /* スタート・ゲームオーバー画面 */
         .overlay {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(255, 253, 231, 0.95);
             display: flex;
             flex-direction: column;
@@ -68,315 +82,674 @@
         }
 
         h1 {
-            color: #d84315; font-size: 36px; margin-bottom: 10px;
+            color: #d84315;
+            font-size: 36px;
+            margin-bottom: 10px;
             font-family: serif;
         }
 
         .btn {
-            background: #d84315; color: white; border: none;
-            padding: 15px 50px; font-size: 22px;
-            border-radius: 50px; cursor: pointer;
-            box-shadow: 0 5px #bf360c; font-weight: bold;
+            background: #d84315;
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px #bf360c;
+            font-weight: bold;
             margin-top: 20px;
         }
-        .btn:active { transform: scale(0.95); box-shadow: none; }
+
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: none;
+        }
 
         .back-link {
-            margin-top: 20px; color: #8d6e63;
-            text-decoration: underline; font-size: 16px;
+            margin-top: 20px;
+            color: #8d6e63;
+            text-decoration: underline;
+            font-size: 16px;
+        }
+
+        /* 熟語図鑑 */
+        .jukugo-result {
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            width: 80%;
+            text-align: left;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+        }
+
+        .jukugo-result h3 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            color: #d84315;
+            text-align: center;
+        }
+
+        .jukugo-item {
+            display: inline-block;
+            background: linear-gradient(135deg, #fff8e1, #ffe082);
+            border: 2px solid #f9a825;
+            border-radius: 8px;
+            padding: 4px 10px;
+            margin: 3px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #5d4037;
+        }
+
+        .jukugo-item ruby rt {
+            font-size: 10px;
+            color: #8d6e63;
+        }
+
+        .no-jukugo {
+            text-align: center;
+            color: #8d6e63;
+            font-size: 14px;
         }
     </style>
 </head>
+
 <body>
 
-<div id="game-container">
-    <div class="ui-layer">
-        <div class="hud">つんだ数: <span id="score">0</span> こ</div>
-        <div class="life-area" id="life-display">❤️❤️❤️</div>
+    <div id="game-container">
+        <div class="ui-layer">
+            <div class="hud">つんだ数: <span id="score">0</span> こ</div>
+            <div class="life-area" id="life-display">❤️❤️❤️</div>
+        </div>
+
+        <div id="start-screen" class="overlay">
+            <h1>漢字つみつみ</h1>
+            <div style="font-size: 60px; margin: 20px;">🧱</div>
+            <p style="color:#5d4037; font-size:16px; line-height: 1.6;">
+                ゆれる 漢字(かんじ)を タップで おとそう！<br>
+                台座(だいざ)から おちたら アウトだよ。<br>
+                <span style="color:#d84315; font-weight:bold;">
+                    熟語(じゅくご)ができると くっつくよ！
+                </span>
+            </p>
+            <button class="btn" onclick="startGame()">スタート</button>
+            <br>
+            <a href="index.html" class="back-link">🏠 ホームへもどる</a>
+        </div>
+
+        <div id="gameover-screen" class="overlay" style="display:none;">
+            <h1 style="color:#5d4037;">そこまで！</h1>
+            <p style="font-size:24px; color:#d84315; font-weight:bold;">
+                きろく: <span id="final-score">0</span> こ
+            </p>
+            <div id="jukugo-result-area"></div>
+            <button class="btn" onclick="startGame()">もういっかい</button>
+            <br>
+            <a href="index.html" class="back-link">🏠 ホームへ</a>
+        </div>
     </div>
 
-    <div id="start-screen" class="overlay">
-        <h1>漢字つみつみ</h1>
-        <div style="font-size: 60px; margin: 20px;">🧱</div>
-        <p style="color:#5d4037; font-size:16px; line-height: 1.6;">
-            ゆれる 漢字(かんじ)を タップで おとそう！<br>
-            台座(だいざ)から おちたら アウトだよ。
-        </p>
-        <button class="btn" onclick="startGame()">スタート</button>
-        <br>
-        <a href="index.html" class="back-link">🏠 ホームへもどる</a>
-    </div>
+    <script>
+        const Engine = Matter.Engine,
+            Render = Matter.Render,
+            Runner = Matter.Runner,
+            Bodies = Matter.Bodies,
+            Body = Matter.Body,
+            Composite = Matter.Composite,
+            Constraint = Matter.Constraint,
+            Events = Matter.Events;
 
-    <div id="gameover-screen" class="overlay" style="display:none;">
-        <h1 style="color:#5d4037;">そこまで！</h1>
-        <p style="font-size:24px; color:#d84315; font-weight:bold;">
-            きろく: <span id="final-score">0</span> こ
-        </p>
-        <button class="btn" onclick="startGame()">もういっかい</button>
-        <br>
-        <a href="index.html" class="back-link">🏠 ホームへ</a>
-    </div>
-</div>
+        // 漢字データ（40字：小1〜3レベル）
+        const kanjiList = [
+            { char: "山", w: 1.2, h: 0.8 },
+            { char: "火", w: 1.1, h: 1.1 },
+            { char: "水", w: 1.1, h: 1.1 },
+            { char: "田", w: 1.0, h: 1.0 },
+            { char: "日", w: 0.9, h: 1.1 },
+            { char: "本", w: 1.1, h: 1.1 },
+            { char: "大", w: 1.3, h: 1.0 },
+            { char: "小", w: 0.8, h: 0.8 },
+            { char: "人", w: 1.2, h: 0.8 },
+            { char: "口", w: 1.0, h: 0.9 },
+            { char: "天", w: 1.2, h: 0.9 },
+            { char: "気", w: 1.0, h: 1.1 },
+            { char: "学", w: 1.1, h: 1.0 },
+            { char: "校", w: 1.0, h: 1.1 },
+            { char: "生", w: 1.0, h: 1.1 },
+            { char: "王", w: 1.1, h: 1.0 },
+            { char: "子", w: 0.9, h: 1.0 },
+            { char: "力", w: 1.0, h: 1.1 },
+            { char: "入", w: 1.0, h: 1.0 },
+            { char: "上", w: 1.0, h: 0.9 },
+            { char: "下", w: 1.0, h: 0.9 },
+            { char: "先", w: 1.0, h: 1.1 },
+            { char: "青", w: 1.0, h: 1.1 },
+            { char: "空", w: 1.1, h: 1.0 },
+            { char: "金", w: 1.2, h: 1.0 },
+            { char: "土", w: 1.2, h: 0.8 },
+            { char: "木", w: 1.1, h: 1.1 },
+            { char: "目", w: 0.9, h: 1.1 },
+            { char: "花", w: 1.0, h: 1.1 },
+            { char: "手", w: 1.1, h: 1.0 },
+            { char: "正", w: 1.0, h: 1.0 },
+            { char: "文", w: 1.1, h: 1.0 },
+            { char: "字", w: 1.0, h: 1.0 },
+            { char: "年", w: 1.0, h: 1.1 },
+            { char: "月", w: 0.9, h: 1.1 },
+            { char: "雨", w: 1.1, h: 1.0 },
+            { char: "車", w: 1.0, h: 1.0 },
+            { char: "石", w: 1.0, h: 1.0 },
+            { char: "足", w: 1.0, h: 1.1 },
+            { char: "耳", w: 0.9, h: 1.1 }
+        ];
 
-<script>
-    const Engine = Matter.Engine,
-          Render = Matter.Render,
-          Runner = Matter.Runner,
-          Bodies = Matter.Bodies,
-          Composite = Matter.Composite,
-          Events = Matter.Events;
+        // 熟語辞書（「漢字1+漢字2」→「読み仮名」）
+        const jukugoDict = {
+            "火山": "かざん",
+            "大小": "だいしょう",
+            "人口": "じんこう",
+            "水田": "すいでん",
+            "日本": "にほん",
+            "天気": "てんき",
+            "学校": "がっこう",
+            "王子": "おうじ",
+            "入力": "にゅうりょく",
+            "上下": "じょうげ",
+            "先生": "せんせい",
+            "青空": "あおぞら",
+            "学生": "がくせい",
+            "人生": "じんせい",
+            "火力": "かりょく",
+            "水力": "すいりょく",
+            "本人": "ほんにん",
+            "大人": "おとな",
+            "天下": "てんか",
+            "大金": "たいきん",
+            "入口": "いりぐち",
+            "土木": "どぼく",
+            "目上": "めうえ",
+            "目下": "めした",
+            "手本": "てほん",
+            "花火": "はなび",
+            "雨水": "あまみず",
+            "雨天": "うてん",
+            "正月": "しょうがつ",
+            "文字": "もじ",
+            "文学": "ぶんがく",
+            "年金": "ねんきん",
+            "年上": "としうえ",
+            "年下": "としした",
+            "空気": "くうき",
+            "人気": "にんき",
+            "本日": "ほんじつ",
+            "大木": "たいぼく",
+            "水車": "すいしゃ",
+            "水上": "すいじょう",
+            "火口": "かこう",
+            "金山": "きんざん",
+            "下山": "げざん",
+            "上手": "じょうず",
+            "下手": "へた",
+            "大気": "たいき",
+            "人力": "じんりき",
+            "月日": "つきひ",
+            "正気": "しょうき",
+            "石山": "いしやま",
+            "手足": "てあし",
+            "耳目": "じもく",
+            "金星": "きんせい",
+            "山火": "やまび",
+            "山口": "やまぐち",
+            "山本": "やまもと",
+            "木目": "もくめ",
+            "本字": "ほんじ",
+            "大学": "だいがく",
+            "入学": "にゅうがく",
+            "小学": "しょうがく",
+            "生花": "いけばな",
+            "青年": "せいねん",
+            "正文": "せいぶん",
+            "足下": "あしもと",
+            "小石": "こいし"
+        };
 
-    // 漢字データ
-    const kanjiList = [
-        { char: "山", w: 1.2, h: 0.8 },
-        { char: "川", w: 0.8, h: 1.2 },
-        { char: "田", w: 1.0, h: 1.0 },
-        { char: "日", w: 0.9, h: 1.1 },
-        { char: "目", w: 0.9, h: 1.1 },
-        { char: "口", w: 1.0, h: 0.9 },
-        { char: "木", w: 1.1, h: 1.1 },
-        { char: "人", w: 1.2, h: 0.8 },
-        { char: "水", w: 1.1, h: 1.1 },
-        { char: "火", w: 1.1, h: 1.1 },
-        { char: "土", w: 1.2, h: 0.8 },
-        { char: "王", w: 1.1, h: 1.0 },
-        { char: "金", w: 1.2, h: 1.0 },
-        { char: "大", w: 1.3, h: 1.0 },
-        { char: "小", w: 0.8, h: 0.8 },
-        { char: "力", w: 1.0, h: 1.1 },
-        { char: "夕", w: 1.0, h: 1.0 },
-        { char: "円", w: 1.0, h: 1.0 }
-    ];
+        let engine, render, runner;
+        let isPlaying = false;
+        let score = 0;
+        let life = 3;
+        let spawnerX = 0;
+        let nextKanjiIndex = 0;
+        let canDrop = true;
 
-    let engine, render, runner;
-    let isPlaying = false;
-    let score = 0;
-    let life = 3;
-    let spawnerX = 0;
-    let nextKanjiIndex = 0;
-    let canDrop = true;
+        // 熟語マッチ関連
+        let matchedJukugo = [];          // 今回のゲームで見つけた熟語リスト
+        let matchedPairs = new Set();    // 既にマッチしたボディIDペア
+        let popups = [];                 // 読み仮名ポップアップ
 
-    // ゲーム画面のサイズを取得（固定幅の中でのサイズ）
-    const container = document.getElementById('game-container');
-    let gameW = container.clientWidth;
-    let gameH = container.clientHeight;
+        // ゲーム画面のサイズを取得（固定幅の中でのサイズ）
+        const container = document.getElementById('game-container');
+        let gameW = container.clientWidth;
+        let gameH = container.clientHeight;
 
-    function init() {
-        engine = Engine.create();
-        
-        render = Render.create({
-            element: container,
-            engine: engine,
-            options: {
-                width: gameW,
-                height: gameH,
-                background: 'transparent',
-                wireframes: false
-            }
-        });
+        function init() {
+            engine = Engine.create();
 
-        // 描画ループ内の処理（文字描画など）
-        Events.on(render, 'afterRender', function() {
-            const context = render.context;
-            const bodies = Composite.allBodies(engine.world);
+            render = Render.create({
+                element: container,
+                engine: engine,
+                options: {
+                    width: gameW,
+                    height: gameH,
+                    background: 'transparent',
+                    wireframes: false
+                }
+            });
 
-            context.font = "bold 30px 'UD Digital Kyokasho-tai-R', serif";
-            context.textAlign = "center";
-            context.textBaseline = "middle";
-            context.fillStyle = "#3e2723";
+            // 描画ループ内の処理（文字描画など）
+            Events.on(render, 'afterRender', function () {
+                const context = render.context;
+                const bodies = Composite.allBodies(engine.world);
 
-            bodies.forEach(body => {
-                if (body.label && body.label.startsWith('kanji-')) {
-                    const char = body.label.split('-')[1];
+                // 漢字ブロックの描画
+                bodies.forEach(body => {
+                    if (body.label && body.label.startsWith('kanji-')) {
+                        const char = body.label.split('-')[1];
+                        const isMatched = body.jukugoMatched;
+
+                        context.save();
+                        context.translate(body.position.x, body.position.y);
+                        context.rotate(body.angle);
+
+                        // マッチした漢字は金色の光彩効果
+                        if (isMatched) {
+                            context.shadowColor = '#ffd700';
+                            context.shadowBlur = 15;
+                            context.font = "bold 32px 'UD Digital Kyokasho-tai-R', serif";
+                            context.fillStyle = "#b8860b";
+                        } else {
+                            context.font = "bold 30px 'UD Digital Kyokasho-tai-R', serif";
+                            context.fillStyle = "#3e2723";
+                        }
+                        context.textAlign = "center";
+                        context.textBaseline = "middle";
+                        context.fillText(char, 0, 0);
+                        context.restore();
+                    }
+                });
+
+                // スポナー（予告）
+                if (isPlaying && canDrop) {
+                    const nextChar = kanjiList[nextKanjiIndex].char;
+                    context.fillStyle = "rgba(216, 67, 21, 0.5)";
+                    context.font = "bold 40px serif";
+                    context.textAlign = "center";
+                    context.textBaseline = "middle";
+                    context.fillText(nextChar, spawnerX, 100);
+
+                    context.beginPath();
+                    context.moveTo(spawnerX, 0);
+                    context.lineTo(spawnerX, 80);
+                    context.strokeStyle = "#8d6e63";
+                    context.lineWidth = 2;
+                    context.stroke();
+                }
+
+                // 読み仮名ポップアップの描画
+                const now = Date.now();
+                for (let i = popups.length - 1; i >= 0; i--) {
+                    const p = popups[i];
+                    const elapsed = now - p.startTime;
+                    if (elapsed > 2500) {
+                        popups.splice(i, 1);
+                        continue;
+                    }
+
+                    // フェードイン → 表示 → フェードアウト
+                    let alpha = 1;
+                    if (elapsed < 300) {
+                        alpha = elapsed / 300;
+                    } else if (elapsed > 2000) {
+                        alpha = 1 - (elapsed - 2000) / 500;
+                    }
+
+                    // 上方向に少し浮き上がるアニメーション
+                    const yOffset = -Math.min(elapsed * 0.03, 30);
+
                     context.save();
-                    context.translate(body.position.x, body.position.y);
-                    context.rotate(body.angle);
-                    context.fillText(char, 0, 0);
+                    context.globalAlpha = alpha;
+                    context.textAlign = "center";
+                    context.textBaseline = "middle";
+
+                    // 背景帯
+                    const text = p.jukugo + "（" + p.reading + "）";
+                    context.font = "bold 20px 'UD Digital Kyokasho-tai-R', serif";
+                    const metrics = context.measureText(text);
+                    const bgW = metrics.width + 24;
+                    const bgH = 36;
+                    const px = p.x;
+                    const py = p.y + yOffset;
+
+                    context.fillStyle = "rgba(255, 215, 0, 0.9)";
+                    context.beginPath();
+                    // 角丸矩形
+                    const r = 8;
+                    context.moveTo(px - bgW / 2 + r, py - bgH / 2);
+                    context.lineTo(px + bgW / 2 - r, py - bgH / 2);
+                    context.quadraticCurveTo(px + bgW / 2, py - bgH / 2, px + bgW / 2, py - bgH / 2 + r);
+                    context.lineTo(px + bgW / 2, py + bgH / 2 - r);
+                    context.quadraticCurveTo(px + bgW / 2, py + bgH / 2, px + bgW / 2 - r, py + bgH / 2);
+                    context.lineTo(px - bgW / 2 + r, py + bgH / 2);
+                    context.quadraticCurveTo(px - bgW / 2, py + bgH / 2, px - bgW / 2, py + bgH / 2 - r);
+                    context.lineTo(px - bgW / 2, py - bgH / 2 + r);
+                    context.quadraticCurveTo(px - bgW / 2, py - bgH / 2, px - bgW / 2 + r, py - bgH / 2);
+                    context.closePath();
+                    context.fill();
+
+                    // テキスト
+                    context.fillStyle = "#5d4037";
+                    context.fillText(text, px, py);
+
                     context.restore();
                 }
             });
 
-            // スポナー（予告）
-            if(isPlaying && canDrop) {
-                const nextChar = kanjiList[nextKanjiIndex].char;
-                context.fillStyle = "rgba(216, 67, 21, 0.5)";
-                context.font = "bold 40px serif";
-                context.fillText(nextChar, spawnerX, 100);
-                
-                context.beginPath();
-                context.moveTo(spawnerX, 0);
-                context.lineTo(spawnerX, 80);
-                context.strokeStyle = "#8d6e63";
-                context.lineWidth = 2;
-                context.stroke();
-            }
-        });
+            // 衝突判定：熟語マッチチェック
+            Events.on(engine, 'collisionStart', function (event) {
+                if (!isPlaying) return;
+                const pairs = event.pairs;
 
-        // リサイズ対応（ウィンドウサイズが変わっても比率を維持）
-        window.addEventListener('resize', () => {
+                for (let i = 0; i < pairs.length; i++) {
+                    const pair = pairs[i];
+                    const bodyA = pair.bodyA;
+                    const bodyB = pair.bodyB;
+
+                    // 両方が漢字ブロックかチェック
+                    if (!bodyA.label || !bodyA.label.startsWith('kanji-')) continue;
+                    if (!bodyB.label || !bodyB.label.startsWith('kanji-')) continue;
+
+                    // 既にマッチ済みのペアはスキップ
+                    const pairKey = [bodyA.id, bodyB.id].sort().join('-');
+                    if (matchedPairs.has(pairKey)) continue;
+
+                    // 既に固定されたブロック同士はスキップ
+                    if (bodyA.jukugoMatched && bodyB.jukugoMatched) continue;
+
+                    const charA = bodyA.label.split('-')[1];
+                    const charB = bodyB.label.split('-')[1];
+
+                    // 左右の位置関係で語順を判定
+                    let leftBody, rightBody, leftChar, rightChar;
+                    if (bodyA.position.x <= bodyB.position.x) {
+                        leftBody = bodyA; rightBody = bodyB;
+                        leftChar = charA; rightChar = charB;
+                    } else {
+                        leftBody = bodyB; rightBody = bodyA;
+                        leftChar = charB; rightChar = charA;
+                    }
+
+                    // 両方の語順をチェック（左→右 と 右→左）
+                    const word1 = leftChar + rightChar;
+                    const word2 = rightChar + leftChar;
+                    let matchedWord = null;
+                    let reading = null;
+
+                    if (jukugoDict[word1]) {
+                        matchedWord = word1;
+                        reading = jukugoDict[word1];
+                    } else if (jukugoDict[word2]) {
+                        matchedWord = word2;
+                        reading = jukugoDict[word2];
+                    }
+
+                    if (matchedWord) {
+                        // マッチ！ペアを記録
+                        matchedPairs.add(pairKey);
+
+                        // ブロックを固定化
+                        Body.setStatic(bodyA, true);
+                        Body.setStatic(bodyB, true);
+                        bodyA.jukugoMatched = true;
+                        bodyB.jukugoMatched = true;
+
+                        // 金色に変更
+                        bodyA.render.fillStyle = '#ffd700';
+                        bodyA.render.strokeStyle = '#b8860b';
+                        bodyA.render.lineWidth = 3;
+                        bodyB.render.fillStyle = '#ffd700';
+                        bodyB.render.strokeStyle = '#b8860b';
+                        bodyB.render.lineWidth = 3;
+
+                        // Constraintで結合
+                        const constraint = Constraint.create({
+                            bodyA: bodyA,
+                            bodyB: bodyB,
+                            stiffness: 1,
+                            render: { visible: false }
+                        });
+                        Composite.add(engine.world, constraint);
+
+                        // 読み仮名ポップアップを表示
+                        const midX = (bodyA.position.x + bodyB.position.x) / 2;
+                        const midY = Math.min(bodyA.position.y, bodyB.position.y) - 30;
+                        popups.push({
+                            jukugo: matchedWord,
+                            reading: reading,
+                            x: midX,
+                            y: midY,
+                            startTime: Date.now()
+                        });
+
+                        // 熟語を図鑑に記録
+                        if (!matchedJukugo.find(j => j.word === matchedWord)) {
+                            matchedJukugo.push({ word: matchedWord, reading: reading });
+                        }
+
+                        // ボーナスポイント +3
+                        score += 3;
+                        updateUI();
+
+                        // 画面を金色にフラッシュ
+                        container.style.boxShadow = "inset 0 0 50px rgba(255, 215, 0, 0.6)";
+                        setTimeout(() => container.style.boxShadow = "0 0 20px rgba(0,0,0,0.2)", 400);
+                    }
+                }
+            });
+
+            // リサイズ対応（ウィンドウサイズが変わっても比率を維持）
+            window.addEventListener('resize', () => {
+                gameW = container.clientWidth;
+                gameH = container.clientHeight;
+                render.canvas.width = gameW;
+                render.canvas.height = gameH;
+
+                if (!isPlaying) {
+                    Composite.clear(engine.world);
+                    createPlatform();
+                }
+            });
+
+            runner = Runner.create();
+        }
+
+        function createPlatform() {
+            // 台座のみ作成（地面は作らない＝落ちたら終わり）
+            const platformW = 320;
+            const platformH = 30;
+
+            const platform = Bodies.rectangle(gameW / 2, gameH - 100, platformW, platformH, {
+                isStatic: true,
+                render: { fillStyle: '#8d6e63' },
+                label: 'platform'
+            });
+
+            Composite.add(engine.world, platform);
+        }
+
+        function startGame() {
+            if (!engine) init();
+
+            // 世界をリセット
+            Composite.clear(engine.world);
+            Engine.clear(engine);
+
+            // サイズ再取得（念のため）
             gameW = container.clientWidth;
             gameH = container.clientHeight;
             render.canvas.width = gameW;
             render.canvas.height = gameH;
-            
-            // 地面などの再配置が必要ならここで行うが、
-            // 今回は固定幅コンテナなのでCSS側で制御され、JS側はあまり崩れない
-            // ただし台座の位置はずれる可能性があるので再生成
-            if(!isPlaying) {
-                Composite.clear(engine.world);
-                createPlatform();
-            }
-        });
 
-        runner = Runner.create();
-    }
+            createPlatform();
 
-    function createPlatform() {
-        // 台座のみ作成（地面は作らない＝落ちたら終わり）
-        // 幅を320pxに設定（以前より広く）
-        const platformW = 320;
-        const platformH = 30;
-        
-        const platform = Bodies.rectangle(gameW / 2, gameH - 100, platformW, platformH, {
-            isStatic: true,
-            render: { fillStyle: '#8d6e63' },
-            label: 'platform'
-        });
+            score = 0;
+            life = 3;
+            matchedJukugo = [];
+            matchedPairs = new Set();
+            popups = [];
+            updateUI();
 
-        Composite.add(engine.world, platform);
-    }
+            nextKanjiIndex = Math.floor(Math.random() * kanjiList.length);
 
-    function startGame() {
-        if (!engine) init();
+            isPlaying = true;
+            canDrop = true;
 
-        // 世界をリセット
-        Composite.clear(engine.world);
-        Engine.clear(engine);
-        
-        // サイズ再取得（念のため）
-        gameW = container.clientWidth;
-        gameH = container.clientHeight;
-        render.canvas.width = gameW;
-        render.canvas.height = gameH;
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('gameover-screen').style.display = 'none';
 
-        createPlatform();
+            Render.run(render);
+            Runner.run(runner, engine);
 
-        score = 0;
-        life = 3;
-        updateUI();
-        
-        nextKanjiIndex = Math.floor(Math.random() * kanjiList.length);
-        
-        isPlaying = true;
-        canDrop = true;
+            gameLoop();
+        }
 
-        document.getElementById('start-screen').style.display = 'none';
-        document.getElementById('gameover-screen').style.display = 'none';
+        function gameLoop() {
+            if (!isPlaying) return;
 
-        Render.run(render);
-        Runner.run(runner, engine);
-        
-        gameLoop();
-    }
+            // スポナー移動（台座の幅くらいを行ったり来たり）
+            const time = Date.now() * 0.002;
+            // 振れ幅を台座より少し狭くする（積みやすくするため）
+            const range = 140;
+            spawnerX = (gameW / 2) + Math.sin(time) * range;
 
-    function gameLoop() {
-        if (!isPlaying) return;
+            // 落下判定 + 積み上がり判定
+            const bodies = Composite.allBodies(engine.world);
+            const topLine = 130; // スポナーライン付近
 
-        // スポナー移動（台座の幅くらいを行ったり来たり）
-        const time = Date.now() * 0.002;
-        // 振れ幅を台座より少し狭くする（積みやすくするため）
-        const range = 140; 
-        spawnerX = (gameW / 2) + Math.sin(time) * range;
+            for (let i = bodies.length - 1; i >= 0; i--) {
+                const b = bodies[i];
+                if (b.label === 'platform') continue;
 
-        // 落下判定
-        const bodies = Composite.allBodies(engine.world);
-        for (let i = bodies.length - 1; i >= 0; i--) {
-            const b = bodies[i];
-            if (b.isStatic) continue;
+                // 画面外（下）に落ちたらミス
+                if (!b.isStatic && b.position.y > gameH + 50) {
+                    Composite.remove(engine.world, b);
+                    life--;
+                    updateUI();
 
-            // 画面外（下）に落ちたらミス
-            if (b.position.y > gameH + 50) {
-                Composite.remove(engine.world, b);
-                life--;
-                updateUI();
-                
-                // 画面を赤くフラッシュ
-                container.style.boxShadow = "inset 0 0 50px red";
-                setTimeout(() => container.style.boxShadow = "0 0 20px rgba(0,0,0,0.2)", 200);
+                    // 画面を赤くフラッシュ
+                    container.style.boxShadow = "inset 0 0 50px red";
+                    setTimeout(() => container.style.boxShadow = "0 0 20px rgba(0,0,0,0.2)", 200);
 
-                if (life <= 0) {
-                    gameOver();
-                    return;
+                    if (life <= 0) {
+                        gameOver();
+                        return;
+                    }
+                }
+
+                // 積み上がり判定：漢字ブロックが上部ラインに到達し、ほぼ静止していたらゲームオーバー
+                if (b.label && b.label.startsWith('kanji-') && b.position.y < topLine) {
+                    const speed = Math.sqrt(b.velocity.x ** 2 + b.velocity.y ** 2);
+                    if (speed < 1) {
+                        // ほぼ静止状態で上部に到達 → ゲームオーバー
+                        gameOver();
+                        return;
+                    }
                 }
             }
+
+            requestAnimationFrame(gameLoop);
         }
 
-        requestAnimationFrame(gameLoop);
-    }
+        // タップ操作
+        container.addEventListener('pointerdown', (e) => {
+            // ボタン等のクリックは無視
+            if (e.target.closest('button') || e.target.closest('a')) return;
+            if (!isPlaying || !canDrop) return;
 
-    // タップ操作
-    container.addEventListener('pointerdown', (e) => {
-        // ボタン等のクリックは無視
-        if (e.target.closest('button') || e.target.closest('a')) return;
-        if (!isPlaying || !canDrop) return;
-
-        dropKanji();
-    });
-
-    function dropKanji() {
-        canDrop = false;
-
-        const data = kanjiList[nextKanjiIndex];
-        const baseSize = 50; 
-        const w = baseSize * data.w;
-        const h = baseSize * data.h;
-
-        const colors = ['#ffe0b2', '#ffcc80', '#ffecb3', '#fff9c4'];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-
-        // スポナーの位置から落下
-        const body = Bodies.rectangle(spawnerX, 100, w, h, {
-            restitution: 0.1,
-            friction: 0.8,
-            density: 0.002,
-            render: {
-                fillStyle: color,
-                strokeStyle: '#8d6e63',
-                lineWidth: 2
-            },
-            label: 'kanji-' + data.char
+            dropKanji();
         });
 
-        Composite.add(engine.world, body);
+        function dropKanji() {
+            canDrop = false;
 
-        nextKanjiIndex = Math.floor(Math.random() * kanjiList.length);
-        score++;
-        updateUI();
+            const data = kanjiList[nextKanjiIndex];
+            const baseSize = 50;
+            const w = baseSize * data.w;
+            const h = baseSize * data.h;
 
-        setTimeout(() => {
-            canDrop = true;
-        }, 600); // テンポよく落とせるよう少し短縮
-    }
+            const colors = ['#ffe0b2', '#ffcc80', '#ffecb3', '#fff9c4'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
 
-    function updateUI() {
-        document.getElementById('score').textContent = score;
-        let hearts = "";
-        for(let i=0; i<life; i++) hearts += "❤️";
-        document.getElementById('life-display').textContent = hearts;
-    }
+            // スポナーの位置から落下
+            const body = Bodies.rectangle(spawnerX, 100, w, h, {
+                restitution: 0.1,
+                friction: 0.8,
+                density: 0.002,
+                render: {
+                    fillStyle: color,
+                    strokeStyle: '#8d6e63',
+                    lineWidth: 2
+                },
+                label: 'kanji-' + data.char
+            });
 
-    function gameOver() {
-        isPlaying = false;
-        Runner.stop(runner);
-        document.getElementById('final-score').textContent = score;
-        document.getElementById('gameover-screen').style.display = 'flex';
-        if(typeof showSaveDialog === 'function') {
-            showSaveDialog('tsumitsumi', score);
+            Composite.add(engine.world, body);
+
+            nextKanjiIndex = Math.floor(Math.random() * kanjiList.length);
+            score++;
+            updateUI();
+
+            setTimeout(() => {
+                canDrop = true;
+            }, 600); // テンポよく落とせるよう少し短縮
         }
-    }
 
-    init();
+        function updateUI() {
+            document.getElementById('score').textContent = score;
+            let hearts = "";
+            for (let i = 0; i < life; i++) hearts += "❤️";
+            document.getElementById('life-display').textContent = hearts;
+        }
 
-</script>
+        function gameOver() {
+            isPlaying = false;
+            Runner.stop(runner);
+            document.getElementById('final-score').textContent = score;
+
+            // 熟語図鑑を表示
+            const resultArea = document.getElementById('jukugo-result-area');
+            if (matchedJukugo.length > 0) {
+                let html = '<div class="jukugo-result">';
+                html += '<h3>📖 みつけた熟語（じゅくご）</h3>';
+                matchedJukugo.forEach(j => {
+                    html += `<span class="jukugo-item"><ruby>${j.word}<rt>${j.reading}</rt></ruby></span>`;
+                });
+                html += '</div>';
+                resultArea.innerHTML = html;
+            } else {
+                resultArea.innerHTML = '<div class="jukugo-result"><p class="no-jukugo">熟語はみつからなかったよ。<br>つぎはさがしてみよう！</p></div>';
+            }
+
+            document.getElementById('gameover-screen').style.display = 'flex';
+            if (typeof showSaveDialog === 'function') {
+                showSaveDialog('tsumitsumi', score);
+            }
+        }
+
+        init();
+
+    </script>
 </body>
+
 </html>

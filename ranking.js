@@ -145,6 +145,9 @@ const DAILY_MISSION_CANDIDATES = [
     'shopping',       // おかいもの
     'rain_math',      // あめふり算数
     'daily_english',  // まいにちえいご
+    'water', // 水槽パズル
+    'frac_add_easy', // 分数足し算
+    'frac_sub_easy', // 分数引き算
 ];
 
 const DAILY_MISSION_KEY = 'papan_daily_mission_v1';
