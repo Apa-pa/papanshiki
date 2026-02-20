@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分数タイムアタック！</title>
+    <script src="ranking.js"></script>
+    <style>
+        :root {
+            --primary-bg: #e8f5e9;
+            --card-bg: #ffffff;
+            --accent-color: #7c4dff;
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            width: 95%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .main-title {
+            font-size: 1.8rem;
+            color: #444;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .sub-title {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* コース選択ボタンのエリア */
+        .btn-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 15px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: bold;
+            transition: transform 0.1s;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+            width: 100%;
+            font-family: inherit;
+        }
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
+        }
+
+        /* 各ボタンの色 */
+        .btn-add-easy {
+            background: #4fc3f7;
+        }
+
+        .btn-add-hard {
+            background: #2196f3;
+        }
+
+        .btn-sub-easy {
+            background: #ff8a65;
+        }
+
+        .btn-sub-hard {
+            background: #f44336;
+        }
+
+        .btn-multi {
+            background: #ffca28;
+            color: #5d4037;
+        }
+
+        .retry-btn {
+            background: #66bb6a;
+            margin-top: 10px;
+        }
+
+        .home-link {
+            display: inline-block;
+            margin-top: 25px;
+            color: #78909c;
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #78909c;
+        }
+
+        /* ゲーム画面 */
+        #progress {
+            font-size: 1rem;
+            color: #888;
+            margin-bottom: 10px;
+            display: inline-block;
+            background: #eee;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        /* 問題表示エリア */
+        #question {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            margin: 15px 0 25px 0;
+            color: #333;
+            font-weight: bold;
+            flex-wrap: wrap;
+        }
+
+        /* 分数表示（縦書き） */
+        .frac {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            font-size: 1.6rem;
+            line-height: 1.2;
+        }
+
+        .frac .num {
+            padding: 0 8px;
+        }
+
+        .frac .bar {
+            width: 100%;
+            height: 3px;
+            background: #333;
+            margin: 2px 0;
+            min-width: 30px;
+        }
+
+        .frac .den {
+            padding: 0 8px;
+        }
+
+        .op-sign {
+            font-size: 2rem;
+            margin: 0 2px;
+        }
+
+        .eq-sign {
+            font-size: 2rem;
+            margin: 0 2px;
+        }
+
+        /* 選択肢 */
+        .choice-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .choice-btn {
+            background-color: #fff;
+            color: #333;
+            border: 2px solid #ddd;
+            font-size: 1.3rem;
+            padding: 15px 0;
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .choice-btn:active {
+            background-color: #eee;
+        }
+
+        /* 選択肢内の分数 */
+        .choice-btn .frac {
+            font-size: 1.4rem;
+        }
+
+        /* 整数の答え表示用 */
+        .int-answer {
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+
+        /* 結果画面 */
+        #result-time {
+            font-size: 3rem;
+            color: #e91e63;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+
+        /* 正解マーク */
+        #correct-mark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 150px;
+            color: #ff3d00;
+            font-weight: bold;
+            display: none;
+            z-index: 100;
+            pointer-events: none;
+            text-shadow: 2px 2px 0px white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <div id="correct-mark">◎</div>
+
+        <div id="start-screen">
+            <div class="main-title">⏱️ 分数<br>タイムアタック</div>
+            <div class="sub-title">10もん はやとき！ コースをえらんでね</div>
+
+            <div class="btn-grid">
+                <button class="btn-add-easy" onclick="startGame('add_easy')">たしざん（やさしい）</button>
+                <button class="btn-add-hard" onclick="startGame('add_hard')">たしざん（むずかしい）</button>
+                <button class="btn-sub-easy" onclick="startGame('sub_easy')">ひきざん（やさしい）</button>
+                <button class="btn-sub-hard" onclick="startGame('sub_hard')">ひきざん（むずかしい）</button>
+                <button class="btn-multi" onclick="startGame('multi')">かけ算</button>
+            </div>
+
+            <a href="index.html" class="home-link">🏠 ホームへもどる</a>
+        </div>
+
+        <div id="quiz-screen" class="hidden">
+            <span id="progress">1 / 10</span>
+            <div id="question"></div>
+            <div id="choices" class="choice-grid"></div>
+        </div>
+
+        <div id="result-screen" class="hidden">
+            <div class="main-title">🚩 ゴール！</div>
+            <p>あなたのタイム</p>
+            <div id="result-time">0.00秒</div>
+
+            <button class="retry-btn" onclick="resetGame()">もういちど あそぶ</button>
+            <br>
+            <a href="index.html" class="home-link">🏠 ホームへもどる</a>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 0;
+        let currentMode = '';
+        let correctNumerator = 0;   // 正解の分子
+        let correctDenominator = 1; // 正解の分母（1なら整数）
+        let startTime;
+        const totalQuestions = 10;
+
+        // ランキング保存用のID対応表
+        const RANKING_IDS = {
+            'add_easy': 'frac_add_easy',
+            'add_hard': 'frac_add_hard',
+            'sub_easy': 'frac_sub_easy',
+            'sub_hard': 'frac_sub_hard',
+            'multi': 'frac_multi'
+        };
+
+        // === ユーティリティ関数 ===
+
+        // 最大公約数（ユークリッドの互除法）
+        function gcd(a, b) {
+            a = Math.abs(a);
+            b = Math.abs(b);
+            while (b) { [a, b] = [b, a % b]; }
+            return a;
+        }
+
+        // 分数を約分する → [分子, 分母]
+        function simplify(num, den) {
+            if (num === 0) return [0, 1];
+            const g = gcd(num, den);
+            return [num / g, den / g];
+        }
+
+        // ランダム整数 (min ~ max)
+        function rand(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // 分数のHTMLを生成（縦書き表示）
+        function fracHTML(num, den) {
+            if (den === 1) {
+                // 整数の場合
+                return `<span class="int-answer">${num}</span>`;
+            }
+            return `<span class="frac"><span class="num">${num}</span><span class="bar"></span><span class="den">${den}</span></span>`;
+        }
+
+        // === ゲーム制御 ===
+
+        function startGame(mode) {
+            currentMode = mode;
+            currentQuestion = 1;
+            startTime = Date.now();
+
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            if (currentQuestion > totalQuestions) {
+                endGame();
+                return;
+            }
+
+            document.getElementById('progress').innerText = `だい ${currentQuestion} / ${totalQuestions} もん`;
+            generateProblem();
+        }
+
+        // === 問題作成ロジック ===
+        function generateProblem() {
+            let n1, d1, n2, d2, ansNum, ansDen, opSign;
+
+            switch (currentMode) {
+                case 'add_easy': {
+                    // 同分母のたしざん
+                    const denList = [2, 3, 4, 5, 6];
+                    d1 = denList[rand(0, denList.length - 1)];
+                    d2 = d1; // 同じ分母
+                    n1 = rand(1, d1 - 1);
+                    // 合計が分母を超えないようにする
+                    n2 = rand(1, Math.min(d1 - 1, d1 - n1));
+                    if (n2 < 1) n2 = 1;
+                    ansNum = n1 + n2;
+                    ansDen = d1;
+                    opSign = '+';
+                    break;
+                }
+                case 'add_hard': {
+                    // 異分母のたしざん
+                    const denList = [2, 3, 4, 5, 6, 8, 10];
+                    do {
+                        d1 = denList[rand(0, denList.length - 1)];
+                        d2 = denList[rand(0, denList.length - 1)];
+                    } while (d1 === d2);
+                    n1 = rand(1, d1 - 1);
+                    n2 = rand(1, d2 - 1);
+                    // 通分して計算
+                    const lcd = lcm(d1, d2);
+                    ansNum = n1 * (lcd / d1) + n2 * (lcd / d2);
+                    ansDen = lcd;
+                    opSign = '+';
+                    break;
+                }
+                case 'sub_easy': {
+                    // 同分母のひきざん（分母3以上で n1 > n2 を保証）
+                    const denList = [3, 4, 5, 6];
+                    d1 = denList[rand(0, denList.length - 1)];
+                    d2 = d1;
+                    n1 = rand(2, d1 - 1);
+                    n2 = rand(1, n1 - 1); // 必ず n1 > n2
+                    ansNum = n1 - n2;
+                    ansDen = d1;
+                    opSign = '-';
+                    break;
+                }
+                case 'sub_hard': {
+                    // 異分母のひきざん
+                    const denList = [2, 3, 4, 5, 6, 8, 10];
+                    let attempts = 0;
+                    do {
+                        d1 = denList[rand(0, denList.length - 1)];
+                        d2 = denList[rand(0, denList.length - 1)];
+                        n1 = rand(1, d1 - 1);
+                        n2 = rand(1, d2 - 1);
+                        const lcd = lcm(d1, d2);
+                        ansNum = n1 * (lcd / d1) - n2 * (lcd / d2);
+                        ansDen = lcd;
+                        attempts++;
+                    } while ((ansNum <= 0 || d1 === d2) && attempts < 100);
+                    // 万が一収束しなかったら簡単な問題にフォールバック
+                    if (ansNum <= 0) {
+                        d1 = 4; n1 = 3; d2 = 2; n2 = 1;
+                        ansNum = 3 * 1 - 1 * 2; // 1
+                        ansDen = 4;
+                    }
+                    opSign = '-';
+                    break;
+                }
+                case 'multi': {
+                    // かけ算
+                    const denList = [2, 3, 4, 5, 6];
+                    d1 = denList[rand(0, denList.length - 1)];
+                    d2 = denList[rand(0, denList.length - 1)];
+                    n1 = rand(1, d1 - 1);
+                    n2 = rand(1, d2 - 1);
+                    ansNum = n1 * n2;
+                    ansDen = d1 * d2;
+                    opSign = '×';
+                    break;
+                }
+            }
+
+            // 答えを約分
+            [correctNumerator, correctDenominator] = simplify(ansNum, ansDen);
+
+            // 問題をHTMLで表示
+            const questionDiv = document.getElementById('question');
+            questionDiv.innerHTML = `${fracHTML(n1, d1)} <span class="op-sign">${opSign}</span> ${fracHTML(n2, d2)} <span class="eq-sign">=</span> <span class="eq-sign">?</span>`;
+
+            generateChoices(correctNumerator, correctDenominator);
+        }
+
+        // 最小公倍数
+        function lcm(a, b) {
+            return (a * b) / gcd(a, b);
+        }
+
+        // === 選択肢生成 ===
+        function generateChoices(corrNum, corrDen) {
+            const choicesDiv = document.getElementById('choices');
+            choicesDiv.innerHTML = '';
+
+            // 選択肢を管理（"分子/分母" の文字列で重複チェック）
+            const choiceSet = new Set();
+            const choiceList = [];
+
+            // 正解を追加
+            const corrKey = `${corrNum}/${corrDen}`;
+            choiceSet.add(corrKey);
+            choiceList.push({ num: corrNum, den: corrDen });
+
+            // ダミーの選択肢を3つ作る
+            let attempts = 0;
+            while (choiceList.length < 4 && attempts < 50) {
+                attempts++;
+                let fakeNum, fakeDen;
+
+                // さまざまなパターンでダミーを生成
+                const pattern = rand(0, 4);
+                switch (pattern) {
+                    case 0: // 分子をずらす
+                        fakeNum = corrNum + rand(-3, 3);
+                        fakeDen = corrDen;
+                        break;
+                    case 1: // 分母をずらす
+                        fakeNum = corrNum;
+                        fakeDen = corrDen + rand(1, 3);
+                        break;
+                    case 2: // 分子分母を両方ずらす
+                        fakeNum = corrNum + rand(-2, 2);
+                        fakeDen = corrDen + rand(-1, 2);
+                        break;
+                    case 3: // 約分の罠（わざと約分しない値を提示）
+                        fakeNum = corrNum * 2;
+                        fakeDen = corrDen * 2;
+                        break;
+                    case 4: // ランダムな分数
+                        fakeDen = rand(2, 12);
+                        fakeNum = rand(1, fakeDen - 1);
+                        break;
+                }
+
+                // 不正な値を除外
+                if (fakeNum <= 0 || fakeDen <= 0) continue;
+
+                // 約分する
+                const [sNum, sDen] = simplify(fakeNum, fakeDen);
+                const key = `${sNum}/${sDen}`;
+
+                // 重複チェック
+                if (!choiceSet.has(key)) {
+                    choiceSet.add(key);
+                    choiceList.push({ num: sNum, den: sDen });
+                }
+            }
+
+            // もし4つ揃わなかったら簡単なダミーで埋める
+            let fallback = 1;
+            while (choiceList.length < 4) {
+                const key = `${fallback}/${corrDen + fallback}`;
+                if (!choiceSet.has(key)) {
+                    choiceSet.add(key);
+                    choiceList.push({ num: fallback, den: corrDen + fallback });
+                }
+                fallback++;
+            }
+
+            // シャッフル
+            for (let i = choiceList.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [choiceList[i], choiceList[j]] = [choiceList[j], choiceList[i]];
+            }
+
+            // ボタンを配置
+            choiceList.forEach(frac => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.innerHTML = fracHTML(frac.num, frac.den);
+                btn.onclick = () => checkAnswer(frac.num, frac.den);
+                choicesDiv.appendChild(btn);
+            });
+        }
+
+        // === 正誤判定 ===
+        function checkAnswer(selectedNum, selectedDen) {
+            if (selectedNum === correctNumerator && selectedDen === correctDenominator) {
+                // 正解！
+                const mark = document.getElementById('correct-mark');
+                mark.style.display = 'block';
+
+                setTimeout(() => {
+                    mark.style.display = 'none';
+                    currentQuestion++;
+                    nextQuestion();
+                }, 200);
+            } else {
+                // 不正解
+                document.body.style.backgroundColor = "#ffcdd2";
+                setTimeout(() => { document.body.style.backgroundColor = ""; }, 200);
+            }
+        }
+
+        // === 結果画面 ===
+        function endGame() {
+            const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('result-time').innerText = `${duration}秒`;
+
+            // ランキング保存画面を呼び出し
+            const rankingId = RANKING_IDS[currentMode];
+            if (typeof showSaveDialog === 'function' && rankingId) {
+                showSaveDialog(rankingId, duration);
+            }
+        }
+
+        function resetGame() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+        }
+    </script>
+
+</body>
+
+</html>

@@ -21,7 +21,12 @@ const GAME_LIST = {
     'shopping': { name: 'ぴったりしはらい', type: 'time', unit: '秒' },
     'water': { name: '水槽パズル', type: 'time', unit: '秒' },
     'rail': { name: 'つなげて！トロッコ', type: 'time', unit: '秒' },
-    'daily_english': { name: 'まいにちエイゴ', type: 'time', unit: '秒' }
+    'daily_english': { name: 'まいにちエイゴ', type: 'time', unit: '秒' },
+    'frac_add_easy': { name: '分数たしざん(やさしい)', type: 'time', unit: '秒' },
+    'frac_add_hard': { name: '分数たしざん(むずかしい)', type: 'time', unit: '秒' },
+    'frac_sub_easy': { name: '分数ひきざん(やさしい)', type: 'time', unit: '秒' },
+    'frac_sub_hard': { name: '分数ひきざん(むずかしい)', type: 'time', unit: '秒' },
+    'frac_multi': { name: '分数かけ算', type: 'time', unit: '秒' }
 };
 
 // --- リアル株価連動設定 ---
