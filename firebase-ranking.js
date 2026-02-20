@@ -19,22 +19,22 @@ const db = getFirestore(app);
 // ------------------------------------------------
 // 🏆 ランキング機能 (修正版)
 // ------------------------------------------------
-window.uploadToWorldRanking = async function(gameId, localName, score, publicInput) {
+window.uploadToWorldRanking = async function (gameId, localName, score, publicInput) {
     let finalName = (publicInput || localName).trim();
-    const ngList = ["ばか", "あほ", "うんち", "うんこ", "ちんこ", "まんこ", "死ね", "殺す"]; 
+    const ngList = ["ばか", "あほ", "うんち", "うんこ", "ちんこ", "まんこ", "死ね", "殺す"];
     if (finalName === "" || ngList.some(ng => finalName.includes(ng))) {
         finalName = "名無しさん";
     }
 
     try {
         // ▼▼▼ 修正: バラバラのコレクションではなく、共通の "world_rankings" に保存する ▼▼▼
-        const colRef = collection(db, "world_rankings"); 
-        
+        const colRef = collection(db, "world_rankings");
+
         await addDoc(colRef, {
             gameId: gameId,       // ▼▼▼ 重要: これがないと open_record.html で検索できません！
             name: finalName,
             score: Number(score),
-            date: serverTimestamp() 
+            date: serverTimestamp()
         });
         console.log("ランキング送信完了");
         alert("ランキングに登録しました！"); // 成功したことがわかるようにアラートを追加
@@ -53,12 +53,12 @@ window.uploadToWorldRanking = async function(gameId, localName, score, publicInp
 
 // 1. 自分の部屋データを送信（公開）する関数
 // ★第一引数を userName から userId (ユニークID) に変更
-window.publishMyRoom = async function(userId, roomData, publicName) {
-    if(!userId) return; // IDがないなら中止
+window.publishMyRoom = async function (userId, roomData, publicName) {
+    if (!userId) return; // IDがないなら中止
 
     // 名前の決定とチェック
     let finalName = (publicName || "名無しさん").trim();
-    const ngList = ["ばか", "あほ", "うんち", "うんこ", "ちんこ", "まんこ", "死ね", "殺す"]; 
+    const ngList = ["ばか", "あほ", "うんち", "うんこ", "ちんこ", "まんこ", "死ね", "殺す"];
     if (finalName === "" || ngList.some(ng => finalName.includes(ng))) {
         finalName = "名無しさん";
         alert("その名前は使えません。「名無しさん」として登録します。");
@@ -77,7 +77,7 @@ window.publishMyRoom = async function(userId, roomData, publicName) {
         // ★ userId (ランダムなID) を場所の名前として使う
         const docRef = doc(db, "public_rooms", userId);
         await setDoc(docRef, publicData);
-        
+
         alert(`「${finalName}」のお部屋を公開しました！🌏\n(ID: ${userId})`);
     } catch (e) {
         console.error("公開エラー:", e);
@@ -87,13 +87,13 @@ window.publishMyRoom = async function(userId, roomData, publicName) {
 // ...fetchPublicRoomListなどはそのままでOK
 
 // 2. 公開されているみんなの部屋リストを取得する関数
-window.fetchPublicRoomList = async function() {
+window.fetchPublicRoomList = async function () {
     try {
         // 更新が新しい順に並べ替えたい場合は orderBy を使いますが、
         // まずは単純に全件取得します
         const colRef = collection(db, "public_rooms");
         const snapshot = await getDocs(colRef);
-        
+
         let rooms = [];
         snapshot.forEach(doc => {
             // ★重要: データの中身(...doc.data())だけでなく、
@@ -111,7 +111,7 @@ window.fetchPublicRoomList = async function() {
 };
 
 // ★追加: ID(uid)を指定して、特定の部屋データを1つ取得する関数
-window.fetchPublicRoom = async function(uid) {
+window.fetchPublicRoom = async function (uid) {
     try {
         const docRef = doc(db, "public_rooms", uid);
         const docSnap = await getDoc(docRef);
@@ -129,8 +129,8 @@ window.fetchPublicRoom = async function(uid) {
 };
 
 // --- 🐑 全国レース・エントリー機能 (更新) ---
-window.registerNationalRaceEntry = async function(userId, sheepData, ownerName) {
-    if(!userId || !sheepData) return;
+window.registerNationalRaceEntry = async function (userId, sheepData, ownerName) {
+    if (!userId || !sheepData) return;
 
     const entryData = {
         ownerName: ownerName || "名無しオーナー",
@@ -157,7 +157,7 @@ window.registerNationalRaceEntry = async function(userId, sheepData, ownerName) 
 /**
  * 最新のレース結果（先週の優勝者など）を取得する
  */
-window.fetchLatestNationalResults = async function() {
+window.fetchLatestNationalResults = async function () {
     try {
         // "national_results" コレクションの "latest" ドキュメントを取得する想定
         const docRef = doc(db, "national_results", "latest");
@@ -194,17 +194,17 @@ function getTargetRaceId() {
     }
 
     // ID形式: "2024-05-18-1600"
-    return lastSaturday.getFullYear() + "-" + 
-           (lastSaturday.getMonth() + 1).toString().padStart(2, '0') + "-" + 
-           lastSaturday.getDate().toString().padStart(2, '0') + "-1600";
+    return lastSaturday.getFullYear() + "-" +
+        (lastSaturday.getMonth() + 1).toString().padStart(2, '0') + "-" +
+        lastSaturday.getDate().toString().padStart(2, '0') + "-1600";
 }
 
 /**
  * 全国レースの状況をチェックし、必要なら計算を実行する
  */
-window.checkAndRunNationalRace = async function() {
+window.checkAndRunNationalRace = async function () {
     const raceId = getTargetRaceId();
-    
+
     try {
         // 1. すでに結果が出ているか確認
         const resultRef = doc(db, "national_results", "latest");
@@ -233,14 +233,14 @@ window.checkAndRunNationalRace = async function() {
         entries.forEach(e => {
             const lMax = luckMax[e.rank] || 60;
             const luck = Math.random() * lMax;
-            
+
             // ★ ベテランボーナスの計算 (24回から減るほど最大12点加算)
             const remaining = e.contractRaces !== undefined ? e.contractRaces : 24;
             const experienceBonus = (24 - remaining) * 0.5;
 
             // スコア計算式にボーナスを追加
             e.totalScore = (e.speed * 1.2) + (e.stamina * 0.8) + (e.tenacity * 1.0) + luck + experienceBonus;
-            
+
             if (leagues[e.rank]) leagues[e.rank].push(e);
         });
 
@@ -259,6 +259,10 @@ window.checkAndRunNationalRace = async function() {
 
         // 5. 結果をFirebaseに保存
         await setDoc(resultRef, { ...finalResults, createdAt: serverTimestamp() });
+
+        // 5.5 履歴として別ドキュメントにもコピー保存（将来の結果一覧ページ用）
+        const historyRef = doc(db, "national_results", raceId);
+        await setDoc(historyRef, { ...finalResults, createdAt: serverTimestamp() });
 
         // 6. エントリーをリセット (全削除)
         const batch = writeBatch(db);

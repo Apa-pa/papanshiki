@@ -296,6 +296,7 @@
             <p style="margin:0; font-size:11px; color:#ff9800; font-weight:bold;">🏆 契約中のアスリート</p>
             <input type="text" id="my-sheep-name" class="name-input" onchange="renameSheep()">
             <div id="remaining-races" class="contract-info">残り契約レース: -- 回</div>
+            <div id="record-info" class="contract-info" style="color:#4caf50;">📊 0戦 0勝 ｜ 累計賞金: 0 🌰</div>
 
             <img src="hitsuji_shomen.webp" class="sheep-main-img" id="my-sheep-img">
 
@@ -414,6 +415,11 @@
                 const rem = s.contractRaces !== undefined ? s.contractRaces : 24;
                 document.getElementById('remaining-races').innerText = `残り契約レース: ${rem} 回`;
 
+                // 戦績表示
+                const rec = s.record || { totalRaces: 0, wins: 0, totalPrize: 0 };
+                document.getElementById('record-info').innerText =
+                    `📊 ${rec.totalRaces}戦 ${rec.wins}勝 ｜ 累計賞金: ${rec.totalPrize} 🌰`;
+
                 const isMax = (currentTotal >= s.totalMax);
                 document.querySelectorAll('.train-btn').forEach(btn => btn.disabled = isMax);
                 document.getElementById('entry-status').innerText = s.entry ? "📢 全国レースに登録済み！" : "";
@@ -459,7 +465,8 @@
                 tenacity: target.tenacity,
                 totalMax: target.totalMax,
                 entry: false,
-                contractRaces: 24
+                contractRaces: 24,
+                record: { totalRaces: 0, wins: 0, totalPrize: 0 }
             };
 
             saveUserData(allData);
@@ -594,7 +601,16 @@
                             addDonguri(currentUserName, prize);
                             alert(`🏆全国レース結果発表！\nあなたは第${myRank}位でした！\n賞金 ${prize} 🌰 を受け取りました！`);
                         }
+                    } else {
+                        // 入賞圏外でも結果を通知
+                        alert("📢 全国レース結果発表！\n残念、今回は入賞ならず…\n次のレースに期待！");
                     }
+
+                    // 戦績記録（入賞・圏外問わず出走をカウント）
+                    if (!s.record) s.record = { totalRaces: 0, wins: 0, totalPrize: 0 };
+                    s.record.totalRaces++;
+                    if (myRank === 1) s.record.wins++;
+                    s.record.totalPrize += prize;
 
                     s.lastAwardedRace = data.raceId;
                     s.entry = false;

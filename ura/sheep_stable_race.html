@@ -425,6 +425,20 @@
             const results = [...racers].sort((a, b) => b.pos - a.pos);
             const playerRank = results.findIndex(r => r.isPlayer) + 1;
 
+            // 戦績記録
+            const allData = JSON.parse(localStorage.getItem(SHEEP_STORAGE_KEY) || "{}");
+            const s = allData[userName];
+            if (s) {
+                if (!s.record) s.record = { totalRaces: 0, wins: 0, totalPrize: 0 };
+                s.record.totalRaces++;
+                if (playerRank === 1) {
+                    s.record.wins++;
+                    s.record.totalPrize += currentPrize;
+                }
+                allData[userName] = s;
+                localStorage.setItem(SHEEP_STORAGE_KEY, JSON.stringify(allData));
+            }
+
             const overlay = document.getElementById('result-overlay');
             document.getElementById('result-rank').innerText = playerRank + "位";
             const commentTxt = document.getElementById('result-comment');
