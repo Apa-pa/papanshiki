@@ -97,21 +97,85 @@
             background: #e1f5fe;
         }
 
-        /* 資産表示 */
-        .assets-area {
-            display: flex;
-            justify-content: space-around;
-            background: #fff3e0;
-            border: 2px solid #ffe0b2;
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 10px;
+        /* ポートフォリオダッシュボード */
+        .portfolio-dash {
+            background: linear-gradient(135deg, #1a237e, #283593);
+            border-radius: 15px;
+            padding: 18px;
+            margin-bottom: 20px;
+            color: white;
+            box-shadow: 0 6px 20px rgba(26, 35, 126, 0.3);
+            display: none;
         }
 
-        .asset-val {
+        .portfolio-header {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+
+        .portfolio-total {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 14px;
+        }
+
+        .portfolio-total-item {
+            text-align: center;
+        }
+
+        .portfolio-total-label {
+            font-size: 10px;
+            opacity: 0.6;
+            margin-bottom: 2px;
+        }
+
+        .portfolio-total-val {
+            font-size: 26px;
             font-weight: bold;
-            font-size: 18px;
-            color: #e65100;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .portfolio-total-unit {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .portfolio-divider {
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            margin: 0 0 12px 0;
+        }
+
+        .portfolio-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .portfolio-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .portfolio-card-label {
+            font-size: 10px;
+            opacity: 0.6;
+            margin-bottom: 3px;
+        }
+
+        .portfolio-card-val {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .portfolio-card-unit {
+            font-size: 11px;
+            opacity: 0.7;
         }
 
         /* ニュースティッカー */
@@ -304,28 +368,40 @@
             <option value="">(なまえをえらんでね)</option>
         </select>
 
-        <div class="assets-area">
-            <div>💰 <span id="my-pts" class="asset-val">0</span> pt</div>
-            <div>🌰 <span id="my-don" class="asset-val">0</span></div>
-        </div>
-
-        <!-- 持ち株評価額 -->
-        <div id="valuation-area" class="valuation-area">
-            <div class="valuation-title">📊 持ち株の評価額</div>
-            <div class="valuation-row">
-                <div class="valuation-item">
-                    <div class="valuation-label">ポイント建て</div>
-                    <div>💰 <span id="val-pts" class="valuation-value">0</span> <span style="font-size:12px">pt</span>
-                    </div>
+        <!-- ポートフォリオダッシュボード -->
+        <div id="portfolio-dash" class="portfolio-dash">
+            <div class="portfolio-header">💼 MY PORTFOLIO</div>
+            <div class="portfolio-total">
+                <div class="portfolio-total-item">
+                    <div class="portfolio-total-label">総資産 (ポイント)</div>
+                    <div>💰 <span id="val-total-pts" class="portfolio-total-val">0</span> <span
+                            class="portfolio-total-unit">pt</span></div>
                 </div>
-                <div class="valuation-item">
-                    <div class="valuation-label">どんぐり建て</div>
-                    <div>🌰 <span id="val-don" class="valuation-value">0</span></div>
+                <div class="portfolio-total-item">
+                    <div class="portfolio-total-label">総資産 (どんぐり)</div>
+                    <div>🌰 <span id="val-total-don" class="portfolio-total-val">0</span></div>
                 </div>
             </div>
-            <div class="valuation-total">
-                手持ち＋株の合計 → 💰 <span id="val-total-pts" class="valuation-total-value">0</span> pt ／ 🌰 <span
-                    id="val-total-don" class="valuation-total-value">0</span>
+            <hr class="portfolio-divider">
+            <div class="portfolio-details">
+                <div class="portfolio-card">
+                    <div class="portfolio-card-label">手持ちポイント</div>
+                    <div>💰 <span id="my-pts" class="portfolio-card-val">0</span> <span
+                            class="portfolio-card-unit">pt</span></div>
+                </div>
+                <div class="portfolio-card">
+                    <div class="portfolio-card-label">株評価額 (ポイント)</div>
+                    <div>📈 <span id="val-pts" class="portfolio-card-val" style="color:#69f0ae">0</span> <span
+                            class="portfolio-card-unit">pt</span></div>
+                </div>
+                <div class="portfolio-card">
+                    <div class="portfolio-card-label">手持ちどんぐり</div>
+                    <div>🌰 <span id="my-don" class="portfolio-card-val">0</span></div>
+                </div>
+                <div class="portfolio-card">
+                    <div class="portfolio-card-label">株評価額 (どんぐり)</div>
+                    <div>📈 <span id="val-don" class="portfolio-card-val" style="color:#69f0ae">0</span></div>
+                </div>
             </div>
         </div>
 
@@ -399,8 +475,8 @@
 
                 // 持ち株の評価額を計算
                 const stocks = getUserStocks(userName) || {};
-                let valPts = 0; // ポイント建て銘柄の評価額合計
-                let valDon = 0; // どんぐり建て銘柄の評価額合計
+                let valPts = 0;
+                let valDon = 0;
                 for (let key in stocks) {
                     const count = stocks[key] || 0;
                     if (count > 0 && STOCK_MASTER[key]) {
@@ -417,11 +493,11 @@
                 document.getElementById('val-don').innerText = valDon;
                 document.getElementById('val-total-pts').innerText = userPts + valPts;
                 document.getElementById('val-total-don').innerText = userDon + valDon;
-                document.getElementById('valuation-area').style.display = 'block';
+                document.getElementById('portfolio-dash').style.display = 'block';
             } else {
                 document.getElementById('my-pts').innerText = 0;
                 document.getElementById('my-don').innerText = 0;
-                document.getElementById('valuation-area').style.display = 'none';
+                document.getElementById('portfolio-dash').style.display = 'none';
             }
 
             const container = document.getElementById('stock-list');
