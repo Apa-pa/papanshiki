@@ -89,19 +89,33 @@ function setupDragAndDrop() {
     draggables.forEach(draggable => {
         draggable.addEventListener('pointerdown', onPointerDown);
         draggable.ondragstart = () => false; // デフォルトのドラッグ無効化
+        // iPad対策：タッチ操作でスクロール等を抑制
+        draggable.style.touchAction = 'none';
+        draggable.style.userSelect = 'none';
+        draggable.style.webkitUserSelect = 'none';
     });
 }
 
 // ドラッグ中の状態保持
 let currentDragElement = null;
 let dragClone = null;
+let isDragging = false; // ドラッグ中フラグ（重複防止）
 let dragOffsetX, dragOffsetY;
 
 function onPointerDown(e) {
     if (e.target.classList.contains('placed')) return; // 配置済みは動かせない
+    if (isDragging) return; // 既にドラッグ中なら無視（マルチタッチ対策）
 
     e.preventDefault(); // デフォルト動作無効化
+    isDragging = true;
     currentDragElement = e.target;
+
+    // iPad対策：Pointer Captureで確実にイベントを追跡
+    try {
+        e.target.setPointerCapture(e.pointerId);
+    } catch (ex) {
+        // setPointerCaptureが使えない場合は無視
+    }
 
     // クローンを作成してドラッグ追従させる
     dragClone = currentDragElement.cloneNode(true);
@@ -120,6 +134,7 @@ function onPointerDown(e) {
     // イベントリスナー追加
     document.addEventListener('pointermove', onPointerMove);
     document.addEventListener('pointerup', onPointerUp);
+    document.addEventListener('pointercancel', onPointerCancel);
 
     // 元の要素を少し薄くする
     currentDragElement.style.opacity = '0.3';
@@ -139,6 +154,11 @@ function moveClone(x, y) {
 function onPointerUp(e) {
     if (!dragClone) return;
 
+    // Pointer Captureの解放
+    if (currentDragElement) {
+        try { currentDragElement.releasePointerCapture(e.pointerId); } catch (ex) { }
+    }
+
     // ドロップ判定
     // マウス/指の位置にある要素を取得
     const dropTarget = document.elementFromPoint(e.clientX, e.clientY);
@@ -153,12 +173,28 @@ function onPointerUp(e) {
     }
 
     // 後始末
-    if (dragClone) document.body.removeChild(dragClone);
+    cleanupDrag();
+}
+
+// iPad対策：タッチがキャンセルされた場合のハンドリング
+function onPointerCancel(e) {
+    if (!dragClone) return;
+    resetDrag();
+    cleanupDrag();
+}
+
+// ドラッグ後始末の共通処理
+function cleanupDrag() {
+    if (dragClone && dragClone.parentNode) {
+        dragClone.parentNode.removeChild(dragClone);
+    }
     document.removeEventListener('pointermove', onPointerMove);
     document.removeEventListener('pointerup', onPointerUp);
+    document.removeEventListener('pointercancel', onPointerCancel);
 
     dragClone = null;
     currentDragElement = null;
+    isDragging = false;
 }
 
 function resetDrag() {

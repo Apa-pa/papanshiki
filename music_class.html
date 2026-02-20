@@ -498,6 +498,12 @@
             document.getElementById('clear-screen').style.display = 'none';
             isFreePlay = true;
             isUserTurn = true;
+
+            // iOS/iPad対策：自由演奏開始時にAudioContextを復帰
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
             document.getElementById('hud-area').style.display = 'none';
             document.getElementById('free-quit').style.display = 'block';
 
@@ -516,7 +522,14 @@
 
         // ▼▼▼ 変更：Web Audio APIを使った再生処理 ▼▼▼
         function playNote(idx) {
-            if (!audioCtx || !audioBuffers[idx]) {
+            if (!audioCtx) return;
+
+            // iOS/iPad対策：再生直前にsuspendedなら復帰を試みる
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            if (!audioBuffers[idx]) {
                 // 万が一バッファがない場合はシンセ音
                 playSynthTone(NOTES[idx].freq);
                 return;
