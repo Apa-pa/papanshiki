@@ -658,12 +658,16 @@
                 }
 
                 // 積み上がり判定：漢字ブロックが上部ラインに到達し、ほぼ静止していたらゲームオーバー
+                // ※生成から2秒以内のブロックはスキップ（落下中の誤判定を防ぐ）
                 if (b.label && b.label.startsWith('kanji-') && b.position.y < topLine) {
-                    const speed = Math.sqrt(b.velocity.x ** 2 + b.velocity.y ** 2);
-                    if (speed < 1) {
-                        // ほぼ静止状態で上部に到達 → ゲームオーバー
-                        gameOver();
-                        return;
+                    const age = Date.now() - (b.createdAt || 0);
+                    if (age > 2000) {
+                        const speed = Math.sqrt(b.velocity.x ** 2 + b.velocity.y ** 2);
+                        if (speed < 1) {
+                            // ほぼ静止状態で上部に到達 → ゲームオーバー
+                            gameOver();
+                            return;
+                        }
                     }
                 }
             }
@@ -703,6 +707,7 @@
                 },
                 label: 'kanji-' + data.char
             });
+            body.createdAt = Date.now(); // 生成時刻を記録
 
             Composite.add(engine.world, body);
 
