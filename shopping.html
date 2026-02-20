@@ -384,10 +384,100 @@
             color: #ff6f00;
             text-decoration: underline;
         }
+
+        /* スタート画面 */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #fff8e1 0%, #ffe082 50%, #ffca28 100%);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .start-screen h1 {
+            color: #ff6f00;
+            font-size: 32px;
+            margin: 0 0 5px 0;
+        }
+
+        .start-screen .start-icon {
+            font-size: 80px;
+            margin: 10px 0;
+        }
+
+        .start-screen p {
+            font-size: 18px;
+            color: #5d4037;
+            margin: 10px 0;
+        }
+
+        .start-screen .pippi-img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #ffca28;
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .start-screen .level-select {
+            margin: 15px 0;
+        }
+
+        .start-btn {
+            font-size: 24px;
+            padding: 15px 40px;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-family: inherit;
+            font-weight: bold;
+            background: #ff9800;
+            box-shadow: 0 5px #e65100;
+        }
+
+        .start-btn:active {
+            transform: scale(0.95);
+            box-shadow: none;
+        }
+
+        .start-back-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 8px 20px;
+            background: #90a4ae;
+            color: white;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 14px;
+        }
     </style>
 </head>
 
 <body>
+
+    <!-- スタート画面 -->
+    <div id="start-screen" class="start-screen">
+        <h1>🛒 ピッピ商店</h1>
+        <img src="pippi192.webp" alt="くまのピッピ" class="pippi-img">
+        <p>ぴったり はらえるかな？</p>
+        <div class="level-select">
+            <button class="lvl-btn active" onclick="selectLevel(1)">Lv1 (100円まで)</button>
+            <button class="lvl-btn" onclick="selectLevel(2)">Lv2 (1000円まで)</button>
+            <button class="lvl-btn" onclick="selectLevel(3)">Lv3 (おさつ)</button>
+        </div>
+        <button class="start-btn" onclick="startGameFromScreen()">スタート！</button>
+        <a href="index.html" class="start-back-link">🏠 ホームへもどる</a>
+    </div>
 
     <div class="container">
         <h1>🛒 ピッピ商店</h1>
@@ -395,12 +485,6 @@
         <div class="shop-header">
             <img src="pippi192.webp" alt="くまのピッピ" class="pippi-img">
             <div class="speech-bubble" id="pippi-msg">ぴったり はらえるかな？</div>
-        </div>
-
-        <div class="level-select">
-            <button class="lvl-btn active" onclick="setLevel(1)">Lv1 (100円まで)</button>
-            <button class="lvl-btn" onclick="setLevel(2)">Lv2 (1000円まで)</button>
-            <button class="lvl-btn" onclick="setLevel(3)">Lv3 (おさつ)</button>
         </div>
 
         <div id="game-area">
@@ -435,7 +519,7 @@
             <h2 style="font-size:60px; margin:20px 0;">🎉</h2>
             <p style="font-size:20px; font-weight:bold;">おかいもの じょうず！</p>
             <p style="font-size:24px; color:#e65100;">タイム: <span id="final-time">0</span>秒</p>
-            <button onclick="location.reload()"
+            <button onclick="backToStart()"
                 style="padding:15px 30px; font-size:18px; background:#ffca28; border:none; border-radius:30px; font-weight:bold; cursor:pointer;">もういっかい</button>
         </div>
 
@@ -457,6 +541,30 @@
         let startTime = 0;
         let targetAmount = 0;
         let currentTrayTotal = 0;
+
+        // スタート画面でのレベル選択（ゲームは開始しない）
+        function selectLevel(lv) {
+            currentLevel = lv;
+            // スタート画面のボタン表示を更新
+            document.querySelectorAll('#start-screen .lvl-btn').forEach((b, i) => {
+                b.className = (i + 1 === lv) ? 'lvl-btn active' : 'lvl-btn';
+            });
+        }
+
+        // スタートボタンが押されたらゲーム開始
+        function startGameFromScreen() {
+            document.getElementById('start-screen').style.display = 'none';
+            updateWalletDisplay();
+            startGame();
+        }
+
+        // もういっかい → スタート画面に戻る
+        function backToStart() {
+            document.getElementById('game-area').style.display = 'block';
+            document.getElementById('result-area').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+            document.getElementById('pippi-msg').innerText = "ぴったり はらえるかな？";
+        }
 
         function setLevel(lv) {
             currentLevel = lv;
@@ -590,8 +698,7 @@
         }
 
         window.onload = function () {
-            updateWalletDisplay(); // 初期表示用
-            startGame();
+            // スタート画面を表示（ゲームはまだ開始しない）
         };
     </script>
 

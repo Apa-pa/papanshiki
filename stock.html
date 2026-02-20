@@ -33,6 +33,70 @@
             font-size: 24px;
         }
 
+        /* 説明ボックス */
+        .desc-box {
+            background: #e1f5fe;
+            border: 2px dashed #4fc3f7;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #555;
+            text-align: left;
+            line-height: 1.6;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .desc-box:active {
+            background: #b3e5fc;
+            transform: translateY(2px);
+        }
+
+        .desc-header {
+            font-weight: bold;
+            color: #0277bd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .desc-content {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #4fc3f7;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .desc-link {
+            display: inline-block;
+            margin-top: 5px;
+            padding: 4px 12px;
+            background: #fff;
+            border: 1px solid #4fc3f7;
+            border-radius: 15px;
+            color: #0277bd;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .desc-link:active {
+            background: #e1f5fe;
+        }
+
         /* 資産表示 */
         .assets-area {
             display: flex;
@@ -47,58 +111,6 @@
         .asset-val {
             font-weight: bold;
             font-size: 18px;
-            color: #e65100;
-        }
-
-        /* 持ち株評価額 */
-        .valuation-area {
-            background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
-            border: 2px solid #a5d6a7;
-            padding: 12px 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .valuation-title {
-            font-size: 13px;
-            color: #2e7d32;
-            font-weight: bold;
-            margin-bottom: 6px;
-        }
-
-        .valuation-row {
-            display: flex;
-            justify-content: space-around;
-            gap: 10px;
-        }
-
-        .valuation-item {
-            text-align: center;
-        }
-
-        .valuation-label {
-            font-size: 11px;
-            color: #666;
-        }
-
-        .valuation-value {
-            font-size: 20px;
-            font-weight: bold;
-            color: #1b5e20;
-        }
-
-        .valuation-total {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px dashed #a5d6a7;
-            font-size: 12px;
-            color: #555;
-        }
-
-        .valuation-total-value {
-            font-size: 22px;
-            font-weight: bold;
             color: #e65100;
         }
 
@@ -271,6 +283,22 @@
 
     <div class="container">
         <h1>📈 ぱぱん証券</h1>
+
+        <div class="desc-box" onclick="toggleDesc()">
+            <div class="desc-header">
+                <span>ℹ️ ポイントや どんぐりで 株（かぶ）や 商品（しょうひん）を 売り買いできるよ</span>
+                <span id="desc-arrow">▼</span>
+            </div>
+            <div id="desc-content" class="desc-content">
+                <br>
+                💰 ポイントや 🌰どんぐりを 使って、株や 商品を 買えるよ。<br>
+                📤 買った 株は、いつでも 売って ポイント・どんぐりに もどせるよ。<br>
+                🎁 株をもっていると、<b>毎日 配当（はいとう）</b>が もらえるよ！<br>
+                <br>
+                <a href="interest.html" class="desc-link">💡 利息（りそく）について</a>
+                <a href="about_stock.html" class="desc-link">📖 株って なに？</a>
+            </div>
+        </div>
 
         <select id="user-select" onchange="updateUI()" style="padding: 5px; font-size: 16px; margin-bottom: 15px;">
             <option value="">(なまえをえらんでね)</option>
@@ -480,6 +508,19 @@
             localStorage.setItem('papan_market_v1', JSON.stringify(market));
             alert("日付データをリセットしました。\nページをリロードすると「次の日」になります。");
             location.reload();
+        }
+
+        // 説明ボックスの開閉
+        function toggleDesc() {
+            const content = document.getElementById('desc-content');
+            const arrow = document.getElementById('desc-arrow');
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+                arrow.innerText = '▼';
+            } else {
+                content.style.display = 'block';
+                arrow.innerText = '▲';
+            }
         }
 
 
