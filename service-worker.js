@@ -51,6 +51,11 @@ var urlsToCache = [
   './bunsho.html',
   './kanji_dungeon_2grade.html',
 
+  // === 漢字学習 ===
+  './kanji_learn.html',
+  './kanji/grade1.js',
+  './kanji/grade2.js',
+
   // === 英語系 ===
   './alphabet.html',
   './alphabet_read.html',

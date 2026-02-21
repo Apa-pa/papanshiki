@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>漢字フラッシュカード | ぱぱん式</title>
+    <script src="ranking.js"></script>
+    <style>
+        /* --- 基本設定 --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "UD Digital Kyokasho-tai", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+            background: linear-gradient(135deg, #fef9e7 0%, #fdebd0 50%, #fef9e7 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #333;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 15px 10px 30px;
+            position: relative;
+        }
+
+        /* もどるボタン */
+        .home-btn {
+            display: inline-block;
+            text-decoration: none;
+            color: #888;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            padding: 5px 12px;
+            border-radius: 15px;
+            transition: 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .home-btn:hover {
+            background-color: #eee;
+        }
+
+        /* タイトル */
+        .title {
+            text-align: center;
+            font-size: 24px;
+            color: #e67e22;
+            margin: 10px 0 5px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 20px;
+        }
+
+        /* === スタート画面 === */
+        .start-screen {
+            text-align: center;
+        }
+
+        .grade-select-label {
+            font-size: 16px;
+            color: #6b4e3d;
+            font-weight: bold;
+            margin: 20px 0 15px;
+        }
+
+        .grade-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        .grade-btn {
+            background: white;
+            border: 3px solid #f0c27f;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 14px 24px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            color: #6b4e3d;
+            box-shadow: 0 4px 0 #e6b06e;
+            min-width: 130px;
+        }
+
+        .grade-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #e6b06e;
+        }
+
+        .grade-btn.selected {
+            background: #f0c27f;
+            color: white;
+            border-color: #e6a855;
+        }
+
+        /* 進捗表示 */
+        .progress-info {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .progress-bar-bg {
+            background: #eee;
+            border-radius: 10px;
+            height: 16px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f7dc6f, #f0c27f, #e67e22);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            min-width: 0;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .progress-count {
+            font-size: 22px;
+            font-weight: bold;
+            color: #e67e22;
+        }
+
+        /* モード選択ボタン */
+        .mode-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .mode-btn {
+            background: white;
+            border: 3px solid #4CAF50;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            color: #333;
+            box-shadow: 0 4px 0 #388E3C;
+        }
+
+        .mode-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #388E3C;
+        }
+
+        .mode-btn.zukan-btn {
+            border-color: #9C27B0;
+            box-shadow: 0 4px 0 #7B1FA2;
+        }
+
+        .mode-btn-desc {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+            font-weight: normal;
+        }
+
+        /* === 学習画面 === */
+        .learn-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .learn-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .learn-progress {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .learn-back-btn {
+            background: none;
+            border: 1px solid #ccc;
+            color: #888;
+            font-size: 13px;
+            padding: 5px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* フラッシュカード */
+        .card-container {
+            perspective: 800px;
+            margin: 10px auto;
+            width: 100%;
+            max-width: 360px;
+            height: 320px;
+        }
+
+        .flash-card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .flash-card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-front {
+            background: linear-gradient(145deg, #fff, #fef9e7);
+            border: 4px solid #f0c27f;
+        }
+
+        .card-front .kanji-display {
+            font-size: 120px;
+            font-weight: bold;
+            color: #333;
+            line-height: 1.1;
+        }
+
+        .card-front .tap-hint {
+            font-size: 13px;
+            color: #bbb;
+            margin-top: 15px;
+        }
+
+        .card-front .strokes-info {
+            font-size: 14px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        .card-back {
+            background: linear-gradient(145deg, #fef9e7, #fdebd0);
+            border: 4px solid #e67e22;
+            transform: rotateY(180deg);
+        }
+
+        .card-back .kanji-small {
+            font-size: 50px;
+            font-weight: bold;
+            color: #e67e22;
+            margin-bottom: 8px;
+        }
+
+        .card-back .reading {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .card-back .meaning {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .card-back .example-sentence {
+            font-size: 16px;
+            color: #555;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 8px 16px;
+            border-radius: 12px;
+            margin-bottom: 6px;
+        }
+
+        .card-back .hint-text {
+            font-size: 13px;
+            color: #999;
+        }
+
+        /* 学習ボタン */
+        .learn-btns {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .learn-action-btn {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 14px 28px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .btn-memorized {
+            background: #4CAF50;
+            color: white;
+            box-shadow: 0 4px 0 #388E3C;
+        }
+
+        .btn-memorized:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #388E3C;
+        }
+
+        .btn-again {
+            background: #ff9800;
+            color: white;
+            box-shadow: 0 4px 0 #e68900;
+        }
+
+        .btn-again:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #e68900;
+        }
+
+        /* === クイズ画面 === */
+        .quiz-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .quiz-question {
+            font-size: 18px;
+            color: #555;
+            margin: 10px 0;
+        }
+
+        .quiz-kanji {
+            font-size: 100px;
+            font-weight: bold;
+            color: #333;
+            margin: 15px 0;
+        }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 15px 0;
+        }
+
+        .quiz-option-btn {
+            background: white;
+            border: 3px solid #4dd0e1;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 16px;
+            border-radius: 18px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            color: #333;
+            box-shadow: 0 3px 0 #26c6da;
+        }
+
+        .quiz-option-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #26c6da;
+        }
+
+        .quiz-option-btn.correct {
+            background: #4CAF50;
+            color: white;
+            border-color: #388E3C;
+        }
+
+        .quiz-option-btn.wrong {
+            background: #ef5350;
+            color: white;
+            border-color: #c62828;
+        }
+
+        .quiz-option-btn:disabled {
+            cursor: default;
+        }
+
+        /* フィードバック */
+        .quiz-feedback {
+            font-size: 60px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        /* === 結果画面 === */
+        .result-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .result-title {
+            font-size: 26px;
+            color: #e67e22;
+            margin: 20px 0 10px;
+        }
+
+        .result-count {
+            font-size: 40px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 10px 0;
+        }
+
+        .result-msg {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .result-btn {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 14px 32px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            margin: 8px;
+            transition: all 0.2s;
+        }
+
+        .result-point-btn {
+            background: #ff9800;
+            color: white;
+            box-shadow: 0 4px 0 #e68900;
+        }
+
+        .result-point-btn:disabled {
+            background: #ccc;
+            box-shadow: 0 4px 0 #999;
+        }
+
+        .result-point-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #e68900;
+        }
+
+        .result-restart-btn {
+            background: #2196F3;
+            color: white;
+            box-shadow: 0 4px 0 #1565C0;
+        }
+
+        .result-restart-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #1565C0;
+        }
+
+        /* === 図鑑画面 === */
+        .zukan-screen {
+            display: none;
+        }
+
+        .zukan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .zukan-title {
+            font-size: 20px;
+            color: #9C27B0;
+            font-weight: bold;
+        }
+
+        .zukan-back-btn {
+            background: none;
+            border: 1px solid #ccc;
+            color: #888;
+            font-size: 13px;
+            padding: 5px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .zukan-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .zukan-cell {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .zukan-cell.mastered {
+            background: linear-gradient(145deg, #fff8e1, #ffecb3);
+            border: 2px solid #f0c27f;
+            color: #333;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .zukan-cell.mastered:hover {
+            transform: scale(1.08);
+        }
+
+        .zukan-cell.locked {
+            background: #eee;
+            border: 2px solid #ddd;
+            color: #ccc;
+        }
+
+        /* 図鑑詳細モーダル */
+        .zukan-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .zukan-modal.show {
+            display: flex;
+        }
+
+        .zukan-modal-content {
+            background: white;
+            border-radius: 25px;
+            padding: 25px;
+            width: 85%;
+            max-width: 350px;
+            text-align: center;
+            animation: popIn 0.3s ease;
+        }
+
+        .zukan-modal-kanji {
+            font-size: 80px;
+            font-weight: bold;
+            color: #e67e22;
+        }
+
+        .zukan-modal-reading {
+            font-size: 22px;
+            font-weight: bold;
+            margin: 8px 0 4px;
+        }
+
+        .zukan-modal-meaning {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .zukan-modal-example {
+            font-size: 16px;
+            color: #555;
+            background: #fef9e7;
+            padding: 8px 16px;
+            border-radius: 12px;
+            margin: 8px 0;
+        }
+
+        .zukan-modal-close {
+            background: #eee;
+            border: none;
+            font-size: 16px;
+            padding: 10px 30px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-family: inherit;
+        }
+
+        /* キラキラアニメーション */
+        @keyframes popIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes sparkle {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.2) rotate(180deg);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .sparkle {
+            position: fixed;
+            font-size: 30px;
+            pointer-events: none;
+            z-index: 200;
+            animation: sparkle 0.8s ease forwards;
+        }
+
+        /* 全画面非表示ユーティリティ */
+        .hidden {
+            display: none !important;
+        }
+
+        /* スマホ対応 */
+        @media (max-width: 400px) {
+            .card-container {
+                height: 280px;
+            }
+
+            .card-front .kanji-display {
+                font-size: 90px;
+            }
+
+            .card-back .kanji-small {
+                font-size: 40px;
+            }
+
+            .card-back .reading {
+                font-size: 18px;
+            }
+
+            .zukan-cell {
+                font-size: 24px;
+            }
+
+            .quiz-kanji {
+                font-size: 80px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <a href="index.html" class="home-btn">← もどる</a>
+        <h1 class="title">📚 漢字フラッシュカード</h1>
+        <p class="subtitle">カードをめくって漢字をおぼえよう！</p>
+
+        <!-- === スタート画面 === -->
+        <div id="start-screen" class="start-screen">
+            <p class="grade-select-label">がくねん を えらんでね</p>
+            <div class="grade-btns" id="grade-btns">
+                <!-- JSで動的に生成 -->
+            </div>
+
+            <div class="progress-info" id="progress-info" style="display:none;">
+                <div class="progress-text">おぼえた かんじ</div>
+                <div>
+                    <span class="progress-count" id="progress-count">0</span>
+                    <span class="progress-text"> / <span id="progress-total">80</span> じ</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="mode-btns" id="mode-btns" style="display:none;">
+                <button class="mode-btn" onclick="startLearning()">
+                    📖 がくしゅう する
+                    <div class="mode-btn-desc">あたらしい かんじ を おぼえよう</div>
+                </button>
+                <button class="mode-btn zukan-btn" onclick="showZukan()">
+                    📕 かんじ ずかん
+                    <div class="mode-btn-desc">おぼえた かんじ を みてみよう</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- === 学習画面 === -->
+        <div id="learn-screen" class="learn-screen">
+            <div class="learn-header">
+                <button class="learn-back-btn" onclick="backToStart()">← もどる</button>
+                <span class="learn-progress"><span id="learn-current">1</span> / <span id="learn-total">10</span></span>
+            </div>
+
+            <div class="card-container" onclick="flipCard()">
+                <div class="flash-card" id="flash-card">
+                    <div class="card-face card-front">
+                        <div class="kanji-display" id="card-kanji">一</div>
+                        <div class="strokes-info" id="card-strokes">かくすう: 1</div>
+                        <div class="tap-hint">👆 タップして うらがえす</div>
+                    </div>
+                    <div class="card-face card-back">
+                        <div class="kanji-small" id="card-kanji-back">一</div>
+                        <div class="reading" id="card-reading">いち / ひと(つ)</div>
+                        <div class="meaning" id="card-meaning">かず の 1</div>
+                        <div class="example-sentence" id="card-example">📝 一つ ください</div>
+                        <div class="hint-text" id="card-hint">💡 よこ の ぼう 1ぽん</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="learn-btns" id="learn-btns" style="display:none;">
+                <button class="learn-action-btn btn-again" onclick="nextCard(false)">🔄 もういちど</button>
+                <button class="learn-action-btn btn-memorized" onclick="nextCard(true)">✅ おぼえた！</button>
+            </div>
+        </div>
+
+        <!-- === クイズ画面 === -->
+        <div id="quiz-screen" class="quiz-screen">
+            <div class="learn-header">
+                <span></span>
+                <span class="learn-progress">ミニクイズ</span>
+            </div>
+            <p class="quiz-question">この かんじ の よみかた は？</p>
+            <div class="quiz-kanji" id="quiz-kanji">一</div>
+            <div class="quiz-options" id="quiz-options">
+                <!-- JSで動的に生成 -->
+            </div>
+            <div class="quiz-feedback" id="quiz-feedback"></div>
+        </div>
+
+        <!-- === 結果画面 === -->
+        <div id="result-screen" class="result-screen">
+            <h2 class="result-title">🎉 おつかれさま！</h2>
+            <p class="result-msg">きょう おぼえた かんじ</p>
+            <div class="result-count" id="result-new-count">0 じ</div>
+            <div id="result-review-msg" style="font-size:14px; color:#888; margin-bottom:15px;"></div>
+
+            <button class="result-btn result-point-btn" id="result-point-btn" onclick="getPoints()">
+                🎁 ポイントをもらう
+            </button>
+            <br>
+            <button class="result-btn result-restart-btn" onclick="backToStart()">もういちど やる</button>
+            <br><br>
+            <a href="index.html" class="home-btn" style="position:static;">トップへもどる</a>
+        </div>
+
+        <!-- === 図鑑画面 === -->
+        <div id="zukan-screen" class="zukan-screen">
+            <div class="zukan-header">
+                <span class="zukan-title">📕 かんじ ずかん</span>
+                <button class="zukan-back-btn" onclick="backToStart()">← もどる</button>
+            </div>
+            <div class="progress-info">
+                <div class="progress-text">
+                    <span class="progress-count" id="zukan-count">0</span>
+                    <span> / <span id="zukan-total">80</span> じ おぼえたよ！</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="zukan-fill" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="zukan-grid" id="zukan-grid">
+                <!-- JSで動的に生成 -->
+            </div>
+        </div>
+
+        <!-- 図鑑モーダル -->
+        <div class="zukan-modal" id="zukan-modal" onclick="closeZukanModal(event)">
+            <div class="zukan-modal-content" onclick="event.stopPropagation()">
+                <div class="zukan-modal-kanji" id="modal-kanji">一</div>
+                <div class="zukan-modal-reading" id="modal-reading">いち / ひと(つ)</div>
+                <div class="zukan-modal-meaning" id="modal-meaning">かず の 1</div>
+                <div class="zukan-modal-example" id="modal-example">📝 一つ ください</div>
+                <button class="zukan-modal-close" onclick="closeZukanModal()">とじる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 漢字データの読み込み -->
+    <script src="kanji/grade1.js"></script>
+    <script src="kanji/grade2.js"></script>
+
+    <script>
+        (function () {
+            // === 学年データの登録 ===
+            // 新しい学年を追加するには、ここに { id, label, data } を追加し、対応するJSファイルを読み込む
+            var GRADE_LIST = [
+                { id: "grade1", label: "1ねんせい", data: GRADE1_KANJI },
+                { id: "grade2", label: "2年生", data: GRADE2_KANJI },
+                // { id: "grade3", label: "3年生", data: GRADE3_KANJI },
+            ];
+
+            // === データ管理 ===
+            var KANJI_STORAGE_KEY = "papan_kanji_mastered_v1";
+
+            // 習得済み漢字を読み込む
+            function loadMastered() {
+                try {
+                    return JSON.parse(localStorage.getItem(KANJI_STORAGE_KEY)) || {};
+                } catch (e) { return {}; }
+            }
+
+            // 習得済み漢字を保存する
+            function saveMastered(data) {
+                localStorage.setItem(KANJI_STORAGE_KEY, JSON.stringify(data));
+            }
+
+            // 指定学年の習得済みリストを取得
+            function getMasteredList(gradeId) {
+                const data = loadMastered();
+                return data[gradeId] || [];
+            }
+
+            // 漢字を習得済みに追加
+            function addMastered(gradeId, kanji) {
+                const data = loadMastered();
+                if (!data[gradeId]) data[gradeId] = [];
+                if (!data[gradeId].includes(kanji)) {
+                    data[gradeId].push(kanji);
+                }
+                saveMastered(data);
+            }
+
+            // === 状態変数 ===
+            let selectedGrade = null;   // 選択中の学年
+            let currentKanjiData = [];  // 現在の学年の全漢字データ
+            let studySet = [];          // 今回の学習セット（10字）
+            let studyIndex = 0;         // 現在の学習位置
+            let newlyMastered = [];     // 今回新しく覚えた漢字
+            let reviewedAgain = [];     // もういちど にした漢字
+            let isFlipped = false;      // カードがめくれているか
+
+            // HTMLのonclickから呼べるようにwindowに公開
+            window.startLearning = startLearning;
+            window.showZukan = showZukan;
+            window.backToStart = backToStart;
+            window.flipCard = flipCard;
+            window.nextCard = nextCard;
+            window.getPoints = getPoints;
+            window.closeZukanModal = closeZukanModal;
+
+            // === 初期化（スクリプトがbody末尾なのでDOM構築済み） ===
+            renderGradeButtons();
+
+            // 学年ボタンを描画
+            function renderGradeButtons() {
+                const container = document.getElementById('grade-btns');
+                container.innerHTML = '';
+                GRADE_LIST.forEach(g => {
+                    const btn = document.createElement('button');
+                    btn.className = 'grade-btn';
+                    btn.textContent = g.label;
+                    btn.onclick = () => selectGrade(g.id, btn);
+                    container.appendChild(btn);
+                });
+            }
+
+            // 学年を選択
+            function selectGrade(gradeId, btn) {
+                selectedGrade = gradeId;
+                const gradeInfo = GRADE_LIST.find(g => g.id === gradeId);
+                currentKanjiData = gradeInfo.data;
+
+                // ボタンの見た目を更新
+                document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+
+                // 進捗を表示
+                updateProgressDisplay();
+                document.getElementById('progress-info').style.display = 'block';
+                document.getElementById('mode-btns').style.display = 'flex';
+            }
+
+            // 進捗表示を更新
+            function updateProgressDisplay() {
+                const mastered = getMasteredList(selectedGrade);
+                const total = currentKanjiData.length;
+                const count = mastered.length;
+                const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+
+                document.getElementById('progress-count').textContent = count;
+                document.getElementById('progress-total').textContent = total;
+                document.getElementById('progress-fill').style.width = pct + '%';
+            }
+
+            // === 学習モード ===
+            function startLearning() {
+                const mastered = getMasteredList(selectedGrade);
+                // 未習得の漢字を取得
+                let unmastered = currentKanjiData.filter(k => !mastered.includes(k.kanji));
+
+                if (unmastered.length === 0) {
+                    // 全て習得済みの場合はランダムに復習
+                    unmastered = shuffleArray([...currentKanjiData]);
+                }
+
+                // 最大10字を学習セットに
+                studySet = shuffleArray(unmastered).slice(0, 10);
+                studyIndex = 0;
+                newlyMastered = [];
+                reviewedAgain = [];
+
+                showScreen('learn-screen');
+                document.getElementById('learn-total').textContent = studySet.length;
+                showCard();
+            }
+
+            // カードを表示
+            function showCard() {
+                const k = studySet[studyIndex];
+                isFlipped = false;
+
+                // カードを表に戻す
+                document.getElementById('flash-card').classList.remove('flipped');
+                document.getElementById('learn-btns').style.display = 'none';
+
+                // 表面
+                document.getElementById('card-kanji').textContent = k.kanji;
+                document.getElementById('card-strokes').textContent = 'かくすう: ' + k.strokes;
+
+                // 裏面
+                document.getElementById('card-kanji-back').textContent = k.kanji;
+                document.getElementById('card-reading').textContent = k.readings.join(' / ');
+                document.getElementById('card-meaning').textContent = k.meaning;
+                document.getElementById('card-example').textContent = '📝 ' + k.example;
+                document.getElementById('card-hint').textContent = '💡 ' + k.hint;
+
+                // 進捗更新
+                document.getElementById('learn-current').textContent = studyIndex + 1;
+            }
+
+            // カードをめくる
+            function flipCard() {
+                if (isFlipped) return;
+                isFlipped = true;
+                document.getElementById('flash-card').classList.add('flipped');
+                // ボタンを表示
+                setTimeout(() => {
+                    document.getElementById('learn-btns').style.display = 'flex';
+                }, 400);
+            }
+
+            // 次のカードへ
+            function nextCard(memorized) {
+                const k = studySet[studyIndex];
+
+                if (memorized) {
+                    // おぼえた → クイズへ
+                    showQuiz(k);
+                } else {
+                    // もういちど → リストの最後に追加して次へ
+                    if (!reviewedAgain.includes(k.kanji)) reviewedAgain.push(k.kanji);
+                    advanceStudy();
+                }
+            }
+
+            // 学習を進める
+            function advanceStudy() {
+                studyIndex++;
+                if (studyIndex < studySet.length) {
+                    showCard();
+                } else {
+                    // 学習完了 → 結果画面
+                    showResult();
+                }
+            }
+
+            // === ミニクイズ ===
+            function showQuiz(kanjiObj) {
+                showScreen('quiz-screen');
+                document.getElementById('quiz-kanji').textContent = kanjiObj.kanji;
+                document.getElementById('quiz-feedback').style.display = 'none';
+
+                // 正解の読み方（最初の読み）
+                const correctReading = kanjiObj.readings[0];
+
+                // ダミーを作成（他の漢字の読みから3つ）
+                let dummies = [];
+                const otherKanji = currentKanjiData.filter(k => k.kanji !== kanjiObj.kanji);
+                const shuffled = shuffleArray([...otherKanji]);
+                for (let i = 0; i < shuffled.length && dummies.length < 3; i++) {
+                    const r = shuffled[i].readings[0];
+                    if (r !== correctReading && !dummies.includes(r)) {
+                        dummies.push(r);
+                    }
+                }
+
+                // 選択肢をシャッフル
+                const options = shuffleArray([correctReading, ...dummies]);
+
+                const container = document.getElementById('quiz-options');
+                container.innerHTML = '';
+                options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'quiz-option-btn';
+                    btn.textContent = opt;
+                    btn.onclick = () => checkQuizAnswer(btn, opt, correctReading, kanjiObj);
+                    container.appendChild(btn);
+                });
+            }
+
+            // クイズの正誤判定
+            function checkQuizAnswer(btn, selected, correct, kanjiObj) {
+                const allBtns = document.querySelectorAll('.quiz-option-btn');
+                allBtns.forEach(b => b.disabled = true);
+
+                const feedback = document.getElementById('quiz-feedback');
+
+                if (selected === correct) {
+                    // 正解！
+                    btn.classList.add('correct');
+                    feedback.textContent = '🎉 せいかい！';
+                    feedback.style.display = 'block';
+                    feedback.style.color = '#4CAF50';
+
+                    // 習得済みに追加
+                    addMastered(selectedGrade, kanjiObj.kanji);
+                    if (!newlyMastered.includes(kanjiObj.kanji)) {
+                        newlyMastered.push(kanjiObj.kanji);
+                    }
+
+                    // キラキラエフェクト
+                    createSparkles();
+
+                    setTimeout(() => {
+                        showScreen('learn-screen');
+                        advanceStudy();
+                    }, 1200);
+                } else {
+                    // 不正解
+                    btn.classList.add('wrong');
+                    // 正解を表示
+                    allBtns.forEach(b => {
+                        if (b.textContent === correct) b.classList.add('correct');
+                    });
+                    feedback.textContent = '😢 ざんねん… ただしくは「' + correct + '」';
+                    feedback.style.display = 'block';
+                    feedback.style.color = '#ef5350';
+
+                    setTimeout(() => {
+                        showScreen('learn-screen');
+                        advanceStudy();
+                    }, 2000);
+                }
+            }
+
+            // キラキラエフェクト
+            function createSparkles() {
+                const emojis = ['✨', '⭐', '🌟', '💫', '🎉'];
+                for (let i = 0; i < 8; i++) {
+                    setTimeout(() => {
+                        const spark = document.createElement('div');
+                        spark.className = 'sparkle';
+                        spark.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                        spark.style.left = (20 + Math.random() * 60) + 'vw';
+                        spark.style.top = (20 + Math.random() * 40) + 'vh';
+                        document.body.appendChild(spark);
+                        setTimeout(() => spark.remove(), 800);
+                    }, i * 100);
+                }
+            }
+
+            // === 結果画面 ===
+            function showResult() {
+                showScreen('result-screen');
+                const newCount = newlyMastered.length;
+                document.getElementById('result-new-count').textContent = newCount + ' じ';
+
+                // ポイントボタンのリセット
+                const pointBtn = document.getElementById('result-point-btn');
+                pointBtn.disabled = false;
+                pointBtn.textContent = '🎁 ポイントをもらう（' + (newCount * 5) + 'pt）';
+                if (newCount === 0) {
+                    pointBtn.textContent = '🎁 ポイントをもらう（参加賞 10pt）';
+                }
+
+                // 復習メッセージ
+                const reviewMsg = document.getElementById('result-review-msg');
+                if (reviewedAgain.length > 0) {
+                    reviewMsg.textContent = '「もういちど」にした かんじ: ' + reviewedAgain.join('、');
+                } else {
+                    reviewMsg.textContent = '';
+                }
+
+                // 進捗更新
+                updateProgressDisplay();
+            }
+
+            // ポイント獲得
+            function getPoints() {
+                const btn = document.getElementById('result-point-btn');
+                btn.disabled = true;
+                btn.textContent = 'もらいました！';
+                btn.style.background = '#ccc';
+
+                const newCount = newlyMastered.length;
+                const points = newCount > 0 ? newCount * 5 : 10; // 最低10pt（参加賞）
+                if (typeof showPointGetDialog === 'function') {
+                    showPointGetDialog(points);
+                } else {
+                    alert(points + 'ポイント ゲット！');
+                }
+            }
+
+            // === 図鑑画面 ===
+            function showZukan() {
+                showScreen('zukan-screen');
+                const mastered = getMasteredList(selectedGrade);
+                const total = currentKanjiData.length;
+                const count = mastered.length;
+                const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+
+                document.getElementById('zukan-count').textContent = count;
+                document.getElementById('zukan-total').textContent = total;
+                document.getElementById('zukan-fill').style.width = pct + '%';
+
+                // グリッドを描画
+                const grid = document.getElementById('zukan-grid');
+                grid.innerHTML = '';
+                currentKanjiData.forEach(k => {
+                    const cell = document.createElement('div');
+                    const isMastered = mastered.includes(k.kanji);
+                    cell.className = 'zukan-cell ' + (isMastered ? 'mastered' : 'locked');
+                    cell.textContent = isMastered ? k.kanji : '？';
+
+                    if (isMastered) {
+                        cell.onclick = () => showZukanDetail(k);
+                    }
+                    grid.appendChild(cell);
+                });
+            }
+
+            // 図鑑の詳細表示
+            function showZukanDetail(k) {
+                document.getElementById('modal-kanji').textContent = k.kanji;
+                document.getElementById('modal-reading').textContent = k.readings.join(' / ');
+                document.getElementById('modal-meaning').textContent = k.meaning;
+                document.getElementById('modal-example').textContent = '📝 ' + k.example;
+                document.getElementById('zukan-modal').classList.add('show');
+            }
+
+            function closeZukanModal(event) {
+                document.getElementById('zukan-modal').classList.remove('show');
+            }
+
+            // === 画面切り替え ===
+            function showScreen(screenId) {
+                const screens = ['start-screen', 'learn-screen', 'quiz-screen', 'result-screen', 'zukan-screen'];
+                screens.forEach(id => {
+                    document.getElementById(id).style.display = (id === screenId) ? (id === 'zukan-screen' ? 'block' : (id === 'start-screen' ? 'block' : '')) : 'none';
+                    if (id === screenId && id !== 'zukan-screen' && id !== 'start-screen') {
+                        document.getElementById(id).style.display = 'block';
+                    }
+                });
+            }
+
+            // スタート画面に戻る
+            function backToStart() {
+                showScreen('start-screen');
+                if (selectedGrade) {
+                    updateProgressDisplay();
+                }
+            }
+
+            // === ユーティリティ ===
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+        })(); // IIFE終了
+    </script>
+</body>
+
+</html>
