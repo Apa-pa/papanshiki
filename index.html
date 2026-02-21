@@ -44,40 +44,82 @@
             }
         }
 
-        /* ▼▼▼ フィルターボタンエリアのスタイル ▼▼▼ */
+        /* ▼▼▼ フィルターエリアのスタイル ▼▼▼ */
         .filter-container {
             text-align: center;
             margin: 5px auto;
             padding: 0 10px;
         }
 
-        .filter-label {
-            font-weight: bold;
-            color: #6b4e3d;
-            margin-bottom: 10px;
-            display: block;
-            font-size: 0.9rem;
+        .filter-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
-        .filter-btn {
-            background: #fff;
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .filter-icon {
+            font-size: 1.1rem;
+        }
+
+        .filter-select {
+            appearance: none;
+            -webkit-appearance: none;
+            background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23ffad60' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center;
             border: 2px solid #ffad60;
-            color: #ffad60;
+            color: #6b4e3d;
             border-radius: 20px;
-            padding: 8px 16px;
-            margin: 4px;
-            cursor: pointer;
+            padding: 8px 30px 8px 14px;
             font-weight: bold;
-            transition: 0.2s;
             font-family: inherit;
             font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
             -webkit-tap-highlight-color: transparent;
         }
 
-        .filter-btn.active,
-        .filter-btn:hover {
-            background: #ffad60;
-            color: white;
+        .filter-select:focus {
+            outline: none;
+            border-color: #ff9800;
+            box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.15);
+        }
+
+        .filter-search {
+            border: 2px solid #ffad60;
+            border-radius: 20px;
+            padding: 8px 14px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            width: 110px;
+            transition: width 0.3s;
+            color: #6b4e3d;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .filter-search:focus {
+            outline: none;
+            border-color: #ff9800;
+            box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.15);
+            width: 150px;
+        }
+
+        .filter-search::placeholder {
+            color: #ccc;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+            font-size: 1.1rem;
+            display: none;
         }
 
         /* ▼▼▼ 共通ボタン・リンクスタイル（新規追加） ▼▼▼ */
@@ -270,15 +312,40 @@
 
     <main>
         <div class="filter-container">
-            <span class="filter-label">ねんれいでさがす</span>
-            <button class="filter-btn active" onclick="filterByAge('all', this)">ぜんぶ</button>
-            <button class="filter-btn" onclick="filterByAge('4', this)">3,4さい</button>
-            <button class="filter-btn" onclick="filterByAge('5', this)">5さい</button>
-            <button class="filter-btn" onclick="filterByAge('6', this)">6さい</button>
-            <button class="filter-btn" onclick="filterByAge('7', this)">7さい</button>
-            <button class="filter-btn" onclick="filterByAge('8', this)">8さい</button>
-            <button class="filter-btn" onclick="filterByAge('9', this)">9さい</button>
-            <button class="filter-btn" onclick="filterByAge('10', this)">10さい〜</button>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <span class="filter-icon">📋</span>
+                    <select class="filter-select" id="age-filter" onchange="applyFilters()">
+                        <option value="all">ねんれい：ぜんぶ</option>
+                        <option value="3,4">3,4さい</option>
+                        <option value="5">5さい</option>
+                        <option value="6">6さい</option>
+                        <option value="7">7さい</option>
+                        <option value="8">8さい</option>
+                        <option value="9">9さい</option>
+                        <option value="10">10さい〜</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <span class="filter-icon">🎮</span>
+                    <select class="filter-select" id="type-filter" onchange="applyFilters()">
+                        <option value="all">あそびかた：ぜんぶ</option>
+                        <option value="クイズ">クイズ</option>
+                        <option value="ゲーム">ゲーム</option>
+                        <option value="がくしゅう">がくしゅう</option>
+                        <option value="パズル">パズル</option>
+                        <option value="おんがく">おんがく</option>
+                        <option value="たいけん">たいけん</option>
+                        <option value="プログラミング">プログラミング</option>
+                        <option value="プリント">プリント</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <span class="filter-icon">🔍</span>
+                    <input type="text" class="filter-search" id="keyword-search" placeholder="さがす..."
+                        oninput="applyFilters()">
+                </div>
+            </div>
 
             <div style="margin-top: 15px; display: flex; flex-wrap: wrap; justify-content: center;">
                 <a href="record.html" class="menu-btn">🏆 きろく</a>
@@ -345,6 +412,13 @@
                 <div class="icon">🕒</div>
                 <h3>とけいの読み方</h3>
                 <p>いまなんじ？とけいをみて正しいじかんをえらぼう！</p>
+            </a>
+
+            <a href="bunsu_learn.html" class="card" data-age="7,8,9,10">
+                <span class="label label-quiz">がくしゅう</span>
+                <div class="icon">🍕</div>
+                <h3>分数マスター</h3>
+                <p>ステージをクリアして分数をマスターしよう！</p>
             </a>
 
             <a href="water.html" class="card" data-age="8,9,10,11,12">
@@ -460,7 +534,7 @@
         <h2 class="section-title title-brain">🧠 脳トレ・パズル</h2>
         <div class="grid">
             <a href="memory.html" class="card" data-age="4,5,6,7">
-                <span class="label label-quiz">クイズ</span>
+                <span class="label label-quiz">ゲーム</span>
                 <div class="icon">🃏</div>
                 <h3>どうぶつあわせ</h3>
                 <p>カードをめくって同じ絵をみつけよう！きおく力をきたえるよ</p>
@@ -474,7 +548,7 @@
             </a>
 
             <a href="numbers.html" class="card" data-age="5,6,7,8,9,10,11,12">
-                <span class="label label-quiz">クイズ</span>
+                <span class="label label-quiz">ゲーム</span>
                 <div class="icon">🔢</div>
                 <h3>1から25までタッチ</h3>
                 <p>バラバラの数字を1からじゅんばんにさがそう！</p>
@@ -516,7 +590,7 @@
             </a>
 
             <a href="rail.html" class="card" data-age="5,6,7,8,9,10,11,12">
-                <span class="label label-quiz">ゲーム</span>
+                <span class="label label-quiz">パズル</span>
                 <div class="icon">🚃</div>
                 <h3>つなげて！トロッコ</h3>
                 <p>バラバラのレールを回転させて、エゾリスのヒーが乗るゴールまでの道をつくろう！脳トレ！</p>
@@ -776,44 +850,91 @@
 
     <script>
         // ▼▼▼ フィルター機能のスクリプト ▼▼▼
-        function filterByAge(age, btn) {
-            // 1. ボタンの見た目を切り替える
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
 
-            // 2. カードの表示・非表示を切り替える
+        // ラベルテキストからフィルター用タイプへのマッピング
+        const TYPE_MAP = {
+            'クイズ': 'クイズ',
+            'ゲーム': 'ゲーム',
+            'RPG': 'ゲーム',
+            'がくしゅう': 'がくしゅう',
+            'よみもの': 'がくしゅう',
+            'じっけん': 'がくしゅう',
+            'シミュ': 'がくしゅう',
+            'パズル': 'パズル',
+            'おんがく': 'おんがく',
+            'リズム': 'おんがく',
+            'たいけん': 'たいけん',
+            'ロールプレイ': 'たいけん',
+            'プリント': 'プリント',
+            'プログラミング': 'プログラミング'
+        };
+
+        // ページ読み込み時にカードにdata-type属性を自動付与
+        document.querySelectorAll('.card').forEach(card => {
+            const labelEl = card.querySelector('.label');
+            if (labelEl) {
+                const labelText = labelEl.textContent.trim();
+                card.setAttribute('data-type', TYPE_MAP[labelText] || labelText);
+            }
+        });
+
+        // 「みつかりませんでした」メッセージ要素を生成
+        const noResultsEl = document.createElement('div');
+        noResultsEl.className = 'no-results';
+        noResultsEl.textContent = '😢 みつかりませんでした';
+        document.querySelector('main').appendChild(noResultsEl);
+
+        // 統合フィルター関数（年齢 × タイプ × キーワードのAND絞り込み）
+        function applyFilters() {
+            const ageValue = document.getElementById('age-filter').value;
+            const typeValue = document.getElementById('type-filter').value;
+            const keyword = document.getElementById('keyword-search').value.trim().toLowerCase();
+
+            // 年齢フィルター値の分解（"3,4"のようなカンマ区切り対応）
+            const ageValues = ageValue === 'all' ? null : ageValue.split(',');
+
             const cards = document.querySelectorAll('.card');
+            let totalVisible = 0;
 
             cards.forEach(card => {
-                const targetAges = card.getAttribute('data-age');
+                let show = true;
 
-                if (age === 'all') {
-                    card.style.display = 'flex';
-                } else {
-                    if (targetAges && targetAges.split(',').includes(age)) {
-                        card.style.display = 'flex';
-                    } else {
-                        card.style.display = 'none';
-                    }
+                // 1. 年齢フィルター
+                if (ageValues) {
+                    const cardAges = (card.getAttribute('data-age') || '').split(',');
+                    show = ageValues.some(a => cardAges.includes(a));
                 }
+
+                // 2. タイプフィルター
+                if (show && typeValue !== 'all') {
+                    const cardType = card.getAttribute('data-type') || '';
+                    show = cardType === typeValue;
+                }
+
+                // 3. キーワード検索（タイトル・説明文・ラベルを対象）
+                if (show && keyword) {
+                    const title = (card.querySelector('h3')?.textContent || '').toLowerCase();
+                    const desc = (card.querySelector('p')?.textContent || '').toLowerCase();
+                    const label = (card.querySelector('.label')?.textContent || '').toLowerCase();
+                    show = title.includes(keyword) || desc.includes(keyword) || label.includes(keyword);
+                }
+
+                card.style.display = show ? 'flex' : 'none';
+                if (show) totalVisible++;
             });
 
-            // 3. 中身がなくなったセクション見出しを隠す
-            const sections = document.querySelectorAll('.grid');
-            sections.forEach(grid => {
+            // セクション見出しの表示制御
+            document.querySelectorAll('.grid').forEach(grid => {
                 const visibleCards = Array.from(grid.querySelectorAll('.card')).filter(c => c.style.display !== 'none');
                 const title = grid.previousElementSibling;
-
                 if (title && title.classList.contains('section-title')) {
-                    if (visibleCards.length > 0) {
-                        title.style.display = 'flex';
-                        grid.style.display = 'grid';
-                    } else {
-                        title.style.display = 'none';
-                        grid.style.display = 'none';
-                    }
+                    title.style.display = visibleCards.length > 0 ? 'flex' : 'none';
+                    grid.style.display = visibleCards.length > 0 ? 'grid' : 'none';
                 }
             });
+
+            // 「みつかりませんでした」メッセージの表示制御
+            noResultsEl.style.display = totalVisible === 0 ? 'block' : 'none';
         }
         // ▲▲▲ スクリプトここまで ▲▲▲
 

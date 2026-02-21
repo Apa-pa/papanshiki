@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>分数マスター | ぱぱん式</title>
+    <script src="ranking.js"></script>
+    <style>
+        /* --- 基本設定 --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "UD Digital Kyokasho-tai", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 50%, #e8f5e9 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #333;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 15px 10px 30px;
+            position: relative;
+        }
+
+        /* もどるボタン */
+        .home-btn {
+            display: inline-block;
+            text-decoration: none;
+            color: #888;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            padding: 5px 12px;
+            border-radius: 15px;
+            transition: 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .home-btn:hover {
+            background-color: #eee;
+        }
+
+        /* タイトル */
+        .title {
+            text-align: center;
+            font-size: 24px;
+            color: #2e7d32;
+            margin: 10px 0 5px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 20px;
+        }
+
+        /* === ステージマップ画面 === */
+        .map-screen {
+            text-align: center;
+        }
+
+        .stage-path {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .stage-node {
+            width: 90%;
+            max-width: 360px;
+            background: white;
+            border-radius: 20px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 3px solid #e0e0e0;
+            position: relative;
+        }
+
+        .stage-node.cleared {
+            border-color: #66bb6a;
+            background: linear-gradient(135deg, #f1f8e9, #e8f5e9);
+        }
+
+        .stage-node.current {
+            border-color: #ff9800;
+            box-shadow: 0 4px 16px rgba(255, 152, 0, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .stage-node.locked {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .stage-node:active:not(.locked) {
+            transform: scale(0.97);
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 4px 16px rgba(255, 152, 0, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 4px 24px rgba(255, 152, 0, 0.5);
+            }
+        }
+
+        .stage-icon {
+            font-size: 40px;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .stage-info {
+            text-align: left;
+            flex: 1;
+        }
+
+        .stage-num {
+            font-size: 12px;
+            color: #aaa;
+            font-weight: bold;
+        }
+
+        .stage-name {
+            font-size: 17px;
+            font-weight: bold;
+            color: #333;
+            margin: 2px 0;
+        }
+
+        .stage-desc {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .stage-stars {
+            font-size: 18px;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .stage-lock {
+            font-size: 24px;
+            min-width: 60px;
+            text-align: right;
+            color: #ccc;
+        }
+
+        /* ステージ間の道 */
+        .path-connector {
+            width: 4px;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 2px;
+        }
+
+        .path-connector.active {
+            background: #66bb6a;
+        }
+
+        /* === レッスン画面 === */
+        .lesson-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .lesson-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .lesson-back-btn {
+            background: none;
+            border: 1px solid #ccc;
+            color: #888;
+            font-size: 13px;
+            padding: 5px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .lesson-stage-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        .lesson-slide {
+            background: white;
+            border-radius: 25px;
+            padding: 25px 20px;
+            margin: 10px auto;
+            max-width: 400px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lesson-visual {
+            margin: 10px 0;
+        }
+
+        .lesson-visual svg {
+            max-width: 280px;
+            width: 100%;
+            height: auto;
+        }
+
+        .lesson-text {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #333;
+            margin: 15px 0;
+        }
+
+        .lesson-text .highlight {
+            color: #e65100;
+            font-weight: bold;
+            font-size: 22px;
+        }
+
+        .lesson-text .big-fraction {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        .lesson-dots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 15px 0 10px;
+        }
+
+        .lesson-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ddd;
+        }
+
+        .lesson-dot.active {
+            background: #66bb6a;
+        }
+
+        .lesson-next-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 14px 40px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 0 #388E3C;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .lesson-next-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #388E3C;
+        }
+
+        /* === 練習問題画面 === */
+        .quiz-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .quiz-progress-text {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .quiz-card {
+            background: white;
+            border-radius: 25px;
+            padding: 25px 20px;
+            margin: 10px auto;
+            max-width: 400px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .quiz-question-text {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .quiz-visual {
+            margin: 10px 0 20px;
+        }
+
+        .quiz-visual svg {
+            max-width: 250px;
+            width: 100%;
+            height: auto;
+        }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 15px 0;
+        }
+
+        .quiz-option {
+            background: white;
+            border: 3px solid #81c784;
+            font-size: 22px;
+            font-weight: bold;
+            padding: 16px;
+            border-radius: 18px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            color: #333;
+            box-shadow: 0 3px 0 #66bb6a;
+        }
+
+        .quiz-option:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #66bb6a;
+        }
+
+        .quiz-option.correct {
+            background: #4CAF50;
+            color: white;
+            border-color: #388E3C;
+        }
+
+        .quiz-option.wrong {
+            background: #ef5350;
+            color: white;
+            border-color: #c62828;
+        }
+
+        .quiz-option:disabled {
+            cursor: default;
+        }
+
+        .quiz-feedback {
+            font-size: 50px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        /* === クリア画面 === */
+        .clear-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .clear-title {
+            font-size: 28px;
+            color: #ff9800;
+            margin: 20px 0 10px;
+        }
+
+        .clear-stars {
+            font-size: 50px;
+            margin: 15px 0;
+        }
+
+        .clear-msg {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .clear-score {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .clear-btn {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 14px 32px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            margin: 8px;
+            transition: all 0.2s;
+        }
+
+        .clear-point-btn {
+            background: #ff9800;
+            color: white;
+            box-shadow: 0 4px 0 #e68900;
+        }
+
+        .clear-point-btn:disabled {
+            background: #ccc;
+            box-shadow: 0 4px 0 #999;
+        }
+
+        .clear-point-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #e68900;
+        }
+
+        .clear-next-btn {
+            background: #4CAF50;
+            color: white;
+            box-shadow: 0 4px 0 #388E3C;
+        }
+
+        .clear-next-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #388E3C;
+        }
+
+        .clear-map-btn {
+            background: #2196F3;
+            color: white;
+            box-shadow: 0 4px 0 #1565C0;
+        }
+
+        .clear-map-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #1565C0;
+        }
+
+        /* キラキラ */
+        @keyframes popIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes starBounce {
+            0% {
+                transform: scale(0);
+            }
+
+            60% {
+                transform: scale(1.3);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .star-anim {
+            display: inline-block;
+            animation: starBounce 0.5s ease forwards;
+        }
+
+        .sparkle {
+            position: fixed;
+            font-size: 30px;
+            pointer-events: none;
+            z-index: 200;
+            animation: sparkleAnim 0.8s ease forwards;
+        }
+
+        @keyframes sparkleAnim {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.2) rotate(180deg);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* スマホ対応 */
+        @media (max-width: 400px) {
+            .lesson-slide {
+                padding: 20px 15px;
+                min-height: 280px;
+            }
+
+            .lesson-text {
+                font-size: 16px;
+            }
+
+            .stage-name {
+                font-size: 15px;
+            }
+
+            .quiz-option {
+                font-size: 18px;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <a href="index.html" class="home-btn">← もどる</a>
+        <h1 class="title">🍕 分数マスター</h1>
+        <p class="subtitle">ステージをクリアして分数をマスターしよう！</p>
+
+        <!-- === マップ画面 === -->
+        <div id="map-screen" class="map-screen">
+            <div class="stage-path" id="stage-path">
+                <!-- JSで動的に生成 -->
+            </div>
+        </div>
+
+        <!-- === レッスン画面 === -->
+        <div id="lesson-screen" class="lesson-screen">
+            <div class="lesson-header">
+                <button class="lesson-back-btn" onclick="backToMap()">← もどる</button>
+                <span class="lesson-stage-name" id="lesson-stage-name"></span>
+                <span></span>
+            </div>
+            <div class="lesson-slide" id="lesson-slide">
+                <!-- JSで動的にスライド内容を表示 -->
+            </div>
+            <div class="lesson-dots" id="lesson-dots"></div>
+            <button class="lesson-next-btn" id="lesson-next-btn" onclick="nextSlide()">つぎへ →</button>
+        </div>
+
+        <!-- === 練習問題画面 === -->
+        <div id="quiz-screen" class="quiz-screen">
+            <div class="quiz-header">
+                <button class="lesson-back-btn" onclick="backToMap()">← もどる</button>
+                <span class="quiz-progress-text" id="quiz-progress-text">もんだい 1/3</span>
+            </div>
+            <div class="quiz-card" id="quiz-card">
+                <p class="quiz-question-text" id="quiz-question-text"></p>
+                <div class="quiz-visual" id="quiz-visual"></div>
+                <div class="quiz-options" id="quiz-options"></div>
+            </div>
+            <div class="quiz-feedback" id="quiz-feedback"></div>
+        </div>
+
+        <!-- === クリア画面 === -->
+        <div id="clear-screen" class="clear-screen">
+            <h2 class="clear-title">🎉 ステージクリア！</h2>
+            <div class="clear-stars" id="clear-stars"></div>
+            <p class="clear-msg" id="clear-msg"></p>
+            <p class="clear-score" id="clear-score"></p>
+
+            <button class="clear-btn clear-point-btn" id="clear-point-btn" onclick="getPoints()">
+                🎁 ポイントをもらう
+            </button>
+            <br>
+            <button class="clear-btn clear-next-btn" id="clear-next-btn" onclick="goNextStage()" style="display:none;">
+                つぎのステージへ →
+            </button>
+            <button class="clear-btn clear-map-btn" onclick="backToMap()">マップにもどる</button>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            // === ステージデータ定義 ===
+            var STAGES = [
+                {
+                    id: 1,
+                    name: "分数ってなに？",
+                    desc: "ぜんたいを おなじ おおきさに わける",
+                    icon: "🍕",
+                    lessons: [
+                        {
+                            text: 'ピザが 1まい あるよ🍕',
+                            svg: function () { return pizzaSVG(1, 0, '#ffcc80'); }
+                        },
+                        {
+                            text: 'これを <span class="highlight">2つ</span> に きると…',
+                            svg: function () { return pizzaSVG(2, 0, '#ffcc80'); }
+                        },
+                        {
+                            text: 'そのうち <span class="highlight">1つ</span> は<br><span class="big-fraction">2分の1</span> だよ！',
+                            svg: function () { return pizzaSVG(2, 1, '#ff8a65'); }
+                        },
+                        {
+                            text: '4つに きった うちの 1つは<br><span class="big-fraction">4分の1</span> だよ！',
+                            svg: function () { return pizzaSVG(4, 1, '#ff8a65'); }
+                        },
+                        {
+                            text: '分数は ぜんたいを <span class="highlight">おなじ おおきさ</span> に<br>わけた うちの いくつぶん かを あらわすよ！',
+                            svg: null
+                        }
+                    ],
+                    quizzes: [
+                        {
+                            q: "ピザを 2つに わけた うちの 1つは？",
+                            svg: function () { return pizzaSVG(2, 1, '#ff8a65'); },
+                            options: ["2分の1", "3分の1", "4分の1", "2分の2"],
+                            answer: 0
+                        },
+                        {
+                            q: "ピザを 4つに わけた うちの 1つは？",
+                            svg: function () { return pizzaSVG(4, 1, '#ff8a65'); },
+                            options: ["2分の1", "3分の1", "4分の1", "4分の3"],
+                            answer: 2
+                        },
+                        {
+                            q: "ピザを 3つに わけた うちの 2つは？",
+                            svg: function () { return pizzaSVG(3, 2, '#ff8a65'); },
+                            options: ["3分の1", "2分の3", "3分の2", "3分の3"],
+                            answer: 2
+                        }
+                    ]
+                },
+                {
+                    id: 2,
+                    name: "分数のよみかた",
+                    desc: "ぶんぼ と ぶんし を おぼえよう",
+                    icon: "📐",
+                    lessons: [
+                        {
+                            text: '分数は こう かくよ',
+                            svg: function () { return fractionStructSVG(1, 3, false); }
+                        },
+                        {
+                            text: 'した の かず を <span class="highlight">分母（ぶんぼ）</span> というよ<br>「いくつに わけたか」だよ',
+                            svg: function () { return fractionStructSVG(1, 3, 'bottom'); }
+                        },
+                        {
+                            text: 'うえ の かず を <span class="highlight">分子（ぶんし）</span> というよ<br>「そのうち いくつぶんか」だよ',
+                            svg: function () { return fractionStructSVG(1, 3, 'top'); }
+                        },
+                        {
+                            text: '<span class="big-fraction">3分の1</span> は<br>「3つに わけた うちの 1つ」',
+                            svg: function () { return barSVG(3, 1); }
+                        },
+                        {
+                            text: 'よみかたは<br>「<span class="highlight">○ぶんの○</span>」<br>分母 → 分子 のじゅんばん で よむよ！',
+                            svg: null
+                        }
+                    ],
+                    quizzes: [
+                        {
+                            q: "この 分数の 分母は いくつ？",
+                            svg: function () { return fractionStructSVG(2, 5, false); },
+                            options: ["2", "5", "3", "7"],
+                            answer: 1
+                        },
+                        {
+                            q: "この 分数の 分子は いくつ？",
+                            svg: function () { return fractionStructSVG(3, 4, false); },
+                            options: ["4", "1", "7", "3"],
+                            answer: 3
+                        },
+                        {
+                            q: "4分の3 の かきかたは？",
+                            svg: null,
+                            options: ["³⁄₃", "⁴⁄₃", "³⁄₄", "¹⁄₄"],
+                            answer: 2
+                        }
+                    ]
+                },
+                {
+                    id: 3,
+                    name: "分数のおおきさくらべ",
+                    desc: "どっちが おおきい？",
+                    icon: "⚖️",
+                    lessons: [
+                        {
+                            text: '分母が おなじ 分数は<br><span class="highlight">分子が おおきいほう</span> が おおきいよ！',
+                            svg: function () { return compareSVG(1, 4, 3, 4); }
+                        },
+                        {
+                            text: '4分の1 と 4分の3 では<br><span class="big-fraction">4分の3</span> のほうが おおきいね！',
+                            svg: function () { return compareSVG(1, 4, 3, 4); }
+                        },
+                        {
+                            text: '分母が おなじなら<br>わけた おおきさが おなじだから<br>かずが おおいほうが おおきい！',
+                            svg: function () { return compareSVG(2, 5, 4, 5); }
+                        }
+                    ],
+                    quizzes: [
+                        {
+                            q: "おおきいのは どっち？",
+                            svg: function () { return compareSVG(1, 3, 2, 3); },
+                            options: ["3分の1", "3分の2", "おなじ", "わからない"],
+                            answer: 1
+                        },
+                        {
+                            q: "おおきいのは どっち？",
+                            svg: function () { return compareSVG(3, 5, 2, 5); },
+                            options: ["5分の2", "5分の3", "おなじ", "わからない"],
+                            answer: 1
+                        },
+                        {
+                            q: "ちいさいのは どっち？",
+                            svg: function () { return compareSVG(1, 4, 3, 4); },
+                            options: ["4分の3", "4分の1", "おなじ", "わからない"],
+                            answer: 1
+                        }
+                    ]
+                },
+                {
+                    id: 4,
+                    name: "おなじおおきさの分数",
+                    desc: "みためが ちがっても おなじ おおきさ",
+                    icon: "🟰",
+                    lessons: [
+                        {
+                            text: '2分の1 と 4分の2 を くらべてみよう',
+                            svg: function () { return equivSVG(1, 2, 2, 4); }
+                        },
+                        {
+                            text: 'おなじ おおきさだね！<br><span class="big-fraction">2分の1 = 4分の2</span>',
+                            svg: function () { return equivSVG(1, 2, 2, 4); }
+                        },
+                        {
+                            text: '分母と分子に <span class="highlight">おなじ かず</span> を<br>かけても おおきさは かわらないよ！',
+                            svg: function () { return equivExplainSVG(); }
+                        }
+                    ],
+                    quizzes: [
+                        {
+                            q: "2分の1 と おなじ おおきさの 分数は？",
+                            svg: function () { return barSVG(2, 1); },
+                            options: ["4分の1", "4分の2", "3分の1", "4分の3"],
+                            answer: 1
+                        },
+                        {
+                            q: "3分の1 と おなじ おおきさの 分数は？",
+                            svg: function () { return barSVG(3, 1); },
+                            options: ["6分の1", "6分の3", "6分の2", "9分の1"],
+                            answer: 2
+                        },
+                        {
+                            q: "4分の2 と おなじ おおきさの 分数は？",
+                            svg: null,
+                            options: ["2分の1", "3分の1", "4分の1", "8分の2"],
+                            answer: 0
+                        }
+                    ]
+                },
+                {
+                    id: 5,
+                    name: "分数のたしざん",
+                    desc: "分母が おなじ 分数を たそう",
+                    icon: "➕",
+                    lessons: [
+                        {
+                            text: '分母が おなじ 分数の たしざんは<br><span class="highlight">分子だけ たす</span> よ！',
+                            svg: null
+                        },
+                        {
+                            text: '<span class="big-fraction">4分の1 + 4分の2 = 4分の3</span>',
+                            svg: function () { return addSVG(1, 4, 2, 4); }
+                        },
+                        {
+                            text: '分母は そのまま！<br>分子だけ たしざん するんだね',
+                            svg: function () { return addExplainSVG(); }
+                        }
+                    ],
+                    quizzes: [
+                        {
+                            q: "5分の1 + 5分の2 = ？",
+                            svg: function () { return addSVG(1, 5, 2, 5); },
+                            options: ["5分の3", "10分の3", "5分の2", "5分の12"],
+                            answer: 0
+                        },
+                        {
+                            q: "4分の1 + 4分の1 = ？",
+                            svg: null,
+                            options: ["4分の2", "8分の2", "4分の1", "8分の1"],
+                            answer: 0
+                        },
+                        {
+                            q: "6分の2 + 6分の3 = ？",
+                            svg: null,
+                            options: ["6分の6", "12分の5", "6分の5", "6分の1"],
+                            answer: 2
+                        }
+                    ]
+                }
+            ];
+
+            // === SVGビジュアル関数 ===
+
+            // ピザSVG（分割数, 色付きスライス数, 色）
+            function pizzaSVG(slices, colored, color) {
+                var svg = '<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">';
+                var cx = 100, cy = 100, r = 85;
+                for (var i = 0; i < slices; i++) {
+                    var a1 = (i * 360 / slices - 90) * Math.PI / 180;
+                    var a2 = ((i + 1) * 360 / slices - 90) * Math.PI / 180;
+                    var x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+                    var x2 = cx + r * Math.cos(a2), y2 = cy + r * Math.sin(a2);
+                    var large = (360 / slices > 180) ? 1 : 0;
+                    var fill = i < colored ? color : '#fff3e0';
+                    svg += '<path d="M' + cx + ',' + cy + ' L' + x1 + ',' + y1 + ' A' + r + ',' + r + ' 0 ' + large + ',1 ' + x2 + ',' + y2 + ' Z" fill="' + fill + '" stroke="#a1887f" stroke-width="2"/>';
+                }
+                svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="#8d6e63" stroke-width="3"/>';
+                svg += '</svg>';
+                return svg;
+            }
+
+            // 分数構造SVG（分子, 分母, ハイライト: false/'top'/'bottom'）
+            function fractionStructSVG(num, den, highlight) {
+                var svg = '<svg viewBox="0 0 300 160" xmlns="http://www.w3.org/2000/svg">';
+                var cx = 100; // 分数の中央X座標
+                var topColor = highlight === 'top' ? '#e65100' : '#333';
+                var btmColor = highlight === 'bottom' ? '#1565C0' : '#333';
+                var topBg = highlight === 'top' ? '#fff3e0' : 'none';
+                var btmBg = highlight === 'bottom' ? '#e3f2fd' : 'none';
+                // 分子
+                if (topBg !== 'none') svg += '<rect x="60" y="10" width="80" height="50" rx="10" fill="' + topBg + '"/>';
+                svg += '<text x="' + cx + '" y="50" text-anchor="middle" font-size="40" font-weight="bold" fill="' + topColor + '">' + num + '</text>';
+                // 分数線
+                svg += '<line x1="55" y1="75" x2="145" y2="75" stroke="#333" stroke-width="4" stroke-linecap="round"/>';
+                // 分母
+                if (btmBg !== 'none') svg += '<rect x="60" y="85" width="80" height="50" rx="10" fill="' + btmBg + '"/>';
+                svg += '<text x="' + cx + '" y="125" text-anchor="middle" font-size="40" font-weight="bold" fill="' + btmColor + '">' + den + '</text>';
+                // ラベル
+                if (highlight === 'top') {
+                    svg += '<text x="160" y="50" font-size="16" fill="#e65100" font-weight="bold">← ぶんし</text>';
+                }
+                if (highlight === 'bottom') {
+                    svg += '<text x="160" y="125" font-size="16" fill="#1565C0" font-weight="bold">← ぶんぼ</text>';
+                }
+                svg += '</svg>';
+                return svg;
+            }
+
+            // 棒グラフSVG（分割数, 色付き数）
+            function barSVG(total, filled) {
+                var svg = '<svg viewBox="0 0 280 60" xmlns="http://www.w3.org/2000/svg">';
+                var w = 240 / total;
+                for (var i = 0; i < total; i++) {
+                    var fill = i < filled ? '#66bb6a' : '#e8f5e9';
+                    svg += '<rect x="' + (20 + i * w) + '" y="10" width="' + (w - 2) + '" height="40" rx="4" fill="' + fill + '" stroke="#43a047" stroke-width="2"/>';
+                }
+                svg += '</svg>';
+                return svg;
+            }
+
+            // 比較SVG（分子1, 分母1, 分子2, 分母2）
+            function compareSVG(n1, d1, n2, d2) {
+                var svg = '<svg viewBox="0 0 280 130" xmlns="http://www.w3.org/2000/svg">';
+                var w1 = 240 / d1, w2 = 240 / d2;
+                // 上の棒
+                svg += '<text x="10" y="20" font-size="14" fill="#333" font-weight="bold">' + d1 + '分の' + n1 + '</text>';
+                for (var i = 0; i < d1; i++) {
+                    var fill1 = i < n1 ? '#42a5f5' : '#e3f2fd';
+                    svg += '<rect x="' + (20 + i * w1) + '" y="28" width="' + (w1 - 2) + '" height="35" rx="4" fill="' + fill1 + '" stroke="#1e88e5" stroke-width="2"/>';
+                }
+                // 下の棒
+                svg += '<text x="10" y="85" font-size="14" fill="#333" font-weight="bold">' + d2 + '分の' + n2 + '</text>';
+                for (var j = 0; j < d2; j++) {
+                    var fill2 = j < n2 ? '#ff7043' : '#fbe9e7';
+                    svg += '<rect x="' + (20 + j * w2) + '" y="93" width="' + (w2 - 2) + '" height="35" rx="4" fill="' + fill2 + '" stroke="#e64a19" stroke-width="2"/>';
+                }
+                svg += '</svg>';
+                return svg;
+            }
+
+            // 等価分数SVG
+            function equivSVG(n1, d1, n2, d2) {
+                var svg = '<svg viewBox="0 0 280 130" xmlns="http://www.w3.org/2000/svg">';
+                var w1 = 240 / d1, w2 = 240 / d2;
+                svg += '<text x="10" y="20" font-size="14" fill="#333" font-weight="bold">' + d1 + '分の' + n1 + '</text>';
+                for (var i = 0; i < d1; i++) {
+                    var f1 = i < n1 ? '#ab47bc' : '#f3e5f5';
+                    svg += '<rect x="' + (20 + i * w1) + '" y="28" width="' + (w1 - 2) + '" height="35" rx="4" fill="' + f1 + '" stroke="#8e24aa" stroke-width="2"/>';
+                }
+                // イコール
+                svg += '<text x="140" y="82" text-anchor="middle" font-size="20" fill="#333" font-weight="bold">＝</text>';
+                svg += '<text x="10" y="95" font-size="14" fill="#333" font-weight="bold">' + d2 + '分の' + n2 + '</text>';
+                for (var j = 0; j < d2; j++) {
+                    var f2 = j < n2 ? '#ab47bc' : '#f3e5f5';
+                    svg += '<rect x="' + (20 + j * w2) + '" y="103" width="' + (w2 - 2) + '" height="35" rx="4" fill="' + f2 + '" stroke="#8e24aa" stroke-width="2"/>';
+                }
+                svg += '</svg>';
+                return svg;
+            }
+
+            // 等価分数の説明SVG
+            function equivExplainSVG() {
+                var svg = '<svg viewBox="0 0 280 100" xmlns="http://www.w3.org/2000/svg">';
+                // 1/2
+                svg += '<text x="40" y="35" text-anchor="middle" font-size="30" font-weight="bold" fill="#333">1</text>';
+                svg += '<line x1="20" y1="45" x2="60" y2="45" stroke="#333" stroke-width="3"/>';
+                svg += '<text x="40" y="75" text-anchor="middle" font-size="30" font-weight="bold" fill="#333">2</text>';
+                // ×2
+                svg += '<text x="100" y="35" text-anchor="middle" font-size="18" fill="#e65100" font-weight="bold">×2</text>';
+                svg += '<text x="100" y="75" text-anchor="middle" font-size="18" fill="#e65100" font-weight="bold">×2</text>';
+                svg += '<text x="100" y="55" text-anchor="middle" font-size="24" fill="#333">→</text>';
+                // 2/4
+                svg += '<text x="160" y="35" text-anchor="middle" font-size="30" font-weight="bold" fill="#333">2</text>';
+                svg += '<line x1="140" y1="45" x2="180" y2="45" stroke="#333" stroke-width="3"/>';
+                svg += '<text x="160" y="75" text-anchor="middle" font-size="30" font-weight="bold" fill="#333">4</text>';
+                // =
+                svg += '<text x="210" y="55" text-anchor="middle" font-size="28" fill="#333" font-weight="bold">＝</text>';
+                svg += '<text x="250" y="55" text-anchor="middle" font-size="22" fill="#2e7d32" font-weight="bold">おなじ！</text>';
+                svg += '</svg>';
+                return svg;
+            }
+
+            // 足し算SVG
+            function addSVG(n1, d1, n2, d2) {
+                var svg = '<svg viewBox="0 0 280 60" xmlns="http://www.w3.org/2000/svg">';
+                var w = 240 / d1;
+                for (var i = 0; i < d1; i++) {
+                    var fill;
+                    if (i < n1) fill = '#42a5f5';
+                    else if (i < n1 + n2) fill = '#ff7043';
+                    else fill = '#e0e0e0';
+                    svg += '<rect x="' + (20 + i * w) + '" y="10" width="' + (w - 2) + '" height="40" rx="4" fill="' + fill + '" stroke="#757575" stroke-width="2"/>';
+                }
+                svg += '</svg>';
+                return svg;
+            }
+
+            // 足し算の説明SVG
+            function addExplainSVG() {
+                var svg = '<svg viewBox="0 0 280 100" xmlns="http://www.w3.org/2000/svg">';
+                // 1/4
+                svg += '<text x="35" y="35" text-anchor="middle" font-size="26" font-weight="bold" fill="#42a5f5">1</text>';
+                svg += '<line x1="18" y1="42" x2="52" y2="42" stroke="#333" stroke-width="3"/>';
+                svg += '<text x="35" y="70" text-anchor="middle" font-size="26" font-weight="bold" fill="#333">4</text>';
+                // +
+                svg += '<text x="80" y="55" text-anchor="middle" font-size="28" fill="#333" font-weight="bold">＋</text>';
+                // 2/4
+                svg += '<text x="120" y="35" text-anchor="middle" font-size="26" font-weight="bold" fill="#ff7043">2</text>';
+                svg += '<line x1="103" y1="42" x2="137" y2="42" stroke="#333" stroke-width="3"/>';
+                svg += '<text x="120" y="70" text-anchor="middle" font-size="26" font-weight="bold" fill="#333">4</text>';
+                // =
+                svg += '<text x="165" y="55" text-anchor="middle" font-size="28" fill="#333" font-weight="bold">＝</text>';
+                // 3/4
+                svg += '<text x="210" y="35" text-anchor="middle" font-size="30" font-weight="bold" fill="#2e7d32">3</text>';
+                svg += '<line x1="190" y1="42" x2="230" y2="42" stroke="#333" stroke-width="3"/>';
+                svg += '<text x="210" y="70" text-anchor="middle" font-size="30" font-weight="bold" fill="#2e7d32">4</text>';
+                // 注釈
+                svg += '<text x="210" y="95" text-anchor="middle" font-size="12" fill="#888">分母はそのまま！</text>';
+                svg += '</svg>';
+                return svg;
+            }
+
+            // === データ管理 ===
+            var BUNSU_STORAGE_KEY = "papan_bunsu_progress_v1";
+
+            function loadProgress() {
+                try {
+                    return JSON.parse(localStorage.getItem(BUNSU_STORAGE_KEY)) || { clearedStages: [], stars: {} };
+                } catch (e) { return { clearedStages: [], stars: {} }; }
+            }
+
+            function saveProgress(data) {
+                localStorage.setItem(BUNSU_STORAGE_KEY, JSON.stringify(data));
+            }
+
+            function isCleared(stageId) {
+                return loadProgress().clearedStages.indexOf(stageId) !== -1;
+            }
+
+            function isUnlocked(stageId) {
+                if (stageId === 1) return true;
+                return isCleared(stageId - 1);
+            }
+
+            function getStars(stageId) {
+                var p = loadProgress();
+                return p.stars[stageId] || 0;
+            }
+
+            // === 状態変数 ===
+            var currentStage = null;    // 現在のステージオブジェクト
+            var slideIndex = 0;         // レッスンスライド位置
+            var quizIndex = 0;          // 現在のクイズ問題番号
+            var correctCount = 0;       // 正解数
+            var totalQuizzes = 3;       // 問題数
+            var pointsGiven = false;    // ポイント付与済みフラグ
+
+            // === 画面制御 ===
+            function showScreen(screenId) {
+                ['map-screen', 'lesson-screen', 'quiz-screen', 'clear-screen'].forEach(function (id) {
+                    document.getElementById(id).style.display = (id === screenId) ? 'block' : 'none';
+                });
+            }
+
+            // === マップ画面 ===
+            function renderMap() {
+                showScreen('map-screen');
+                var container = document.getElementById('stage-path');
+                container.innerHTML = '';
+
+                STAGES.forEach(function (stage, idx) {
+                    // コネクター（最初のステージ以外）
+                    if (idx > 0) {
+                        var conn = document.createElement('div');
+                        conn.className = 'path-connector' + (isCleared(stage.id - 1) ? ' active' : '');
+                        container.appendChild(conn);
+                    }
+
+                    var node = document.createElement('div');
+                    node.className = 'stage-node';
+
+                    var cleared = isCleared(stage.id);
+                    var unlocked = isUnlocked(stage.id);
+
+                    if (cleared) {
+                        node.classList.add('cleared');
+                    } else if (unlocked) {
+                        node.classList.add('current');
+                    } else {
+                        node.classList.add('locked');
+                    }
+
+                    var starsHtml = '';
+                    if (cleared) {
+                        var s = getStars(stage.id);
+                        starsHtml = '<div class="stage-stars">';
+                        for (var i = 0; i < 3; i++) {
+                            starsHtml += i < s ? '⭐' : '☆';
+                        }
+                        starsHtml += '</div>';
+                    } else if (!unlocked) {
+                        starsHtml = '<div class="stage-lock">🔒</div>';
+                    }
+
+                    node.innerHTML = '<div class="stage-icon">' + stage.icon + '</div>' +
+                        '<div class="stage-info">' +
+                        '<div class="stage-num">ステージ ' + stage.id + '</div>' +
+                        '<div class="stage-name">' + stage.name + '</div>' +
+                        '<div class="stage-desc">' + stage.desc + '</div>' +
+                        '</div>' + starsHtml;
+
+                    if (unlocked) {
+                        (function (s) {
+                            node.onclick = function () { startStage(s); };
+                        })(stage);
+                    }
+
+                    container.appendChild(node);
+                });
+            }
+
+            // === ステージ開始 ===
+            function startStage(stage) {
+                currentStage = stage;
+                slideIndex = 0;
+                quizIndex = 0;
+                correctCount = 0;
+                pointsGiven = false;
+                showLesson();
+            }
+
+            // === レッスン画面 ===
+            function showLesson() {
+                showScreen('lesson-screen');
+                document.getElementById('lesson-stage-name').textContent = currentStage.name;
+                renderSlide();
+                renderDots();
+            }
+
+            function renderSlide() {
+                var slide = currentStage.lessons[slideIndex];
+                var container = document.getElementById('lesson-slide');
+                var html = '';
+
+                if (slide.svg) {
+                    html += '<div class="lesson-visual">' + slide.svg() + '</div>';
+                }
+                html += '<div class="lesson-text">' + slide.text + '</div>';
+
+                container.innerHTML = html;
+
+                var btn = document.getElementById('lesson-next-btn');
+                if (slideIndex === currentStage.lessons.length - 1) {
+                    btn.textContent = 'れんしゅう もんだいへ →';
+                } else {
+                    btn.textContent = 'つぎへ →';
+                }
+            }
+
+            function renderDots() {
+                var dotsContainer = document.getElementById('lesson-dots');
+                dotsContainer.innerHTML = '';
+                for (var i = 0; i < currentStage.lessons.length; i++) {
+                    var dot = document.createElement('div');
+                    dot.className = 'lesson-dot' + (i <= slideIndex ? ' active' : '');
+                    dotsContainer.appendChild(dot);
+                }
+            }
+
+            function nextSlide() {
+                if (slideIndex < currentStage.lessons.length - 1) {
+                    slideIndex++;
+                    renderSlide();
+                    renderDots();
+                } else {
+                    // 練習問題へ移行
+                    startQuiz();
+                }
+            }
+
+            // === 練習問題 ===
+            function startQuiz() {
+                quizIndex = 0;
+                correctCount = 0;
+                showScreen('quiz-screen');
+                renderQuiz();
+            }
+
+            function renderQuiz() {
+                var quiz = currentStage.quizzes[quizIndex];
+                document.getElementById('quiz-progress-text').textContent = 'もんだい ' + (quizIndex + 1) + '/' + totalQuizzes;
+                document.getElementById('quiz-question-text').textContent = quiz.q;
+
+                // ビジュアル
+                var visualEl = document.getElementById('quiz-visual');
+                visualEl.innerHTML = quiz.svg ? quiz.svg() : '';
+
+                // 選択肢
+                var optionsEl = document.getElementById('quiz-options');
+                optionsEl.innerHTML = '';
+                quiz.options.forEach(function (opt, idx) {
+                    var btn = document.createElement('button');
+                    btn.className = 'quiz-option';
+                    btn.textContent = opt;
+                    btn.onclick = function () { answerQuiz(idx); };
+                    optionsEl.appendChild(btn);
+                });
+
+                document.getElementById('quiz-feedback').style.display = 'none';
+            }
+
+            function answerQuiz(selected) {
+                var quiz = currentStage.quizzes[quizIndex];
+                var buttons = document.querySelectorAll('.quiz-option');
+                var feedback = document.getElementById('quiz-feedback');
+
+                // ボタン無効化
+                buttons.forEach(function (btn) { btn.disabled = true; });
+
+                if (selected === quiz.answer) {
+                    correctCount++;
+                    buttons[selected].classList.add('correct');
+                    feedback.textContent = '⭕ せいかい！';
+                    feedback.style.display = 'block';
+                    createSparkles();
+                } else {
+                    buttons[selected].classList.add('wrong');
+                    buttons[quiz.answer].classList.add('correct');
+                    feedback.textContent = '❌ ざんねん…';
+                    feedback.style.display = 'block';
+                }
+
+                // 次の問題 or クリア画面へ
+                setTimeout(function () {
+                    quizIndex++;
+                    if (quizIndex < totalQuizzes) {
+                        renderQuiz();
+                    } else {
+                        showClearScreen();
+                    }
+                }, 1200);
+            }
+
+            // === クリア画面 ===
+            function showClearScreen() {
+                showScreen('clear-screen');
+
+                // 星の計算（3問中: 3正解=3つ星, 2正解=2つ星, 1正解以下=1つ星）
+                var stars;
+                if (correctCount >= 3) stars = 3;
+                else if (correctCount >= 2) stars = 2;
+                else stars = 1;
+
+                // 進捗を保存
+                var progress = loadProgress();
+                if (progress.clearedStages.indexOf(currentStage.id) === -1) {
+                    progress.clearedStages.push(currentStage.id);
+                }
+                // より良い星数なら更新
+                var prevStars = progress.stars[currentStage.id] || 0;
+                if (stars > prevStars) {
+                    progress.stars[currentStage.id] = stars;
+                }
+                saveProgress(progress);
+
+                // 星アニメーション
+                var starsEl = document.getElementById('clear-stars');
+                starsEl.innerHTML = '';
+                for (var i = 0; i < 3; i++) {
+                    var span = document.createElement('span');
+                    span.className = 'star-anim';
+                    span.textContent = i < stars ? '⭐' : '☆';
+                    span.style.animationDelay = (i * 0.2) + 's';
+                    starsEl.appendChild(span);
+                }
+
+                // メッセージ
+                var msgs = ['がんばったね！', 'すごい！', 'かんぺき！！'];
+                document.getElementById('clear-msg').textContent = msgs[stars - 1];
+                document.getElementById('clear-score').textContent = correctCount + '/' + totalQuizzes + ' もん せいかい';
+
+                // ポイントボタン
+                pointsGiven = false;
+                var pointBtn = document.getElementById('clear-point-btn');
+                pointBtn.disabled = false;
+                pointBtn.textContent = '🎁 ポイントをもらう';
+
+                // 次のステージボタン
+                var nextBtn = document.getElementById('clear-next-btn');
+                var nextStage = STAGES.find(function (s) { return s.id === currentStage.id + 1; });
+                if (nextStage) {
+                    nextBtn.style.display = 'inline-block';
+                } else {
+                    nextBtn.style.display = 'none';
+                }
+
+                createSparkles();
+            }
+
+            // === ポイント獲得 ===
+            function getPoints() {
+                if (pointsGiven) return;
+                pointsGiven = true;
+
+                var points = correctCount * 10;
+                if (points < 10) points = 10; // 最低10pt参加賞
+
+                var btn = document.getElementById('clear-point-btn');
+                btn.disabled = true;
+                btn.textContent = '✅ もらった！';
+
+                if (typeof showPointGetDialog === 'function') {
+                    showPointGetDialog(points, 'bunsu_learn');
+                } else {
+                    alert(points + 'ポイント もらったよ！');
+                }
+            }
+
+            // === 次のステージ ===
+            function goNextStage() {
+                var nextStage = STAGES.find(function (s) { return s.id === currentStage.id + 1; });
+                if (nextStage) {
+                    startStage(nextStage);
+                } else {
+                    backToMap();
+                }
+            }
+
+            // === マップに戻る ===
+            function backToMap() {
+                renderMap();
+            }
+
+            // === キラキラエフェクト ===
+            function createSparkles() {
+                var emojis = ['✨', '⭐', '🌟', '💫'];
+                for (var i = 0; i < 8; i++) {
+                    (function (delay) {
+                        setTimeout(function () {
+                            var el = document.createElement('div');
+                            el.className = 'sparkle';
+                            el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                            el.style.left = (20 + Math.random() * 60) + 'vw';
+                            el.style.top = (20 + Math.random() * 50) + 'vh';
+                            document.body.appendChild(el);
+                            setTimeout(function () { el.remove(); }, 900);
+                        }, delay * 100);
+                    })(i);
+                }
+            }
+
+            // === window公開（onclick用） ===
+            window.backToMap = backToMap;
+            window.nextSlide = nextSlide;
+            window.getPoints = getPoints;
+            window.goNextStage = goNextStage;
+
+            // === 初期化 ===
+            renderMap();
+
+        })();
+    </script>
+</body>
+
+</html>

@@ -56,6 +56,9 @@ var urlsToCache = [
   './kanji/grade1.js',
   './kanji/grade2.js',
 
+  // === 分数学習 ===
+  './bunsu_learn.html',
+
   // === 英語系 ===
   './alphabet.html',
   './alphabet_read.html',
