@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>文法マスター | ぱぱん式</title>
+    <script src="ranking.js"></script>
+    <style>
+        /* --- 基本設定 --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "UD Digital Kyokasho-tai", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 50%, #e8f5e9 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #333;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 15px 10px 30px;
+            position: relative;
+        }
+
+        /* もどるボタン */
+        .home-btn {
+            display: inline-block;
+            text-decoration: none;
+            color: #888;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            padding: 5px 12px;
+            border-radius: 15px;
+            transition: 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .home-btn:hover {
+            background-color: #eee;
+        }
+
+        /* タイトル */
+        .title {
+            text-align: center;
+            font-size: 24px;
+            color: #2e7d32;
+            margin: 10px 0 5px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 20px;
+        }
+
+        /* === ステージマップ画面 === */
+        .map-screen {
+            text-align: center;
+        }
+
+        .stage-path {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .stage-node {
+            width: 90%;
+            max-width: 360px;
+            background: white;
+            border-radius: 20px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 3px solid #e0e0e0;
+            position: relative;
+        }
+
+        .stage-node.cleared {
+            border-color: #66bb6a;
+            background: linear-gradient(135deg, #f1f8e9, #e8f5e9);
+        }
+
+        .stage-node.current {
+            border-color: #ff9800;
+            box-shadow: 0 4px 16px rgba(255, 152, 0, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .stage-node.locked {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .stage-node:active:not(.locked) {
+            transform: scale(0.97);
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 4px 16px rgba(255, 152, 0, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 4px 24px rgba(255, 152, 0, 0.5);
+            }
+        }
+
+        .stage-icon {
+            font-size: 40px;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .stage-info {
+            text-align: left;
+            flex: 1;
+        }
+
+        .stage-num {
+            font-size: 12px;
+            color: #aaa;
+            font-weight: bold;
+        }
+
+        .stage-name {
+            font-size: 17px;
+            font-weight: bold;
+            color: #333;
+            margin: 2px 0;
+        }
+
+        .stage-desc {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .stage-stars {
+            font-size: 18px;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .stage-lock {
+            font-size: 24px;
+            min-width: 60px;
+            text-align: right;
+            color: #ccc;
+        }
+
+        /* ステージ間の道 */
+        .path-connector {
+            width: 4px;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 2px;
+        }
+
+        .path-connector.active {
+            background: #66bb6a;
+        }
+
+        /* === レッスン画面 === */
+        .lesson-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .lesson-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .lesson-back-btn {
+            background: none;
+            border: 1px solid #ccc;
+            color: #888;
+            font-size: 13px;
+            padding: 5px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .lesson-stage-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        .lesson-slide {
+            background: white;
+            border-radius: 25px;
+            padding: 25px 20px;
+            margin: 10px auto;
+            max-width: 400px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lesson-visual {
+            margin: 10px 0;
+        }
+
+        .lesson-visual svg {
+            max-width: 280px;
+            width: 100%;
+            height: auto;
+        }
+
+        .lesson-text {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #333;
+            margin: 15px 0;
+        }
+
+        .lesson-text .highlight {
+            color: #e65100;
+            font-weight: bold;
+            font-size: 22px;
+        }
+
+        .lesson-text .big-fraction {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        .lesson-dots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 15px 0 10px;
+        }
+
+        .lesson-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ddd;
+        }
+
+        .lesson-dot.active {
+            background: #66bb6a;
+        }
+
+        .lesson-next-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 14px 40px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 0 #388E3C;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        .lesson-next-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #388E3C;
+        }
+
+        /* === 練習問題画面 === */
+        .quiz-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .quiz-progress-text {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .quiz-card {
+            background: white;
+            border-radius: 25px;
+            padding: 25px 20px;
+            margin: 10px auto;
+            max-width: 400px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .quiz-question-text {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        .quiz-visual {
+            margin: 10px 0 20px;
+        }
+
+        .quiz-visual svg {
+            max-width: 250px;
+            width: 100%;
+            height: auto;
+        }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 15px 0;
+        }
+
+        .quiz-option {
+            background: white;
+            border: 3px solid #81c784;
+            font-size: 22px;
+            font-weight: bold;
+            padding: 16px;
+            border-radius: 18px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            color: #333;
+            box-shadow: 0 3px 0 #66bb6a;
+        }
+
+        .quiz-option:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #66bb6a;
+        }
+
+        .quiz-option.correct {
+            background: #4CAF50;
+            color: white;
+            border-color: #388E3C;
+        }
+
+        .quiz-option.wrong {
+            background: #ef5350;
+            color: white;
+            border-color: #c62828;
+        }
+
+        .quiz-option:disabled {
+            cursor: default;
+        }
+
+        .quiz-feedback {
+            font-size: 50px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        /* === クリア画面 === */
+        .clear-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .clear-title {
+            font-size: 28px;
+            color: #ff9800;
+            margin: 20px 0 10px;
+        }
+
+        .clear-stars {
+            font-size: 50px;
+            margin: 15px 0;
+        }
+
+        .clear-msg {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .clear-score {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .clear-btn {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 14px 32px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            margin: 8px;
+            transition: all 0.2s;
+        }
+
+        .clear-point-btn {
+            background: #ff9800;
+            color: white;
+            box-shadow: 0 4px 0 #e68900;
+        }
+
+        .clear-point-btn:disabled {
+            background: #ccc;
+            box-shadow: 0 4px 0 #999;
+        }
+
+        .clear-point-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #e68900;
+        }
+
+        .clear-next-btn {
+            background: #4CAF50;
+            color: white;
+            box-shadow: 0 4px 0 #388E3C;
+        }
+
+        .clear-next-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #388E3C;
+        }
+
+        .clear-map-btn {
+            background: #2196F3;
+            color: white;
+            box-shadow: 0 4px 0 #1565C0;
+        }
+
+        .clear-map-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #1565C0;
+        }
+
+        /* キラキラ */
+        @keyframes popIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes starBounce {
+            0% {
+                transform: scale(0);
+            }
+
+            60% {
+                transform: scale(1.3);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .star-anim {
+            display: inline-block;
+            animation: starBounce 0.5s ease forwards;
+        }
+
+        .sparkle {
+            position: fixed;
+            font-size: 30px;
+            pointer-events: none;
+            z-index: 200;
+            animation: sparkleAnim 0.8s ease forwards;
+        }
+
+        @keyframes sparkleAnim {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.2) rotate(180deg);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* === ユーザー選択オーバーレイ === */
+        #user-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #2e7d32, #43a047, #66bb6a);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-select-box {
+            background: white;
+            padding: 30px 25px;
+            border-radius: 25px;
+            max-width: 90%;
+            width: 360px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-select-box h2 {
+            color: #2e7d32;
+            font-size: 24px;
+            margin: 0 0 5px;
+        }
+
+        .user-select-box p {
+            color: #888;
+            font-size: 14px;
+            margin: 0 0 20px;
+        }
+
+        .user-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #43a047, #66bb6a);
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 0 #2e7d32;
+            transition: all 0.2s;
+        }
+
+        .user-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #2e7d32;
+        }
+
+        /* スマホ対応 */
+        @media (max-width: 400px) {
+            .lesson-slide {
+                padding: 20px 15px;
+                min-height: 280px;
+            }
+
+            .lesson-text {
+                font-size: 16px;
+            }
+
+            .stage-name {
+                font-size: 15px;
+            }
+
+            .quiz-option {
+                font-size: 18px;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ユーザー選択画面 -->
+    <div id="user-overlay">
+        <div class="user-select-box">
+            <h2>📝 文法マスター</h2>
+            <p>だれが まなぶ？</p>
+            <div id="user-list"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <a href="index.html" class="home-btn">← もどる</a>
+        <h1 class="title">📝 文法マスター</h1>
+        <p class="subtitle">ステージをクリアして文法をマスターしよう！</p>
+
+        <!-- === マップ画面 === -->
+        <div id="map-screen" class="map-screen">
+            <div class="stage-path" id="stage-path">
+                <!-- JSで動的に生成 -->
+            </div>
+        </div>
+
+        <!-- === レッスン画面 === -->
+        <div id="lesson-screen" class="lesson-screen">
+            <div class="lesson-header">
+                <button class="lesson-back-btn" onclick="backToMap()">← もどる</button>
+                <span class="lesson-stage-name" id="lesson-stage-name"></span>
+                <span></span>
+            </div>
+            <div class="lesson-slide" id="lesson-slide">
+                <!-- JSで動的にスライド内容を表示 -->
+            </div>
+            <div class="lesson-dots" id="lesson-dots"></div>
+            <button class="lesson-next-btn" id="lesson-next-btn" onclick="nextSlide()">つぎへ →</button>
+        </div>
+
+        <!-- === 練習問題画面 === -->
+        <div id="quiz-screen" class="quiz-screen">
+            <div class="quiz-header">
+                <button class="lesson-back-btn" onclick="backToMap()">← もどる</button>
+                <span class="quiz-progress-text" id="quiz-progress-text">もんだい 1/3</span>
+            </div>
+            <div class="quiz-card" id="quiz-card">
+                <p class="quiz-question-text" id="quiz-question-text"></p>
+                <div class="quiz-visual" id="quiz-visual"></div>
+                <div class="quiz-options" id="quiz-options"></div>
+            </div>
+            <div class="quiz-feedback" id="quiz-feedback"></div>
+        </div>
+
+        <!-- === クリア画面 === -->
+        <div id="clear-screen" class="clear-screen">
+            <h2 class="clear-title">🎉 ステージクリア！</h2>
+            <div class="clear-stars" id="clear-stars"></div>
+            <p class="clear-msg" id="clear-msg"></p>
+            <p class="clear-score" id="clear-score"></p>
+
+            <button class="clear-btn clear-point-btn" id="clear-point-btn" onclick="getPoints()">
+                🎁 ポイントをもらう
+            </button>
+            <br>
+            <button class="clear-btn clear-next-btn" id="clear-next-btn" onclick="goNextStage()" style="display:none;">
+                つぎのステージへ →
+            </button>
+            <button class="clear-btn clear-map-btn" onclick="backToMap()">マップにもどる</button>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            // === ステージデータ定義 ===
+            var STAGES = [
+                {
+                    id: 1,
+                    name: "だれが・どうする",
+                    desc: "主語（しゅご）と述語（じゅつご）",
+                    icon: "🏃",
+                    lessons: [
+                        {
+                            text: '「ねこが はしる」という 文があるよ。',
+                            svg: function() { return textSVG("ねこが はしる"); }
+                        },
+                        {
+                            text: '「だれが」「なにが」にあたる言葉を<br>「<span class="highlight">主語（しゅご）</span>」というよ！',
+                            svg: function() { return textSVG("ねこが はしる", "ねこが", "#ff8a65"); }
+                        },
+                        {
+                            text: '「どうする」「どんなだ」にあたる言葉を<br>「<span class="highlight">述語（じゅつご）</span>」というよ！',
+                            svg: function() { return textSVG("ねこが はしる", "はしる", "#64b5f6"); }
+                        },
+                        {
+                            text: '主語と述語は、文の ほねぐみ になる<br>とても たいせつな 言葉だよ！',
+                            svg: null
+                        }
+                    ],
+                    quizzes: [
+                        {
+                            q: "「いぬが ないた」の 主語（しゅご）は どれ？",
+                            svg: function() { return textSVG("いぬが ないた"); },
+                            options: ["いぬが", "ないた", "いぬ", "が"],
+                            answer: 0
+                        },
+                        {
+                            q: "「はな が さく」の 述語（じゅつご）は どれ？",
+                            svg: function() { return textSVG("はな が さく"); },
+                            options: ["はな が", "さく", "はな", "が さく"],
+                            answer: 1
+                        },
+                        {
+                            q: "「そらが あおい」の 主語（しゅご）は どれ？",
+                            svg: function() { return textSVG("そらが あおい"); },
+                            options: ["そらが", "あおい", "そら", "が あおい"],
+                            answer: 0
+                        }
+                    ]
+                },
+                {
+                    id: 2,
+                    name: "くわしくする言葉",
+                    desc: "修飾語（しゅうしょくご）",
+                    icon: "🎀",
+                    lessons: [
+                        {
+                            text: '「ねこが はしる」の文を<br>もっと くわしく してみよう！',
+                            svg: function() { return textSVG("ねこが はしる"); }
+                        },
+                        {
+                            text: '「<span class="highlight">かわいい</span> ねこが はしる」<br>「かわいい」は「ねこが」を くわしくしているね。',
+                            svg: function() { return textSVG("かわいい ねこが はしる", "かわいい", "#ff8a65"); }
+                        },
+                        {
+                            text: '「かわいい ねこが <span class="highlight">はやく</span> はしる」<br>「はやく」は「はしる」を くわしくしているね。',
+                            svg: function() { return textSVG("かわいい ねこが はやく はしる", "はやく", "#64b5f6"); }
+                        },
+                        {
+                            text: 'このように、ほかの言葉を くわしくする 言葉を<br>「<span class="highlight">修飾語（しゅうしょくご）</span>」というよ！',
+                            svg: null
+                        }
+                    ],
+                    quizzes: [
+                        {
+                            q: "「あかい りんごを たべる」の 修飾語 は どれ？",
+                            svg: function() { return textSVG("あかい りんごを たべる", "あかい", "#ff8a65"); },
+                            options: ["あかい", "りんごを", "たべる", "りんご"],
+                            answer: 0
+                        },
+                        {
+                            q: "「すごく おおきい」で、「おおきい」をくわしくしている言葉は？",
+                            svg: function() { return textSVG("すごく おおきい", "すごく", "#64b5f6"); },
+                            options: ["おおきい", "すごく", "おおき", "ごく"],
+                            answer: 1
+                        },
+                        {
+                            q: "「かわいい いぬが なく」の「かわいい」は、どの言葉をくわしくしている？",
+                            svg: function() { return textSVG("かわいい いぬが なく", "かわいい", "#ff8a65"); },
+                            options: ["いぬが", "なく", "いぬが なく", "かわ"],
+                            answer: 0
+                        }
+                    ]
+                },
+                {
+                    id: 3,
+                    name: "つなぐ・さす言葉",
+                    desc: "接続語と指示語",
+                    icon: "🔗",
+                    lessons: [
+                        {
+                            text: '「あめが ふった。<span class="highlight">だから</span> かさを さす。」<br>このように 文と文をつなぐ 言葉を<br>「接続語（せつぞくご）」というよ。',
+                            svg: function() { return textSVG("あめが ふった。だから かさを さす。", "だから", "#ffb74d"); }
+                        },
+                        {
+                            text: '「しかし」「そして」なども 接続語だよ。<br>前の文と 次の文の つながりを あらわすよ。',
+                            svg: null
+                        },
+                        {
+                            text: '「<span class="highlight">これ</span> は ぼくの ペンだ」<br>のように、ものごとを さししめす 言葉を<br>「指示語（しじご）」というよ。',
+                            svg: function() { return textSVG("これは ぼくの ペンだ", "これ", "#ba68c8"); }
+                        },
+                        {
+                            text: '「これ」「それ」「あの」「どこ」など、<br>「こそあど言葉」とも よばれるよ！',
+                            svg: null
+                        }
+                    ],
+                    quizzes: [
+                        {
+                            q: "文と文をつなぐ 正しい 接続語 は どれ？<br>「たいようが でた。◯◯◯、あたたかい。」",
+                            svg: null,
+                            options: ["しかし", "だから", "または", "なぜなら"],
+                            answer: 1
+                        },
+                        {
+                            q: "「それは わたしの ほんです」<br>このなかで「指示語」は どれ？",
+                            svg: function() { return textSVG("それは わたしの ほんです"); },
+                            options: ["わたしの", "ほんです", "それは", "は"],
+                            answer: 2
+                        },
+                        {
+                            q: "文と文をつなぐ 正しい 接続語 は どれ？<br>「いっぱい たべた。◯◯◯、まだ おなかがすいている。」",
+                            svg: null,
+                            options: ["だから", "そして", "しかし", "つまり"],
+                            answer: 2
+                        }
+                    ]
+                },
+                {
+                    id: 4,
+                    name: "言葉のなかま",
+                    desc: "品詞（ひんし）",
+                    icon: "🧩",
+                    lessons: [
+                        {
+                            text: '言葉には、いくつかの「なかま（品詞）」があるよ。',
+                            svg: null
+                        },
+                        {
+                            text: '「りんご」「がっこう」「えんぴつ」のように<br>ものや ひと、ばしょ の 名前を<br>「<span class="highlight">名詞（めいし）</span>」というよ！',
+                            svg: function() { return textSVG("🍎 りんご   🏫 がっこう", "", "#4db6ac"); }
+                        },
+                        {
+                            text: '「はしる」「たべる」「あそぶ」のように<br>動作（どうさ）や 動きを あらわす 言葉で、<br>言い切りが「ウ段」で終わるものを「<span class="highlight">動詞（どうし）</span>」というよ！',
+                            svg: function() { return textSVG("🏃 はしる   🍔 たべる", "", "#e57373"); }
+                        },
+                        {
+                            text: '「たかい」「あかい」「かわいい」のように<br>様子（ようす）や 状態を あらわす 言葉で、<br>言い切りが「い」で終わるものを「<span class="highlight">形容詞（けいようし）</span>」というよ！',
+                            svg: function() { return textSVG("📏 たかい   🍎 あかい", "", "#7986cb"); }
+                        }
+                    ],
+                    quizzes: [
+                        {
+                            q: "「さくら」は どの なかま？",
+                            svg: null,
+                            options: ["名詞（めいし）", "動詞", "形容詞", "接続語"],
+                            answer: 0
+                        },
+                        {
+                            q: "「あるく」は どの なかま？",
+                            svg: null,
+                            options: ["名詞（めいし）", "動詞", "形容詞", "指示語"],
+                            answer: 1
+                        },
+                        {
+                            q: "「やさしい」は どの なかま？",
+                            svg: null,
+                            options: ["名詞（めいし）", "動詞", "形容詞", "修飾語"],
+                            answer: 2
+                        }
+                    ]
+                },
+                {
+                    id: 5,
+                    name: "ていねいな言葉",
+                    desc: "敬語（けいご）のきほん",
+                    icon: "🙇",
+                    lessons: [
+                        {
+                            text: '目上の人（先生や 大人など）と はなすときは<br>「ていねいな言葉（敬語）」をつかうよ。',
+                            svg: null
+                        },
+                        {
+                            text: '「行く」は「<span class="highlight">行きます</span>」<br>「だ」は「<span class="highlight">です</span>」のように<br>語尾（ごび）を 変えるのが 基本だよ！',
+                            svg: function() { return textSVG("行く → 行きます"); }
+                        },
+                        {
+                            text: '「言う」の ていねいな言い方は「<span class="highlight">言います</span>」。<br>さらに相手を高める「おっしゃる」や<br>自分をへりくだる「もうす」などの 特別な言葉もあるよ。',
+                            svg: null
+                        },
+                        {
+                            text: '言葉づかいに気をつけて、<br>正しい日本語をマスターしよう！',
+                            svg: null
+                        }
+                    ],
+                    quizzes: [
+                        {
+                            q: "「ほんを よむ」を ていねいな言い方に すると？",
+                            svg: null,
+                            options: ["ほんを よむよ", "ほんを よみます", "ほんを よんで", "ほんを よもう"],
+                            answer: 1
+                        },
+                        {
+                            q: "「これは えんぴつ だ」を ていねいな言い方に すると？",
+                            svg: null,
+                            options: ["えんぴつ だよ", "えんぴつ です", "えんぴつ だね", "えんぴつ である"],
+                            answer: 1
+                        },
+                        {
+                            q: "「わたしが する」を ていねいな言い方に すると？",
+                            svg: null,
+                            options: ["わたしが します", "わたしが するよ", "わたしが するね", "わたしが して"],
+                            answer: 0
+                        }
+                    ]
+                }
+            ];
+
+            // --- SVG描画ロジック ---
+            function textSVG(fullText, highlightWord, highlightColor) {
+                highlightColor = highlightColor || "#ff8a65";
+                let svgStr = `<svg viewBox="0 0 300 100" width="100%" height="100%">`;
+                svgStr += `<rect x="0" y="0" width="300" height="100" rx="10" fill="#f5f5f5" stroke="#e0e0e0" stroke-width="2" />`;
+                
+                if (highlightWord && fullText.includes(highlightWord)) {
+                    let parts = fullText.split(highlightWord);
+                    let beforeText = parts[0];
+                    let afterText = parts[1] || "";
+                    
+                    svgStr += `
+                        <text x="150" y="55" font-family="sans-serif" font-size="24" font-weight="bold" fill="#333" text-anchor="middle">
+                            <tspan>${beforeText}</tspan>
+                            <tspan fill="${highlightColor}">${highlightWord}</tspan>
+                            <tspan>${afterText}</tspan>
+                        </text>
+                        <path d="M ${150 - highlightWord.length*10} 65 L ${150 + highlightWord.length*10} 65" stroke="${highlightColor}" stroke-width="4" stroke-linecap="round"/>
+                    `;
+                } else {
+                    svgStr += `<text x="150" y="58" font-family="sans-serif" font-size="24" font-weight="bold" fill="#333" text-anchor="middle">${fullText}</text>`;
+                }
+                svgStr += `</svg>`;
+                return svgStr;
+            }
+
+            // === データ管理 ===
+            var BUNPO_KEY_PREFIX = "papan_bunpo_progress_v1_";
+            var currentUserName = null;
+
+            function getKey() { return BUNPO_KEY_PREFIX + currentUserName; }
+
+            function loadProgress() {
+                if (!currentUserName) return { clearedStages: [], stars: {} };
+                try {
+                    return JSON.parse(localStorage.getItem(getKey())) || { clearedStages: [], stars: {} };
+                } catch (e) { return { clearedStages: [], stars: {} }; }
+            }
+
+            function saveProgress(data) {
+                if (!currentUserName) return;
+                localStorage.setItem(getKey(), JSON.stringify(data));
+            }
+
+            function isCleared(stageId) {
+                return loadProgress().clearedStages.indexOf(stageId) !== -1;
+            }
+
+            function isUnlocked(stageId) {
+                if (stageId === 1) return true;
+                return isCleared(stageId - 1);
+            }
+
+            function getStars(stageId) {
+                var p = loadProgress();
+                return p.stars[stageId] || 0;
+            }
+
+            // === 状態変数 ===
+            var currentStage = null;    // 現在のステージオブジェクト
+            var slideIndex = 0;         // レッスンスライド位置
+            var quizIndex = 0;          // 現在のクイズ問題番号
+            var correctCount = 0;       // 正解数
+            var totalQuizzes = 3;       // 問題数
+            var pointsGiven = false;    // ポイント付与済みフラグ
+
+            // === 画面制御 ===
+            function showScreen(screenId) {
+                ['map-screen', 'lesson-screen', 'quiz-screen', 'clear-screen'].forEach(function (id) {
+                    document.getElementById(id).style.display = (id === screenId) ? 'block' : 'none';
+                });
+            }
+
+            // === マップ画面 ===
+            function renderMap() {
+                showScreen('map-screen');
+                var container = document.getElementById('stage-path');
+                container.innerHTML = '';
+
+                STAGES.forEach(function (stage, idx) {
+                    // コネクター（最初のステージ以外）
+                    if (idx > 0) {
+                        var conn = document.createElement('div');
+                        conn.className = 'path-connector' + (isCleared(stage.id - 1) ? ' active' : '');
+                        container.appendChild(conn);
+                    }
+
+                    var node = document.createElement('div');
+                    node.className = 'stage-node';
+
+                    var cleared = isCleared(stage.id);
+                    var unlocked = isUnlocked(stage.id);
+
+                    if (cleared) {
+                        node.classList.add('cleared');
+                    } else if (unlocked) {
+                        node.classList.add('current');
+                    } else {
+                        node.classList.add('locked');
+                    }
+
+                    var starsHtml = '';
+                    if (cleared) {
+                        var s = getStars(stage.id);
+                        starsHtml = '<div class="stage-stars">';
+                        for (var i = 0; i < 3; i++) {
+                            starsHtml += i < s ? '⭐' : '☆';
+                        }
+                        starsHtml += '</div>';
+                    } else if (!unlocked) {
+                        starsHtml = '<div class="stage-lock">🔒</div>';
+                    }
+
+                    node.innerHTML = '<div class="stage-icon">' + stage.icon + '</div>' +
+                        '<div class="stage-info">' +
+                        '<div class="stage-num">ステージ ' + stage.id + '</div>' +
+                        '<div class="stage-name">' + stage.name + '</div>' +
+                        '<div class="stage-desc">' + stage.desc + '</div>' +
+                        '</div>' + starsHtml;
+
+                    if (unlocked) {
+                        (function (s) {
+                            node.onclick = function () { startStage(s); };
+                        })(stage);
+                    }
+
+                    container.appendChild(node);
+                });
+            }
+
+            // === ステージ開始 ===
+            function startStage(stage) {
+                currentStage = stage;
+                slideIndex = 0;
+                quizIndex = 0;
+                correctCount = 0;
+                pointsGiven = false;
+                showLesson();
+            }
+
+            // === レッスン画面 ===
+            function showLesson() {
+                showScreen('lesson-screen');
+                document.getElementById('lesson-stage-name').textContent = currentStage.name;
+                renderSlide();
+                renderDots();
+            }
+
+            function renderSlide() {
+                var slide = currentStage.lessons[slideIndex];
+                var container = document.getElementById('lesson-slide');
+                var html = '';
+
+                if (slide.svg) {
+                    html += '<div class="lesson-visual">' + slide.svg() + '</div>';
+                }
+                html += '<div class="lesson-text">' + slide.text + '</div>';
+
+                container.innerHTML = html;
+
+                var btn = document.getElementById('lesson-next-btn');
+                if (slideIndex === currentStage.lessons.length - 1) {
+                    btn.textContent = 'れんしゅう もんだいへ →';
+                } else {
+                    btn.textContent = 'つぎへ →';
+                }
+            }
+
+            function renderDots() {
+                var dotsContainer = document.getElementById('lesson-dots');
+                dotsContainer.innerHTML = '';
+                for (var i = 0; i < currentStage.lessons.length; i++) {
+                    var dot = document.createElement('div');
+                    dot.className = 'lesson-dot' + (i <= slideIndex ? ' active' : '');
+                    dotsContainer.appendChild(dot);
+                }
+            }
+
+            function nextSlide() {
+                if (slideIndex < currentStage.lessons.length - 1) {
+                    slideIndex++;
+                    renderSlide();
+                    renderDots();
+                } else {
+                    // 練習問題へ移行
+                    startQuiz();
+                }
+            }
+
+            // === 練習問題 ===
+            function startQuiz() {
+                quizIndex = 0;
+                correctCount = 0;
+                showScreen('quiz-screen');
+                renderQuiz();
+            }
+
+            function renderQuiz() {
+                var quiz = currentStage.quizzes[quizIndex];
+                document.getElementById('quiz-progress-text').textContent = 'もんだい ' + (quizIndex + 1) + '/' + totalQuizzes;
+                document.getElementById('quiz-question-text').textContent = quiz.q;
+
+                // ビジュアル
+                var visualEl = document.getElementById('quiz-visual');
+                visualEl.innerHTML = quiz.svg ? quiz.svg() : '';
+
+                // 選択肢
+                var optionsEl = document.getElementById('quiz-options');
+                optionsEl.innerHTML = '';
+                quiz.options.forEach(function (opt, idx) {
+                    var btn = document.createElement('button');
+                    btn.className = 'quiz-option';
+                    btn.textContent = opt;
+                    btn.onclick = function () { answerQuiz(idx); };
+                    optionsEl.appendChild(btn);
+                });
+
+                document.getElementById('quiz-feedback').style.display = 'none';
+            }
+
+            function answerQuiz(selected) {
+                var quiz = currentStage.quizzes[quizIndex];
+                var buttons = document.querySelectorAll('.quiz-option');
+                var feedback = document.getElementById('quiz-feedback');
+
+                // ボタン無効化
+                buttons.forEach(function (btn) { btn.disabled = true; });
+
+                if (selected === quiz.answer) {
+                    correctCount++;
+                    buttons[selected].classList.add('correct');
+                    feedback.textContent = '⭕ せいかい！';
+                    feedback.style.display = 'block';
+                    createSparkles();
+                } else {
+                    buttons[selected].classList.add('wrong');
+                    buttons[quiz.answer].classList.add('correct');
+                    feedback.textContent = '❌ ざんねん…';
+                    feedback.style.display = 'block';
+                }
+
+                // 次の問題 or クリア画面へ
+                setTimeout(function () {
+                    quizIndex++;
+                    if (quizIndex < totalQuizzes) {
+                        renderQuiz();
+                    } else {
+                        showClearScreen();
+                    }
+                }, 1200);
+            }
+
+            // === クリア画面 ===
+            function showClearScreen() {
+                showScreen('clear-screen');
+
+                // 星の計算（3問中: 3正解=3つ星, 2正解=2つ星, 1正解以下=1つ星）
+                var stars;
+                if (correctCount >= 3) stars = 3;
+                else if (correctCount >= 2) stars = 2;
+                else stars = 1;
+
+                // 進捗を保存
+                var progress = loadProgress();
+                if (progress.clearedStages.indexOf(currentStage.id) === -1) {
+                    progress.clearedStages.push(currentStage.id);
+                }
+                // より良い星数なら更新
+                var prevStars = progress.stars[currentStage.id] || 0;
+                if (stars > prevStars) {
+                    progress.stars[currentStage.id] = stars;
+                }
+                saveProgress(progress);
+
+                // 星アニメーション
+                var starsEl = document.getElementById('clear-stars');
+                starsEl.innerHTML = '';
+                for (var i = 0; i < 3; i++) {
+                    var span = document.createElement('span');
+                    span.className = 'star-anim';
+                    span.textContent = i < stars ? '⭐' : '☆';
+                    span.style.animationDelay = (i * 0.2) + 's';
+                    starsEl.appendChild(span);
+                }
+
+                // メッセージ
+                var msgs = ['がんばったね！', 'すごい！', 'かんぺき！！'];
+                document.getElementById('clear-msg').textContent = msgs[stars - 1];
+                document.getElementById('clear-score').textContent = correctCount + '/' + totalQuizzes + ' もん せいかい';
+
+                // ポイントボタン
+                pointsGiven = false;
+                var pointBtn = document.getElementById('clear-point-btn');
+                pointBtn.disabled = false;
+                pointBtn.textContent = '🎁 ポイントをもらう';
+
+                // 次のステージボタン
+                var nextBtn = document.getElementById('clear-next-btn');
+                var nextStage = STAGES.find(function (s) { return s.id === currentStage.id + 1; });
+                if (nextStage) {
+                    nextBtn.style.display = 'inline-block';
+                } else {
+                    nextBtn.style.display = 'none';
+                }
+
+                createSparkles();
+            }
+
+            // === ポイント獲得 ===
+            function getPoints() {
+                if (pointsGiven) return;
+                pointsGiven = true;
+
+                var points = correctCount * 10;
+                if (points < 10) points = 10; // 最低10pt参加賞
+
+                var btn = document.getElementById('clear-point-btn');
+                btn.disabled = true;
+                btn.textContent = '✅ もらった！';
+
+                if (typeof showPointGetDialog === 'function') {
+                    showPointGetDialog(points, 'bunsu_learn');
+                } else {
+                    alert(points + 'ポイント もらったよ！');
+                }
+            }
+
+            // === 次のステージ ===
+            function goNextStage() {
+                var nextStage = STAGES.find(function (s) { return s.id === currentStage.id + 1; });
+                if (nextStage) {
+                    startStage(nextStage);
+                } else {
+                    backToMap();
+                }
+            }
+
+            // === マップに戻る ===
+            function backToMap() {
+                renderMap();
+            }
+
+            // === キラキラエフェクト ===
+            function createSparkles() {
+                var emojis = ['✨', '⭐', '🌟', '💫'];
+                for (var i = 0; i < 8; i++) {
+                    (function (delay) {
+                        setTimeout(function () {
+                            var el = document.createElement('div');
+                            el.className = 'sparkle';
+                            el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                            el.style.left = (20 + Math.random() * 60) + 'vw';
+                            el.style.top = (20 + Math.random() * 50) + 'vh';
+                            document.body.appendChild(el);
+                            setTimeout(function () { el.remove(); }, 900);
+                        }, delay * 100);
+                    })(i);
+                }
+            }
+
+            // === ユーザー選択 ===
+            function initUserSelection() {
+                var users = (typeof getUserNames === 'function') ? getUserNames() : [];
+                var listEl = document.getElementById('user-list');
+                listEl.innerHTML = '';
+
+                users.forEach(function (name) {
+                    var btn = document.createElement('button');
+                    btn.className = 'user-btn';
+                    btn.textContent = name;
+                    btn.onclick = function () { selectUser(name); };
+                    listEl.appendChild(btn);
+                });
+            }
+
+            function selectUser(name) {
+                currentUserName = name;
+                document.getElementById('user-overlay').style.display = 'none';
+                renderMap();
+            }
+
+            // === window公開（onclick用） ===
+            window.backToMap = backToMap;
+            window.nextSlide = nextSlide;
+            window.getPoints = getPoints;
+            window.goNextStage = goNextStage;
+            window.selectUser = selectUser;
+
+            // === 初期化 ===
+            initUserSelection();
+
+        })();
+    </script>
+</body>
+
+</html>
+
