@@ -523,6 +523,65 @@
             display: none !important;
         }
 
+        /* === ユーザー選択オーバーレイ === */
+        #user-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #2e7d32, #43a047, #66bb6a);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-select-box {
+            background: white;
+            padding: 30px 25px;
+            border-radius: 25px;
+            max-width: 90%;
+            width: 360px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-select-box h2 {
+            color: #2e7d32;
+            font-size: 24px;
+            margin: 0 0 5px;
+        }
+
+        .user-select-box p {
+            color: #888;
+            font-size: 14px;
+            margin: 0 0 20px;
+        }
+
+        .user-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #43a047, #66bb6a);
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 0 #2e7d32;
+            transition: all 0.2s;
+        }
+
+        .user-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #2e7d32;
+        }
+
         /* スマホ対応 */
         @media (max-width: 400px) {
             .lesson-slide {
@@ -547,6 +606,15 @@
 </head>
 
 <body>
+
+    <!-- ユーザー選択画面 -->
+    <div id="user-overlay">
+        <div class="user-select-box">
+            <h2>🍕 分数マスター</h2>
+            <p>だれが まなぶ？</p>
+            <div id="user-list"></div>
+        </div>
+    </div>
 
     <div class="container">
         <a href="index.html" class="home-btn">← もどる</a>
@@ -990,16 +1058,21 @@
             }
 
             // === データ管理 ===
-            var BUNSU_STORAGE_KEY = "papan_bunsu_progress_v1";
+            var BUNSU_KEY_PREFIX = "papan_bunsu_progress_v1_";
+            var currentUserName = null;
+
+            function getKey() { return BUNSU_KEY_PREFIX + currentUserName; }
 
             function loadProgress() {
+                if (!currentUserName) return { clearedStages: [], stars: {} };
                 try {
-                    return JSON.parse(localStorage.getItem(BUNSU_STORAGE_KEY)) || { clearedStages: [], stars: {} };
+                    return JSON.parse(localStorage.getItem(getKey())) || { clearedStages: [], stars: {} };
                 } catch (e) { return { clearedStages: [], stars: {} }; }
             }
 
             function saveProgress(data) {
-                localStorage.setItem(BUNSU_STORAGE_KEY, JSON.stringify(data));
+                if (!currentUserName) return;
+                localStorage.setItem(getKey(), JSON.stringify(data));
             }
 
             function isCleared(stageId) {
@@ -1318,14 +1391,36 @@
                 }
             }
 
+            // === ユーザー選択 ===
+            function initUserSelection() {
+                var users = (typeof getUserNames === 'function') ? getUserNames() : [];
+                var listEl = document.getElementById('user-list');
+                listEl.innerHTML = '';
+
+                users.forEach(function (name) {
+                    var btn = document.createElement('button');
+                    btn.className = 'user-btn';
+                    btn.textContent = name;
+                    btn.onclick = function () { selectUser(name); };
+                    listEl.appendChild(btn);
+                });
+            }
+
+            function selectUser(name) {
+                currentUserName = name;
+                document.getElementById('user-overlay').style.display = 'none';
+                renderMap();
+            }
+
             // === window公開（onclick用） ===
             window.backToMap = backToMap;
             window.nextSlide = nextSlide;
             window.getPoints = getPoints;
             window.goNextStage = goNextStage;
+            window.selectUser = selectUser;
 
             // === 初期化 ===
-            renderMap();
+            initUserSelection();
 
         })();
     </script>
