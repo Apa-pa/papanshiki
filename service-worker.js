@@ -57,9 +57,11 @@ var urlsToCache = [
   './kanji/grade2.js',
   './bunpo_learn.html',
 
-  // === 分数学習・小数学習 ===
+  // === 分数学習・小数学習・割り算・割合 ===
   './bunsu_learn.html',
   './shousu_learn.html',
+  './warizan_learn.html',
+  './wariai_learn.html',
 
   // === 英語系 ===
   './alphabet.html',
