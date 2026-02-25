@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>おしごと図鑑 | ぱぱん式</title>
+    <script src="ranking.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "UD Digital Kyokasho-tai", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #e3f2fd 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #333;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 15px 10px 40px;
+        }
+
+        .home-btn {
+            display: inline-block;
+            text-decoration: none;
+            color: #777;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            padding: 5px 12px;
+            border-radius: 15px;
+            transition: 0.3s;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .home-btn:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .title {
+            text-align: center;
+            font-size: 26px;
+            color: #1565c0;
+            margin: 5px 0 5px;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 25px;
+        }
+
+        /* === ユーザー選択オーバーレイ === */
+        #user-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0d47a1, #1565c0, #1976d2);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-select-box {
+            background: white;
+            padding: 30px 25px;
+            border-radius: 25px;
+            max-width: 90%;
+            width: 360px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-select-box h2 {
+            color: #1565c0;
+            font-size: 24px;
+            margin: 0 0 5px;
+        }
+
+        .user-select-box p {
+            color: #888;
+            font-size: 14px;
+            margin: 0 0 20px;
+        }
+
+        .user-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #1565c0, #42a5f5);
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 0 #0d47a1;
+            transition: all 0.2s;
+        }
+
+        .user-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #0d47a1;
+        }
+
+        .no-user-msg {
+            color: #aaa;
+            font-size: 14px;
+            padding: 10px;
+            line-height: 1.7;
+        }
+
+        /* === 一覧画面 === */
+        #list-screen {
+            display: block;
+        }
+
+        .category-section {
+            margin-bottom: 30px;
+        }
+
+        .category-title {
+            font-size: 18px;
+            color: #1565c0;
+            border-bottom: 2px solid #90caf9;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .job-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 12px;
+        }
+
+        .job-card {
+            background: white;
+            border-radius: 16px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .job-card:active {
+            transform: scale(0.96);
+        }
+
+        .job-card.cleared {
+            border-color: #ffca28;
+            background: #fffdf0;
+        }
+
+        .job-card.cleared::after {
+            content: "👑";
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            font-size: 20px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .job-icon {
+            font-size: 38px;
+            margin-bottom: 8px;
+        }
+
+        .job-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            line-height: 1.3;
+        }
+
+        /* === 詳細画面 === */
+        #detail-screen {
+            display: none;
+        }
+
+        .detail-card {
+            background: white;
+            border-radius: 24px;
+            padding: 25px 20px;
+            margin-top: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            border: 3px solid #e3f2fd;
+        }
+
+        .detail-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .detail-icon {
+            font-size: 70px;
+            margin-bottom: 10px;
+        }
+
+        .detail-name {
+            font-size: 26px;
+            color: #1565c0;
+            font-weight: bold;
+        }
+
+        .detail-category {
+            font-size: 12px;
+            color: #888;
+            background: #f5f5f5;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
+        .detail-section {
+            margin-bottom: 25px;
+        }
+
+        .detail-section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ef6c00;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .detail-section-title::before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background: #ff9800;
+            border-radius: 2px;
+        }
+
+        .detail-text {
+            font-size: 16px;
+            line-height: 1.7;
+            color: #444;
+            background: #fff8e1;
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid #ffe082;
+        }
+
+        .detail-text.howto {
+            background: #e8f5e9;
+            border-left: 4px solid #a5d6a7;
+        }
+
+        .clear-btn-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .get-points-btn {
+            background: #ff9800;
+            color: white;
+            border: none;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 15px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #e65100;
+            transition: all 0.2s;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .get-points-btn:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #e65100;
+        }
+
+        .get-points-btn:disabled {
+            background: #ccc;
+            box-shadow: 0 4px 0 #aaa;
+            cursor: default;
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .pop-anim {
+            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ユーザー選択 -->
+    <div id="user-overlay">
+        <div class="user-select-box">
+            <h2>💼 おしごと<ruby>図鑑<rt>ずかん</rt></ruby></h2>
+            <p>だれが まなぶ？</p>
+            <div id="user-list"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 共通ヘッダー -->
+        <a href="javascript:void(0)" class="home-btn" id="top-btn" onclick="backToList()">← トップにもどる</a>
+        <h1 class="title">💼 おしごと<ruby>図鑑<rt>ずかん</rt></ruby></h1>
+        <p class="subtitle" id="subtitle">いろんなお<ruby>仕事<rt>しごと</rt></ruby>を<ruby>学<rt>まな</rt></ruby>んでみよう！</p>
+
+        <!-- 一覧画面 -->
+        <div id="list-screen">
+            <div id="category-container"></div>
+        </div>
+
+        <!-- 詳細画面 -->
+        <div id="detail-screen">
+            <button class="home-btn" onclick="backToList()" style="background: white;">← <ruby>一覧<rt>いちらん</rt>
+                    </ruby>にもどる</button>
+
+            <div class="detail-card">
+                <div class="detail-header pop-anim">
+                    <div class="detail-icon" id="detail-icon"></div>
+                    <div class="detail-name" id="detail-name"></div>
+                    <div class="detail-category" id="detail-category"></div>
+                </div>
+
+                <div class="detail-section pop-anim" style="animation-delay: 0.1s; opacity: 0;">
+                    <div class="detail-section-title">どんなお<ruby>仕事<rt>しごと</rt></ruby>？</div>
+                    <div class="detail-text" id="detail-desc"></div>
+                </div>
+
+                <div class="detail-section pop-anim" style="animation-delay: 0.2s; opacity: 0;">
+                    <div class="detail-section-title" style="color:#2e7d32;">なるためには？</div>
+                    <div class="detail-text howto" id="detail-howto"></div>
+                </div>
+
+                <div class="clear-btn-container pop-anim" style="animation-delay: 0.3s; opacity: 0;">
+                    <button id="get-points-btn" class="get-points-btn" onclick="finishLearning()">
+                        わかった！（10ptゲット）
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===================================================
+        //  職業データ
+        // ===================================================
+        const CATEGORIES = [
+            {
+                id: "c1", name: "<ruby>街<rt>まち</rt></ruby>のヒーロー・<ruby>公務員<rt>こうむいん</rt></ruby>", icon: "🏙️",
+                jobs: [
+                    { id: "police", name: "<ruby>警察官<rt>けいさつかん</rt></ruby>", icon: "👮", desc: "<ruby>街<rt>まち</rt></ruby>の<ruby>平和<rt>へいわ</rt></ruby>を<ruby>守<rt>まも</rt></ruby>り、<ruby>困<rt>こま</rt></ruby>っている<ruby>人<rt>ひと</rt></ruby>を<ruby>助<rt>たす</rt></ruby>けるお<ruby>仕事<rt>しごと</rt></ruby>です。パトロールをしたり、<ruby>交通<rt>こうつう</rt></ruby>ルールを<ruby>守<rt>まも</rt></ruby>るように<ruby>指導<rt>しどう</rt></ruby>したりします。", howto: "<ruby>警察官<rt>けいさつかん</rt></ruby><ruby>採用<rt>さいよう</rt></ruby><ruby>試験<rt>しけん</rt></ruby>に<ruby>合格<rt>ごうかく</rt></ruby>し、<ruby>警察<rt>けいさつ</rt></ruby><ruby>学校<rt>がっこう</rt></ruby>で<ruby>法律<rt>ほうりつ</rt></ruby>や<ruby>運動<rt>うんどう</rt></ruby>などの<ruby>訓練<rt>くんれん</rt></ruby>を<ruby>受<rt>う</rt></ruby>ける<ruby>必要<rt>ひつよう</rt></ruby>があります。" },
+                    { id: "firefighter", name: "<ruby>消防士<rt>しょうぼうし</rt></ruby>", icon: "🧑‍🚒", desc: "<ruby>火事<rt>かじ</rt></ruby>のときに<ruby>火<rt>ひ</rt></ruby>を<ruby>消<rt>け</rt></ruby>したり、<ruby>地震<rt>じしん</rt></ruby>などの<ruby>災害<rt>さいがい</rt></ruby>の<ruby>現場<rt>げんば</rt></ruby>で<ruby>人<rt>ひと</rt></ruby>を<ruby>救助<rt>きゅうじょ</rt></ruby>したりします。<ruby>救急車<rt>きゅうきゅうしゃ</rt></ruby>に<ruby>乗<rt>の</rt></ruby>ってけが<ruby>人<rt>にん</rt></ruby>を<ruby>病院<rt>びょういん</rt></ruby>へ<ruby>運<rt>はこ</rt></ruby>ぶこともあります。", howto: "<ruby>消防士<rt>しょうぼうし</rt></ruby>の<ruby>試験<rt>しけん</rt></ruby>に<ruby>合格<rt>ごうかく</rt></ruby>し、<ruby>消防<rt>しょうぼう</rt></ruby><ruby>学校<rt>がっこう</rt></ruby>で<ruby>厳<rt>きび</rt></ruby>しい<ruby>訓練<rt>くんれん</rt></ruby>を<ruby>乗<rt>の</rt></ruby>り<ruby>越<rt>こ</rt></ruby>え、<ruby>火<rt>ひ</rt></ruby>の<ruby>消<rt>け</rt></ruby>し<ruby>方<rt>かた</rt></ruby>や<ruby>人<rt>ひと</rt></ruby>を<ruby>助<rt>たす</rt></ruby>ける<ruby>方法<rt>ほうほう</rt></ruby>を<ruby>学<rt>まな</rt></ruby>びます。" },
+                    { id: "sdf", name: "<ruby>自衛官<rt>じえいかん</rt></ruby>", icon: "🪖", desc: "<ruby>国<rt>くに</rt></ruby>の<ruby>平和<rt>へいわ</rt></ruby>と<ruby>安全<rt>あんぜん</rt></ruby>を<ruby>守<rt>まも</rt></ruby>るためのお<ruby>仕事<rt>しごと</rt></ruby>です。<ruby>大<rt>おお</rt></ruby>きな<ruby>震災<rt>しんさい</rt></ruby>などの<ruby>災害<rt>さいがい</rt></ruby>が<ruby>起<rt>お</rt></ruby>きたときには、<ruby>人々<rt>ひとびと</rt></ruby>を<ruby>助<rt>たす</rt></ruby>けるための<ruby>活動<rt>かつどう</rt></ruby>をします。", howto: "<ruby>自衛官<rt>じえいかん</rt></ruby>の<ruby>採用<rt>さいよう</rt></ruby><ruby>試験<rt>しけん</rt></ruby>に<ruby>合格<rt>ごうかく</rt></ruby>し、<ruby>専用<rt>せんよう</rt></ruby>の<ruby>学校<rt>がっこう</rt></ruby>や<ruby>部隊<rt>ぶたい</rt></ruby>で<ruby>専門<rt>せんもん</rt></ruby>の<ruby>教育<rt>きょういく</rt></ruby>や<ruby>訓練<rt>くんれん</rt></ruby>を<ruby>受<rt>う</rt></ruby>けます。" }
+                ]
+            },
+            {
+                id: "c2", name: "からだや<ruby>動物<rt>どうぶつ</rt></ruby>をたすける", icon: "🩺",
+                jobs: [
+                    { id: "doctor", name: "<ruby>医師<rt>いし</rt></ruby>", icon: "👨‍⚕️", desc: "<ruby>病気<rt>びょうき</rt></ruby>やけがをした<ruby>人<rt>ひと</rt></ruby>を<ruby>診察<rt>しんさつ</rt></ruby>し、<ruby>薬<rt>くすり</rt></ruby>を<ruby>出<rt>だ</rt></ruby>したり<ruby>手術<rt>しゅじゅつ</rt></ruby>をしたりして<ruby>人<rt>ひと</rt></ruby>の<ruby>命<rt>いのち</rt></ruby>を<ruby>救<rt>すく</rt></ruby>うお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>大学<rt>だいがく</rt></ruby>の<ruby>医学部<rt>いがくぶ</rt></ruby>で6<ruby>年間<rt>ねんかん</rt></ruby><ruby>勉強<rt>べんきょう</rt></ruby>し、<ruby>医師<rt>いし</rt></ruby><ruby>国家<rt>こっか</rt></ruby><ruby>試験<rt>しけん</rt></ruby>に<ruby>合格<rt>ごうかく</rt></ruby>する<ruby>必要<rt>ひつよう</rt></ruby>があります。" },
+                    { id: "nurse", name: "<ruby>看護師<rt>かんごし</rt></ruby>", icon: "👩‍⚕️", desc: "<ruby>病院<rt>びょういん</rt></ruby>で<ruby>患者<rt>かんじゃ</rt></ruby>さんのお<ruby>世話<rt>せわ</rt></ruby>やケアをしたり、<ruby>医師<rt>いし</rt></ruby>の<ruby>治療<rt>ちりょう</rt></ruby>をサポートしたりするお<ruby>仕事<rt>しごと</rt></ruby>です。<ruby>患者<rt>かんじゃ</rt></ruby>さんの<ruby>不安<rt>ふあん</rt></ruby>を<ruby>和<rt>やわ</rt></ruby>らげることも<ruby>大切<rt>たいせつ</rt></ruby>です。", howto: "<ruby>看護<rt>かんご</rt></ruby><ruby>系<rt>けい</rt></ruby>の<ruby>学校<rt>がっこう</rt></ruby>で<ruby>勉強<rt>べんきょう</rt></ruby>して、<ruby>看護師<rt>かんごし</rt></ruby><ruby>国家<rt>こっか</rt></ruby><ruby>試験<rt>しけん</rt></ruby>に<ruby>合格<rt>ごうかく</rt></ruby>する<ruby>必要<rt>ひつよう</rt></ruby>があります。" },
+                    { id: "therapist", name: "<ruby>理学<rt>りがく</rt></ruby>・<ruby>作業<rt>さぎょう</rt></ruby><ruby>療法士<rt>りょうほうし</rt></ruby>", icon: "🧑‍🦽", desc: "けがや<ruby>病気<rt>びょうき</rt></ruby>で<ruby>体<rt>からだ</rt></ruby>が<ruby>動<rt>うご</rt></ruby>かしにくくなった<ruby>人<rt>ひと</rt></ruby>が、また<ruby>元気<rt>げんき</rt></ruby>に<ruby>動<rt>うご</rt></ruby>けるように、<ruby>運動<rt>うんどう</rt></ruby>などのリハビリをお<ruby>手伝<rt>てつだ</rt></ruby>いするお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>専門<rt>せんもん</rt></ruby>の<ruby>学校<rt>がっこう</rt></ruby>や<ruby>大学<rt>だいがく</rt></ruby>で<ruby>学<rt>まな</rt></ruby>び、<ruby>国家<rt>こっか</rt></ruby><ruby>試験<rt>しけん</rt></ruby>に<ruby>合格<rt>ごうかく</rt></ruby>する<ruby>必要<rt>ひつよう</rt></ruby>があります。" },
+                    { id: "vet", name: "<ruby>獣医師<rt>じゅういし</rt></ruby>", icon: "🐶", desc: "いわゆる「<ruby>動物<rt>どうぶつ</rt></ruby>のお<ruby>医者<rt>いしゃ</rt></ruby>さん」です。ペットや<ruby>牧場<rt>ぼくじょう</rt></ruby>の<ruby>動物<rt>どうぶつ</rt></ruby>、<ruby>動物園<rt>どうぶつえん</rt></ruby>の<ruby>動物<rt>どうぶつ</rt></ruby>たちの<ruby>病気<rt>びょうき</rt></ruby>やけがを<ruby>治<rt>なお</rt></ruby>します。", howto: "<ruby>大学<rt>だいがく</rt></ruby>の<ruby>獣医学部<rt>じゅういがくぶ</rt></ruby>で6<ruby>年間<rt>ねんかん</rt></ruby><ruby>勉強<rt>べんきょう</rt></ruby>し、<ruby>獣医師<rt>じゅういし</rt></ruby><ruby>国家<rt>こっか</rt></ruby><ruby>試験<rt>しけん</rt></ruby>に<ruby>合格<rt>ごうかく</rt></ruby>する<ruby>必要<rt>ひつよう</rt></ruby>があります。" },
+                    { id: "zookeeper", name: "<ruby>飼育員<rt>しいくいん</rt></ruby>", icon: "🐘", desc: "<ruby>動物園<rt>どうぶつえん</rt></ruby>や<ruby>水族館<rt>すいぞくかん</rt></ruby>で、<ruby>動物<rt>どうぶつ</rt></ruby>たちのごはんを<ruby>用意<rt>ようい</rt></ruby>したり、そうじをしたりして、<ruby>健康<rt>けんこう</rt></ruby>を<ruby>守<rt>まも</rt></ruby>るお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>動物<rt>どうぶつ</rt></ruby>の<ruby>専門<rt>せんもん</rt></ruby><ruby>学校<rt>がっこう</rt></ruby>や<ruby>大学<rt>だいがく</rt></ruby>で<ruby>学<rt>まな</rt></ruby>び、<ruby>動物園<rt>どうぶつえん</rt></ruby>や<ruby>水族館<rt>すいぞくかん</rt></ruby>の<ruby>採用<rt>さいよう</rt></ruby><ruby>試験<rt>しけん</rt></ruby>に<ruby>合格<rt>ごうかく</rt></ruby>する<ruby>必要<rt>ひつよう</rt></ruby>があります。" }
+                ]
+            },
+            {
+                id: "c3", name: "おいしいものを作る", icon: "🍳",
+                jobs: [
+                    { id: "patissier", name: "パティシエ", icon: "🍰", desc: "ケーキやクッキーなどの<ruby>洋菓子<rt>ようがし</rt></ruby>を作って、<ruby>人<rt>ひと</rt></ruby>を<ruby>笑顔<rt>えがお</rt></ruby>にするお<ruby>仕事<rt>しごと</rt></ruby>です。きれいに<ruby>飾<rt>かざ</rt></ruby>り<ruby>付<rt>つ</rt></ruby>けをするセンスも<ruby>大切<rt>たいせつ</rt></ruby>です。", howto: "<ruby>専門<rt>せんもん</rt></ruby>の<ruby>学校<rt>がっこう</rt></ruby>で<ruby>学<rt>まな</rt></ruby>んでから、ケーキ<ruby>屋<rt>や</rt></ruby>さんやホテルなどで<ruby>見習<rt>みなら</rt></ruby>いとして<ruby>働<rt>はたら</rt></ruby>きながら<ruby>技術<rt>ぎじゅつ</rt></ruby>を<ruby>磨<rt>みが</rt></ruby>きます。" },
+                    { id: "chef", name: "<ruby>料理人<rt>りょうりにん</rt></ruby>(シェフ)", icon: "🥘", desc: "レストランや<ruby>食堂<rt>しょくどう</rt></ruby>で、お<ruby>客<rt>きゃく</rt></ruby>さんに<ruby>美味<rt>おい</rt></ruby>しい<ruby>料理<rt>りょうり</rt></ruby>を作って<ruby>提供<rt>ていきょう</rt></ruby>するお<ruby>仕事<rt>しごと</rt></ruby>です。<ruby>新<rt>あたら</rt></ruby>しいメニューを<ruby>考<rt>かんが</rt></ruby>えるのも<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>調理師<rt>ちょうりし</rt></ruby>の<ruby>学校<rt>がっこう</rt></ruby>で<ruby>学<rt>まな</rt></ruby>んだり、お<ruby>店<rt>みせ</rt></ruby>で<ruby>働<rt>はたら</rt></ruby>きながら<ruby>料理<rt>りょうり</rt></ruby>の<ruby>技術<rt>ぎじゅつ</rt></ruby>を<ruby>学<rt>まな</rt></ruby>び、「<ruby>調理師<rt>ちょうりし</rt></ruby><ruby>免許<rt>めんきょ</rt></ruby>」を<ruby>取<rt>と</rt></ruby>る<ruby>人<rt>ひと</rt></ruby>が<ruby>多<rt>おお</rt></ruby>いです。" },
+                    { id: "baker", name: "パン<ruby>職人<rt>しょくにん</rt></ruby>", icon: "🥐", desc: "<ruby>毎日<rt>まいにち</rt></ruby><ruby>食<rt>た</rt></ruby>べるパンを、<ruby>小麦粉<rt>こむぎこ</rt></ruby>などの<ruby>生地<rt>きじ</rt></ruby>からこねて、オーブンで<ruby>美味<rt>おい</rt></ruby>しく<ruby>焼<rt>や</rt></ruby>き<ruby>上<rt>あ</rt></ruby>げるお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "パン<ruby>屋<rt>や</rt></ruby>さんに<ruby>就職<rt>しゅうしょく</rt></ruby>して<ruby>働<rt>はたら</rt></ruby>きながら<ruby>作<rt>つく</rt></ruby>り<ruby>方<rt>かた</rt></ruby>を<ruby>覚<rt>おぼ</rt></ruby>えるか、<ruby>製菓<rt>せいか</rt></ruby>・<ruby>製<rt>せい</rt></ruby>パンの<ruby>専門<rt>せんもん</rt></ruby><ruby>学校<rt>がっこう</rt></ruby>で<ruby>学<rt>まな</rt></ruby>びます。" }
+                ]
+            },
+            {
+                id: "c4", name: "スポーツ・エンタメ", icon: "🎤",
+                jobs: [
+                    { id: "athlete", name: "プロスポーツ<ruby>選手<rt>せんしゅ</rt></ruby>", icon: "⚾", desc: "<ruby>野球<rt>やきゅう</rt></ruby>やサッカーなど、スポーツでお<ruby>金<rt>かね</rt></ruby>をもらって<ruby>生活<rt>せいかつ</rt></ruby>するお<ruby>仕事<rt>しごと</rt></ruby>です。<ruby>試合<rt>しあい</rt></ruby>で<ruby>最高<rt>さいこう</rt></ruby>のプレーを<ruby>見<rt>み</rt></ruby>せて、みんなに<ruby>感動<rt>かんどう</rt></ruby>を<ruby>届<rt>とど</rt></ruby>けます。", howto: "<ruby>子<rt>こ</rt></ruby>どもの<ruby>頃<rt>ころ</rt></ruby>からたくさん<ruby>練習<rt>れんしゅう</rt></ruby>して<ruby>素晴<rt>すば</rt></ruby>らしい<ruby>実力<rt>じつりょく</rt></ruby>をつけ、プロチームからスカウトされたりテストに<ruby>合格<rt>ごうかく</rt></ruby>したりします。" },
+                    { id: "idol", name: "<ruby>歌手<rt>かしゅ</rt></ruby>・アイドル", icon: "✨", desc: "<ruby>歌<rt>うた</rt></ruby>やダンスのパフォーマンスで、たくさんの<ruby>人<rt>ひと</rt></ruby>に<ruby>元気<rt>げんき</rt></ruby>や<ruby>夢<rt>ゆめ</rt></ruby>を<ruby>届<rt>とど</rt></ruby>けるお<ruby>仕事<rt>しごと</rt></ruby>です。テレビやライブコンサートで<ruby>活躍<rt>かつやく</rt></ruby>します。", howto: "オーディションに<ruby>応募<rt>おうぼ</rt></ruby>して<ruby>合格<rt>ごうかく</rt></ruby>し、たくさんレッスンを<ruby>積<rt>つ</rt></ruby>んでデビューすることを<ruby>目指<rt>めざ</rt></ruby>します。" },
+                    { id: "voiceactor", name: "<ruby>声優<rt>せいゆう</rt></ruby>", icon: "🎙️", desc: "アニメのキャラクターや、<ruby>外国<rt>がいこく</rt></ruby>の<ruby>映画<rt>えいが</rt></ruby>の<ruby>登場<rt>とうじょう</rt></ruby><ruby>人物<rt>じんぶつ</rt></ruby>に<ruby>声<rt>こえ</rt></ruby>を<ruby>吹<rt>ふ</rt></ruby>き<ruby>込<rt>こ</rt></ruby>むお<ruby>仕事<rt>しごと</rt></ruby>です。<ruby>声<rt>こえ</rt></ruby>だけで<ruby>色<rt>いろ</rt></ruby>々な<ruby>感情<rt>かんじょう</rt></ruby>を<ruby>表現<rt>ひょうげん</rt></ruby>します。", howto: "<ruby>声優<rt>せいゆう</rt></ruby>の<ruby>専門<rt>せんもん</rt></ruby><ruby>学校<rt>がっこう</rt></ruby>や<ruby>養成所<rt>ようせいじょ</rt></ruby>で<ruby>演技<rt>えんぎ</rt></ruby>の<ruby>勉強<rt>べんきょう</rt></ruby>をして、オーディションに<ruby>合格<rt>ごうかく</rt></ruby>して<ruby>役<rt>やく</rt></ruby>をもらいます。" }
+                ]
+            },
+            {
+                id: "c5", name: "デジタル・クリエイティブ", icon: "💻",
+                jobs: [
+                    { id: "youtuber", name: "YouTuber", icon: "▶️", desc: "<ruby>面白<rt>おもしろ</rt></ruby>い<ruby>企画<rt>きかく</rt></ruby>を<ruby>考<rt>かんが</rt></ruby>え、<ruby>動画<rt>どうが</rt></ruby>を<ruby>撮影<rt>さつえい</rt></ruby>・<ruby>編集<rt>へんしゅう</rt></ruby>して、YouTubeなどで<ruby>世界<rt>せかい</rt></ruby><ruby>中<rt>じゅう</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>に<ruby>届<rt>とど</rt></ruby>けるお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>動画<rt>どうが</rt></ruby>を<ruby>見<rt>み</rt></ruby>る<ruby>人<rt>ひと</rt></ruby>を<ruby>楽<rt>たの</rt></ruby>しませるアイデアと、<ruby>動画<rt>どうが</rt></ruby>を<ruby>編集<rt>へんしゅう</rt></ruby>する<ruby>技術<rt>ぎじゅつ</rt></ruby>が<ruby>必要<rt>ひつよう</rt></ruby>です。<ruby>誰<rt>だれ</rt></ruby>でもすぐに<ruby>始<rt>はじ</rt></ruby>められますが、<ruby>人気<rt>にんき</rt></ruby>になるには<ruby>工夫<rt>くふう</rt></ruby>が<ruby>必要<rt>ひつよう</rt></ruby>です。" },
+                    { id: "influencer", name: "インフルエンサー", icon: "📱", desc: "インスタグラムやTikTokなどのSNSで<ruby>自分<rt>じぶん</rt></ruby>の<ruby>好<rt>す</rt></ruby>きなことや<ruby>流行<rt>りゅうこう</rt></ruby>を<ruby>発信<rt>はっしん</rt></ruby>して、たくさんの<ruby>人<rt>ひと</rt></ruby>に<ruby>影響<rt>えいきょう</rt></ruby>を<ruby>与<rt>あた</rt></ruby>えるお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>自分<rt>じぶん</rt></ruby>の<ruby>個性<rt>こせい</rt></ruby>や<ruby>得意<rt>とくい</rt></ruby>なことを<ruby>見<rt>み</rt></ruby>つけて<ruby>発信<rt>はっしん</rt></ruby>し<ruby>続<rt>つづ</rt></ruby>け、<ruby>多<rt>おお</rt></ruby>くのファン（フォロワー）を<ruby>集<rt>あつ</rt></ruby>めることが<ruby>大切<rt>たいせつ</rt></ruby>です。" },
+                    { id: "gamecreator", name: "ゲームクリエイター", icon: "🎮", desc: "ゲームの<ruby>面白<rt>おもしろ</rt></ruby>いルールや<ruby>仕組<rt>しく</rt></ruby>みを<ruby>考<rt>かんが</rt></ruby>えたり、キャラクターをデザインしたりして、<ruby>新<rt>あたら</rt></ruby>しい<ruby>遊<rt>あそ</rt></ruby>びを<ruby>作<rt>つく</rt></ruby>るお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "ゲームを<ruby>作<rt>つく</rt></ruby>る<ruby>専門<rt>せんもん</rt></ruby><ruby>学校<rt>がっこう</rt></ruby>や<ruby>大学<rt>だいがく</rt></ruby>で<ruby>学<rt>まな</rt></ruby>び、ゲーム<ruby>会社<rt>かいしゃ</rt></ruby>に<ruby>就職<rt>しゅうしょく</rt></ruby>してチームで<ruby>一<rt>ひと</rt></ruby>つのゲームを<ruby>作<rt>つく</rt></ruby>ります。" },
+                    { id: "programmer", name: "プログラマー", icon: "⌨️", desc: "コンピュータやスマホのアプリを<ruby>動<rt>うご</rt></ruby>かすための「<ruby>命令<rt>めいれい</rt></ruby>（コード）」を<ruby>書<rt>か</rt></ruby>くお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "プログラミング<ruby>言語<rt>げんご</rt></ruby>という<ruby>特別<rt>とくべつ</rt></ruby>な<ruby>言葉<rt>ことば</rt></ruby>の<ruby>書<rt>か</rt></ruby>き<ruby>方<rt>かた</rt></ruby>を<ruby>勉強<rt>べんきょう</rt></ruby>して、プログラムが<ruby>書<rt>か</rt></ruby>けるようになる<ruby>必要<rt>ひつよう</rt></ruby>があります。" },
+                    { id: "illustrator", name: "<ruby>漫画家<rt>まんがか</rt></ruby>・イラストレーター", icon: "🎨", desc: "<ruby>絵<rt>え</rt></ruby>を<ruby>描<rt>か</rt></ruby>いて、<ruby>面白<rt>おもしろ</rt></ruby>い<ruby>物語<rt>ものがたり</rt></ruby>や<ruby>感動<rt>かんどう</rt></ruby>を<ruby>伝<rt>つた</rt></ruby>えたり、<ruby>本<rt>ほん</rt></ruby>の<ruby>表紙<rt>ひょうし</rt></ruby>やキャラクターを<ruby>魅力<rt>みりょく</rt></ruby><ruby>的<rt>てき</rt></ruby>にデザインしたりするお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>毎日<rt>まいにち</rt></ruby>のように<ruby>絵<rt>え</rt></ruby>を<ruby>描<rt>か</rt></ruby>いて<ruby>練習<rt>れんしゅう</rt></ruby>し、<ruby>出版社<rt>しゅっぱんしゃ</rt></ruby>に<ruby>自分<rt>じぶん</rt></ruby>の<ruby>作品<rt>さくひん</rt></ruby>を<ruby>見<rt>み</rt></ruby>てもらったり、SNSで<ruby>作品<rt>さくひん</rt></ruby>を<ruby>発表<rt>はっぴょう</rt></ruby>したりします。" }
+                ]
+            },
+            {
+                id: "c6", name: "<ruby>教<rt>おし</rt></ruby>える・<ruby>伝<rt>つた</rt></ruby>える・つなぐ", icon: "🏫",
+                jobs: [
+                    { id: "teacher", name: "<ruby>学校<rt>がっこう</rt></ruby>の<ruby>先生<rt>せんせい</rt></ruby>", icon: "🏫", desc: "<ruby>学校<rt>がっこう</rt></ruby>で<ruby>子<rt>こ</rt></ruby>どもたちに<ruby>勉強<rt>べんきょう</rt></ruby>を<ruby>教<rt>おし</rt></ruby>えたり、<ruby>楽<rt>たの</rt></ruby>しい<ruby>学校<rt>がっこう</rt></ruby><ruby>生活<rt>せいかつ</rt></ruby>を<ruby>送<rt>おく</rt></ruby>れるようにサポートしたりするお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>大学<rt>だいがく</rt></ruby>で<ruby>教職<rt>きょうしょく</rt></ruby>の<ruby>勉強<rt>べんきょう</rt></ruby>をして、「<ruby>教員<rt>きょういん</rt></ruby><ruby>免許<rt>めんきょ</rt></ruby>」を<ruby>取<rt>と</rt></ruby>り、<ruby>先生<rt>せんせい</rt></ruby>になるための<ruby>試験<rt>しけん</rt></ruby>に<ruby>合格<rt>ごうかく</rt></ruby>します。" },
+                    { id: "nursery", name: "<ruby>保育士<rt>ほいくし</rt></ruby>", icon: "👶", desc: "<ruby>保育園<rt>ほいくえん</rt></ruby>で、<ruby>小<rt>ちい</rt></ruby>さい<ruby>子<rt>こ</rt></ruby>どものお<ruby>世話<rt>せわ</rt></ruby>をしたり、<ruby>一緒<rt>いっしょ</rt></ruby>に<ruby>遊<rt>あそ</rt></ruby>んだりして、<ruby>成長<rt>せいちょう</rt></ruby>を<ruby>助<rt>たす</rt></ruby>けるお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>保育<rt>ほいく</rt></ruby>の<ruby>専門<rt>せんもん</rt></ruby><ruby>学校<rt>がっこう</rt></ruby>や<ruby>大学<rt>だいがく</rt></ruby>で<ruby>学<rt>まな</rt></ruby>び、<ruby>保育士<rt>ほいくし</rt></ruby>の<ruby>試験<rt>しけん</rt></ruby>に<ruby>合格<rt>ごうかく</rt></ruby>して<ruby>資格<rt>しかく</rt></ruby>をとる<ruby>必要<rt>ひつよう</rt></ruby>があります。" },
+                    { id: "librarian", name: "<ruby>司書<rt>ししょ</rt></ruby>", icon: "📚", desc: "<ruby>図書館<rt>としょかん</rt></ruby>にたくさんある<ruby>本<rt>ほん</rt></ruby>をきれいに<ruby>管理<rt>かんり</rt></ruby>して、<ruby>人<rt>ひと</rt></ruby>が<ruby>探<rt>さが</rt></ruby>している<ruby>本<rt>ほん</rt></ruby>を<ruby>見<rt>み</rt></ruby>つけるお<ruby>手伝<rt>てつだ</rt></ruby>いをする、<ruby>本<rt>ほん</rt></ruby>のエキスパートです。", howto: "<ruby>大学<rt>だいがく</rt></ruby>などで<ruby>図書館<rt>としょかん</rt></ruby>の<ruby>特別<rt>とくべつ</rt></ruby>な<ruby>勉強<rt>べんきょう</rt></ruby>をして「<ruby>司書<rt>ししょ</rt></ruby>」の<ruby>資格<rt>しかく</rt></ruby>をとります。" },
+                    { id: "sales", name: "<ruby>営業<rt>えいぎょう</rt></ruby>", icon: "🤝", desc: "<ruby>自分<rt>じぶん</rt></ruby>の<ruby>会社<rt>かいしゃ</rt></ruby>の<ruby>製品<rt>せいひん</rt></ruby>やサービスを「これ、いいですよ！」と<ruby>紹介<rt>しょうかい</rt></ruby>して、<ruby>必要<rt>ひつよう</rt></ruby>としている<ruby>人<rt>ひと</rt></ruby>に<ruby>届<rt>とど</rt></ruby>けるお<ruby>仕事<rt>しごと</rt></ruby>です。<ruby>人<rt>ひと</rt></ruby>と<ruby>話<rt>はな</rt></ruby>すのが<ruby>得意<rt>とくい</rt></ruby>な<ruby>人<rt>ひと</rt></ruby>に<ruby>向<rt>む</rt></ruby>いています。", howto: "<ruby>色<rt>いろ</rt></ruby>々な<ruby>会社<rt>かいしゃ</rt></ruby>に<ruby>就職<rt>しゅうしょく</rt></ruby>して「<ruby>営業部<rt>えいぎょうぶ</rt></ruby>」に<ruby>入<rt>はい</rt></ruby>り、<ruby>会社<rt>かいしゃ</rt></ruby>の<ruby>商品<rt>しょうひん</rt></ruby>のいいところをしっかり<ruby>学<rt>まな</rt></ruby>びます。" }
+                ]
+            },
+            {
+                id: "c7", name: "<ruby>乗<rt>の</rt></ruby>り<ruby>物<rt>もの</rt></ruby>・<ruby>宇宙<rt>うちゅう</rt></ruby>・<ruby>住<rt>す</rt></ruby>まい", icon: "🚀",
+                jobs: [
+                    { id: "pilot", name: "パイロット", icon: "✈️", desc: "<ruby>大<rt>おお</rt></ruby>きな<ruby>飛行機<rt>ひこうき</rt></ruby>を<ruby>操縦<rt>そうじゅう</rt></ruby>して、たくさんのお<ruby>客<rt>きゃく</rt></ruby>さんや<ruby>荷物<rt>にもつ</rt></ruby>を、<ruby>安全<rt>あんぜん</rt></ruby>に<ruby>遠<rt>とお</rt></ruby>くまで<ruby>運<rt>はこ</rt></ruby>ぶお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>航空<rt>こうくう</rt></ruby><ruby>大学校<rt>だいがっこう</rt></ruby>などで<ruby>専門<rt>せんもん</rt></ruby>の<ruby>勉強<rt>べんきょう</rt></ruby>をし、とても<ruby>難<rt>むずか</rt></ruby>しい<ruby>試験<rt>しけん</rt></ruby>と<ruby>厳<rt>きび</rt></ruby>しい<ruby>飛行<rt>ひこう</rt></ruby><ruby>訓練<rt>くんれん</rt></ruby>に<ruby>合格<rt>ごうかく</rt></ruby>して<ruby>免許<rt>めんきょ</rt></ruby>をとります。" },
+                    { id: "train_driver", name: "<ruby>電車<rt>でんしゃ</rt></ruby>の<ruby>運転士<rt>うんてんし</rt></ruby>", icon: "🚋", desc: "たくさんの<ruby>人<rt>ひと</rt></ruby>を<ruby>乗<rt>の</rt></ruby>せて、<ruby>決<rt>き</rt></ruby>められた<ruby>正確<rt>せいかく</rt></ruby>な<ruby>時間<rt>じかん</rt></ruby>に<ruby>安全<rt>あんぜん</rt></ruby>に<ruby>電車<rt>でんしゃ</rt></ruby>を<ruby>走<rt>はし</rt></ruby>らせるお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>鉄道<rt>てつどう</rt></ruby><ruby>会社<rt>かいしゃ</rt></ruby>に<ruby>入<rt>はい</rt></ruby>り、<ruby>駅員<rt>えきいん</rt></ruby>や<ruby>車掌<rt>しゃしょう</rt></ruby>として<ruby>経験<rt>けいけん</rt></ruby>を<ruby>積<rt>つ</rt></ruby>んだ<ruby>後<rt>あと</rt></ruby>、<ruby>社内<rt>しゃない</rt></ruby>の<ruby>試験<rt>しけん</rt></ruby>と<ruby>訓練<rt>くんれん</rt></ruby>に<ruby>合格<rt>ごうかく</rt></ruby>して<ruby>運転士<rt>うんてんし</rt></ruby>になります。" },
+                    { id: "astronaut", name: "<ruby>宇宙<rt>うちゅう</rt></ruby><ruby>飛行士<rt>ひこうし</rt></ruby>", icon: "🧑‍🚀", desc: "ロケットに<ruby>乗<rt>の</rt></ruby>って<ruby>宇宙<rt>うちゅう</rt></ruby>にある「<ruby>国際<rt>こくさい</rt></ruby><ruby>宇宙<rt>うちゅう</rt></ruby>ステーション」などに<ruby>行<rt>い</rt></ruby>き、<ruby>実験<rt>じっけん</rt></ruby>や<ruby>無重力<rt>むじゅうりょく</rt></ruby>の<ruby>調査<rt>ちょうさ</rt></ruby>をします。", howto: "<ruby>宇宙<rt>うちゅう</rt></ruby>に<ruby>関係<rt>かんけい</rt></ruby>する<ruby>科学<rt>かがく</rt></ruby>や<ruby>技術<rt>ぎじゅつ</rt></ruby>などを<ruby>深<rt>ふか</rt></ruby>く<ruby>学<rt>まな</rt></ruby>び、JAXA（ジャクサ）などの<ruby>試験<rt>しけん</rt></ruby>に<ruby>合格<rt>ごうかく</rt></ruby>して<ruby>厳<rt>きび</rt></ruby>しい<ruby>訓練<rt>くんれん</rt></ruby>を<ruby>長期間<rt>ちょうきかん</rt></ruby><ruby>受<rt>う</rt></ruby>けます。" },
+                    { id: "real_estate", name: "<ruby>不動産屋<rt>ふどうさんや</rt></ruby>", icon: "🏠", desc: "<ruby>家<rt>いえ</rt></ruby>を<ruby>借<rt>か</rt></ruby>りたい<ruby>人<rt>ひと</rt></ruby>や<ruby>買<rt>か</rt></ruby>いたい<ruby>人<rt>ひと</rt></ruby>に、ピッタリの<ruby>住<rt>す</rt></ruby>む<ruby>場所<rt>ばしょ</rt></ruby>を<ruby>見<rt>み</rt></ruby>つけて<ruby>紹介<rt>しょうかい</rt></ruby>してあげるお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>不動産<rt>ふどうさん</rt></ruby><ruby>系<rt>けい</rt></ruby>の<ruby>会社<rt>かいしゃ</rt></ruby>に<ruby>就職<rt>しゅうしょく</rt></ruby>します。<ruby>家<rt>いえ</rt></ruby>の<ruby>契約<rt>けいやく</rt></ruby>のルールに<ruby>詳<rt>くわ</rt></ruby>しい「<ruby>宅建<rt>たっけん</rt></ruby>」という<ruby>資格<rt>しかく</rt></ruby>をとると<ruby>活躍<rt>かつやく</rt></ruby>できます。" }
+                ]
+            },
+            {
+                id: "c8", name: "つくる・<ruby>研究<rt>けんきゅう</rt></ruby>する", icon: "🔬",
+                jobs: [
+                    { id: "scientist", name: "<ruby>科学者<rt>かがくしゃ</rt></ruby>", icon: "🧪", desc: "<ruby>世<rt>よ</rt></ruby>の<ruby>中<rt>なか</rt></ruby>の「<ruby>不思議<rt>ふしぎ</rt></ruby>」を<ruby>解<rt>と</rt></ruby>き<ruby>明<rt>あ</rt></ruby>かしたり、<ruby>新<rt>あたら</rt></ruby>しい<ruby>素材<rt>そざい</rt></ruby>や<ruby>薬<rt>くすり</rt></ruby>を<ruby>作<rt>つく</rt></ruby>るために、<ruby>毎日<rt>まいにち</rt></ruby><ruby>実験<rt>じっけん</rt></ruby>や<ruby>研究<rt>けんきゅう</rt></ruby>をするお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>大学<rt>だいがく</rt></ruby>や<ruby>大学院<rt>だいがくいん</rt></ruby>へ<ruby>行<rt>い</rt></ruby>って、<ruby>特定<rt>とくてい</rt></ruby>の<ruby>分野<rt>ぶんや</rt></ruby>（<ruby>物理<rt>ぶつり</rt></ruby>や<ruby>化学<rt>かがく</rt></ruby>など）について<ruby>長<rt>なが</rt></ruby>く<ruby>深<rt>ふか</rt></ruby>く<ruby>勉強<rt>べんきょう</rt></ruby>し、<ruby>研究室<rt>けんきゅうしつ</rt></ruby>に<ruby>入<rt>はい</rt></ruby>ります。" },
+                    { id: "architect", name: "<ruby>建築士<rt>けんちくし</rt></ruby>", icon: "📐", desc: "<ruby>人<rt>ひと</rt></ruby>が<ruby>住<rt>す</rt></ruby>む<ruby>安全<rt>あんぜん</rt></ruby>な<ruby>家<rt>いえ</rt></ruby>や、<ruby>大<rt>おお</rt></ruby>きなビルなどの<ruby>形<rt>かたち</rt></ruby>を<ruby>考<rt>かんが</rt></ruby>えて、<ruby>建物<rt>たてもの</rt></ruby>を<ruby>建<rt>た</rt></ruby>てるための<ruby>正確<rt>せいかく</rt></ruby>な<ruby>設計図<rt>せっけいず</rt></ruby>を<ruby>描<rt>か</rt></ruby>くお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>大学<rt>だいがく</rt></ruby>などで<ruby>建築<rt>けんちく</rt></ruby>の<ruby>勉強<rt>べんきょう</rt></ruby>をして、「<ruby>建築士<rt>けんちくし</rt></ruby>」という<ruby>国家<rt>こっか</rt></ruby><ruby>試験<rt>しけん</rt></ruby>に<ruby>合格<rt>ごうかく</rt></ruby>する<ruby>必要<rt>ひつよう</rt></ruby>があります。" },
+                    { id: "carpenter", name: "<ruby>大工<rt>だいく</rt></ruby>", icon: "🔨", desc: "<ruby>建築士<rt>けんちくし</rt></ruby>が<ruby>描<rt>か</rt></ruby>いた<ruby>図面<rt>ずめん</rt></ruby>を<ruby>見<rt>み</rt></ruby>ながら、<ruby>木材<rt>もくざい</rt></ruby>などを<ruby>切<rt>き</rt></ruby>ったり<ruby>組<rt>く</rt></ruby>み<ruby>立<rt>た</rt></ruby>てたりして、<ruby>実際<rt>じっさい</rt></ruby>に<ruby>家<rt>いえ</rt></ruby>を<ruby>建<rt>た</rt></ruby>てていくお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>大工<rt>だいく</rt></ruby>の<ruby>親方<rt>おやかた</rt></ruby>や<ruby>建築<rt>けんちく</rt></ruby><ruby>会社<rt>かいしゃ</rt></ruby>に<ruby>弟子入<rt>でしい</rt></ruby>りをして、<ruby>少<rt>すこ</rt></ruby>しずつ<ruby>道具<rt>どうぐ</rt></ruby>の<ruby>使<rt>つか</rt></ruby>い<ruby>方<rt>かた</rt></ruby>や<ruby>家<rt>いえ</rt></ruby>の<ruby>建<rt>た</rt></ruby>て<ruby>方<rt>かた</rt></ruby>を<ruby>覚<rt>おぼ</rt></ruby>えていきます。" },
+                    { id: "robotics", name: "ロボット<ruby>開発者<rt>かいはつしゃ</rt></ruby>", icon: "🤖", desc: "<ruby>工場<rt>こうじょう</rt></ruby>で<ruby>働<rt>はたら</rt></ruby>くロボットや、お<ruby>年寄<rt>としよ</rt></ruby>りを<ruby>助<rt>たす</rt></ruby>けるロボットなど、<ruby>人<rt>ひと</rt></ruby>のためになる<ruby>新<rt>あたら</rt></ruby>しいロボットを<ruby>設計<rt>せっけい</rt></ruby>し、<ruby>動<rt>うご</rt></ruby>かすお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>大学<rt>だいがく</rt></ruby>や<ruby>専門<rt>せんもん</rt></ruby><ruby>学校<rt>がっこう</rt></ruby>で、<ruby>機械<rt>きかい</rt></ruby>のことや、ロボットを<ruby>動<rt>うご</rt></ruby>かすプログラムについてたくさん<ruby>勉強<rt>べんきょう</rt></ruby>します。" },
+                    { id: "beautician", name: "<ruby>美容師<rt>びようし</rt></ruby>", icon: "✂️", desc: "お<ruby>客<rt>きゃく</rt></ruby>さんの<ruby>髪<rt>かみ</rt></ruby>を<ruby>切<rt>き</rt></ruby>ったり、<ruby>色<rt>いろ</rt></ruby>を<ruby>染<rt>そ</rt></ruby>めたり、きれいに<ruby>整<rt>ととの</rt></ruby>えたりして、<ruby>人<rt>ひと</rt></ruby>を<ruby>素敵<rt>すてき</rt></ruby>にするお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>美容<rt>びよう</rt></ruby><ruby>専門<rt>せんもん</rt></ruby><ruby>学校<rt>がっこう</rt></ruby>で<ruby>技術<rt>ぎじゅつ</rt></ruby>を<ruby>学<rt>まな</rt></ruby>び、「<ruby>美容師<rt>びようし</rt></ruby><ruby>国家<rt>こっか</rt></ruby><ruby>試験<rt>しけん</rt></ruby>」に<ruby>合格<rt>ごうかく</rt></ruby>して<ruby>免許<rt>めんきょ</rt></ruby>をとる<ruby>必要<rt>ひつよう</rt></ruby>があります。" }
+                ]
+            },
+            {
+                id: "c9", name: "<ruby>自然<rt>しぜん</rt></ruby>・<ruby>社会<rt>しゃかい</rt></ruby>のルール", icon: "🌱",
+                jobs: [
+                    { id: "farmer", name: "<ruby>農家<rt>のうか</rt></ruby>", icon: "🍅", desc: "お<ruby>米<rt>こめ</rt></ruby>や<ruby>野菜<rt>やさい</rt></ruby>、<ruby>果物<rt>くだもの</rt></ruby>などを<ruby>大切<rt>たいせつ</rt></ruby>に<ruby>育<rt>そだ</rt></ruby>てて<ruby>収穫<rt>しゅうかく</rt></ruby>し、みんなの<ruby>食卓<rt>しょくたく</rt></ruby>に<ruby>美味<rt>おい</rt></ruby>しい<ruby>食<rt>た</rt></ruby>べ<ruby>物<rt>もの</rt></ruby>を<ruby>届<rt>とど</rt></ruby>けるお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>農業<rt>のうぎょう</rt></ruby><ruby>大学校<rt>だいがっこう</rt></ruby>へ<ruby>行<rt>い</rt></ruby>って<ruby>勉強<rt>べんきょう</rt></ruby>したり、<ruby>実際<rt>じっさい</rt></ruby>に<ruby>農業<rt>のうぎょう</rt></ruby>をしている<ruby>人<rt>ひと</rt></ruby>から<ruby>作<rt>つく</rt></ruby>り<ruby>方<rt>かた</rt></ruby>を<ruby>教<rt>おし</rt></ruby>えてもらったりして<ruby>始<rt>はじ</rt></ruby>めます。" },
+                    { id: "lawyer", name: "<ruby>弁護士<rt>べんごし</rt></ruby>", icon: "⚖️", desc: "<ruby>難<rt>むずか</rt></ruby>しい<ruby>法律<rt>ほうりつ</rt></ruby>の<ruby>知識<rt>ちしき</rt></ruby>を<ruby>使<rt>つか</rt></ruby>って、トラブルに<ruby>巻<rt>ま</rt></ruby>き<ruby>込<rt>こ</rt></ruby>まれたり<ruby>困<rt>こま</rt></ruby>っていたりする<ruby>人<rt>ひと</rt></ruby>を<ruby>守<rt>まも</rt></ruby>り、<ruby>助<rt>たす</rt></ruby>けるお<ruby>仕事<rt>しごと</rt></ruby>です。", howto: "<ruby>大学<rt>だいがく</rt></ruby>の<ruby>法学部<rt>ほうがくぶ</rt></ruby>や<ruby>法科<rt>ほうか</rt></ruby><ruby>大学院<rt>だいがくいん</rt></ruby>でたくさん<ruby>勉強<rt>べんきょう</rt></ruby>し、<ruby>日本<rt>にほん</rt></ruby>で<ruby>一番<rt>いちばん</rt></ruby><ruby>難<rt>むずか</rt></ruby>しい<ruby>試験<rt>しけん</rt></ruby>のひとつである「<ruby>司法<rt>しほう</rt></ruby><ruby>試験<rt>しけん</rt></ruby>」に<ruby>合格<rt>ごうかく</rt></ruby>します。" }
+                ]
+            }
+        ];
+
+        // ===================================================
+        //  状態管理
+        // ===================================================
+        var PROGRESS_KEY_PREFIX = 'papan_job_progress_v1_';
+        var currentUserName = null;
+        var currentJob = null;
+        var pointsGiven = false;
+
+        function getStorageKey() {
+            return PROGRESS_KEY_PREFIX + currentUserName;
+        }
+
+        function loadProgress() {
+            if (!currentUserName) return [];
+            try {
+                return JSON.parse(localStorage.getItem(getStorageKey())) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveProgress(clearedJobs) {
+            if (!currentUserName) return;
+            localStorage.setItem(getStorageKey(), JSON.stringify(clearedJobs));
+        }
+
+        function isJobCleared(jobId) {
+            return loadProgress().indexOf(jobId) !== -1;
+        }
+
+        // ===================================================
+        //  画面描画
+        // ===================================================
+        function initUserSelection() {
+            var users = (typeof getUserNames === 'function') ? getUserNames() : [];
+            var listEl = document.getElementById('user-list');
+            listEl.innerHTML = '';
+
+            if (users.length === 0) {
+                listEl.innerHTML = '<p class="no-user-msg">ユーザーが みつかりません。<br>ほかのページで なまえを 登録してね！</p>';
+                return;
+            }
+
+            users.forEach(function (name) {
+                var btn = document.createElement('button');
+                btn.className = 'user-btn';
+                btn.textContent = name;
+                btn.onclick = function () { selectUser(name); };
+                listEl.appendChild(btn);
+            });
+        }
+
+        function selectUser(name) {
+            currentUserName = name;
+            document.getElementById('user-overlay').style.display = 'none';
+            renderList();
+        }
+
+        function renderList() {
+            document.getElementById('list-screen').style.display = 'block';
+            document.getElementById('detail-screen').style.display = 'none';
+
+            // href を index.html に戻す（トップもどるボタン用）
+            var topBtn = document.getElementById('top-btn');
+            topBtn.setAttribute('href', 'index.html');
+            topBtn.onclick = null;
+            topBtn.textContent = '← もどる';
+
+            document.getElementById('subtitle').innerHTML = 'いろんなお<ruby>仕事<rt>しごと</rt></ruby>を<ruby>学<rt>まな</rt></ruby>んでみよう！';
+
+            var container = document.getElementById('category-container');
+            container.innerHTML = '';
+
+            var clearedJobs = loadProgress();
+
+            CATEGORIES.forEach(function (cat) {
+                var section = document.createElement('div');
+                section.className = 'category-section';
+
+                var title = document.createElement('div');
+                title.className = 'category-title';
+                title.innerHTML = `<span>${cat.icon}</span> ${cat.name}`;
+                section.appendChild(title);
+
+                var grid = document.createElement('div');
+                grid.className = 'job-grid';
+
+                cat.jobs.forEach(function (job) {
+                    var card = document.createElement('div');
+                    card.className = 'job-card';
+                    if (clearedJobs.indexOf(job.id) !== -1) {
+                        card.classList.add('cleared');
+                    }
+
+                    card.innerHTML = `
+                        <div class="job-icon">${job.icon}</div>
+                        <div class="job-name">${job.name}</div>
+                    `;
+                    card.onclick = function () { showDetail(job, cat); };
+                    grid.appendChild(card);
+                });
+
+                section.appendChild(grid);
+                container.appendChild(section);
+            });
+        }
+
+        function showDetail(job, category) {
+            currentJob = job;
+            pointsGiven = false;
+
+            document.getElementById('list-screen').style.display = 'none';
+            document.getElementById('detail-screen').style.display = 'block';
+
+            // トップボタンスタイル変更
+            var topBtn = document.getElementById('top-btn');
+            topBtn.removeAttribute('href');
+            topBtn.onclick = backToList;
+            topBtn.innerHTML = '← <ruby>一覧<rt>いちらん</rt></ruby>にもどる';
+            document.getElementById('subtitle').innerHTML = 'お<ruby>仕事<rt>しごと</rt></ruby>のくわしい<ruby>説明<rt>せつめい</rt></ruby>';
+
+            document.getElementById('detail-icon').innerHTML = job.icon;
+            document.getElementById('detail-name').innerHTML = job.name;
+            document.getElementById('detail-category').innerHTML = category.icon + " " + category.name;
+            document.getElementById('detail-desc').innerHTML = job.desc;
+            document.getElementById('detail-howto').innerHTML = job.howto;
+
+            var btn = document.getElementById('get-points-btn');
+            if (isJobCleared(job.id)) {
+                btn.innerHTML = '<ruby>学習<rt>がくしゅう</rt></ruby>ずみ（もう<ruby>一度<rt>いちど</rt></ruby>よむ）';
+                btn.disabled = false;
+                btn.style.background = '#4CAF50';
+                btn.style.boxShadow = '0 4px 0 #388E3C';
+            } else {
+                btn.textContent = 'わかった！（10ptゲット）';
+                btn.disabled = false;
+                btn.style.background = '#ff9800';
+                btn.style.boxShadow = '0 4px 0 #e65100';
+            }
+
+            // アニメーションのリセット用
+            var detailCard = document.querySelector('.detail-card');
+            detailCard.classList.remove('pop-anim');
+            void detailCard.offsetWidth; // trigger reflow
+            detailCard.classList.add('pop-anim');
+        }
+
+        function backToList() {
+            renderList();
+            window.scrollTo(0, 0);
+        }
+
+        function finishLearning() {
+            if (pointsGiven) return;
+            pointsGiven = true;
+
+            var btn = document.getElementById('get-points-btn');
+            btn.disabled = true;
+
+            var clearedJobs = loadProgress();
+
+            // 初めての学習の場合にポイント付与
+            if (clearedJobs.indexOf(currentJob.id) === -1) {
+                clearedJobs.push(currentJob.id);
+                saveProgress(clearedJobs);
+
+                btn.textContent = '✅ ポイントゲット！';
+                btn.style.background = '#a5d6a7';
+                btn.style.boxShadow = '0 4px 0 #81c784';
+
+                if (typeof showPointGetDialog === 'function') {
+                    showPointGetDialog(10, 'job_learn');
+                } else {
+                    alert('10ポイント もらったよ！');
+                }
+            } else {
+                // すでに学習済みの場合
+                btn.innerHTML = '✅ <ruby>学<rt>まな</rt></ruby>んだよ！';
+            }
+
+            // 少し待ってから一覧に戻すか、ユーザー操作に任せるか
+            // 今回はユーザー操作で戻る形（左上や下のボタン）などがあるが、
+            // わかりやすく2秒後に自動で戻るか、もしくはそのままにしておくか。
+            // ここではそのままで、ユーザが「一覧にもどる」を押す想定。
+        }
+
+        // ===================================================
+        //  初期化
+        // ===================================================
+        window.onload = function () {
+            initUserSelection();
+        };
+
+    </script>
+</body>
+
+</html>

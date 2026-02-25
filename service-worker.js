@@ -62,6 +62,7 @@ var urlsToCache = [
   './shousu_learn.html',
   './warizan_learn.html',
   './wariai_learn.html',
+  './job_learn.html',
 
   // === 英語系 ===
   './alphabet.html',
