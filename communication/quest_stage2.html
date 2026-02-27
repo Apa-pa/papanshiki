@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>なかまにいれて！ | ココロのクエスト</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 50%, #fce4ec 100%);
+            /* ピンク系の背景 */
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 10px;
+        }
+
+        /* ヘッダー＆メーター */
+        .header {
+            flex-shrink: 0;
+            margin-bottom: 10px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            text-decoration: none;
+            color: #888;
+            font-size: 14px;
+            background: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 2px solid #ddd;
+            margin-bottom: 10px;
+        }
+
+        .meter-box {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 20px;
+            border: 4px solid #f48fb1;
+            box-shadow: 0 4px 0 #f06292;
+            text-align: center;
+        }
+
+        .meter-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #c2185b;
+            margin-bottom: 8px;
+        }
+
+        .meter-bg {
+            background: #eee;
+            height: 24px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: inset 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .meter-bar {
+            height: 100%;
+            width: 0%;
+            background: #ec407a;
+            transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.4s;
+        }
+
+        .meter-text {
+            font-size: 14px;
+            color: #555;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        /* ゲーム画面エリア */
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* キャラクター表示 */
+        .char-display {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 10px;
+            min-height: 160px;
+        }
+
+        .char-img {
+            max-height: 180px;
+            object-fit: contain;
+            animation: float 2.5s infinite ease-in-out;
+            display: none;
+            filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.15));
+        }
+
+        .emoji-avatar {
+            font-size: 55px;
+            width: 130px;
+            height: 130px;
+            background: #fff9c4;
+            border: 6px solid #ffca28;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            line-height: 1;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            animation: popIn 0.3s ease-out;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* メッセージボックス */
+        .msg-box {
+            background: white;
+            border: 5px solid #f48fb1;
+            border-radius: 20px;
+            padding: 25px 20px 20px;
+            position: relative;
+            min-height: 130px;
+            margin-bottom: 10px;
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .msg-name {
+            position: absolute;
+            top: -16px;
+            left: 20px;
+            background: #f06292;
+            color: white;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 15px;
+            border: 3px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .msg-text {
+            font-size: 19px;
+            line-height: 1.6;
+            color: #333;
+            font-weight: bold;
+        }
+
+        ruby rt {
+            font-size: 10px;
+            color: #777;
+            font-weight: normal;
+        }
+
+        /* 選択肢ボタン */
+        .options-box {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .option-btn {
+            background: white;
+            border: 4px solid #81c784;
+            padding: 16px;
+            border-radius: 18px;
+            font-size: 17px;
+            font-weight: bold;
+            color: #333;
+            text-align: left;
+            box-shadow: 0 5px 0 #66bb6a;
+            cursor: pointer;
+            line-height: 1.5;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .option-btn:active {
+            transform: translateY(5px);
+            box-shadow: none;
+        }
+
+        /* 次へボタン */
+        .next-btn {
+            background: #f06292;
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 30px;
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #d81b60;
+            transition: 0.1s;
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .next-btn:active {
+            transform: translateY(6px);
+            box-shadow: none;
+        }
+
+        /* ポイントアニメーション */
+        .point-popup {
+            position: absolute;
+            font-size: 32px;
+            font-weight: bold;
+            color: #4CAF50;
+            text-shadow: 2px 2px 0 white, -2px -2px 0 white, 2px -2px 0 white, -2px 2px 0 white;
+            pointer-events: none;
+            animation: floatUp 1s forwards ease-out;
+            z-index: 100;
+            left: 50%;
+            top: 30%;
+            transform: translateX(-50%);
+        }
+
+        .point-popup.negative {
+            color: #f44336;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translate(-50%, 0) scale(0.5);
+                opacity: 1;
+            }
+
+            50% {
+                transform: translate(-50%, -30px) scale(1.2);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, -60px) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* エンディング用 */
+        .ending-box {
+            text-align: center;
+            padding: 20px 10px;
+            background: white;
+            border-radius: 20px;
+            border: 4px solid #f48fb1;
+            box-shadow: 0 6px 0 rgba(0, 0, 0, 0.05);
+            display: none;
+            margin-top: 20px;
+        }
+
+        .ending-icon {
+            font-size: 70px;
+            margin-bottom: 15px;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .ending-title {
+            font-size: 26px;
+            color: #d81b60;
+            margin-bottom: 15px;
+        }
+
+        .ending-text {
+            font-size: 18px;
+            line-height: 1.6;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <a href="hub.html" class="back-btn">← もどる</a>
+            <div class="meter-box">
+                <div class="meter-title">みんなの なかよしメーター</div>
+                <div class="meter-bg">
+                    <div class="meter-bar" id="meter-bar"></div>
+                </div>
+                <div class="meter-text" id="meter-text">0 / 100</div>
+            </div>
+        </div>
+
+        <div class="game-area" id="game-area">
+            <div class="char-display" id="char-display">
+                <img src="../hi-192.webp" id="char-img" class="char-img" alt="キャラクター">
+                <div id="char-icon" class="emoji-avatar">👦👧</div>
+            </div>
+
+            <div class="msg-box" id="msg-box">
+                <div class="msg-name" id="msg-name">ヒーちゃん</div>
+                <div class="msg-text" id="msg-text">テキスト</div>
+            </div>
+
+            <div class="options-box" id="options-box"></div>
+
+            <button class="next-btn" id="next-btn" onclick="nextStep()">次（つぎ）へ ▶</button>
+
+            <div class="ending-box" id="ending-box">
+                <div class="ending-icon" id="ending-icon">👦👧✨</div>
+                <h2 class="ending-title" id="ending-title">タイトル</h2>
+                <div class="ending-text" id="ending-text">テキスト</div>
+
+                <button class="next-btn" id="point-btn"
+                    style="display:none; margin-top:10px; background:#4CAF50; box-shadow: 0 6px 0 #388E3C;"
+                    onclick="getPoints()">🎁 ポイントをもらう</button>
+
+                <button class="next-btn" style="display:block; margin-top:15px;" onclick="location.reload()">もう<ruby>一度
+                        <rt>いちど</rt>
+                    </ruby>あそぶ ↻</button>
+                <a href="hub.html" style="display:block; margin-top:20px; color:#888; text-decoration:none;">←
+                    ハブに<ruby>戻<rt>もど</rt></ruby>る</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="../ranking.js"></script>
+    <script>
+        const chars = {
+            hi: { name: "ヒーちゃん", type: "img", src: "../hi-192.webp", color: "#ff9800", border: "#ffb74d" },
+            an: { name: "アンちゃん", type: "img", src: "../an192.webp", color: "#e91e63", border: "#f48fb1" },
+            friends: { name: "おともだち", type: "emoji", src: "👦👧", color: "#f57f17", border: "#fbc02d" }
+        };
+
+        // スコアが20+20+20+40 = 100点になるように調整
+        const scenario = [
+            {
+                type: "msg", speaker: "hi",
+                text: "あ！あそこでみんなが<ruby>楽<rt>たの</rt></ruby>しそうに<ruby>遊<rt>あそ</rt></ruby>んでる！<ruby>僕<rt>ぼく</rt></ruby>もやりたいなぁ…"
+            },
+            {
+                type: "msg", speaker: "an",
+                text: "まずは『<ruby>観察<rt>かんさつ</rt></ruby>』よ。いきなり<ruby>突入<rt>とつにゅう</rt></ruby>するより、まずはみんなが<ruby>何<rt>なに</rt></ruby>をしてるか<ruby>見<rt>み</rt></ruby>て、<ruby>自分<rt>じぶん</rt></ruby>という<ruby>存在<rt>そんざい</rt></ruby>に<ruby>気付<rt>きづ</rt></ruby>いてもらうのが『なかよし』になるための<ruby>大切<rt>たいせつ</rt></ruby>な<ruby>準備<rt>じゅんび</rt></ruby>なの！"
+            },
+            // --- ステップ1：声をかける前の行動 ---
+            {
+                type: "question", speaker: "hi",
+                text: "（どうやってみんなに<ruby>近<rt>ちか</rt></ruby>づこうかな…）",
+                options: [
+                    { text: "<ruby>遠<rt>とお</rt></ruby>くからじーっと<ruby>見<rt>み</rt></ruby>つめる", score: 0, response_speaker: "friends", response_text: "あれ？あの子じーっと<ruby>見<rt>み</rt></ruby>てる。ちょっと<ruby>怖<rt>こわ</rt></ruby>いかも…" },
+                    { text: "「まぜて！」と<ruby>叫<rt>さけ</rt></ruby>びながら<ruby>走<rt>はし</rt></ruby>っていく", score: 10, response_speaker: "friends", response_text: "うわっ、びっくりした！" },
+                    { text: "<ruby>少<rt>すこ</rt></ruby>し<ruby>近<rt>ちか</rt></ruby>くまで<ruby>行<rt>い</rt></ruby>って、「おもしろそうだね」と<ruby>笑顔<rt>えがお</rt></ruby>で<ruby>言<rt>い</rt></ruby>う", score: 20, response_speaker: "friends", response_text: "あ、うん！お<ruby>城<rt>しろ</rt></ruby>をつくってるんだ！" }
+                ]
+            },
+            // --- ステップ2：自分が入ることでみんなが楽しくなることを伝える（提案） ---
+            {
+                type: "msg", speaker: "hi",
+                text: "（みんなは「<ruby>大<rt>おお</rt></ruby>きな<ruby>砂<rt>すな</rt></ruby>のお<ruby>城<rt>しろ</rt></ruby>」を<ruby>作<rt>つく</rt></ruby>っているみたいだぞ）"
+            },
+            {
+                type: "question", speaker: "an",
+                text: "つぎは『<ruby>提案<rt>ていあん</rt></ruby>』よ！なんて<ruby>言<rt>い</rt></ruby>って<ruby>仲間<rt>なかま</rt></ruby>に<ruby>入<rt>い</rt></ruby>れてもらう？",
+                options: [
+                    { text: "<ruby>僕<rt>ぼく</rt></ruby>もやりたいから<ruby>入<rt>い</rt></ruby>れて！", score: 10, response_speaker: "friends", response_text: "えー、でもいま もう3<ruby>人<rt>にん</rt></ruby>でやってるしなぁ…" },
+                    { text: "<ruby>僕<rt>ぼく</rt></ruby>、バケツを<ruby>持<rt>も</rt></ruby>ってないけどいい？", score: -10, response_speaker: "friends", response_text: "え、道具（どうぐ）がないなら、どうやって<ruby>手伝<rt>てつだ</rt></ruby>うの？" },
+                    { text: "<ruby>僕<rt>ぼく</rt></ruby>、<ruby>山<rt>やま</rt></ruby>を<ruby>固<rt>かた</rt></ruby>めるのが<ruby>得意<rt>とくい</rt></ruby>なんだ！<ruby>一緒<rt>いっしょ</rt></ruby>にもっと<ruby>大<rt>おお</rt></ruby>きなお<ruby>城<rt>しろ</rt></ruby>にしない？", score: 20, response_speaker: "friends", response_text: "ほんと！？じゃあ、もっとすごいお<ruby>城<rt>しろ</rt></ruby>になりそうだね！" }
+                ]
+            },
+            // --- ステップ3：もし「今はダメ」と言われたら？（心の強さ） ---
+            {
+                type: "msg", speaker: "friends",
+                text: "ごめんね、<ruby>今<rt>いま</rt></ruby>はお<ruby>城<rt>しろ</rt></ruby>の<ruby>仕上<rt>しあ</rt></ruby>げだから、あとでね。"
+            },
+            {
+                type: "question", speaker: "an",
+                text: "あちゃー、<ruby>断<rt>ことわ</rt></ruby>られちゃった。<br>こんな<ruby>時<rt>とき</rt></ruby>、なんて<ruby>返<rt>かえ</rt></ruby>すのが「かっこいい」かな？（<ruby>心<rt>こころ</rt></ruby>の<ruby>強<rt>つよ</rt></ruby>さ！）",
+                options: [
+                    { text: "ちぇっ、いじわるだな！", score: -10, response_speaker: "friends", response_text: "なんだよ、いじわるなんてしてないよ…。" },
+                    { text: "（その<ruby>場<rt>ば</rt></ruby>に<ruby>座<rt>すわ</rt></ruby>り<ruby>込<rt>こ</rt></ruby>んで<ruby>泣<rt>な</rt></ruby>く）", score: 0, response_speaker: "friends", response_text: "ええっ、なんで<ruby>泣<rt>な</rt></ruby>くの？<ruby>困<rt>こま</rt></ruby>っちゃうな…" },
+                    { text: "わかった！じゃあ<ruby>完成<rt>かんせい</rt></ruby>するのを<ruby>見<rt>み</rt></ruby>てるね。<ruby>終<rt>お</rt></ruby>わったら<ruby>呼<rt>よ</rt></ruby>んで！", score: 20, response_speaker: "friends", response_text: "うん！<ruby>待<rt>ま</rt></ruby>ってて！できたら<ruby>呼<rt>よ</rt></ruby>ぶからね！" }
+                ]
+            },
+            // --- ステップ4：最後の仕上げ（まとめ） ---
+            {
+                type: "msg", speaker: "hi",
+                text: "お<ruby>城<rt>しろ</rt></ruby>が<ruby>完成<rt>かんせい</rt></ruby>したみたい！ついに<ruby>一緒<rt>いっしょ</rt></ruby>に<ruby>遊<rt>あそ</rt></ruby>べるぞ！"
+            },
+            {
+                type: "question", speaker: "an",
+                text: "『<ruby>同意<rt>どうい</rt></ruby>』のステップよ！<ruby>一緒<rt>いっしょ</rt></ruby>に<ruby>遊<rt>あそ</rt></ruby>ぶ<ruby>時<rt>とき</rt></ruby>に<ruby>一番<rt>いちばん</rt></ruby> <ruby>大切<rt>たいせつ</rt></ruby>な<ruby>約束<rt>やくそく</rt></ruby>は？",
+                options: [
+                    { text: "<ruby>自分<rt>じぶん</rt></ruby>だけのルールで<ruby>遊<rt>あそ</rt></ruby>ぶ！", score: -10, response_speaker: "friends", response_text: "えー、それじゃあ つまらないよ…。" },
+                    { text: "みんなのルールを<ruby>聞<rt>き</rt></ruby>いて、<ruby>仲良<rt>なかよ</rt></ruby>く<ruby>守<rt>まも</rt></ruby>る！", score: 40, response_speaker: "friends", response_text: "いいね！じゃあ、<ruby>一緒<rt>いっしょ</rt></ruby>にトンネルを<ruby>掘<rt>ほ</rt></ruby>ろう！" }
+                ]
+            }
+        ];
+
+        let currentStep = 0;
+        let points = 0;
+
+        const charImg = document.getElementById("char-img");
+        const charIcon = document.getElementById("char-icon");
+        const msgBox = document.getElementById("msg-box");
+        const msgName = document.getElementById("msg-name");
+        const msgText = document.getElementById("msg-text");
+        const optionsBox = document.getElementById("options-box");
+        const nextBtn = document.getElementById("next-btn");
+
+        function renderSpeaker(speakerId) {
+            const char = chars[speakerId];
+            msgName.textContent = char.name;
+            msgName.style.backgroundColor = char.color;
+            msgBox.style.borderColor = char.border;
+
+            if (char.type === "img") {
+                charImg.src = char.src;
+                charImg.style.display = "block";
+                charIcon.style.display = "none";
+            } else {
+                charIcon.textContent = char.src;
+                charIcon.style.borderColor = char.border;
+                charIcon.style.display = "flex";
+                charImg.style.display = "none";
+            }
+        }
+
+        function advance() {
+            if (currentStep >= scenario.length) {
+                showEnding();
+                return;
+            }
+
+            const step = scenario[currentStep];
+            renderSpeaker(step.speaker);
+            msgText.innerHTML = step.text;
+            msgBox.style.display = "block";
+
+            if (step.type === "msg") {
+                optionsBox.style.display = "none";
+                nextBtn.style.display = "block";
+            } else if (step.type === "question") {
+                optionsBox.innerHTML = "";
+                step.options.forEach(opt => {
+                    const btn = document.createElement("button");
+                    btn.className = "option-btn";
+                    btn.innerHTML = opt.text;
+                    btn.onclick = () => selectOption(opt);
+                    optionsBox.appendChild(btn);
+                });
+                optionsBox.style.display = "flex";
+                nextBtn.style.display = "none";
+            }
+        }
+
+        function selectOption(opt) {
+            // ポイント計算
+            points += opt.score;
+            if (points < 0) points = 0;
+            if (points > 100) points = 100;
+
+            // メーター更新
+            const bar = document.getElementById("meter-bar");
+            const text = document.getElementById("meter-text");
+            bar.style.width = points + "%";
+            text.textContent = points + " / 100";
+            if (points >= 100) bar.style.backgroundColor = "#4CAF50";
+            else if (points >= 60) bar.style.backgroundColor = "#ff9800";
+            else bar.style.backgroundColor = "#f44336";
+
+            // アニメーション表示
+            const popup = document.createElement("div");
+            popup.className = "point-popup" + (opt.score < 0 ? " negative" : "");
+            popup.textContent = (opt.score >= 0 ? "+" : "") + Math.abs(opt.score);
+            document.getElementById("game-area").appendChild(popup);
+            setTimeout(() => popup.remove(), 1000);
+
+            // 次の反応メッセージを即席で差し込む
+            scenario.splice(currentStep + 1, 0, {
+                type: "msg",
+                speaker: opt.response_speaker,
+                text: opt.response_text
+            });
+
+            currentStep++;
+            advance();
+        }
+
+        function nextStep() {
+            currentStep++;
+            advance();
+        }
+
+        function showEnding() {
+            msgBox.style.display = "none";
+            optionsBox.style.display = "none";
+            nextBtn.style.display = "none";
+            document.getElementById("char-display").style.display = "none";
+
+            const endBox = document.getElementById("ending-box");
+            endBox.style.display = "block";
+
+            let title = "";
+            let text = "";
+            let icon = "";
+
+            if (points >= 100) {
+                title = "🎉 <ruby>大成功<rt>だいせいこう</rt></ruby>！";
+                text = "<ruby>最高<rt>さいこう</rt></ruby>の<ruby>仲間<rt>なかま</rt></ruby>！<ruby>君<rt>きみ</rt></ruby>がいると<ruby>遊<rt>あそ</rt></ruby>びがもっと<ruby>楽<rt>たの</rt></ruby>しくなるね！";
+                icon = "👦👧✨";
+            } else if (points >= 60) {
+                title = "👍 <ruby>成功<rt>せいこう</rt></ruby>！";
+                text = "<ruby>少<rt>すこ</rt></ruby>しずつ<ruby>仲良<rt>なかよ</rt></ruby>くなれたね。<ruby>次<rt>つぎ</rt></ruby>はもっと<ruby>観察<rt>かんさつ</rt></ruby>してみよう！";
+                icon = "👦👧👍";
+            } else {
+                title = "😢 <ruby>失敗<rt>しっぱい</rt></ruby>…";
+                text = "<ruby>今日<rt>きょう</rt></ruby>は<ruby>残念<rt>ざんねん</rt></ruby>だったけど、ヒーちゃんなら<ruby>次<rt>つぎ</rt></ruby>はもっとうまく<ruby>言<rt>い</rt></ruby>えるはずだよ！";
+                icon = "👦👧💧";
+            }
+
+            document.getElementById("ending-icon").textContent = icon;
+            document.getElementById("ending-title").innerHTML = title;
+            document.getElementById("ending-text").innerHTML = text;
+
+            if (points >= 60 && !pointsGiven) {
+                const pointBtn = document.getElementById("point-btn");
+                pointBtn.style.display = "block";
+            }
+        }
+
+        let pointsGiven = false;
+        function getPoints() {
+            if (pointsGiven) return;
+            pointsGiven = true;
+
+            const pointBtn = document.getElementById("point-btn");
+            if (pointBtn) {
+                pointBtn.disabled = true;
+                pointBtn.textContent = '✅ もらった！';
+                pointBtn.style.backgroundColor = '#999';
+                pointBtn.style.boxShadow = '0 6px 0 #777';
+            }
+
+            if (typeof showPointGetDialog === 'function') {
+                showPointGetDialog(50, 'quest_stage2');
+            } else {
+                alert('50ポイント もらったよ！');
+            }
+        }
+
+        // 初期化
+        advance();
+
+    </script>
+</body>
+
+</html>

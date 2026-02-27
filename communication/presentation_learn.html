@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>プレゼンマスター | ぱぱん式</title>
-    <script src="ranking.js"></script>
+    <script src="../ranking.js"></script>
     <style>
         /* --- 基本設定 --- */
         * {
@@ -28,7 +28,7 @@
 
         .container {
             width: 95%;
-            max-width: 500px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 15px 10px 30px;
             position: relative;
@@ -138,6 +138,7 @@
         .stage-info {
             text-align: left;
             flex: 1;
+            padding-right: 10px;
         }
 
         .stage-num {
@@ -147,14 +148,15 @@
         }
 
         .stage-name {
-            font-size: 17px;
+            font-size: clamp(17px, 3.5vw, 22px);
             font-weight: bold;
             color: #333;
             margin: 2px 0;
+            line-height: 1.3;
         }
 
         .stage-desc {
-            font-size: 12px;
+            font-size: clamp(12px, 2.5vw, 15px);
             color: #888;
         }
 
@@ -215,11 +217,11 @@
         .lesson-slide {
             background: white;
             border-radius: 25px;
-            padding: 25px 20px;
+            padding: 25px 30px;
             margin: 10px auto;
-            max-width: 400px;
+            max-width: 600px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-            min-height: 380px;
+            min-height: 480px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -227,16 +229,16 @@
         }
 
         .lesson-visual {
-            margin: 10px 0;
-            min-height: 120px;
+            margin: 15px 0;
+            min-height: 140px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 80px;
+            font-size: clamp(80px, 15vw, 120px);
         }
 
         .lesson-text {
-            font-size: 18px;
+            font-size: clamp(20px, 4vw, 26px);
             line-height: 1.6;
             color: #333;
             margin: 15px 0;
@@ -248,14 +250,14 @@
         }
 
         .lesson-text rt {
-            font-size: 10px;
+            font-size: clamp(10px, 2vw, 13px);
             color: #666;
         }
 
         .lesson-text .highlight {
             color: #e65100;
             font-weight: bold;
-            font-size: 22px;
+            font-size: clamp(24px, 4.5vw, 30px);
         }
 
         .lesson-dots {
@@ -317,23 +319,24 @@
         .quiz-card {
             background: white;
             border-radius: 25px;
-            padding: 25px 20px;
+            padding: 30px 25px;
             margin: 10px auto;
-            max-width: 400px;
+            max-width: 650px;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
         }
 
         .quiz-question-text {
-            font-size: 18px;
+            font-size: clamp(20px, 4vw, 26px);
             color: #555;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             line-height: 1.5;
+            font-weight: bold;
         }
 
         .quiz-visual {
-            font-size: 60px;
-            margin: 10px 0 15px;
-            min-height: 70px;
+            font-size: clamp(70px, 12vw, 100px);
+            margin: 15px 0 20px;
+            min-height: 80px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -350,15 +353,15 @@
         .quiz-option {
             background: white;
             border: 3px solid #64b5f6;
-            font-size: 18px;
+            font-size: clamp(18px, 3.5vw, 24px);
             font-weight: bold;
-            padding: 16px;
+            padding: 20px 16px;
             border-radius: 18px;
             cursor: pointer;
             font-family: inherit;
             transition: all 0.2s;
             color: #333;
-            box-shadow: 0 3px 0 #42a5f5;
+            box-shadow: 0 4px 0 #42a5f5;
             word-break: break-all;
             line-height: 1.4;
             text-align: left;
@@ -423,14 +426,14 @@
         }
 
         .clear-btn {
-            font-size: 18px;
+            font-size: clamp(18px, 3.5vw, 24px);
             font-weight: bold;
-            padding: 14px 32px;
-            border-radius: 30px;
+            padding: 18px 36px;
+            border-radius: 35px;
             border: none;
             cursor: pointer;
             font-family: inherit;
-            margin: 8px;
+            margin: 10px;
             transition: all 0.2s;
         }
 
@@ -576,23 +579,27 @@
             box-shadow: 0 2px 0 #1565c0;
         }
 
-        @media (max-width: 400px) {
+        @media (max-width: 480px) {
             .lesson-slide {
                 padding: 20px 15px;
-                min-height: 350px;
+                min-height: 380px;
             }
 
             .lesson-text {
-                font-size: 16px;
+                font-size: 18px;
             }
 
             .stage-name {
-                font-size: 15px;
+                font-size: 16px;
             }
 
             .quiz-option {
                 font-size: 16px;
-                padding: 12px;
+                padding: 14px 12px;
+            }
+
+            .quiz-question-text {
+                font-size: 18px;
             }
         }
     </style>
@@ -610,7 +617,7 @@
     </div>
 
     <div class="container">
-        <a href="index.html" class="home-btn">← もどる</a>
+        <a href="hub.html" class="home-btn">← もどる</a>
         <h1 class="title">🎤 プレゼンマスター</h1>
         <p class="subtitle">ゲームをかってもらうためのはっぴょうのコツ！</p>
 
@@ -685,36 +692,37 @@
                 },
                 {
                     id: 2,
-                    name: "つたえかたの コツ",
-                    desc: "えがおで、大きなこえで！",
-                    icon: "🗣️",
+                    name: "あいての きもち",
+                    desc: "なぜ ダメって いうのかな？",
+                    icon: "🤔",
                     lessons: [
-                        { text: '「ゲーム…ほしいな…」<br><ruby>下<rt>した</rt></ruby>を むいて もぞもぞ <ruby>話<rt>はな</rt></ruby>しても、<ruby>熱意<rt>ねつい</rt></ruby>は <ruby>伝<rt>つた</rt></ruby>わらないよ。', visual: '😞' },
-                        { text: '<ruby>相手<rt>あいて</rt></ruby>の <ruby>顔<rt>かお</rt></ruby>を しっかり <ruby>見<rt>み</rt></ruby>よう！（アイコンタクト）<br>お<ruby>父<rt>とう</rt></ruby>さん・お<ruby>母<rt>かあ</rt></ruby>さんの <ruby>目<rt>め</rt></ruby>を みて <ruby>話<rt>はな</rt></ruby>そう。', visual: '👀' },
-                        { text: '<ruby>大<rt>おお</rt></ruby>きな <ruby>声<rt>こえ</rt></ruby>で、<ruby>笑顔<rt>えがお</rt></ruby>で <ruby>話<rt>はな</rt></ruby>すと、もっと <ruby>伝<rt>つた</rt></ruby>わる！<br>「<span class="highlight">このゲームが ほしいんだ！</span>」', visual: '😄' },
-                        { text: '<ruby>身振<rt>みぶ</rt></ruby>り <ruby>手振<rt>てぶ</rt></ruby>り（ジェスチャー）を つかうと、<br>もっと ワクワクが <ruby>伝<rt>つた</rt></ruby>わるよ！', visual: '🙌' }
+                        { text: '「なんで ゲームを かってくれないの！？」<br>そう おもう ことも あるよね。', visual: '😠' },
+                        { text: 'でも、パパやママにも <ruby>心配<rt>しんぱい</rt></ruby>な ことが あるんだ。<br>「ゲームばかり して <ruby>勉強<rt>べんきょう</rt></ruby>しなく なるかも…」', visual: '😟' },
+                        { text: 'プレゼンで <ruby>大切<rt>たいせつ</rt></ruby>なのは、<span class="highlight"><ruby>相手<rt>あいて</rt></ruby>の <ruby>気持<rt>きも</rt></ruby>ち</span>を かんがえること！', visual: '❤️' },
+                        { text: '「１<ruby>日<rt>にち</rt></ruby>１<ruby>時間<rt>じかん</rt></ruby>に するよ！」など、<br>パパたちの <ruby>心配<rt>しんぱい</rt></ruby>を なくして あげると いいよ。', visual: '🤝' }
                     ],
                     quizzes: [
-                        { q: "プレゼンを するとき、 どこを むいて はなすと いい？", visual: '👀', options: ["したを むく", "あいての かおを みる", "そらを みる"], answer: 1 },
-                        { q: "どんな こえで はなすと <ruby>熱意<rt>ねつい</rt></ruby>が つたわる？", visual: '🗣️', options: ["ちいさな こえ", "おおきな こえ", "こそこそ ばなし"], answer: 1 },
-                        { q: "<ruby>身振<rt>みぶ</rt></ruby>り <ruby>手振<rt>てぶ</rt></ruby>り（ジェスチャー）は つかったほうが いい？", visual: '🙌', options: ["つかったほうが いい！", "つかわないほうが いい", "じっと しておく"], answer: 0 }
+                        { q: "プレゼンで たいせつな のは だれの きもち？", visual: '❓', options: ["じぶんの きもち だけ", "あいての きもち も かんがえる", "だれの きもちも かんがえない"], answer: 1 },
+                        { q: "パパやママは、なぜ ゲームを かってくれないの？", visual: '😟', options: ["ゲームが きらい だから", "ゲームばかり して べんきょう しなくなるかも と しんぱい だから"], answer: 1 },
+                        { q: "パパたちの しんぱいを なくす には どうする？", visual: '🤝', options: ["やくそく（１にち１じかん など）を する", "もっと おおきな こえ で なく", "あきらめる"], answer: 0 }
                     ]
                 },
                 {
                     id: 3,
-                    name: "はなす じゅんばん",
-                    desc: "はじめ・なか・おわり",
+                    name: "まほうの じゅんばん",
+                    desc: "ＰＲＥＰ（プレップ）で はなそう",
                     icon: "📋",
                     lessons: [
-                        { text: '<ruby>話<rt>はな</rt></ruby>すときには <ruby>順番<rt>じゅんばん</rt></ruby>が あるよ。<br>１．なにを してほしいか（<ruby>結論<rt>けつろん</rt></ruby>）<br>２．なぜなら（<ruby>理由<rt>りゆう</rt></ruby>）<br>３．まとめ', visual: '🔢' },
-                        { text: 'まず「なにを してほしいか」を ポン！と <ruby>言<rt>い</rt></ruby>う。<br>「<ruby>今度<rt>こんど</rt></ruby>の <ruby>誕生日<rt>たんじょうび</rt></ruby>に <ruby>新<rt>あたら</rt></ruby>しい ゲームを <ruby>買<rt>か</rt></ruby>ってください！」', visual: '🎁' },
-                        { text: 'つぎに「なぜなら」。これが いちばん <ruby>大切<rt>たいせつ</rt></ruby>！<br>「なぜなら、<ruby>友達<rt>ともだち</rt></ruby>と <ruby>一緒<rt>いっしょ</rt></ruby>に あそべるし、<ruby>頭<rt>あたま</rt></ruby>を つかう ゲームだからです！」', visual: '🧠' },
-                        { text: 'さいごに「まとめ」。<br>「おてつだいも がんばるので、おねがいします！」<br>これで バッチリ ＯＫ！', visual: '👍' }
+                        { text: '<ruby>大人<rt>おとな</rt></ruby>も つかう まほうの <ruby>順番<rt>じゅんばん</rt></ruby>、<br>「ＰＲＥＰ（プレップ）」を おしえるよ！', visual: '🪄' },
+                        { text: '１．Ｐ（けつろん）：ずばり！<br>「<ruby>新<rt>あたら</rt></ruby>しい ゲームを <ruby>買<rt>か</rt></ruby>ってください！」', visual: '🎯' },
+                        { text: '２．Ｒ（りゆう）：なぜなら！<br>「なぜなら、<ruby>頭<rt>あたま</rt></ruby>を つかう ゲーム だからです！」', visual: '🧠' },
+                        { text: '３．Ｅ（ぐたいれいや おやくそく）：たとえば！<br>「たとえば、１<ruby>日<rt>にち</rt></ruby>１<ruby>時間<rt>じかん</rt></ruby>だけ にします！ 宿題（しゅくだい）の あとに やります！」', visual: '📝' },
+                        { text: '４．Ｐ（まとめの けつろん）：だから！<br>「だから、おねがいします！」', visual: '👍' }
                     ],
                     quizzes: [
-                        { q: "プレゼンで、いちばん さいしょに はなすのは どれ？", visual: '1️⃣', options: ["おわりの あいさつ", "なにを してほしいか", "なぜなら"], answer: 1 },
-                        { q: "「なぜなら」の あとには なにを はなす？", visual: '❓', options: ["どうして ほしいのか（りゆう）", "あしたの てんき", "すきな たべもの"], answer: 0 },
-                        { q: "プレゼンの さいごは どうする？", visual: '🏁', options: ["だまって おわる", "まとめの おねがいを する", "にげる"], answer: 1 }
+                        { q: "ＰＲＥＰ（プレップ）の さいしょ「Ｐ（けつろん）」は なにする？", visual: '1️⃣', options: ["さいしょに かって！と いう", "なぜならと はなす", "たとえばと はなす"], answer: 0 },
+                        { q: "「Ｅ（ぐたいれい）」では どんな ことを はなす？", visual: '📝', options: ["おわりの あいさつ", "やくそく（１にち１じかん など）を はなす", "なにも はなさない"], answer: 1 },
+                        { q: "まほうの じゅんばん「ＰＲＥＰ」。さいごは どうする？", visual: '🏁', options: ["もういちど「おねがいします！」（まとめ）を いう", "にげる", "だまって おわる"], answer: 0 }
                     ]
                 },
                 {
@@ -723,32 +731,32 @@
                     desc: "え や しゃしんで わかりやすく！",
                     icon: "🖼️",
                     lessons: [
-                        { text: '<ruby>言葉<rt>ことば</rt></ruby>だけでなく、「<ruby>資料<rt>しりょう</rt></ruby>（スライドなど）」を <ruby>見<rt>み</rt></ruby>せると わかりやすいよ。', visual: '📄' },
-                        { text: '<ruby>字<rt>じ</rt></ruby>ばかりの スライドは よみにくいよね。<br>「<ruby>文字<rt>もじ</rt></ruby>は <ruby>大<rt>おお</rt></ruby>きく、<ruby>少<rt>すく</rt></ruby>なく」が コツだよ。', visual: '✍️' },
-                        { text: 'かわりに、おえかき や <ruby>写真<rt>しゃしん</rt></ruby>を たくさん つかおう！<br>「こんなに <ruby>面白<rt>おもしろ</rt></ruby>そうな ゲームなんだよ！」と <ruby>画面<rt>がめん</rt></ruby>の <ruby>写真<rt>しゃしん</rt></ruby>を <ruby>見<rt>み</rt></ruby>せよう。', visual: '📸' },
-                        { text: 'じぶんで かいた <ruby>熱<rt>あつ</rt></ruby>い メッセージカードでも いいよ！<br>パパとママ、おもわず ほっこり するかも？', visual: '💌' }
+                        { text: '<ruby>言葉<rt>ことば</rt></ruby>だけでなく、「<ruby>資料<rt>しりょう</rt></ruby>（スライドや メモ）」を <ruby>見<rt>み</rt></ruby>せると わかりやすいよ。', visual: '📄' },
+                        { text: '<ruby>字<rt>じ</rt></ruby>ばかりの <ruby>資料<rt>しりょう</rt></ruby>は よみにくいよね。<br>「<ruby>文字<rt>もじ</rt></ruby>は <ruby>大<rt>おお</rt></ruby>きく、<ruby>少<rt>すく</rt></ruby>なく」が コツだよ。', visual: '✍️' },
+                        { text: 'かわりに、おえかき や <ruby>写真<rt>しゃしん</rt></ruby>を たくさん つかおう！<br>こんなに <ruby>面白<rt>おもしろ</rt></ruby>そうな ゲームなんだよ！と <ruby>画面<rt>がめん</rt></ruby>を <ruby>見<rt>み</rt></ruby>せよう。', visual: '📸' },
+                        { text: 'さっき かんがえた「おやくそく カード」を かいて わたすのも すごく イイね！', visual: '💌' }
                     ],
                     quizzes: [
-                        { q: "スライド（しりょう）を つくるとき、<ruby>文字<rt>もじ</rt></ruby>の おおきさは どうする？", visual: '🅰️', options: ["ちいさく ぎっしり", "おおきく すくなく", "よめないくらい ちいさく"], answer: 1 },
-                        { q: "スライドには、<ruby>字<rt>じ</rt></ruby>の ほかに なにを いれると わかりやすい？", visual: '🖼️', options: ["え や しゃしん", "むずかしい もじ", "まっくらな え"], answer: 0 },
-                        { q: "じぶんで かいた メッセージカードを みせるのも プレゼンに なる？", visual: '💌', options: ["ならない", "なる！ すてきな プレゼンだよ"], answer: 1 }
+                        { q: "しりょう を つくるとき、<ruby>文字<rt>もじ</rt></ruby>の おおきさは どうする？", visual: '🅰️', options: ["ちいさく ぎっしり", "おおきく すくなく", "よめないくらい ちいさく"], answer: 1 },
+                        { q: "しりょう には、<ruby>字<rt>じ</rt></ruby>の ほかに なにを いれると わかりやすい？", visual: '🖼️', options: ["え や しゃしん", "むずかしい もじ", "まっくらな え"], answer: 0 },
+                        { q: "じぶんで かいた「おやくそく カード」を みせるのも プレゼンに なる？", visual: '💌', options: ["ならない", "なる！ すてきな プレゼンだよ"], answer: 1 }
                     ]
                 },
                 {
                     id: 5,
                     name: "ほんばん に むけて",
-                    desc: "れんしゅう すれば だいじょうぶ！",
+                    desc: "えがお で、おおきな こえ で！",
                     icon: "🎤",
                     lessons: [
-                        { text: 'どんなに じょうずな <ruby>人<rt>ひと</rt></ruby>でも、<ruby>最初<rt>さいしょ</rt></ruby>は ドキドキ するもの。', visual: '💓' },
-                        { text: 'きんちょう しない ためには…<br><ruby>鏡<rt>かがみ</rt></ruby>の <ruby>前<rt>まえ</rt></ruby>や、ぬいぐるみ <ruby>相手<rt>あいて</rt></ruby>に たくさん <span class="highlight"><ruby>練習<rt>れんしゅう</rt></ruby></span> しよう！', visual: '🧸' },
-                        { text: '<ruby>本番<rt>ほんばん</rt></ruby>で <ruby>言葉<rt>ことば</rt></ruby>に つまったり、まちがえても だいじょうぶ！', visual: '😅' },
-                        { text: '<ruby>一生懸命<rt>いっしょうけんめい</rt></ruby>、<ruby>自分<rt>じぶん</rt></ruby>の <ruby>気持<rt>きも</rt></ruby>ちを <ruby>堂々<rt>どうどう</rt></ruby>と <ruby>伝<rt>つた</rt></ruby>えることが<br>いちばんの <ruby>武器<rt>ぶき</rt></ruby>に なるよ！', visual: '🔥' }
+                        { text: '<ruby>相手<rt>あいて</rt></ruby>の <ruby>顔<rt>かお</rt></ruby>を しっかり <ruby>見<rt>み</rt></ruby>よう！（アイコンタクト）<br>お<ruby>父<rt>とう</rt></ruby>さん・お<ruby>母<rt>かあ</rt></ruby>さんの <ruby>目<rt>め</rt></ruby>を みて <ruby>話<rt>はな</rt></ruby>そう。', visual: '👀' },
+                        { text: '<ruby>大<rt>おお</rt></ruby>きな <ruby>声<rt>こえ</rt></ruby>で、<ruby>笑顔<rt>えがお</rt></ruby>で <ruby>話<rt>はな</rt></ruby>すと、もっと <ruby>伝<rt>つた</rt></ruby>わる！<br>「<span class="highlight">このゲームが ほしいんだ！</span>」', visual: '😄' },
+                        { text: '<ruby>身振<rt>みぶ</rt></ruby>り <ruby>手振<rt>てぶ</rt></ruby>り（ジェスチャー）を つかうと、<br>もっと ワクワクが <ruby>伝<rt>つた</rt></ruby>わるよ！', visual: '🙌' },
+                        { text: 'どんなに じょうずな <ruby>人<rt>ひと</rt></ruby>でも、<ruby>最初<rt>さいしょ</rt></ruby>は ドキドキ するもの。<br><ruby>練習<rt>れんしゅう</rt></ruby> して <ruby>一生懸命<rt>いっしょうけんめい</rt></ruby> つたえよう！', visual: '🔥' }
                     ],
                     quizzes: [
-                        { q: "きんちょう しないための、いちばん カンタンな ほうほうは？", visual: '❓', options: ["いっぱい ねる", "たくさん れんしゅう する", "なにも しない"], answer: 1 },
-                        { q: "ほんばんで、まちがえて しまった！ どうする？", visual: '💦', options: ["なきだす", "あきらめる", "きにせず いっしょうけんめい つづける"], answer: 2 },
-                        { q: "プレゼンで、いちばん たいせつな ことは？", visual: '🌟', options: ["じぶんの きもちを いっしょうけんめい つたえる！", "かっこいい ふくを きる", "ちいさな こえで はなす"], answer: 0 }
+                        { q: "プレゼンを するとき、 どこを むいて はなすと いい？", visual: '👀', options: ["したを むく", "あいての かおを みる", "そらを みる"], answer: 1 },
+                        { q: "どんな こえで はなすと <ruby>熱意<rt>ねつい</rt></ruby>が つたわる？", visual: '🗣️', options: ["ちいさな こえ", "おおきな こえ", "こそこそ ばなし"], answer: 1 },
+                        { q: "ほんばんで まちがえて しまったら どうする？", visual: '💦', options: ["なきだす", "きにせず いっしょうけんめい つづける", "あきらめる"], answer: 1 }
                     ]
                 }
             ];

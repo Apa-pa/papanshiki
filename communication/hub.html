@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ココロのクエスト | ぱぱん式</title>
+    <style>
+        /* --- 基本設定 --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+            background: linear-gradient(135deg, #fff9c4 0%, #ffecb3 50%, #fff9c4 100%);
+            min-height: 100vh;
+            color: #333;
+            padding-bottom: 50px;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 15px 10px;
+        }
+
+        /* ロゴ部分のブラッシュアップ */
+        .logo-area {
+            text-align: center;
+            margin: 10px 0 25px;
+            padding: 20px 10px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 8px 0 #ffb74d;
+            border: 4px solid #ff9800;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-main {
+            font-size: 32px;
+            font-weight: 900;
+            color: #e65100;
+            display: block;
+            text-shadow: 2px 2px 0 #fff, 4px 4px 0 rgba(0, 0, 0, 0.1);
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .logo-sub {
+            font-size: 16px;
+            font-weight: bold;
+            color: #fb8c00;
+            display: block;
+        }
+
+        .logo-sub ruby rt {
+            font-size: 9px;
+            color: #f57c00;
+        }
+
+        /* キャラクターエリア */
+        .char-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .char-box {
+            text-align: center;
+            flex: 0 0 80px;
+        }
+
+        .char-img {
+            width: 75px;
+            height: 75px;
+            display: block;
+            margin: 0 auto 5px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .char-name {
+            font-size: 11px;
+            font-weight: bold;
+            color: #e65100;
+            background: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 2px solid #ffb74d;
+        }
+
+        .balloon {
+            flex: 1;
+            background: white;
+            padding: 12px;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: bold;
+            position: relative;
+            border: 3px solid #ff9800;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        /* カテゴリー設定 */
+        .category-section {
+            margin-bottom: 35px;
+        }
+
+        .category-title {
+            font-size: 17px;
+            color: #fff;
+            background: #ff9800;
+            padding: 6px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 15px;
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .category-title ruby rt {
+            font-size: 9px;
+            color: #fff;
+        }
+
+        /* メニューカード */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .menu-card {
+            background: white;
+            border-radius: 25px;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #333;
+            border: 4px solid #eee;
+            transition: 0.2s;
+            box-shadow: 0 4px 0 #eee;
+        }
+
+        .menu-card:active {
+            transform: translateY(3px);
+            box-shadow: none;
+        }
+
+        .menu-card.logic {
+            border-color: #64b5f6;
+            box-shadow: 0 4px 0 #42a5f5;
+        }
+
+        .menu-card.heart {
+            border-color: #f48fb1;
+            box-shadow: 0 4px 0 #f06292;
+        }
+
+        .menu-card.life {
+            border-color: #81c784;
+            box-shadow: 0 4px 0 #66bb6a;
+        }
+
+        .card-icon {
+            font-size: 35px;
+            margin-right: 15px;
+            min-width: 55px;
+            text-align: center;
+        }
+
+        .card-info {
+            flex: 1;
+        }
+
+        .card-name {
+            font-size: 18px;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .card-desc {
+            font-size: 12px;
+            color: #777;
+            line-height: 1.4;
+        }
+
+        .card-arrow {
+            color: #ddd;
+            font-size: 20px;
+        }
+
+        ruby rt {
+            font-weight: normal;
+            font-size: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <a href="../index.html" style="text-decoration:none; color:#888; font-size:14px;">← ホームに<ruby>戻<rt>もど</rt>
+            </ruby>る</a>
+
+        <div class="logo-area">
+            <span class="logo-main">ココロのクエスト</span>
+            <span class="logo-sub">〜ヒーとアンの <ruby>なかよし大作戦<rt>だいさくせん</rt></ruby>〜</span>
+        </div>
+
+        <div class="char-nav">
+            <div class="char-box">
+                <img src="../hi-192.webp" alt="ヒーちゃん" class="char-img">
+                <span class="char-name">ヒーちゃん</span>
+            </div>
+            <div class="balloon">
+                <ruby>今日<rt>きょう</rt></ruby>は どの<ruby>修行<rt>しゅぎょう</rt></ruby>に<br><ruby>行<rt>い</rt></ruby>く？
+            </div>
+            <div class="char-box">
+                <img src="../an192.webp" alt="アンちゃん" class="char-img">
+                <span class="char-name">アンちゃん</span>
+            </div>
+        </div>
+
+        <div class="category-section">
+            <h2 class="category-title">🎤 <ruby>伝<rt>つた</rt></ruby>える・プレゼン</h2>
+            <div class="menu-grid">
+                <a href="presentation_learn.html" class="menu-card logic">
+                    <div class="card-icon">💡</div>
+                    <div class="card-info">
+                        <span class="card-name">プレゼンマスター</span>
+                        <span class="card-desc">おねがいを <ruby>通<rt>とお</rt></ruby>すための <ruby>魔法<rt>まほう</rt>
+                            </ruby>のじゅもん</span>
+                    </div>
+                    <div class="card-arrow">▶</div>
+                </a>
+                <a href="quest_stage1.html" class="menu-card logic">
+                    <div class="card-icon">📈</div>
+                    <div class="card-info">
+                        <span class="card-name">パパを<ruby>説得<rt>せっとく</rt></ruby>しよう！</span>
+                        <span class="card-desc">ゲームを<ruby>買<rt>か</rt></ruby>ってもらう<ruby>大作戦<rt>だいさくせん</rt></ruby>！</span>
+                    </div>
+                    <div class="card-arrow">▶</div>
+                </a>
+            </div>
+        </div>
+
+        <div class="category-section">
+            <h2 class="category-title">💖 <ruby>心<rt>こころ</rt></ruby>・つながり</h2>
+            <div class="menu-grid">
+                <a href="quest_stage2.html" class="menu-card heart">
+                    <div class="card-icon">🤝</div>
+                    <div class="card-info">
+                        <span class="card-name">なかまに いれて！</span>
+                        <span class="card-desc"><ruby>公園<rt>こうえん</rt></ruby>で <ruby>友達<rt>ともだち</rt></ruby>を <ruby>作<rt>
+                                    つく</rt></ruby>るための <ruby>第一歩<rt>だいいっぽ</rt></ruby></span>
+                    </div>
+                    <div class="card-arrow">▶</div>
+                </a>
+                <a href="quest_stage3.html" class="menu-card heart">
+                    <div class="card-icon">💌</div>
+                    <div class="card-info">
+                        <span class="card-name">「すき」の つたえかた</span>
+                        <span class="card-desc"><ruby>相手<rt>あいて</rt></ruby>も <ruby>自分<rt>じぶん</rt></ruby>も <ruby>大切<rt>
+                                    たいせつ</rt></ruby>にする <ruby>持<rt>も</rt></ruby>ちかた</span>
+                    </div>
+                    <div class="card-arrow">▶</div>
+                </a>
+                <a href="quest_stage4.html" class="menu-card heart">
+                    <div class="card-icon">✨</div>
+                    <div class="card-info">
+                        <span class="card-name">じまんは ほどほどに？</span>
+                        <span class="card-desc"><ruby>相手<rt>あいて</rt></ruby>の <ruby>気持<rt>きも</rt></ruby>ちを <ruby>考<rt>かんが
+                                </rt></ruby>えた <ruby>かっこいい喜<rt>よろこ</rt></ruby>びかた</span>
+                    </div>
+                    <div class="card-arrow">▶</div>
+                </a>
+            </div>
+        </div>
+
+
+    </div>
+
+</body>
+
+</html>
