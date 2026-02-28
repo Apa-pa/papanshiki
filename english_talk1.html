@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>英語でじこしょうかい</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #fff3e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #444;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 80vh;
+            position: relative;
+        }
+
+        header {
+            background: #ffa726;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            flex-grow: 1;
+            animation: fadeIn 0.5s;
+        }
+
+        .active {
+            display: flex;
+        }
+
+        h2 {
+            text-align: center;
+            color: #d84315;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #5d4037;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ffcc80;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        input:focus {
+            border-color: #ff9800;
+            outline: none;
+            background: #fff8e1;
+        }
+
+        /* 補助ボタン */
+        .help-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #4dd0e1;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 5px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px #00acc1;
+        }
+
+        .help-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .sub-input {
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .action-btn {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            box-shadow: 0 4px #e65100;
+        }
+
+        .action-btn:active {
+            box-shadow: none;
+            transform: translateY(4px);
+        }
+
+        /* 会話画面スタイル */
+        #dialogue-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-bottom: 20px;
+        }
+
+        .message-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .row-ann {
+            justify-content: flex-start;
+        }
+
+        .row-me {
+            justify-content: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .char-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #eee;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .bubble {
+            padding: 15px;
+            border-radius: 20px;
+            max-width: 80%;
+            font-size: 1.1rem;
+            line-height: 1.4;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .bubble-ann {
+            background: #fff;
+            border: 2px solid #ffcc80;
+            border-bottom-left-radius: 0;
+            color: #5d4037;
+        }
+
+        .bubble-me {
+            background: #c8e6c9;
+            border: 2px solid #a5d6a7;
+            border-bottom-right-radius: 0;
+            color: #1b5e20;
+        }
+
+        .sound-btn {
+            display: inline-block;
+            margin-left: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            vertical-align: middle;
+        }
+
+        .kana-text {
+            display: block;
+            font-size: 0.9rem;
+            color: #0277bd;
+            /* 読みやすい青 */
+            font-weight: bold;
+            margin-top: 2px;
+        }
+
+        .jp-text {
+            display: block;
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 5px;
+            border-top: 1px dashed #ccc;
+            padding-top: 2px;
+        }
+
+        /* 完了画面 */
+        .script-box {
+            background: #fff;
+            border: 2px dashed #ffb74d;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: left;
+            white-space: pre-wrap;
+            font-family: monospace;
+            line-height: 1.6;
+            color: #444;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nav-btn {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 10px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #666;
+            display: inline-block;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        /* モーダル */
+        #help-modal {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            width: 85%;
+            max-height: 80%;
+            overflow-y: auto;
+            text-align: center;
+        }
+
+        .list-item {
+            background: #f0f4c3;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: left;
+            cursor: pointer;
+            border: 1px solid #dce775;
+        }
+
+        .list-item:hover {
+            background: #dce775;
+        }
+
+        .list-jp {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .list-en {
+            color: #d84315;
+            font-weight: bold;
+            float: right;
+        }
+
+        .list-kana {
+            font-size: 0.8rem;
+            color: #555;
+            display: block;
+        }
+
+        .close-modal-btn {
+            margin-top: 10px;
+            background: #ccc;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <header>英語でじこしょうかい</header>
+
+        <!-- スタート画面（プロフィール入力） -->
+        <div id="input-screen" class="screen active">
+            <h2>プロフィールをおしえてね</h2>
+            <p style="text-align:center; font-size:0.9rem; color:#666;">えいごで おしゃべりするよ！<br>おたすけボタンも つかってね。</p>
+
+            <div class="input-group">
+                <label>おなまえ</label>
+                <input type="text" id="input-name" placeholder="英語: Taro / Hana" autocomplete="off">
+                <input type="text" id="input-name-kana" placeholder="カタカナ: タロウ / ハナ" class="sub-input"
+                    autocomplete="off">
+            </div>
+
+            <div class="input-group">
+                <label>なんさい？ (Age)</label>
+                <select id="input-age">
+                    <option value="6">6 years old (6さい)</option>
+                    <option value="7" selected>7 years old (7さい)</option>
+                    <option value="8">8 years old (8さい)</option>
+                    <option value="9">9 years old (9さい)</option>
+                    <option value="10">10 years old (10さい)</option>
+                    <option value="11">11 years old (11さい)</option>
+                    <option value="12">12 years old (12さい)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>すきな たべもの</label>
+                <button class="help-btn" onclick="openHelp('food')">💡おたすけ</button>
+                <input type="text" id="input-food" placeholder="英語: Pizza / Sushi" autocomplete="off">
+                <input type="text" id="input-food-kana" placeholder="カタカナ: ピザ / スシ" class="sub-input"
+                    autocomplete="off">
+            </div>
+
+            <div class="input-group">
+                <label>すきな あそび・スポーツ</label>
+                <button class="help-btn" onclick="openHelp('play')">💡おたすけ</button>
+                <input type="text" id="input-play" placeholder="英語: Soccer / Piano" autocomplete="off">
+                <input type="text" id="input-play-kana" placeholder="カタカナ: サッカー / ピアノ" class="sub-input"
+                    autocomplete="off">
+            </div>
+
+            <button class="action-btn" onclick="startScenario()">おしゃべり スタート！</button>
+            <br>
+            <a href="english_talk.html" class="nav-btn">📚 シナリオ一覧へ</a>
+            <a href="index.html" class="nav-btn">🏠 もどる</a>
+        </div>
+
+        <!-- シナリオ画面 -->
+        <div id="scenario-screen" class="screen">
+            <div id="dialogue-area"></div>
+
+            <div style="margin-top: auto; text-align: center; padding-top: 10px; border-top: 1px solid #eee;">
+                <button id="next-btn" class="action-btn" onclick="nextDialogue()">つぎへ ▶</button>
+            </div>
+        </div>
+
+        <!-- 完了画面 -->
+        <div id="result-screen" class="screen" style="text-align: center;">
+            <div style="font-size: 60px;">🎉</div>
+            <h2>Good Job!</h2>
+            <p>じょうずに おしゃべりできたね！<br>これが あなただけの えいごスクリプトだよ。</p>
+
+            <div class="script-box" id="final-script"></div>
+
+            <button class="action-btn" style="background:#4caf50;"
+                onclick="this.disabled=true; this.textContent='もらいました'; showPointGetDialog(50);">
+                🎁 50ポイントをもらう
+            </button>
+
+            <br><br>
+            <button class="nav-btn" onclick="location.reload()">もういっかい</button>
+            <a href="english_talk.html" class="nav-btn">📚 シナリオ一覧へ</a>
+            <a href="index.html" class="nav-btn">🏠 ホームへ</a>
+        </div>
+
+        <!-- おたすけモーダル -->
+        <div id="help-modal">
+            <div class="modal-content">
+                <h3 id="modal-title">えらんでね</h3>
+                <div id="modal-list"></div>
+                <button class="close-modal-btn"
+                    onclick="document.getElementById('help-modal').style.display='none'">とじる</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 設定データ
+        let userProfile = {
+            name: "",
+            nameKana: "",
+            age: "",
+            food: "",
+            foodKana: "",
+            play: "",
+            playKana: ""
+        };
+
+        const CHAR_IMG = "hari-an.webp";
+        const PLAYER_IMG = "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%%22 y=%2250%%22 style=%22dominant-baseline:central;text-anchor:middle;font-size:80px;%22>�</text></svg>";
+
+        // 音声品質改善：最適な英語音声を選択
+        let bestVoice = null;
+
+        function loadBestVoice() {
+            const voices = speechSynthesis.getVoices();
+            // 女性の声を優先して選択
+            const femaleVoices = voices.filter(v => v.lang.startsWith('en') && /female|woman/i.test(v.name));
+            bestVoice = femaleVoices.find(v => /enhanced|premium|natural/i.test(v.name))
+                || femaleVoices.find(v => !v.localService)
+                || femaleVoices[0]
+                || voices.find(v => v.lang.startsWith('en') && /enhanced|premium|natural/i.test(v.name))
+                || voices.find(v => v.lang === 'en-US' && !v.localService)
+                || voices.find(v => v.lang === 'en-US')
+                || voices.find(v => v.lang.startsWith('en'))
+                || null;
+        }
+
+        speechSynthesis.onvoiceschanged = loadBestVoice;
+        loadBestVoice();
+
+        // おたすけデータ
+        const HELP_DATA = {
+            food: [
+                { jp: "カレーライス", en: "curry and rice", kana: "カリー アンド ライス" },
+                { jp: "おすし", en: "sushi", kana: "スシ" },
+                { jp: "ハンバーグ", en: "hamburger steak", kana: "ハンバーガー ステイク" },
+                { jp: "ハンバーガー", en: "hamburger", kana: "ハンバーガー" },
+                { jp: "ピザ", en: "pizza", kana: "ピザ" },
+                { jp: "ラーメン", en: "ramen", kana: "ラーメン" },
+                { jp: "うどん", en: "udon noodles", kana: "ウドン ヌードルズ" },
+                { jp: "スパゲッティ", en: "spaghetti", kana: "スパゲッティ" },
+                { jp: "アイスクリーム", en: "ice cream", kana: "アイス クリーム" },
+                { jp: "りんご", en: "apples", kana: "アップルズ" }
+            ],
+            play: [
+                { jp: "サッカー", en: "soccer", kana: "サッカー" },
+                { jp: "やきゅう", en: "baseball", kana: "ベースボール" },
+                { jp: "おにごっこ", en: "tag", kana: "タグ" },
+                { jp: "かくれんぼ", en: "hide-and-seek", kana: "ハイド アンド シーク" },
+                { jp: "ゲーム", en: "video games", kana: "ビデオ ゲームズ" },
+                { jp: "ピアノ", en: "piano", kana: "ピアノ" },
+                { jp: "おえかき", en: "drawing", kana: "ドローウィング" },
+                { jp: "すいえい", en: "swimming", kana: "スウィミング" },
+                { jp: "なわとび", en: "jump rope", kana: "ジャンプ ロープ" },
+                { jp: "ダンス", en: "dancing", kana: "ダンシング" }
+            ]
+        };
+
+        let currentHelpType = "";
+
+        // シナリオデータ
+        let scenarioData = [];
+        let currentLineStep = 0;
+
+        // モーダル操作
+        function openHelp(type) {
+            currentHelpType = type;
+            const list = HELP_DATA[type];
+            const container = document.getElementById('modal-list');
+            container.innerHTML = "";
+            document.getElementById('modal-title').textContent = (type === 'food' ? "たべもの" : "あそび") + "リスト";
+
+            list.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `<span class="list-jp">${item.jp}</span><span class="list-en">${item.en}</span><span class="list-kana">${item.kana}</span>`;
+                div.onclick = () => selectHelpItem(item);
+                container.appendChild(div);
+            });
+
+            document.getElementById('help-modal').style.display = 'flex';
+        }
+
+        function selectHelpItem(item) {
+            document.getElementById(`input-${currentHelpType}`).value = item.en;
+            document.getElementById(`input-${currentHelpType}-kana`).value = item.kana;
+            document.getElementById('help-modal').style.display = 'none';
+        }
+
+        function startScenario() {
+            const name = document.getElementById('input-name').value.trim();
+            const nameKana = document.getElementById('input-name-kana').value.trim() || name; // カタカナなければ英語そのまま
+            const age = document.getElementById('input-age').value;
+            const food = document.getElementById('input-food').value.trim();
+            const foodKana = document.getElementById('input-food-kana').value.trim() || food;
+            const play = document.getElementById('input-play').value.trim();
+            const playKana = document.getElementById('input-play-kana').value.trim() || play;
+
+            if (!name || !food || !play) {
+                alert("ぜんぶ 入力（にゅうりょく）してね！");
+                return;
+            }
+
+            userProfile = { name, nameKana, age, food, foodKana, play, playKana };
+
+            // シナリオ構築
+            scenarioData = [
+                // 1. 挨拶
+                { speaker: "ann", en: "Hello! My name is Ann. Nice to meet you.", kana: "ハロー！ マイ ネイム イズ アン。 ナイス トゥ ミート ユー。", jp: "こんにちは！わたしはアン。よろしくね。" },
+                { speaker: "me", en: `Hello Ann! My name is ${userProfile.name}. Nice to meet you too.`, kana: `ハロー アン！ マイ ネイム イズ ${userProfile.nameKana}。 ナイス トゥ ミート ユー トゥー。`, jp: `こんにちはアン！わたしは${userProfile.name}。こちらこそよろしく。` },
+
+                // 2. 年齢
+                { speaker: "ann", en: "I am 7 years old. How old are you?", kana: "アイ アム セブン イヤーズ オールド。 ハウ オールド アー ユー？", jp: "わたしは7さいだよ。あなたは何さい？" },
+                { speaker: "me", en: `I am ${userProfile.age} years old.`, kana: `アイ アム ${userProfile.age} イヤーズ オールド。`, jp: `わたしは${userProfile.age}さいだよ。` },
+
+                // 3. 食べ物
+                { speaker: "ann", en: `I like apple pie. What food do you like?`, kana: "アイ ライク アップル パイ。 ホワット フード ドゥ ユー ライク？", jp: "わたしはアップルパイが好き。どんな食べものが好き？" },
+                { speaker: "me", en: `I like ${userProfile.food}.`, kana: `アイ ライク ${userProfile.foodKana}。`, jp: `わたしは [${userProfile.food}] が好きだよ。` },
+                { speaker: "ann", en: "Ooh! That sounds yummy!", kana: "ウー！ ザット サウンズ ヤミー！", jp: "わあ！ おいしそうだね！" },
+
+                // 4. 遊び
+                { speaker: "ann", en: "I like playing soccer. What do you like to do?", kana: "アイ ライク プレイング サッカー。 ホワット ドゥ ユー ライク トゥ ドゥ？", jp: "わたしはサッカーをするのが好き。何をするのが好き？" },
+                { speaker: "me", en: `I like playing ${userProfile.play}.`, kana: `アイ ライク プレイング ${userProfile.playKana}。`, jp: `わたしは [${userProfile.play}] をするのが好きだよ。` },
+                { speaker: "ann", en: "That sounds fun!", kana: "ザット サウンズ ファン！", jp: "それは楽しそうだね！" },
+
+                // 5. 締め
+                { speaker: "ann", en: "Let's play together sometime!", kana: "レッツ プレイ トゥギャザー サムタイム！", jp: "こんど いっしょに あそぼうね！" },
+                { speaker: "me", en: "Yes, let's play!", kana: "イエス、 レッツ プレイ！", jp: "うん、あそぼう！" }
+            ];
+
+            // 画面切り替え
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('scenario-screen').classList.add('active');
+
+            // 開始
+            currentLineStep = 0;
+            updateDialogue();
+        }
+
+        function updateDialogue() {
+            if (currentLineStep >= scenarioData.length) {
+                finishGame();
+                return;
+            }
+
+            const data = scenarioData[currentLineStep];
+            addMessage(data);
+
+            // 自動読み上げ（短めの遅延を入れて）
+            setTimeout(() => {
+                speakText(data.en);
+            }, 600);
+        }
+
+        function nextDialogue() {
+            currentLineStep++;
+            updateDialogue();
+        }
+
+        function addMessage(data) {
+            const container = document.getElementById('dialogue-area');
+            const isAnn = data.speaker === 'ann';
+
+            const row = document.createElement('div');
+            row.className = `message-row ${isAnn ? 'row-ann' : 'row-me'}`;
+
+            // アイコン
+            const img = document.createElement('img');
+            img.className = 'char-icon';
+            img.src = isAnn ? CHAR_IMG : PLAYER_IMG;
+
+            // 吹き出し
+            const bubble = document.createElement('div');
+            bubble.className = `bubble ${isAnn ? 'bubble-ann' : 'bubble-me'}`;
+
+            // 英語テキスト
+            const enText = document.createElement('div');
+            enText.innerHTML = `<strong>${data.en}</strong> <button class="sound-btn" onclick="speakText('${data.en.replace(/'/g, "\\'")}')">🔊</button>`;
+
+            // カタカナ読み
+            const kanaText = document.createElement('div');
+            kanaText.className = 'kana-text';
+            kanaText.textContent = data.kana;
+
+            // 日本語テキスト
+            const jpText = document.createElement('div');
+            jpText.className = 'jp-text';
+            jpText.textContent = data.jp;
+
+            bubble.appendChild(enText);
+            bubble.appendChild(kanaText);
+            bubble.appendChild(jpText);
+
+            if (isAnn) {
+                row.appendChild(img);
+                row.appendChild(bubble);
+            } else {
+                row.appendChild(bubble);
+                row.appendChild(img);
+            }
+
+            container.appendChild(row);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const uttr = new SpeechSynthesisUtterance(text);
+                uttr.lang = 'en-US';
+                uttr.rate = 0.9; // 少しゆっくり
+                uttr.pitch = 1.0;
+                // 最適な音声が見つかっていれば使用
+                if (bestVoice) {
+                    uttr.voice = bestVoice;
+                }
+                window.speechSynthesis.speak(uttr);
+            }
+        }
+
+        function finishGame() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('result-screen').classList.add('active');
+
+            // スクリプト生成
+            let scriptHtml = "";
+            scenarioData.forEach(line => {
+                const name = line.speaker === 'ann' ? 'Ann' : userProfile.name;
+                scriptHtml += `${name}: ${line.en}\n`;
+            });
+            document.getElementById('final-script').textContent = scriptHtml;
+        }
+
+    </script>
+</body>
+
+</html>

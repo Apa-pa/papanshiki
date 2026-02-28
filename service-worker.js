@@ -68,7 +68,7 @@ var urlsToCache = [
   // === 英語系 ===
   './alphabet.html',
   './alphabet_read.html',
-  './english_profile.html',
+  './english_talk1.html',
   './english_talk.html',
   './english_talk2.html',
   './daily_english.html',
