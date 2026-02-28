@@ -7,6 +7,7 @@ const GAME_LIST = {
     'math_sub_easy': { name: 'ひきざん(くりさがりなし)', type: 'time', unit: '秒' },
     'math_sub_hard': { name: 'ひきざん(くりさがりあり)', type: 'time', unit: '秒' },
     'math_multi': { name: 'かけざん九九', type: 'time', unit: '秒' },
+    'math_div': { name: 'わりざん(わりきれる)', type: 'time', unit: '秒' },
     'rain_math': { name: 'あめふり算数', type: 'score', unit: '点' },
     'clock_read': { name: 'とけいの読み方', type: 'time', unit: '秒' },
     'triangle_angle': { name: '三角形の内角', type: 'time', unit: '秒' },
@@ -151,6 +152,7 @@ const DAILY_MISSION_CANDIDATES = [
     'rain_consonant', // あめふり子音
     'rain_vowel', // あめふり母音
     'tsumitsumi', // 漢字つみつみ
+    'math_div',   // わりざん
 ];
 
 const DAILY_MISSION_KEY = 'papan_daily_mission_v1';
