@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Let's Play at the Park! - えいごでおしゃべり</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #e8f5e9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #444;
+            touch-action: manipulation;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 80vh;
+            position: relative;
+        }
+
+        header {
+            background: linear-gradient(135deg, #66bb6a, #43a047);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            flex-grow: 1;
+            animation: fadeIn 0.5s;
+        }
+
+        .active {
+            display: flex;
+        }
+
+        h2 {
+            text-align: center;
+            color: #2e7d32;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #37474f;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #a5d6a7;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        input:focus {
+            border-color: #66bb6a;
+            outline: none;
+            background: #e8f5e9;
+        }
+
+        /* 補助ボタン */
+        .help-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #4dd0e1;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 5px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px #00acc1;
+        }
+
+        .help-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .sub-input {
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .action-btn {
+            background: #66bb6a;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            box-shadow: 0 4px #2e7d32;
+        }
+
+        .action-btn:active {
+            box-shadow: none;
+            transform: translateY(4px);
+        }
+
+        /* 会話画面スタイル */
+        #dialogue-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-bottom: 20px;
+        }
+
+        .message-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .row-ann {
+            justify-content: flex-start;
+        }
+
+        .row-hii {
+            justify-content: flex-start;
+        }
+
+        .row-me {
+            justify-content: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .char-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #eee;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .bubble {
+            padding: 15px;
+            border-radius: 20px;
+            max-width: 80%;
+            font-size: 1.1rem;
+            line-height: 1.4;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .bubble-ann {
+            background: #fff;
+            border: 2px solid #a5d6a7;
+            border-bottom-left-radius: 0;
+            color: #37474f;
+        }
+
+        .bubble-hii {
+            background: #fff8e1;
+            border: 2px solid #ffcc80;
+            border-bottom-left-radius: 0;
+            color: #5d4037;
+        }
+
+        .bubble-me {
+            background: #c8e6c9;
+            border: 2px solid #a5d6a7;
+            border-bottom-right-radius: 0;
+            color: #1b5e20;
+        }
+
+        .sound-btn {
+            display: inline-block;
+            margin-left: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            vertical-align: middle;
+        }
+
+        .kana-text {
+            display: block;
+            font-size: 0.9rem;
+            color: #0277bd;
+            font-weight: bold;
+            margin-top: 2px;
+        }
+
+        .jp-text {
+            display: block;
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 5px;
+            border-top: 1px dashed #ccc;
+            padding-top: 2px;
+        }
+
+        /* 完了画面 */
+        .script-box {
+            background: #fff;
+            border: 2px dashed #66bb6a;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: left;
+            white-space: pre-wrap;
+            font-family: monospace;
+            line-height: 1.6;
+            color: #444;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nav-btn {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 10px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #666;
+            display: inline-block;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        /* モーダル */
+        #help-modal {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            width: 85%;
+            max-height: 80%;
+            overflow-y: auto;
+            text-align: center;
+        }
+
+        .list-item {
+            background: #e8f5e9;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: left;
+            cursor: pointer;
+            border: 1px solid #a5d6a7;
+        }
+
+        .list-item:hover {
+            background: #a5d6a7;
+        }
+
+        .list-jp {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .list-en {
+            color: #2e7d32;
+            font-weight: bold;
+            float: right;
+        }
+
+        .list-kana {
+            font-size: 0.8rem;
+            color: #555;
+            display: block;
+        }
+
+        .close-modal-btn {
+            margin-top: 10px;
+            background: #ccc;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        /* ナレーション行 */
+        .narration-row {
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .narration-text {
+            display: inline-block;
+            background: #f1f8e9;
+            border: 1px dashed #aed581;
+            border-radius: 15px;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            color: #558b2f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <header>🌳 Let's Play at the Park!</header>
+
+        <!-- スタート画面（プロフィール入力） -->
+        <div id="input-screen" class="screen active">
+            <h2>きょうの おしゃべり じゅんび</h2>
+            <p style="text-align:center; font-size:0.9rem; color:#666;">アンちゃんと こうえんに やってきたよ！<br>なにをして あそびたいか おしえてね。</p>
+
+            <div class="input-group">
+                <label>おなまえ</label>
+                <input type="text" id="input-name" placeholder="英語: Taro / Hana" autocomplete="off">
+                <input type="text" id="input-name-kana" placeholder="カタカナ: タロウ / ハナ" class="sub-input"
+                    autocomplete="off">
+            </div>
+
+            <div class="input-group">
+                <label>What do you want to play?（なにをして あそびたい？）</label>
+                <button class="help-btn" onclick="openHelp('play')">💡おたすけ</button>
+                <input type="text" id="input-play" placeholder="英語: Slide" autocomplete="off">
+                <input type="text" id="input-play-kana" placeholder="カタカナ: スライド" class="sub-input" autocomplete="off">
+                <input type="hidden" id="input-play-jp" value="">
+            </div>
+
+            <button class="action-btn" onclick="startScenario()">おしゃべり スタート！</button>
+            <br>
+            <a href="english_talk.html" class="nav-btn">📚 シナリオ一覧へ</a>
+        </div>
+
+        <!-- シナリオ画面 -->
+        <div id="scenario-screen" class="screen">
+            <div id="dialogue-area"></div>
+
+            <div style="margin-top: auto; text-align: center; padding-top: 10px; border-top: 1px solid #eee;">
+                <button id="next-btn" class="action-btn" onclick="nextDialogue()">つぎへ ▶</button>
+            </div>
+        </div>
+
+        <!-- 完了画面 -->
+        <div id="result-screen" class="screen" style="text-align: center;">
+            <div style="font-size: 60px;">🌟</div>
+            <h2>Great Job!</h2>
+            <p>アンちゃんと ヒーちゃんと<br>たくさん あそべたね！<br>あたらしい ともだちが できたよ！</p>
+
+            <div class="script-box" id="final-script"></div>
+
+            <button class="action-btn" style="background:#4caf50;"
+                onclick="this.disabled=true; this.textContent='もらいました'; showPointGetDialog(50);">
+                🎁 50ポイントをもらう
+            </button>
+
+            <br><br>
+            <button class="nav-btn" onclick="location.reload()">もういっかい</button>
+            <a href="english_talk.html" class="nav-btn">📚 シナリオ一覧へ</a>
+            <a href="index.html" class="nav-btn">🏠 ホームへ</a>
+        </div>
+
+        <!-- おたすけモーダル -->
+        <div id="help-modal">
+            <div class="modal-content">
+                <h3 id="modal-title">えらんでね</h3>
+                <div id="modal-list"></div>
+                <button class="close-modal-btn"
+                    onclick="document.getElementById('help-modal').style.display='none'">とじる</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ユーザープロフィール
+        let userProfile = {
+            name: "",
+            nameKana: "",
+            play: "",
+            playKana: ""
+        };
+
+        // キャラクター画像
+        const ANN_IMG = "hari-an.webp";
+        const HII_IMG = "hi-192.webp";
+        const PLAYER_IMG = "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%%22 y=%2250%%22 style=%22dominant-baseline:central;text-anchor:middle;font-size:80px;%22>🐱</text></svg>";
+
+        // 遊びの選択肢に対応する前置詞マッピング
+        const PLAY_PREPOSITIONS = {
+            "slide": "on the Slide",
+            "swing": "on the Swing",
+            "sandbox": "in the Sandbox",
+            "tag": "Tag",
+            "hide-and-seek": "Hide-and-seek",
+            "jump rope": "Jump rope",
+            "catch": "Catch",
+            "soccer": "Soccer",
+            "jungle gym": "on the Jungle gym"
+        };
+
+        // おたすけデータ
+        const HELP_DATA = {
+            play: [
+                { jp: "すべりだい", en: "Slide", kana: "スライド", jpName: "すべりだい" },
+                { jp: "ぶらんこ", en: "Swing", kana: "スウィング", jpName: "ブランコ" },
+                { jp: "すなば", en: "Sandbox", kana: "サンドボックス", jpName: "すなば" },
+                { jp: "おにごっこ", en: "Tag", kana: "タグ", jpName: "おにごっこ" },
+                { jp: "かくれんぼ", en: "Hide-and-seek", kana: "ハイド アンド シーク", jpName: "かくれんぼ" },
+                { jp: "なわとび", en: "Jump rope", kana: "ジャンプ ロープ", jpName: "なわとび" },
+                { jp: "ボールあそび", en: "Catch", kana: "キャッチ", jpName: "ボールあそび" },
+                { jp: "サッカー", en: "Soccer", kana: "サッカー", jpName: "サッカー" },
+                { jp: "ジャングルジム", en: "Jungle gym", kana: "ジャングル ジム", jpName: "ジャングルジム" }
+            ]
+        };
+
+        let currentHelpType = "";
+
+        // シナリオデータ
+        let scenarioData = [];
+        let currentLineStep = 0;
+
+        // 音声品質改善：最適な英語女性音声を選択
+        let bestVoice = null;
+
+        function loadBestVoice() {
+            const voices = speechSynthesis.getVoices();
+            const enVoices = voices.filter(v => v.lang.startsWith('en'));
+            // 女性の声を優先して選択（名前にfemale/womanを含むもの、またはZira/Samantha/Google UK English Femaleなど）
+            const femaleKeywords = /female|woman|zira|samantha|fiona|karen|moira|tessa|veena|victoria/i;
+            const femaleVoices = enVoices.filter(v => femaleKeywords.test(v.name));
+            bestVoice = femaleVoices.find(v => /enhanced|premium|natural/i.test(v.name))
+                || femaleVoices.find(v => !v.localService)
+                || femaleVoices[0]
+                || enVoices.find(v => /enhanced|premium|natural/i.test(v.name))
+                || enVoices.find(v => v.lang === 'en-US' && !v.localService)
+                || enVoices.find(v => v.lang === 'en-US')
+                || enVoices[0]
+                || null;
+        }
+
+        // 音声リストは非同期で読み込まれることがあるため、両方のタイミングで取得
+        speechSynthesis.onvoiceschanged = loadBestVoice;
+        loadBestVoice();
+
+        // モーダル操作
+        function openHelp(type) {
+            currentHelpType = type;
+            const list = HELP_DATA[type];
+            const container = document.getElementById('modal-list');
+            container.innerHTML = "";
+            document.getElementById('modal-title').textContent = "なにをして あそぶ？";
+
+            list.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                div.innerHTML = `<span class="list-jp">${item.jp}</span><span class="list-en">${item.en}</span><span class="list-kana">${item.kana}</span>`;
+                div.onclick = () => selectHelpItem(item);
+                container.appendChild(div);
+            });
+
+            document.getElementById('help-modal').style.display = 'flex';
+        }
+
+        function selectHelpItem(item) {
+            document.getElementById(`input-${currentHelpType}`).value = item.en;
+            document.getElementById(`input-${currentHelpType}-kana`).value = item.kana;
+            // 日本語名もセット
+            if (item.jpName) {
+                document.getElementById(`input-${currentHelpType}-jp`).value = item.jpName;
+            }
+            document.getElementById('help-modal').style.display = 'none';
+        }
+
+        // 選んだ遊びに合わせた表現を作成
+        function getPlayPhrase(playInput) {
+            const key = playInput.toLowerCase().trim();
+            if (PLAY_PREPOSITIONS[key]) {
+                return PLAY_PREPOSITIONS[key];
+            }
+            // カスタム入力の場合はそのまま使う
+            return playInput;
+        }
+
+        function startScenario() {
+            const name = document.getElementById('input-name').value.trim();
+            const nameKana = document.getElementById('input-name-kana').value.trim() || name;
+            const play = document.getElementById('input-play').value.trim();
+            const playKana = document.getElementById('input-play-kana').value.trim() || play;
+            const playJp = document.getElementById('input-play-jp').value.trim() || playKana;
+
+            if (!name || !play) {
+                alert("ぜんぶ 入力（にゅうりょく）してね！");
+                return;
+            }
+
+            userProfile = { name, nameKana, play, playKana, playJp };
+
+            const playPhrase = getPlayPhrase(play);
+
+            // シナリオ構築（3人会話）
+            scenarioData = [
+                // 1. 公園に到着
+                { type: "narration", text: "🌳 こうえんに とうちゃく！" },
+
+                { speaker: "ann", en: `${userProfile.name}, look! There is my friend Hee over there!`, kana: `${userProfile.nameKana}、ルック！ ゼア イズ マイ フレンド ヒー オーバー ゼア！`, jp: `${userProfile.name}、見て！あそこに わたしの ともだちの ヒーちゃんが いるよ！` },
+
+                { speaker: "me", en: "Really? Let's go say hi!", kana: "リアリー？ レッツ ゴー セイ ハイ！", jp: "ほんとう？ あいさつしに いこう！" },
+
+                // 2. ヒーちゃんに挨拶
+                { type: "narration", text: "🐿️ ヒーちゃんの ところへ…" },
+
+                { speaker: "ann", en: `Hee! This is my friend, ${userProfile.name}!`, kana: `ヒー！ ディス イズ マイ フレンド、${userProfile.nameKana}！`, jp: `ヒーちゃん！こちらは わたしの ともだちの ${userProfile.name} だよ！` },
+
+                { speaker: "hii", en: `Hi, ${userProfile.name}! Nice to meet you! I'm Hee!`, kana: `ハイ、${userProfile.nameKana}！ ナイス トゥ ミート ユー！ アイム ヒー！`, jp: `こんにちは、${userProfile.name}！はじめまして！わたしは ヒーちゃん だよ！` },
+
+                { speaker: "me", en: "Nice to meet you too, Hee!", kana: "ナイス トゥ ミート ユー トゥー、ヒー！", jp: "ヒーちゃん、はじめまして！" },
+
+                // 3. 何して遊ぶ？
+                { speaker: "ann", en: "What should we do first?", kana: "ホワット シュッド ウィー ドゥ ファースト？", jp: "さいしょに なにをして あそぶ？" },
+
+                { speaker: "me", en: `I want to play ${playPhrase}!`, kana: `アイ ウォント トゥ プレイ ${userProfile.playKana}！`, jp: `${userProfile.playJp} で あそびたい！` },
+
+                // 4. ヒーちゃんも誘う
+                { speaker: "ann", en: `That sounds great! Hee, do you want to play ${playPhrase} with us?`, kana: `ザット サウンズ グレイト！ ヒー、ドゥ ユー ウォント トゥ プレイ ${userProfile.playKana} ウィズ アス？`, jp: `いいね！ヒーちゃん、わたしたちと いっしょに ${userProfile.playJp} で あそばない？` },
+
+                { speaker: "hii", en: "Yes, I'd love to! Let's go!", kana: "イエス、アイド ラブ トゥ！ レッツ ゴー！", jp: "うん、あそびたい！いこう！" },
+
+                // 5. 遊んだ後
+                { type: "narration", text: "🎉 みんなで たのしく あそんだよ！" },
+
+                { speaker: "hii", en: "That was so much fun!", kana: "ザット ワズ ソー マッチ ファン！", jp: "すっごく たのしかった！" },
+
+                { speaker: "me", en: "I had a great time, too!", kana: "アイ ハド ア グレイト タイム、トゥー！", jp: "わたしも とっても たのしかった！" },
+
+                // 6. 友だちになれたかな？
+                { speaker: "hii", en: `${userProfile.name}, are we friends now?`, kana: `${userProfile.nameKana}、アー ウィー フレンズ ナウ？`, jp: `${userProfile.name}、わたしたち ともだちに なれたかな？` },
+
+                { speaker: "me", en: "Of course! We are best friends!", kana: "オフ コース！ ウィー アー ベスト フレンズ！", jp: "もちろんだよ！わたしたち さいこうの ともだちだよ！" },
+
+                // 7. ぱぱん式のエッセンス
+                { speaker: "ann", en: "Sharing fun makes us better friends!", kana: "シェアリング ファン メイクス アス ベター フレンズ！", jp: "たのしさを わけあうと、もっと なかよく なれるね！" },
+
+                { speaker: "hii", en: "Let's play together again!", kana: "レッツ プレイ トゥギャザー アゲイン！", jp: "また いっしょに あそぼうね！" },
+
+                { speaker: "me", en: "Yes! See you soon!", kana: "イエス！ シー ユー スーン！", jp: "うん！またね！" }
+            ];
+
+            // 画面切り替え
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('scenario-screen').classList.add('active');
+
+            // 開始
+            currentLineStep = 0;
+            updateDialogue();
+        }
+
+        function updateDialogue() {
+            if (currentLineStep >= scenarioData.length) {
+                finishGame();
+                return;
+            }
+
+            const data = scenarioData[currentLineStep];
+
+            if (data.type === "narration") {
+                addNarration(data.text);
+            } else {
+                addMessage(data);
+                // 自動読み上げ（短めの遅延を入れて）
+                setTimeout(() => {
+                    speakText(data.en);
+                }, 600);
+            }
+        }
+
+        function nextDialogue() {
+            currentLineStep++;
+            updateDialogue();
+        }
+
+        // ナレーション行を追加
+        function addNarration(text) {
+            const container = document.getElementById('dialogue-area');
+            const row = document.createElement('div');
+            row.className = 'narration-row';
+            const span = document.createElement('span');
+            span.className = 'narration-text';
+            span.textContent = text;
+            row.appendChild(span);
+            container.appendChild(row);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function addMessage(data) {
+            const container = document.getElementById('dialogue-area');
+            const isAnn = data.speaker === 'ann';
+            const isHii = data.speaker === 'hii';
+            const isMe = data.speaker === 'me';
+
+            const row = document.createElement('div');
+            if (isMe) {
+                row.className = 'message-row row-me';
+            } else if (isHii) {
+                row.className = 'message-row row-hii';
+            } else {
+                row.className = 'message-row row-ann';
+            }
+
+            // アイコン
+            const img = document.createElement('img');
+            img.className = 'char-icon';
+            if (isAnn) {
+                img.src = ANN_IMG;
+            } else if (isHii) {
+                img.src = HII_IMG;
+            } else {
+                img.src = PLAYER_IMG;
+            }
+
+            // 吹き出し
+            const bubble = document.createElement('div');
+            if (isAnn) {
+                bubble.className = 'bubble bubble-ann';
+            } else if (isHii) {
+                bubble.className = 'bubble bubble-hii';
+            } else {
+                bubble.className = 'bubble bubble-me';
+            }
+
+            // 英語テキスト
+            const enText = document.createElement('div');
+            enText.innerHTML = `<strong>${data.en}</strong> <button class="sound-btn" onclick="speakText('${data.en.replace(/'/g, "\\'")}')" title="もういちど聞く">🔊</button>`;
+
+            // カタカナ読み
+            const kanaText = document.createElement('div');
+            kanaText.className = 'kana-text';
+            kanaText.textContent = data.kana;
+
+            // 日本語テキスト
+            const jpText = document.createElement('div');
+            jpText.className = 'jp-text';
+            jpText.textContent = data.jp;
+
+            bubble.appendChild(enText);
+            bubble.appendChild(kanaText);
+            bubble.appendChild(jpText);
+
+            if (isMe) {
+                row.appendChild(bubble);
+                row.appendChild(img);
+            } else {
+                row.appendChild(img);
+                row.appendChild(bubble);
+            }
+
+            container.appendChild(row);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // 音声品質改善版の読み上げ
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const uttr = new SpeechSynthesisUtterance(text);
+                uttr.lang = 'en-US';
+                uttr.rate = 0.9;  // 少しゆっくり
+                uttr.pitch = 1.0;
+                // 最適な音声が見つかっていれば使用
+                if (bestVoice) {
+                    uttr.voice = bestVoice;
+                }
+                window.speechSynthesis.speak(uttr);
+            }
+        }
+
+        function finishGame() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('result-screen').classList.add('active');
+
+            // スクリプト生成
+            let scriptHtml = "";
+            scenarioData.forEach(line => {
+                if (line.type === "narration") {
+                    scriptHtml += `--- ${line.text} ---\n`;
+                } else {
+                    let name;
+                    if (line.speaker === 'ann') name = 'Ann';
+                    else if (line.speaker === 'hii') name = 'Hee';
+                    else name = userProfile.name;
+                    scriptHtml += `${name}: ${line.en}\n`;
+                }
+            });
+            document.getElementById('final-script').textContent = scriptHtml;
+        }
+
+        // ダブルタップ拡大防止
+        document.addEventListener('dblclick', function (event) {
+            event.preventDefault();
+        }, { passive: false });
+
+    </script>
+</body>
+
+</html>
