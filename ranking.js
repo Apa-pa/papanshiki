@@ -27,7 +27,8 @@ const GAME_LIST = {
     'frac_add_hard': { name: '分数たしざん(むずかしい)', type: 'time', unit: '秒' },
     'frac_sub_easy': { name: '分数ひきざん(やさしい)', type: 'time', unit: '秒' },
     'frac_sub_hard': { name: '分数ひきざん(むずかしい)', type: 'time', unit: '秒' },
-    'frac_multi': { name: '分数かけ算', type: 'time', unit: '秒' }
+    'frac_multi': { name: '分数かけ算', type: 'time', unit: '秒' },
+    'math_strike': { name: '計算ストライク', type: 'score', unit: '点' }
 };
 
 // --- リアル株価連動設定 ---
@@ -610,7 +611,7 @@ function checkAndAwardPoints(userName, gameId, currentRecord) {
 
 // ★★★ セーブダイアログ (UI改善＆空欄送信防止版) ★★★
 // ★★★ セーブダイアログ (UI改善 & 全国ランキング & 日替わりミッション統合版) ★★★
-function showSaveDialog(gameId, resultValue) {
+function showSaveDialog(gameId, resultValue, customBasePoint) {
     const old = document.getElementById('ranking-overlay');
     if (old) old.remove();
 
@@ -697,7 +698,7 @@ function showSaveDialog(gameId, resultValue) {
     window.Ranking = {
         selectUser: (localName) => {
             // 1. 基本ポイント付与 (参加賞)
-            const basePoint = (gameId === 'rail') ? 100 : 30;
+            const basePoint = (customBasePoint !== undefined) ? customBasePoint : (gameId === 'rail') ? 100 : 30;
             addPoints(localName, basePoint);
 
             // 2. 記録保存 & 自己ベスト判定

@@ -20,6 +20,7 @@ var urlsToCache = [
   './hari-an-zannen.webp',
 
   // === 算数・数学系 ===
+  './math_strike.html',
   './sansuu.html',
   './math.html',
   './math2.html',

@@ -217,8 +217,8 @@
         ];
 
         const MEDALS = [
-            { id: 'shield_silver', name: 'シルバーのたて', src: 'room/shield_silver.webp', price: 100000, desc: '銀！100000ポイントの 証！' },
-            { id: 'shield_gold', name: 'ゴールドのたて', src: 'room/shield_gold.webp', price: 1000000, desc: '金！1000000ポイントの証！' }
+            { id: 'shield_silver', name: 'シルバーのたて', src: 'room/shield_silver.webp', requiredPoints: 100000, desc: '銀！100000ポイントの 証！' },
+            { id: 'shield_gold', name: 'ゴールドのたて', src: 'room/shield_gold.webp', requiredPoints: 1000000, desc: '金！1000000ポイントの証！' }
         ];
 
         const FURNITURE = [
@@ -280,12 +280,14 @@
                 roomContainer.appendChild(card);
             });
 
-            // 2. 勲章
+            // 2. 勲章（一定ポイント所持で0ptで獲得できる仕組み）
             const medalContainer = document.getElementById('medal-list');
             medalContainer.innerHTML = '';
             MEDALS.forEach(item => {
                 const isOwned = userData.ownedMedals.includes(item.id);
-                const canBuy = (currentPoints >= item.price);
+                // requiredPoints以上持っていれば獲得可能（ポイントは消費しない）
+                const req = item.requiredPoints || 0;
+                const canGet = (currentPoints >= req);
 
                 // どこに飾っているかチェック
                 const isEqL1 = (userData.medals.left1 === item.id);
@@ -311,10 +313,10 @@
                         <button class="action-btn btn-equip" onclick="equipMedal('${userName}', '${item.id}', 'right1')">右内</button>
                         <button class="action-btn btn-equip" onclick="equipMedal('${userName}', '${item.id}', 'right2')">右外</button>
                     </div>`;
-                } else if (canBuy) {
-                    btnHtml = `<button class="action-btn btn-buy" onclick="buyMedal('${userName}', '${item.id}', ${item.price})">${item.price}pt購入</button>`;
+                } else if (canGet) {
+                    btnHtml = `<button class="action-btn btn-buy" onclick="getMedal('${userName}', '${item.id}')">${req.toLocaleString()}pt達成！タダでもらう🎉</button>`;
                 } else {
-                    btnHtml = `<button class="action-btn btn-disabled">${item.price}pt (不足)</button>`;
+                    btnHtml = `<button class="action-btn btn-disabled">${req.toLocaleString()}pt 必要（あと ${(req - currentPoints).toLocaleString()}pt）</button>`;
                 }
 
                 card.innerHTML = `${badge}<img src="${item.src}" class="item-img"><div style="font-weight:bold;">${item.name}</div>${btnHtml}`;
@@ -346,7 +348,18 @@
         // --- 処理関数 ---
         function buyRoom(u, i, p) { if (confirm(`${p}ptで購入？`)) if (spendPoints(u, p)) { let d = getUserData(); if (!d[u]) d[u] = {}; if (!d[u].ownedRooms) d[u].ownedRooms = ['none']; d[u].ownedRooms.push(i); saveUserData(d); loadShop(); } }
         function equipRoom(u, i) { let d = getUserData(); d[u].currentRoom = i; saveUserData(d); loadShop(); }
-        function buyMedal(u, i, p) { if (confirm(`${p}ptで購入？`)) if (spendPoints(u, p)) { let d = getUserData(); if (!d[u]) d[u] = {}; if (!d[u].ownedMedals) d[u].ownedMedals = []; d[u].ownedMedals.push(i); saveUserData(d); loadShop(); } }
+        // 勲章の獲得（ポイント消費なし、条件はUI側で判定済み）
+        function getMedal(u, i) {
+            if (confirm('勲章をもらいますか？🏆')) {
+                let d = getUserData();
+                if (!d[u]) d[u] = {};
+                if (!d[u].ownedMedals) d[u].ownedMedals = [];
+                d[u].ownedMedals.push(i);
+                saveUserData(d);
+                alert('勲章をゲットしました！おめでとう！🎉');
+                loadShop();
+            }
+        }
 
         // ★修正: 重複バグ対策済みの関数
         function equipMedal(u, i, s) {
