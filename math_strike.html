@@ -126,6 +126,79 @@
             text-decoration: underline;
             font-size: 16px;
         }
+
+        /* キャラクター表示エリア */
+        #character-area {
+            position: absolute;
+            bottom: 20px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
+            z-index: 100;
+            pointer-events: none;
+            /* キャラクター部分のタップは無効化（裏の操作を邪魔しない） */
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .char-icon {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+            animation: bounce 2s infinite ease-in-out;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .char-bubble {
+            background: #fff;
+            border: 3px solid #66bb6a;
+            border-radius: 15px;
+            padding: 10px 15px;
+            margin-left: 10px;
+            margin-bottom: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #2e7d32;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            max-width: 200px;
+            word-wrap: break-word;
+        }
+
+        /* 吹き出しのしっぽ */
+        .char-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 15px;
+            border-width: 10px 10px 0 0;
+            border-style: solid;
+            border-color: #66bb6a transparent transparent transparent;
+        }
+
+        .char-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 17px;
+            border-width: 8px 8px 0 0;
+            border-style: solid;
+            border-color: #fff transparent transparent transparent;
+        }
     </style>
 </head>
 
@@ -143,19 +216,30 @@
         </div>
         <div id="game-container">
 
+            <!-- キャラクター通知エリア -->
+            <div id="character-area">
+                <img id="char-img" class="char-icon" src="hari-an.webp" alt="キャラクター">
+                <div id="char-message" class="char-bubble">がんばってね！</div>
+            </div>
+
             <div id="start-screen" class="overlay">
-                <h1>計算ストライク</h1>
+                <h1><ruby></ruby>計算<rt>けいさん</rt></ruby>ストライク</h1>
                 <div style="font-size: 60px; margin: 10px;">🎱</div>
                 <p
                     style="color:#5d4037; font-size:16px; line-height: 1.6; font-weight: bold; text-align: left; padding: 0 20px;">
                     【ルール】<br>
-                    1. 手球をひっぱって弾く！<br>
-                    2. 場の球に当てると数字を「吸収」する。<br>
-                    3. 手球の数字を<span style="color:#d84315;">「目標の数字」にピッタリ合わせよう。</span><br>
+                    1. <ruby>手球<rt>てだま</rt></ruby>をひっぱって<ruby>弾<rt>はじ</rt></ruby>く！<br>
+                    2. <ruby>場<rt>ば</rt></ruby>の<ruby>球<rt>たま</rt></ruby>に<ruby>当<rt>あ</rt></ruby>てると<ruby>数字<rt>すうじ
+                        </rt></ruby>を「<ruby>吸収<rt>きゅうしゅう</rt></ruby>」する。<br>
+                    3. <ruby>手球<rt>てだま</rt></ruby>の<ruby>数字<rt>すうじ</rt></ruby>を<span style="color:#d84315;">「<ruby>目標
+                            <rt>もくひょう</rt></ruby>の<ruby>数字<rt>すうじ</rt></ruby>」にピッタリ<ruby>合<rt>あ</rt>
+                            </ruby>わせよう。</span><br>
                     <br>
-                    【ゲームオーバー条件】<br>
-                    ❌ 目標の数字を<span style="color:red">オーバー</span>した<br>
-                    ❌ 「残り回数」以内に<span style="color:red">達成できなかった</span>
+                    【ゲームオーバー<ruby>条件<rt>じょうけん</rt></ruby>】<br>
+                    ❌ <ruby>目標<rt>もくひょう</rt></ruby>の<ruby>数字<rt>すうじ</rt></ruby>を<span
+                        style="color:red">オーバー</span>した<br>
+                    ❌ 「<ruby>残<rt>のこ</rt></ruby>り<ruby>回数<rt>かいすう</rt></ruby>」<ruby>以内<rt>いない</rt></ruby>に<span
+                        style="color:red"><ruby>達成<rt>たっせい</rt></ruby>できなかった</span>
                 </p>
                 <button class="btn" onclick="startGame()">スタート</button>
                 <br>
@@ -200,6 +284,13 @@
 
             // 発射パワーの調整用
             const MAX_PULL_DISTANCE = 150; // これ以上引っ張っても線やパワーは伸びない
+
+            // キャラクター要素
+            const charArea = document.getElementById('character-area');
+            const charImg = document.getElementById('char-img');
+            const charMsg = document.getElementById('char-message');
+            const charImages = ['hari-an.webp', 'hi-192.webp'];
+            let characterHideTimer = null;
 
             function MathHelpers() {
                 // 壁などの厚み
@@ -539,28 +630,71 @@
                     level++;
                     let carryOver = playerBall.mathVal;
 
-                    // 10ステージクリアで完全クリア
+                    // 完全クリアボーナス
                     if (level > 10) {
                         score += 200; // 完全クリアボーナス
+                        showCharacterMessage("すごい！ぜんぶ<ruby>達成<rt>たっせい</rt></ruby>だよ！", "both", true);
                         gameOver("🎉 全ステージクリア！おみごと！", true);
                         return;
                     }
 
+                    showCharacterMessage("ピッタリ！その<ruby>調子<rt>ちょうし</rt></ruby>！");
                     // 少し待ってから次のレベルへ
-                    setTimeout(() => setupLevel(carryOver), 1000);
+                    setTimeout(() => setupLevel(carryOver), 1500); // メッセージを読む時間を考慮して少し延ばす
                     return;
                 }
 
                 // 2. オーバー判定
                 if (playerBall.mathVal > targetNumber) {
+                    showCharacterMessage("ああっ！オーバーしちゃった！", "both", true);
                     gameOver("目標の数字を超えてしまった！");
                     return;
                 }
 
                 // 3. 回数切れ判定
                 if (shotsLeft <= 0) {
+                    showCharacterMessage("ざんねん…また<ruby>挑戦<rt>ちょうせん</rt></ruby>してね！", "both", true);
                     gameOver("弾ける回数がなくなってしまった！");
                     return;
+                }
+
+                // 次のショットへの応援
+                if (shotsLeft > 0) {
+                    let diff = targetNumber - playerBall.mathVal;
+                    if (diff <= 3) {
+                        showCharacterMessage("あとすこし！きをつけて！");
+                    } else if (diff >= 15) {
+                        showCharacterMessage("もっと<ruby>大<rt>おお</rt></ruby>きな<ruby>数<rt>かず</rt></ruby>をねらおう！");
+                    } else {
+                        const msgs = ["いいかんじ！", "よーくねらって！", "がんばれ！"];
+                        showCharacterMessage(msgs[Math.floor(Math.random() * msgs.length)]);
+                    }
+                }
+            }
+
+            // キャラクターに喋らせる関数
+            function showCharacterMessage(text, character = "random", persist = false) {
+                if (character === "ann") {
+                    charImg.src = "hari-an.webp";
+                } else if (character === "hii") {
+                    charImg.src = "hi-192.webp";
+                } else {
+                    // random または both はランダムに選ぶ
+                    charImg.src = charImages[Math.floor(Math.random() * charImages.length)];
+                }
+
+                charMsg.innerHTML = text;
+                charArea.style.opacity = 1;
+
+                if (characterHideTimer) {
+                    clearTimeout(characterHideTimer);
+                }
+
+                if (!persist) {
+                    // 数秒後に消す
+                    characterHideTimer = setTimeout(() => {
+                        charArea.style.opacity = 0;
+                    }, 3000);
                 }
             }
 

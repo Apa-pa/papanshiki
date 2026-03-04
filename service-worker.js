@@ -102,6 +102,7 @@ var urlsToCache = [
   './rail2.html',
   './gacha.html',
   './addiction.html',
+  './logic_mine.html',
 
   // === 生活・社会 ===
   './whattime.html',

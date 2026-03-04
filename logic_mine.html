@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ロジック・マイン</title>
+    <script src="ranking.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Zen Kaku Gothic New", sans-serif;
+            background-color: #5d4037;
+            background-image:
+                radial-gradient(ellipse at 20% 50%, rgba(76, 175, 80, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 50%, rgba(139, 195, 74, 0.1) 0%, transparent 50%);
+            touch-action: manipulation;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 100%;
+            max-height: 900px;
+            background: linear-gradient(180deg, #a5d6a7 0%, #81c784 30%, #66bb6a 100%);
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ヘッダー */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: linear-gradient(180deg, #4e342e, #3e2723);
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            flex-shrink: 0;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .player-icon {
+            font-size: 28px;
+        }
+
+        .mine-counter {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 18px;
+        }
+
+        .mine-counter span {
+            color: #ffeb3b;
+        }
+
+        .home-link {
+            color: #ffcc80;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        /* グリッドエリア */
+        .grid-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            min-height: 0;
+        }
+
+        .grid-wrapper {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 2px;
+            width: min(100%, 400px);
+            aspect-ratio: 1;
+            max-height: 100%;
+            background: #5d4037;
+            padding: 4px;
+            border-radius: 12px;
+            box-shadow:
+                inset 0 2px 8px rgba(0, 0, 0, 0.4),
+                0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            border: none;
+            border-radius: 4px;
+            font-size: clamp(14px, 4vw, 22px);
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s, background 0.2s;
+            position: relative;
+        }
+
+        .cell:active {
+            transform: scale(0.92);
+        }
+
+        /* 閉じたマス（草地） */
+        .cell-closed {
+            background: linear-gradient(145deg, #8bc34a, #689f38);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .cell-closed:hover {
+            background: linear-gradient(145deg, #9ccc65, #7cb342);
+        }
+
+        /* 開いたマス（土） */
+        .cell-open {
+            background: linear-gradient(145deg, #d7ccc8, #bcaaa4);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+            cursor: default;
+        }
+
+        /* 数字の色 */
+        .cell-num-1 {
+            color: #1565c0;
+        }
+
+        .cell-num-2 {
+            color: #2e7d32;
+        }
+
+        .cell-num-3 {
+            color: #c62828;
+        }
+
+        .cell-num-4 {
+            color: #6a1b9a;
+        }
+
+        .cell-num-5 {
+            color: #e65100;
+        }
+
+        .cell-num-6 {
+            color: #00838f;
+        }
+
+        .cell-num-7 {
+            color: #37474f;
+        }
+
+        .cell-num-8 {
+            color: #78909c;
+        }
+
+        /* マーク（旗） */
+        .cell-flagged::after {
+            content: "🚩";
+            font-size: clamp(16px, 4.5vw, 24px);
+        }
+
+        /* おじゃま岩（ゲームオーバー時に表示） */
+        .cell-mine {
+            background: linear-gradient(145deg, #ef9a9a, #e57373) !important;
+        }
+
+        /* キャラクターボタンエリア */
+        .char-buttons {
+            display: flex;
+            gap: 10px;
+            padding: 12px 15px;
+            background: linear-gradient(180deg, #4e342e, #3e2723);
+            flex-shrink: 0;
+        }
+
+        .char-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 8px;
+            border-radius: 16px;
+            border: 3px solid transparent;
+            font-size: clamp(14px, 3.5vw, 18px);
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: inherit;
+        }
+
+        .char-btn img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .char-btn-hi {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .char-btn-hi.active {
+            background: #ff9800;
+            color: white;
+            border-color: #ffeb3b;
+            box-shadow: 0 0 16px rgba(255, 152, 0, 0.6), 0 4px 0 #e65100;
+            transform: translateY(-2px);
+        }
+
+        .char-btn-an {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .char-btn-an.active {
+            background: #4caf50;
+            color: white;
+            border-color: #a5d6a7;
+            box-shadow: 0 0 16px rgba(76, 175, 80, 0.6), 0 4px 0 #2e7d32;
+            transform: translateY(-2px);
+        }
+
+        /* オーバーレイ */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 253, 231, 0.97);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            pointer-events: auto;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #4e342e;
+            font-size: 32px;
+            margin-bottom: 5px;
+            font-family: serif;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #8d6e63;
+            margin-bottom: 20px;
+        }
+
+        /* キャラ台詞エリア */
+        .char-speech-area {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 90%;
+            max-width: 380px;
+            margin-bottom: 20px;
+        }
+
+        .char-speech {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            border-radius: 16px;
+            padding: 10px 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .char-speech img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .speech-bubble {
+            background: #f1f8e9;
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 14px;
+            color: #33691e;
+            line-height: 1.5;
+            text-align: left;
+            position: relative;
+        }
+
+        .speech-bubble.an-bubble {
+            background: #e8f5e9;
+            color: #1b5e20;
+        }
+
+        .speech-bubble.hi-bubble {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .btn {
+            background: linear-gradient(180deg, #ff9800, #f57c00);
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px #e65100;
+            font-weight: bold;
+            margin-top: 10px;
+            font-family: inherit;
+            transition: transform 0.1s;
+        }
+
+        .btn:active {
+            transform: scale(0.95) translateY(2px);
+            box-shadow: 0 2px #e65100;
+        }
+
+        .back-link {
+            margin-top: 15px;
+            color: #8d6e63;
+            text-decoration: underline;
+            font-size: 16px;
+        }
+
+        /* ルール説明 */
+        .rule-box {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 15px;
+            text-align: left;
+            font-size: 14px;
+            line-height: 1.7;
+            color: #4e342e;
+            width: 90%;
+            max-width: 380px;
+        }
+
+        .rule-box b {
+            color: #e65100;
+        }
+
+        /* 結果画面 */
+        .result-title {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .result-msg {
+            font-size: 18px;
+            color: #5d4037;
+            margin-bottom: 5px;
+            line-height: 1.6;
+        }
+
+        /* ゲームオーバー画面のキャラ吹き出し */
+        .result-speech {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            border-radius: 16px;
+            padding: 10px 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
+            width: 90%;
+            max-width: 380px;
+        }
+
+        .result-speech img {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        /* タイマー */
+        .timer-display {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 16px;
+            color: #fff;
+        }
+
+        /* アニメーション */
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            70% {
+                transform: scale(1.15);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-4px);
+            }
+
+            75% {
+                transform: translateX(4px);
+            }
+        }
+
+        .cell-reveal {
+            animation: popIn 0.3s ease-out;
+        }
+
+        .grid-shake {
+            animation: shake 0.3s ease-in-out;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="game-container">
+
+        <!-- ===== ゲーム画面 ===== -->
+        <div class="game-header" id="game-header" style="display:none;">
+            <div class="header-left">
+                <span class="player-icon">🐕</span>
+                <div class="mine-counter">🪨 <ruby>残<rt>のこ</rt></ruby>り: <span id="mine-count">10</span></div>
+            </div>
+            <div class="timer-display" id="timer-display">⏱ 0:00</div>
+            <a href="index.html" class="home-link">🏠</a>
+        </div>
+
+        <div class="grid-area" id="grid-area" style="display:none;">
+            <div class="grid-wrapper" id="grid"></div>
+        </div>
+
+        <div class="char-buttons" id="char-buttons" style="display:none;">
+            <button class="char-btn char-btn-hi active" id="btn-hi" onclick="setMode('dig')">
+                <img src="hi-192.webp" alt="ヒーちゃん">
+                <ruby>穴掘<rt>あなほ</rt></ruby>り
+            </button>
+            <button class="char-btn char-btn-an" id="btn-an" onclick="setMode('flag')">
+                <img src="hari-an.webp" alt="アンちゃん">
+                マーク
+            </button>
+        </div>
+
+        <!-- ===== スタート画面 ===== -->
+        <div id="start-screen" class="overlay">
+            <h1>🪨 ロジック・マイン</h1>
+            <p class="subtitle">〜 <ruby>森<rt>もり</rt></ruby>の<ruby>地面<rt>じめん</rt></ruby>を<ruby>探検<rt>たんけん</rt></ruby>しよう
+                〜</p>
+
+            <div class="char-speech-area">
+                <div class="char-speech">
+                    <img src="hi-192.webp" alt="ヒーちゃん">
+                    <div class="speech-bubble hi-bubble">
+                        どんどん<ruby>掘<rt>ほ</rt></ruby>っていくよ！<br>（<ruby>穴掘<rt>あなほ</rt></ruby>り）🐿️
+                    </div>
+                </div>
+                <div class="char-speech">
+                    <img src="hari-an.webp" alt="アンちゃん">
+                    <div class="speech-bubble an-bubble">
+                        <ruby>怪<rt>あや</rt></ruby>しいところは<ruby>任<rt>まか</rt></ruby>せて！<br>（マーク）🦔
+                    </div>
+                </div>
+            </div>
+
+            <div class="rule-box">
+                🐕 <ruby>犬<rt>いぬ</rt></ruby>くんといっしょに<ruby>森<rt>もり</rt></ruby>を<ruby>掘<rt>ほ</rt></ruby>ろう！<br>
+                <b>🪨 おじゃま<ruby>岩<rt>いわ</rt></ruby></b>をさけて、<ruby>安全<rt>あんぜん</rt></ruby>なマスを<ruby>全部<rt>ぜんぶ</rt>
+                    </ruby><ruby>開<rt>あ</rt></ruby>けよう。<br>
+                <ruby>数字<rt>すうじ</rt></ruby>は「まわりにある おじゃま<ruby>岩<rt>いわ</rt></ruby>の<ruby>数<rt>かず</rt></ruby>」だよ。
+            </div>
+
+            <button class="btn" onclick="startGame()">スタート</button>
+            <br>
+            <a href="index.html" class="back-link">🏠 ホームへもどる</a>
+        </div>
+
+        <!-- ===== ゲームオーバー画面 ===== -->
+        <div id="gameover-screen" class="overlay" style="display:none;">
+            <div class="result-title" id="result-icon">💥</div>
+            <h1 id="result-title" style="color:#c62828;">ゲームオーバー</h1>
+            <p class="result-msg" id="result-msg">おじゃま<ruby>岩<rt>いわ</rt></ruby>を<ruby>掘<rt>ほ</rt></ruby>ってしまった！</p>
+            <div class="result-speech" id="result-speech">
+                <img src="hari-an.webp" alt="アンちゃん">
+                <div class="speech-bubble an-bubble" id="result-speech-text">
+                    ドンマイ！つぎはマークしてね🦔
+                </div>
+            </div>
+            <button class="btn" onclick="startGame()">もういっかい</button>
+            <br>
+            <a href="index.html" class="back-link">🏠 ホームへ</a>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // ロジック・マイン（マインスイーパー）
+        // ========================================
+
+        const ROWS = 8;
+        const COLS = 8;
+        const MINE_COUNT = 10;
+
+        // ゲーム状態
+        let board = [];       // 各セルの情報 { mine, count, open, flagged }
+        let isPlaying = false;
+        let isFirstClick = true;
+        let currentMode = 'dig'; // 'dig' または 'flag'
+        let minesLeft = MINE_COUNT;
+        let timerInterval = null;
+        let elapsedSeconds = 0;
+        let safeCellsTotal = 0;
+        let safeCellsOpened = 0;
+
+        // ========================================
+        // 初期化・ゲーム開始
+        // ========================================
+
+        function startGame() {
+            // 画面切り替え
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('gameover-screen').style.display = 'none';
+            document.getElementById('game-header').style.display = 'flex';
+            document.getElementById('grid-area').style.display = 'flex';
+            document.getElementById('char-buttons').style.display = 'flex';
+
+            // 状態リセット
+            isPlaying = true;
+            isFirstClick = true;
+            currentMode = 'dig';
+            minesLeft = MINE_COUNT;
+            elapsedSeconds = 0;
+            safeCellsOpened = 0;
+
+            // タイマーリセット
+            if (timerInterval) clearInterval(timerInterval);
+            document.getElementById('timer-display').textContent = '⏱ 0:00';
+
+            // ボタン状態リセット
+            setMode('dig');
+
+            // ボード初期化（地雷はまだ配置しない: 初回クリック後に配置）
+            initBoard();
+            renderBoard();
+            updateMineCount();
+        }
+
+        function initBoard() {
+            board = [];
+            for (let r = 0; r < ROWS; r++) {
+                board[r] = [];
+                for (let c = 0; c < COLS; c++) {
+                    board[r][c] = {
+                        mine: false,
+                        count: 0,
+                        open: false,
+                        flagged: false
+                    };
+                }
+            }
+            safeCellsTotal = ROWS * COLS - MINE_COUNT;
+        }
+
+        // 初回クリック時に地雷を配置（クリックしたマスとその周囲は除外）
+        function placeMines(safeRow, safeCol) {
+            let placed = 0;
+            while (placed < MINE_COUNT) {
+                const r = Math.floor(Math.random() * ROWS);
+                const c = Math.floor(Math.random() * COLS);
+
+                // 安全範囲チェック（クリックしたマスの周囲1マス）
+                if (Math.abs(r - safeRow) <= 1 && Math.abs(c - safeCol) <= 1) continue;
+                if (board[r][c].mine) continue;
+
+                board[r][c].mine = true;
+                placed++;
+            }
+
+            // 数字（ヒント）を計算
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (board[r][c].mine) continue;
+                    let count = 0;
+                    forEachNeighbor(r, c, (nr, nc) => {
+                        if (board[nr][nc].mine) count++;
+                    });
+                    board[r][c].count = count;
+                }
+            }
+        }
+
+        // 周囲8マスを巡回するヘルパー
+        function forEachNeighbor(r, c, callback) {
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    if (dr === 0 && dc === 0) continue;
+                    const nr = r + dr;
+                    const nc = c + dc;
+                    if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+                        callback(nr, nc);
+                    }
+                }
+            }
+        }
+
+        // ========================================
+        // 描画
+        // ========================================
+
+        function renderBoard() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell cell-closed';
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+
+                    cell.addEventListener('pointerdown', handleCellClick);
+
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function updateCell(r, c) {
+            const index = r * COLS + c;
+            const cellEl = document.getElementById('grid').children[index];
+            const data = board[r][c];
+
+            if (data.open) {
+                cellEl.className = 'cell cell-open cell-reveal';
+                if (data.mine) {
+                    cellEl.className += ' cell-mine';
+                    cellEl.textContent = '🪨';
+                } else if (data.count > 0) {
+                    cellEl.className += ` cell-num-${data.count}`;
+                    cellEl.textContent = data.count;
+                } else {
+                    cellEl.textContent = '';
+                }
+            } else if (data.flagged) {
+                cellEl.className = 'cell cell-closed cell-flagged';
+                cellEl.textContent = '';
+            } else {
+                cellEl.className = 'cell cell-closed';
+                cellEl.textContent = '';
+            }
+        }
+
+        function updateMineCount() {
+            document.getElementById('mine-count').textContent = minesLeft;
+        }
+
+        // ========================================
+        // 操作
+        // ========================================
+
+        function setMode(mode) {
+            currentMode = mode;
+            const btnHi = document.getElementById('btn-hi');
+            const btnAn = document.getElementById('btn-an');
+
+            if (mode === 'dig') {
+                btnHi.classList.add('active');
+                btnAn.classList.remove('active');
+            } else {
+                btnHi.classList.remove('active');
+                btnAn.classList.add('active');
+            }
+        }
+
+        function handleCellClick(e) {
+            if (!isPlaying) return;
+
+            const r = parseInt(e.currentTarget.dataset.row);
+            const c = parseInt(e.currentTarget.dataset.col);
+            const data = board[r][c];
+
+            // 既に開いているマスは無視
+            if (data.open) return;
+
+            if (currentMode === 'dig') {
+                // 穴掘りモード
+                if (data.flagged) return; // マーク済みは掘れない
+
+                if (isFirstClick) {
+                    // 初回クリック：地雷配置 & タイマー開始
+                    isFirstClick = false;
+                    placeMines(r, c);
+                    startTimer();
+                }
+
+                openCell(r, c);
+            } else {
+                // マークモード
+                if (isFirstClick) return; // 地雷配置前はマーク不可
+
+                if (data.flagged) {
+                    data.flagged = false;
+                    minesLeft++;
+                } else {
+                    data.flagged = true;
+                    minesLeft--;
+                }
+                updateCell(r, c);
+                updateMineCount();
+            }
+        }
+
+        // ========================================
+        // マスを開く（再帰的連鎖オープン）
+        // ========================================
+
+        function openCell(r, c) {
+            const data = board[r][c];
+            if (data.open || data.flagged) return;
+
+            data.open = true;
+
+            if (data.mine) {
+                // ゲームオーバー
+                updateCell(r, c);
+                gameOver(false);
+                return;
+            }
+
+            safeCellsOpened++;
+            updateCell(r, c);
+
+            // 数字が0のマスは周囲を再帰的に開く
+            if (data.count === 0) {
+                forEachNeighbor(r, c, (nr, nc) => {
+                    openCell(nr, nc);
+                });
+            }
+
+            // クリア判定
+            if (safeCellsOpened === safeCellsTotal) {
+                gameOver(true);
+            }
+        }
+
+        // ========================================
+        // タイマー
+        // ========================================
+
+        function startTimer() {
+            elapsedSeconds = 0;
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                elapsedSeconds++;
+                const min = Math.floor(elapsedSeconds / 60);
+                const sec = elapsedSeconds % 60;
+                document.getElementById('timer-display').textContent =
+                    `⏱ ${min}:${sec.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // ========================================
+        // ゲーム終了
+        // ========================================
+
+        function gameOver(isWin) {
+            isPlaying = false;
+            if (timerInterval) clearInterval(timerInterval);
+
+            if (isWin) {
+                // クリア！
+                document.getElementById('result-icon').textContent = '🎉';
+                document.getElementById('result-title').textContent = 'クリア！';
+                document.getElementById('result-title').style.color = '#2e7d32';
+                document.getElementById('result-msg').innerHTML =
+                    `<ruby>全<rt>ぜん</rt></ruby>マス<ruby>安全<rt>あんぜん</rt></ruby>に<ruby>掘<rt>ほ</rt></ruby>れたよ！🐕<br>` +
+                    `タイム: ${formatTime(elapsedSeconds)}`;
+                document.getElementById('result-speech').querySelector('img').src = 'hi-192.webp';
+                document.getElementById('result-speech-text').className = 'speech-bubble hi-bubble';
+                document.getElementById('result-speech-text').innerHTML =
+                    'やったね！すごいよ！🐿️';
+
+                // 全おじゃま岩にマークを自動設定
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        if (board[r][c].mine && !board[r][c].flagged) {
+                            board[r][c].flagged = true;
+                            updateCell(r, c);
+                        }
+                    }
+                }
+
+                // ポイント付与
+                setTimeout(() => {
+                    document.getElementById('gameover-screen').style.display = 'flex';
+                    if (typeof showPointGetDialog === 'function') {
+                        showPointGetDialog(50, 'logic_mine');
+                    }
+                }, 600);
+                return;
+            } else {
+                // ゲームオーバー
+                document.getElementById('result-icon').textContent = '💥';
+                document.getElementById('result-title').textContent = 'ゲームオーバー';
+                document.getElementById('result-title').style.color = '#c62828';
+                document.getElementById('result-msg').innerHTML =
+                    `おじゃま<ruby>岩<rt>いわ</rt></ruby>を<ruby>掘<rt>ほ</rt></ruby>ってしまった！`;
+                document.getElementById('result-speech').querySelector('img').src = 'hari-an.webp';
+                document.getElementById('result-speech-text').className = 'speech-bubble an-bubble';
+                document.getElementById('result-speech-text').innerHTML =
+                    'ドンマイ！つぎはマークしてね🦔';
+
+                // グリッドを揺らす演出
+                const gridEl = document.getElementById('grid');
+                gridEl.classList.add('grid-shake');
+                setTimeout(() => gridEl.classList.remove('grid-shake'), 300);
+
+                // 全地雷を表示
+                revealAllMines();
+
+                setTimeout(() => {
+                    document.getElementById('gameover-screen').style.display = 'flex';
+                }, 800);
+            }
+        }
+
+        function revealAllMines() {
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    if (board[r][c].mine && !board[r][c].open) {
+                        board[r][c].open = true;
+                        updateCell(r, c);
+                    }
+                }
+            }
+        }
+
+        function formatTime(seconds) {
+            const min = Math.floor(seconds / 60);
+            const sec = seconds % 60;
+            return `${min}:${sec.toString().padStart(2, '0')}`;
+        }
+    </script>
+</body>
+
+</html>
