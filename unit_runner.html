@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>単位クイズランナー　ぱぱん式</title>
+    <script src="ranking.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Zen Kaku Gothic New", sans-serif;
+            background: #1a1a2e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            height: 100dvh;
+            touch-action: none;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        #app {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 100%;
+            max-height: 900px;
+            background: #000;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* HUD（問題番号・正解数） */
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .hud-item {
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .hud-item span {
+            color: #fdd835;
+        }
+
+        /* アンちゃんのお題エリア */
+        #question-area {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        #question-area.show {
+            opacity: 1;
+        }
+
+        .an-icon {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.4));
+            flex-shrink: 0;
+        }
+
+        .q-bubble {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #66bb6a;
+            border-radius: 18px;
+            padding: 10px 16px;
+            margin-left: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #2e7d32;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            max-width: 320px;
+            line-height: 1.5;
+        }
+
+        /* オーバーレイ共通 */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* スタート画面 */
+        #start-screen {
+            background: linear-gradient(135deg, #e8f5e9 0%, #b3e5fc 50%, #f3e5f5 100%);
+        }
+
+        .game-title {
+            font-size: 30px;
+            color: #2e7d32;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .game-subtitle {
+            font-size: 16px;
+            color: #558b2f;
+            margin-bottom: 20px;
+        }
+
+        .rule-box {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin: 10px 0;
+            text-align: left;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            line-height: 1.8;
+            max-width: 360px;
+            width: 100%;
+        }
+
+        .btn {
+            padding: 14px 50px;
+            font-size: 22px;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-family: inherit;
+        }
+
+        .btn-start {
+            background: #43a047;
+            color: #fff;
+            box-shadow: 0 5px #2e7d32;
+        }
+
+        .btn-start:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px #2e7d32;
+        }
+
+        /* 結果画面 */
+        #result-screen {
+            background: rgba(255, 255, 255, 0.95);
+            display: none;
+        }
+
+        .result-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-score {
+            font-size: 50px;
+            font-weight: bold;
+            color: #e91e63;
+        }
+
+        .result-label {
+            font-size: 18px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .btn-reward {
+            background: #ff9800;
+            color: #fff;
+            box-shadow: 0 5px #f57c00;
+        }
+
+        .btn-reward:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px #f57c00;
+        }
+
+        .btn-retry {
+            background: #4caf50;
+            color: #fff;
+            box-shadow: 0 5px #2e7d32;
+            font-size: 16px;
+        }
+
+        .btn-retry:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px #2e7d32;
+        }
+
+        .back-link {
+            margin-top: 15px;
+            color: #8d6e63;
+            text-decoration: underline;
+            font-size: 16px;
+            display: inline-block;
+        }
+
+        /* 正解・不正解フラッシュ */
+        #feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 80px;
+            font-weight: bold;
+            z-index: 15;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            text-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* キャラ画像 */
+        .char-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            margin: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- HUD -->
+        <div id="hud" style="display:none;">
+            <div class="hud-item"><ruby>問題<rt>もんだい</rt></ruby>: <span id="q-num">1</span></div>
+            <div class="hud-item"><ruby>正解<rt>せいかい</rt></ruby>: <span id="correct-count">0</span></div>
+        </div>
+
+        <!-- お題表示 -->
+        <div id="question-area">
+            <img src="hari-an.webp" alt="アンちゃん" class="an-icon">
+            <div class="q-bubble" id="q-text">ここに<ruby>問題<rt>もんだい</rt></ruby>がでるよ！</div>
+        </div>
+
+        <!-- フィードバック -->
+        <div id="feedback"></div>
+
+        <!-- スタート画面 -->
+        <div id="start-screen" class="overlay">
+            <div style="font-size:50px; margin-bottom:5px;">🏃‍♀️🚪</div>
+            <h1 class="game-title"><ruby>単位<rt>たんい</rt></ruby>クイズランナー</h1>
+            <p class="game-subtitle">〜<ruby>正<rt>ただ</rt></ruby>しいゲートをくぐろう！〜</p>
+            <div style="display:flex; justify-content:center;">
+                <img src="hi-192.webp" alt="ヒーちゃん" class="char-preview">
+                <img src="hari-an.webp" alt="アンちゃん" class="char-preview">
+            </div>
+            <div class="rule-box">
+                【ルール】<br>
+                🚪 <ruby>左右<rt>さゆう</rt></ruby>のゲートが<ruby>流<rt>なが</rt></ruby>れてくるよ！<br>
+                👈👉 <ruby>正<rt>ただ</rt></ruby>しい<ruby>方<rt>ほう</rt></ruby>を<ruby>選<rt>えら</rt></ruby>んで！<br>
+                📱 スワイプ or ←→キーで<ruby>操作<rt>そうさ</rt></ruby><br>
+                🌟 <ruby>全問正解<rt>ぜんもんせいかい</rt></ruby>なら<ruby>延長戦<rt>えんちょうせん</rt></ruby>！<br>
+                ⚡ 10<ruby>問目<rt>もんめ</rt></ruby>から<ruby>速<rt>はや</rt></ruby>くなるよ！
+            </div>
+            <button class="btn btn-start" onclick="startGame()">スタート</button>
+            <a href="index.html" class="back-link">🏠 ホームへもどる</a>
+        </div>
+
+        <!-- 結果画面 -->
+        <div id="result-screen" class="overlay">
+            <div style="font-size:70px;">🏆</div>
+            <h1 class="result-title" id="result-title" style="color:#2e7d32;">けっか</h1>
+            <p class="result-label"><ruby>正解数<rt>せいかいすう</rt></ruby></p>
+            <p class="result-score"><span id="result-correct">0</span><span style="font-size:24px; color:#555;"> / <span
+                        id="result-total">10</span></span></p>
+            <div id="result-chars" style="display:flex; justify-content:center; margin:10px 0;">
+                <img src="hi-192.webp" alt="ヒーちゃん" class="char-preview">
+                <img src="hari-an.webp" alt="アンちゃん" class="char-preview">
+            </div>
+            <p id="result-msg" style="font-size:16px; font-weight:bold; color:#555; margin-bottom:10px;"></p>
+            <button id="reward-btn" class="btn btn-reward" onclick="getReward()">🎁 ポイントゲット</button>
+            <button class="btn btn-retry" onclick="location.reload()" style="margin-top:10px;">🔄 もういちど</button>
+            <a href="index.html" class="back-link">🏠 ホームへ</a>
+        </div>
+    </div>
+
+    <script>
+        // ピンチズーム防止
+        document.addEventListener('gesturestart', e => e.preventDefault());
+        document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+
+        // ===== クイズデータ =====
+        const quizData = [
+            // デジタル（1024基準 & 基礎）
+            { q: "1TB（テラ）は <ruby>何<rt>なん</rt></ruby>GB（ギガ）？", a: ["1024GB", "100GB"], correct: 0 },
+            { q: "1GB（ギガ）は <ruby>何<rt>なん</rt></ruby>MB（メガ）？", a: ["1024MB", "100MB"], correct: 0 },
+            { q: "1MB（メガ）は <ruby>何<rt>なん</rt></ruby>KB（キロ）？", a: ["1024KB", "100KB"], correct: 0 },
+            { q: "1024MB（メガ）と おなじなのは？", a: ["1GB", "1TB"], correct: 0 },
+            { q: "1024KB（キロバイト）と おなじなのは？", a: ["1MB", "1GB"], correct: 0 },
+            { q: "1024B（バイト）と おなじなのは？", a: ["1KB", "1MB"], correct: 0 },
+            { q: "8bit（ビット）と おなじなのは？", a: ["1B（バイト）", "1KB"], correct: 0 },
+            // 時間（60/24/7基準）
+            { q: "1<ruby>分<rt>ぷん</rt></ruby>は <ruby>何秒<rt>なんびょう</rt></ruby>？", a: ["60<ruby>秒<rt>びょう</rt></ruby>", "100<ruby>秒<rt>びょう</rt></ruby>"], correct: 0 },
+            { q: "1<ruby>時間<rt>じかん</rt></ruby>は <ruby>何分<rt>なんぷん</rt></ruby>？", a: ["60<ruby>分<rt>ぷん</rt></ruby>", "100<ruby>分<rt>ぷん</rt></ruby>"], correct: 0 },
+            { q: "1<ruby>日<rt>にち</rt></ruby>は <ruby>何時間<rt>なんじかん</rt></ruby>？", a: ["24<ruby>時間<rt>じかん</rt></ruby>", "12<ruby>時間<rt>じかん</rt></ruby>"], correct: 0 },
+            { q: "60<ruby>秒<rt>びょう</rt></ruby>と おなじなのは？", a: ["1<ruby>分<rt>ぷん</rt></ruby>", "1<ruby>時間<rt>じかん</rt></ruby>"], correct: 0 },
+            { q: "24<ruby>時間<rt>じかん</rt></ruby>と おなじなのは？", a: ["1<ruby>日<rt>にち</rt></ruby>", "1<ruby>週間<rt>しゅうかん</rt></ruby>"], correct: 0 },
+            { q: "60<ruby>分<rt>ぷん</rt></ruby>と おなじなのは？", a: ["1<ruby>時間<rt>じかん</rt></ruby>", "10<ruby>時間<rt>じかん</rt></ruby>"], correct: 0 },
+            { q: "1<ruby>週間<rt>しゅうかん</rt></ruby>と おなじなのは？", a: ["7<ruby>日<rt>にち</rt></ruby>", "10<ruby>日<rt>にち</rt></ruby>"], correct: 0 },
+            // メートル法（長さ・重さ・かさ）
+            { q: "1km（キロ）は <ruby>何<rt>なん</rt></ruby>m（メートル）？", a: ["1000m", "100m"], correct: 0 },
+            { q: "1kg（キロ）は <ruby>何<rt>なん</rt></ruby>g（グラム）？", a: ["1000g", "100g"], correct: 0 },
+            { q: "1L（リットル）は <ruby>何<rt>なん</rt></ruby>mL（ミリ）？", a: ["1000mL", "100mL"], correct: 0 },
+            { q: "1m（メートル）は <ruby>何<rt>なん</rt></ruby>cm（センチ）？", a: ["100cm", "10cm"], correct: 0 },
+            { q: "100cm（センチ）と おなじなのは？", a: ["1m", "1km"], correct: 0 },
+            { q: "1000m（メートル）と おなじなのは？", a: ["1km", "10km"], correct: 0 },
+            { q: "10mm（ミリ）と おなじなのは？", a: ["1cm", "1m"], correct: 0 },
+            { q: "1000g（グラム）と おなじなのは？", a: ["1kg", "1t"], correct: 0 },
+            { q: "1000kg（キログラム）と おなじなのは？", a: ["1t", "1kg"], correct: 0 },
+            { q: "10dL（デシリットル）と おなじなのは？", a: ["1L", "10L"], correct: 0 },
+            { q: "1000mL（ミリリットル）と おなじなのは？", a: ["1L", "10L"], correct: 0 },
+            { q: "1dL（デシリットル）と おなじなのは？", a: ["100mL", "10mL"], correct: 0 },
+            { q: "0.5L（リットル）と おなじなのは？", a: ["500mL", "50mL"], correct: 0 },
+            { q: "1.5kg（キログラム）と おなじなのは？", a: ["1500g", "150g"], correct: 0 },
+            { q: "1cm（センチ）と おなじなのは？", a: ["10mm", "100mm"], correct: 0 },
+            { q: "ランドセルの <ruby>重<rt>おも</rt></ruby>さにちかいのは？", a: ["1kg", "1g"], correct: 0 }
+        ];
+
+        // ===== ゲーム変数 =====
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const app = document.getElementById('app');
+
+        let W, H; // キャンバスサイズ
+        let animId = null;
+        let isPlaying = false;
+
+        // 出題管理
+        let shuffled = []; // シャッフル済みクイズ配列
+        let qIndex = 0;    // 現在の出題インデックス
+        let correctCount = 0;
+        let totalAnswered = 0;
+        let allCorrectSoFar = true; // 10問目まで全問正解かどうか
+
+        // ゲート（2択）
+        let gate = null;      // 現在のゲートオブジェクト
+        let gateSpeed = 0.8;  // ゲートの接近速度（初期値を遅めに設定）
+        let gateZ = 0;        // ゲートのZ座標（奥=1, 手前=0）
+        const GATE_START_Z = 1.0;
+        const GATE_DECIDE_Z = 0.08; // この位置で判定（手前寄りにして猶予時間を確保）
+        let playerLane = 0;   // -1=左, 0=中央, 1=右
+        let answered = false; // このゲートに回答済みか
+        let laneAnimProgress = 0; // レーンアニメーション用
+
+        // 道路のストライプアニメーション
+        let roadOffset = 0;
+
+        // ヒーちゃん画像
+        const hiBackImg = new Image();
+        hiBackImg.src = 'hi-back.webp';
+
+        // 走りアニメーション
+        let runBounce = 0;
+
+        // 入力
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        // フィードバック
+        let feedbackTimer = null;
+
+        // ===== 初期化 =====
+        function resizeCanvas() {
+            W = app.clientWidth;
+            H = app.clientHeight;
+            canvas.width = W;
+            canvas.height = H;
+        }
+
+        function shuffleArray(arr) {
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        // ===== ゲーム開始 =====
+        function startGame() {
+            resizeCanvas();
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('hud').style.display = 'flex';
+
+            shuffled = shuffleArray(quizData);
+            qIndex = 0;
+            correctCount = 0;
+            totalAnswered = 0;
+            allCorrectSoFar = true;
+            gateSpeed = 0.8;
+            playerLane = 0;
+            laneAnimProgress = 0;
+            isPlaying = true;
+
+            showNextGate();
+            if (animId) cancelAnimationFrame(animId);
+            gameLoop();
+        }
+
+        // ===== 次のゲートを出す =====
+        function showNextGate() {
+            if (qIndex >= shuffled.length) {
+                // 全30問終了
+                endGame();
+                return;
+            }
+
+            const quiz = shuffled[qIndex];
+
+            // 正解の選択肢をランダムに左右に配置
+            const correctOnLeft = Math.random() < 0.5;
+            gate = {
+                z: GATE_START_Z,
+                leftText: correctOnLeft ? quiz.a[quiz.correct] : quiz.a[1 - quiz.correct],
+                rightText: correctOnLeft ? quiz.a[1 - quiz.correct] : quiz.a[quiz.correct],
+                correctSide: correctOnLeft ? -1 : 1, // -1=左が正解, 1=右が正解
+                quiz: quiz
+            };
+            answered = false;
+            playerLane = 0;
+            laneAnimProgress = 0;
+
+            // お題を表示
+            document.getElementById('q-text').innerHTML = quiz.q;
+            document.getElementById('question-area').classList.add('show');
+            document.getElementById('q-num').textContent = totalAnswered + 1;
+            document.getElementById('correct-count').textContent = correctCount;
+        }
+
+        // ===== 入力処理 =====
+        function chooseLane(dir) {
+            if (!isPlaying || answered || !gate) return;
+            playerLane = dir; // -1 or 1
+            laneAnimProgress = 0;
+        }
+
+        // キーボード
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a') chooseLane(-1);
+            if (e.key === 'ArrowRight' || e.key === 'd') chooseLane(1);
+        });
+
+        // タッチ/スワイプ
+        document.addEventListener('touchstart', (e) => {
+            if (!isPlaying) return;
+            const t = e.touches[0];
+            touchStartX = t.clientX;
+            touchStartY = t.clientY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+            if (!isPlaying || answered) return;
+            const t = e.changedTouches[0];
+            const dx = t.clientX - touchStartX;
+            const dy = t.clientY - touchStartY;
+            // 横方向のスワイプのみ
+            if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) {
+                chooseLane(dx > 0 ? 1 : -1);
+            }
+        }, { passive: true });
+
+        // タップ操作（画面の左半分・右半分）
+        canvas.addEventListener('pointerdown', (e) => {
+            if (!isPlaying || answered || !gate) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            if (x < rect.width / 2) {
+                chooseLane(-1);
+            } else {
+                chooseLane(1);
+            }
+        });
+
+        // ===== 判定 =====
+        function judgeGate() {
+            if (answered || !gate) return;
+            answered = true;
+
+            const isCorrect = (playerLane === gate.correctSide);
+
+            if (isCorrect) {
+                correctCount++;
+                showFeedback('⭕', '#4caf50');
+            } else {
+                allCorrectSoFar = false;
+                showFeedback('❌', '#f44336');
+            }
+
+            totalAnswered++;
+            document.getElementById('correct-count').textContent = correctCount;
+
+            // 10問終わったか判定
+            if (totalAnswered >= 10) {
+                if (allCorrectSoFar && qIndex < shuffled.length - 1) {
+                    // 全問正解：延長！速度UP（緩やかに上昇）
+                    gateSpeed = Math.min(gateSpeed + 0.3, 4);
+                } else if (!isCorrect || !allCorrectSoFar) {
+                    // 不正解が出た → 終了
+                    setTimeout(() => endGame(), 800);
+                    return;
+                }
+            }
+
+            // 次の問題へ
+            qIndex++;
+            if (qIndex >= shuffled.length) {
+                // 全30問終了
+                setTimeout(() => endGame(), 800);
+                return;
+            }
+
+            setTimeout(() => {
+                if (isPlaying) showNextGate();
+            }, 800);
+        }
+
+        function showFeedback(text, color) {
+            const fb = document.getElementById('feedback');
+            fb.textContent = text;
+            fb.style.color = color;
+            fb.style.opacity = '1';
+            if (feedbackTimer) clearTimeout(feedbackTimer);
+            feedbackTimer = setTimeout(() => {
+                fb.style.opacity = '0';
+            }, 600);
+        }
+
+        // ===== 描画 =====
+        function gameLoop() {
+            update();
+            draw();
+            animId = requestAnimationFrame(gameLoop);
+        }
+
+        function update() {
+            if (!isPlaying || !gate) return;
+
+            // ゲートの接近
+            gate.z -= gateSpeed * 0.003;
+
+            // レーンアニメーション
+            if (playerLane !== 0 && laneAnimProgress < 1) {
+                laneAnimProgress = Math.min(1, laneAnimProgress + 0.1);
+            }
+
+            // 判定ライン到達
+            if (!answered && gate.z <= GATE_DECIDE_Z) {
+                if (playerLane === 0) {
+                    // 選ばなかった場合は不正解扱い
+                    playerLane = gate.correctSide === -1 ? 1 : -1; // 逆を選んだことに
+                }
+                judgeGate();
+            }
+
+            // 道路アニメーション
+            roadOffset += gateSpeed * 0.5;
+            if (roadOffset > 40) roadOffset -= 40;
+
+            // 走りバウンス
+            runBounce += 0.15;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, W, H);
+
+            // 消失点
+            const vpX = W / 2;
+            const vpY = H * 0.28;
+
+            // 空
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, vpY + 50);
+            skyGrad.addColorStop(0, '#87ceeb');
+            skyGrad.addColorStop(0.6, '#b3e5fc');
+            skyGrad.addColorStop(1, '#e1f5fe');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, W, vpY + 50);
+
+            // 遠くの山
+            drawMountains(vpX, vpY);
+
+            // 地面
+            const groundGrad = ctx.createLinearGradient(0, vpY, 0, H);
+            groundGrad.addColorStop(0, '#81c784');
+            groundGrad.addColorStop(0.3, '#66bb6a');
+            groundGrad.addColorStop(1, '#4caf50');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, vpY, W, H - vpY);
+
+            // 道路
+            drawRoad(vpX, vpY);
+
+            // ゲート描画
+            if (gate) {
+                drawGate(vpX, vpY, gate);
+            }
+
+            // ヒーちゃん描画
+            drawRunner(vpX, vpY);
+        }
+
+        function drawMountains(vpX, vpY) {
+            ctx.fillStyle = '#a5d6a7';
+            ctx.beginPath();
+            ctx.moveTo(0, vpY + 20);
+            ctx.lineTo(W * 0.15, vpY - 30);
+            ctx.lineTo(W * 0.3, vpY + 10);
+            ctx.lineTo(W * 0.5, vpY - 50);
+            ctx.lineTo(W * 0.7, vpY + 5);
+            ctx.lineTo(W * 0.85, vpY - 25);
+            ctx.lineTo(W, vpY + 20);
+            ctx.lineTo(W, vpY + 50);
+            ctx.lineTo(0, vpY + 50);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function drawRoad(vpX, vpY) {
+            // 道路本体
+            const roadTopW = W * 0.08;
+            const roadBottomW = W * 0.9;
+            const roadTopY = vpY;
+            const roadBottomY = H;
+
+            ctx.fillStyle = '#616161';
+            ctx.beginPath();
+            ctx.moveTo(vpX - roadTopW, roadTopY);
+            ctx.lineTo(vpX + roadTopW, roadTopY);
+            ctx.lineTo(vpX + roadBottomW / 2, roadBottomY);
+            ctx.lineTo(vpX - roadBottomW / 2, roadBottomY);
+            ctx.closePath();
+            ctx.fill();
+
+            // 道路の端線
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(vpX - roadTopW, roadTopY);
+            ctx.lineTo(vpX - roadBottomW / 2, roadBottomY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(vpX + roadTopW, roadTopY);
+            ctx.lineTo(vpX + roadBottomW / 2, roadBottomY);
+            ctx.stroke();
+
+            // 中央線（点線 - アニメーション）
+            const steps = 15;
+            ctx.strokeStyle = '#ffeb3b';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < steps; i++) {
+                const t1 = (i * 2 + roadOffset / 20) % (steps * 2) / (steps * 2);
+                const t2 = ((i * 2 + 1) + roadOffset / 20) % (steps * 2) / (steps * 2);
+                if (t1 >= 1 || t2 >= 1) continue;
+
+                const progress1 = easeInQuad(t1);
+                const progress2 = easeInQuad(t2);
+
+                const y1 = roadTopY + (roadBottomY - roadTopY) * progress1;
+                const y2 = roadTopY + (roadBottomY - roadTopY) * progress2;
+
+                ctx.beginPath();
+                ctx.moveTo(vpX, y1);
+                ctx.lineTo(vpX, y2);
+                ctx.stroke();
+            }
+
+            // 左右レーンの分割線
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 10]);
+            // 左レーン
+            ctx.beginPath();
+            ctx.moveTo(vpX - roadTopW * 0.5, roadTopY);
+            ctx.lineTo(vpX - roadBottomW * 0.25, roadBottomY);
+            ctx.stroke();
+            // 右レーン
+            ctx.beginPath();
+            ctx.moveTo(vpX + roadTopW * 0.5, roadTopY);
+            ctx.lineTo(vpX + roadBottomW * 0.25, roadBottomY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function easeInQuad(t) {
+            return t * t;
+        }
+
+        // 3D座標をスクリーン座標に変換
+        function projectZ(z, vpX, vpY) {
+            // z: 1=奥, 0=手前
+            const scale = 1 - z * 0.92;
+            const roadTopW = W * 0.08;
+            const roadBottomW = W * 0.9;
+            const roadW = roadTopW + (roadBottomW - roadTopW) * scale;
+            const y = vpY + (H - vpY) * scale;
+            return { y, roadW, scale };
+        }
+
+        function drawGate(vpX, vpY, g) {
+            const proj = projectZ(g.z, vpX, vpY);
+            const y = proj.y;
+            const halfRoadW = proj.roadW / 2;
+            const gateH = 60 * proj.scale + 10;
+            const gateW = halfRoadW * 0.9;
+            const alpha = Math.min(1, proj.scale * 1.5);
+
+            if (proj.scale < 0.05) return; // あまりに小さければ描画しない
+
+            // 左ゲート
+            const leftX = vpX - halfRoadW * 0.5;
+            drawSingleGate(leftX, y - gateH, gateW, gateH, g.leftText,
+                g.correctSide === -1 ? '#43a047' : '#e53935',
+                answered && g.correctSide === -1, alpha);
+
+            // 右ゲート
+            const rightX = vpX + halfRoadW * 0.5;
+            drawSingleGate(rightX, y - gateH, gateW, gateH, g.rightText,
+                g.correctSide === 1 ? '#43a047' : '#e53935',
+                answered && g.correctSide === 1, alpha);
+        }
+
+        function drawSingleGate(cx, y, w, h, text, color, highlight, alpha) {
+            ctx.save();
+            ctx.globalAlpha = alpha;
+
+            // ゲート柱
+            const pillarW = Math.max(4, w * 0.08);
+            ctx.fillStyle = '#795548';
+            ctx.fillRect(cx - w / 2, y, pillarW, h);
+            ctx.fillRect(cx + w / 2 - pillarW, y, pillarW, h);
+
+            // ゲート上部バー
+            const barH = Math.max(h * 0.6, 20);
+            const barGrad = ctx.createLinearGradient(cx - w / 2, y, cx - w / 2, y + barH);
+            if (highlight) {
+                barGrad.addColorStop(0, '#fdd835');
+                barGrad.addColorStop(1, '#f9a825');
+            } else {
+                barGrad.addColorStop(0, 'rgba(255,255,255,0.95)');
+                barGrad.addColorStop(1, 'rgba(240,240,240,0.95)');
+            }
+            ctx.fillStyle = barGrad;
+
+            const r = Math.min(8, barH * 0.3);
+            roundRect(ctx, cx - w / 2 + pillarW, y, w - pillarW * 2, barH, r);
+            ctx.fill();
+
+            // ゲートの枠線
+            ctx.strokeStyle = color;
+            ctx.lineWidth = Math.max(2, w * 0.03);
+            roundRect(ctx, cx - w / 2 + pillarW, y, w - pillarW * 2, barH, r);
+            ctx.stroke();
+
+            // テキスト
+            const fontSize = Math.max(10, Math.min(24, barH * 0.5));
+            ctx.font = `bold ${fontSize}px "UD Digital Kyokasho-tai-R", sans-serif`;
+            ctx.fillStyle = '#333';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // HTMLタグを除去してCanvasに描画
+            const plainText = text.replace(/<ruby>|<\/ruby>|<rt>.*?<\/rt>/g, '');
+            ctx.fillText(plainText, cx, y + barH / 2, w - pillarW * 2 - 10);
+
+            ctx.restore();
+        }
+
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        function drawRunner(vpX, vpY) {
+            // ヒーちゃんの位置（手前寄り、やや下）
+            const runnerZ = 0.25;
+            const proj = projectZ(runnerZ, vpX, vpY);
+            const baseY = proj.y;
+
+            // レーンに応じたX位置
+            let offsetX = 0;
+            if (playerLane !== 0) {
+                const laneShift = proj.roadW * 0.22 * playerLane;
+                offsetX = laneShift * Math.min(1, laneAnimProgress);
+            }
+            const runnerX = vpX + offsetX;
+
+            // 走りバウンス
+            const bounce = Math.sin(runBounce) * 3;
+
+            const imgW = 60 * proj.scale + 20;
+            const imgH = imgW * 1.2;
+            const drawX = runnerX - imgW / 2;
+            const drawY = baseY - imgH + bounce;
+
+            // 影
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.beginPath();
+            ctx.ellipse(runnerX, baseY, imgW * 0.35, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // ヒーちゃん画像
+            if (hiBackImg.complete && hiBackImg.naturalWidth > 0) {
+                ctx.drawImage(hiBackImg, drawX, drawY, imgW, imgH);
+            } else {
+                // 画像がまだ読み込まれていない場合の代替
+                ctx.fillStyle = '#a1887f';
+                ctx.beginPath();
+                ctx.ellipse(runnerX, drawY + imgH * 0.5, imgW * 0.3, imgH * 0.4, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // ===== ゲーム終了 =====
+        function endGame() {
+            isPlaying = false;
+            if (animId) {
+                cancelAnimationFrame(animId);
+                animId = null;
+            }
+
+            document.getElementById('hud').style.display = 'none';
+            document.getElementById('question-area').classList.remove('show');
+
+            document.getElementById('result-correct').textContent = correctCount;
+            document.getElementById('result-total').textContent = totalAnswered;
+
+            if (correctCount === totalAnswered && totalAnswered >= 10) {
+                document.getElementById('result-title').textContent = '🎉 パーフェクト！';
+                document.getElementById('result-title').style.color = '#e91e63';
+                document.getElementById('result-msg').textContent =
+                    'すごい！' + totalAnswered + '問全部正解だよ！';
+            } else if (correctCount >= totalAnswered * 0.8) {
+                document.getElementById('result-title').textContent = '🌟 すばらしい！';
+                document.getElementById('result-title').style.color = '#ff9800';
+                document.getElementById('result-msg').textContent =
+                    'たんいマスターにちかづいてるよ！';
+            } else if (correctCount >= totalAnswered * 0.5) {
+                document.getElementById('result-title').textContent = '👍 よくがんばった！';
+                document.getElementById('result-title').style.color = '#2196f3';
+                document.getElementById('result-msg').textContent =
+                    'もうすこし れんしゅうしよう！';
+            } else {
+                document.getElementById('result-title').textContent = '💪 つぎこそ！';
+                document.getElementById('result-title').style.color = '#795548';
+                document.getElementById('result-msg').textContent =
+                    'たんいを おぼえて またチャレンジ！';
+            }
+
+            document.getElementById('result-screen').style.display = 'flex';
+
+            // ポイントボタンリセット
+            const btn = document.getElementById('reward-btn');
+            btn.disabled = false;
+            btn.style.background = '#ff9800';
+            btn.innerHTML = '🎁 ポイントゲット';
+        }
+
+        // ===== ポイント付与 =====
+        function getReward() {
+            const btn = document.getElementById('reward-btn');
+            btn.disabled = true;
+            btn.style.background = '#ccc';
+            btn.textContent = 'ゲットしました';
+
+            const points = correctCount * 5;
+
+            if (typeof showPointGetDialog === 'function') {
+                showPointGetDialog(points);
+            } else {
+                alert(points + 'ポイント ゲット！');
+            }
+        }
+
+        // ===== リサイズ対応 =====
+        window.addEventListener('resize', () => {
+            if (isPlaying) resizeCanvas();
+        });
+
+        // 初期描画
+        resizeCanvas();
+    </script>
+</body>
+
+</html>
