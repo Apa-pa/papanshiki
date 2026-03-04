@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>計算ストライク - ビリヤード</title>
+    <title>計算ビリヤード - ぱぱん式</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <script src="ranking.js"></script>
     <style>
@@ -223,7 +223,7 @@
             </div>
 
             <div id="start-screen" class="overlay">
-                <h1><ruby></ruby>計算<rt>けいさん</rt></ruby>ストライク</h1>
+                <h1><ruby>計算<rt>けいさん</rt></ruby>ビリヤード</h1>
                 <div style="font-size: 60px; margin: 10px;">🎱</div>
                 <p
                     style="color:#5d4037; font-size:16px; line-height: 1.6; font-weight: bold; text-align: left; padding: 0 20px;">
@@ -232,8 +232,9 @@
                     2. <ruby>場<rt>ば</rt></ruby>の<ruby>球<rt>たま</rt></ruby>に<ruby>当<rt>あ</rt></ruby>てると<ruby>数字<rt>すうじ
                         </rt></ruby>を「<ruby>吸収<rt>きゅうしゅう</rt></ruby>」する。<br>
                     3. <ruby>手球<rt>てだま</rt></ruby>の<ruby>数字<rt>すうじ</rt></ruby>を<span style="color:#d84315;">「<ruby>目標
-                            <rt>もくひょう</rt></ruby>の<ruby>数字<rt>すうじ</rt></ruby>」にピッタリ<ruby>合<rt>あ</rt>
-                            </ruby>わせよう。</span><br>
+                            <rt>もくひょう</rt>
+                        </ruby>の<ruby>数字<rt>すうじ</rt></ruby>」にピッタリ<ruby>合<rt>あ</rt>
+                        </ruby>わせよう。</span><br>
                     <br>
                     【ゲームオーバー<ruby>条件<rt>じょうけん</rt></ruby>】<br>
                     ❌ <ruby>目標<rt>もくひょう</rt></ruby>の<ruby>数字<rt>すうじ</rt></ruby>を<span
@@ -747,7 +748,9 @@
                 document.getElementById('gameover-screen').style.display = 'flex';
 
                 if (typeof showSaveDialog === 'function') {
-                    showSaveDialog('math_strike', score, isClear ? 100 : 30);
+                    // 獲得ポイント = スコアの10分の1（切り捨て、最低1）
+                    const earnedPoint = Math.max(1, Math.floor(score / 10));
+                    showSaveDialog('math_strike', score, earnedPoint);
                 }
             }
         </script>
