@@ -87,6 +87,7 @@ var urlsToCache = [
   './music_class.html',
   './pitch.html',
   './rhythm.html',
+  './enogu_creator.html',
 
   // === ゲーム・エンタメ ===
   './detective.html',

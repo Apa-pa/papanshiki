@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>えのぐクリエーター　ぱぱん式</title>
+    <script src="ranking.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Zen Kaku Gothic New", sans-serif;
+            background: #37474f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            height: 100dvh;
+            touch-action: manipulation;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        #app {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 100%;
+            max-height: 900px;
+            background: linear-gradient(180deg, #e8eaf6 0%, #c5cae9 100%);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ヘッダー（スコア） */
+        #ui-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #5c6bc0, #3949ab);
+            color: #fff;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        .header-item {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .header-item span {
+            color: #fdd835;
+            font-size: 22px;
+        }
+
+        /* ゲームフィールド */
+        #game-field {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(180deg, #e3f2fd 0%, #bbdefb 40%, #90caf9 100%);
+        }
+
+        /* ターゲット（落ちてくる色玉） */
+        .target-ball {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            border: 4px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 -5px 10px rgba(0, 0, 0, 0.15);
+            transition: none;
+            pointer-events: none;
+        }
+
+        .target-ball .color-name {
+            font-size: 13px;
+            color: #fff;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+            line-height: 1.2;
+        }
+
+        .target-ball .color-recipe {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.85);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            margin-top: 2px;
+        }
+
+        /* 発射台エリア */
+        #launcher-area {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 140px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        #launcher {
+            position: relative;
+            width: 80px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ヒーちゃん画像 */
+        #hii-img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.3));
+            z-index: 2;
+        }
+
+        /* 発射台の弾（色プレビュー） */
+        #launch-ball {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #bdbdbd;
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.15);
+            margin-top: -15px;
+            z-index: 1;
+            transition: background-color 0.2s, transform 0.15s;
+        }
+
+        /* 操作パネル */
+        #control-panel {
+            background: linear-gradient(0deg, #263238, #37474f);
+            padding: 12px 10px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        /* スタック表示 */
+        #stack-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 2px;
+        }
+
+        .stack-slot {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #546e7a;
+            border: 3px solid #78909c;
+            transition: background-color 0.2s, border-color 0.2s, transform 0.15s;
+        }
+
+        .stack-slot.filled {
+            border-color: #fff;
+            transform: scale(1.05);
+        }
+
+        .stack-arrow {
+            font-size: 18px;
+            color: #90a4ae;
+        }
+
+        #mixed-result {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #546e7a;
+            border: 3px solid #90a4ae;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s, border-color 0.2s;
+        }
+
+        #mixed-result.active {
+            border-color: #fdd835;
+            box-shadow: 0 0 15px rgba(253, 216, 53, 0.5);
+        }
+
+        /* ボタン行 */
+        #btn-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .color-btn {
+            width: 70px;
+            height: 52px;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #fff;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+            transition: transform 0.1s;
+            font-family: inherit;
+        }
+
+        .color-btn:active {
+            transform: scale(0.9) translateY(2px);
+        }
+
+        #btn-red {
+            background: #e53935;
+            box-shadow: 0 4px #b71c1c;
+        }
+
+        #btn-blue {
+            background: #1e88e5;
+            box-shadow: 0 4px #1565c0;
+        }
+
+        #btn-yellow {
+            background: #fdd835;
+            box-shadow: 0 4px #f9a825;
+            color: #5d4037;
+            text-shadow: none;
+        }
+
+        #btn-reset {
+            background: #78909c;
+            box-shadow: 0 4px #546e7a;
+            font-size: 13px;
+            width: 60px;
+        }
+
+        /* アンちゃんガイドエリア */
+        #guide-area {
+            position: absolute;
+            bottom: 160px;
+            left: 10px;
+            display: flex;
+            align-items: flex-end;
+            z-index: 15;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        #guide-area.show {
+            opacity: 1;
+        }
+
+        #an-img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.3));
+            animation: bounce 2s infinite ease-in-out;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .guide-bubble {
+            background: #fff;
+            border: 3px solid #66bb6a;
+            border-radius: 15px;
+            padding: 8px 12px;
+            margin-left: 8px;
+            margin-bottom: 25px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #2e7d32;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            max-width: 200px;
+            word-wrap: break-word;
+        }
+
+        .guide-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 15px;
+            border-width: 10px 10px 0 0;
+            border-style: solid;
+            border-color: #66bb6a transparent transparent transparent;
+        }
+
+        .guide-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 17px;
+            border-width: 8px 8px 0 0;
+            border-style: solid;
+            border-color: #fff transparent transparent transparent;
+        }
+
+        /* オーバーレイ */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* スタート画面 */
+        #start-screen {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 50%, #ffccbc 100%);
+        }
+
+        .game-title {
+            font-size: 28px;
+            color: #e65100;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.08);
+        }
+
+        .game-subtitle {
+            font-size: 15px;
+            color: #bf360c;
+            margin-bottom: 15px;
+        }
+
+        .rule-box {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 15px 18px;
+            margin: 10px 0;
+            text-align: left;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            line-height: 1.8;
+            max-width: 380px;
+            width: 100%;
+        }
+
+        .btn {
+            padding: 14px 50px;
+            font-size: 22px;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-family: inherit;
+        }
+
+        .btn-start {
+            background: #ff6d00;
+            color: #fff;
+            box-shadow: 0 5px #e65100;
+        }
+
+        .btn-start:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px #e65100;
+        }
+
+        /* 結果画面 */
+        #gameover-screen {
+            background: rgba(255, 255, 255, 0.95);
+            display: none;
+        }
+
+        .result-title {
+            font-size: 30px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-score {
+            font-size: 50px;
+            font-weight: bold;
+            color: #e91e63;
+        }
+
+        .result-label {
+            font-size: 18px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .btn-retry {
+            background: #ff6d00;
+            color: #fff;
+            box-shadow: 0 5px #e65100;
+            font-size: 18px;
+        }
+
+        .btn-retry:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px #e65100;
+        }
+
+        .back-link {
+            margin-top: 15px;
+            color: #8d6e63;
+            text-decoration: underline;
+            font-size: 16px;
+            display: inline-block;
+        }
+
+        /* ヒットエフェクト */
+        .hit-effect {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 20;
+            animation: hitExplode 0.5s ease-out forwards;
+        }
+
+        @keyframes hitExplode {
+            0% {
+                transform: scale(0.5);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        /* 発射アニメーション */
+        .shoot-ball {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* マッチ状態のグロー */
+        #launch-ball.matched {
+            animation: matchPulse 0.3s ease-in-out infinite alternate;
+        }
+
+        @keyframes matchPulse {
+            0% {
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.15), 0 0 20px rgba(255, 235, 59, 0.6);
+            }
+
+            100% {
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3), inset 0 -3px 8px rgba(0, 0, 0, 0.15), 0 0 35px rgba(255, 235, 59, 0.9);
+            }
+        }
+
+        /* キャラクタープレビュー */
+        .char-preview {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            margin: 5px;
+        }
+
+        /* ミス時の画面フラッシュ */
+        #miss-flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(244, 67, 54, 0.4);
+            z-index: 40;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <!-- ヘッダー -->
+        <div id="ui-header">
+            <div class="header-item">🎨 スコア: <span id="score-display">0</span></div>
+            <div class="header-item"><ruby>速度<rt>そくど</rt></ruby>: <span id="speed-display">1</span></div>
+        </div>
+
+        <!-- ゲームフィールド -->
+        <div id="game-field">
+            <!-- ターゲットはJSで動的生成 -->
+
+            <!-- 発射台 -->
+            <div id="launcher-area">
+                <div id="launcher">
+                    <img id="hii-img" src="hi-back.webp" alt="ヒーちゃん">
+                    <div id="launch-ball"></div>
+                </div>
+            </div>
+
+            <!-- アンちゃんガイド -->
+            <div id="guide-area">
+                <img id="an-img" src="hari-an.webp" alt="アンちゃん">
+                <div id="guide-bubble" class="guide-bubble">がんばってね！</div>
+            </div>
+
+            <!-- ミスフラッシュ -->
+            <div id="miss-flash"></div>
+        </div>
+
+        <!-- 操作パネル -->
+        <div id="control-panel">
+            <div id="stack-display">
+                <div class="stack-slot" id="slot-0"></div>
+                <div class="stack-slot" id="slot-1"></div>
+                <div class="stack-slot" id="slot-2"></div>
+                <span class="stack-arrow">→</span>
+                <div id="mixed-result"></div>
+            </div>
+            <div id="btn-row">
+                <button class="color-btn" id="btn-red" onclick="addToStack('R')"><ruby>赤<rt>あか</rt></ruby></button>
+                <button class="color-btn" id="btn-blue" onclick="addToStack('B')"><ruby>青<rt>あお</rt></ruby></button>
+                <button class="color-btn" id="btn-yellow" onclick="addToStack('Y')"><ruby>黄<rt>き</rt></ruby></button>
+                <button class="color-btn" id="btn-reset" onclick="resetStack()">リセット</button>
+            </div>
+        </div>
+
+        <!-- スタート画面 -->
+        <div id="start-screen" class="overlay">
+            <div style="font-size: 60px; margin-bottom: 10px;">🎨</div>
+            <h1 class="game-title">えのぐクリエーター</h1>
+            <p class="game-subtitle">〜<ruby>色<rt>いろ</rt></ruby>をまぜて、ねらいうち！〜</p>
+            <div style="display:flex; justify-content:center;">
+                <img src="hi-192.webp" alt="ヒーちゃん" class="char-preview">
+                <img src="hari-an.webp" alt="アンちゃん" class="char-preview">
+            </div>
+            <div class="rule-box">
+                【ルール】<br>
+                🔴🔵🟡 <ruby>赤<rt>あか</rt></ruby>・<ruby>青<rt>あお</rt></ruby>・<ruby>黄<rt>き</rt></ruby>のボタンで<ruby>色<rt>いろ
+                    </rt></ruby>をためよう！<br>
+                🎯 <ruby>上<rt>うえ</rt></ruby>から<ruby>落<rt>お</rt></ruby>ちてくる<ruby>色<rt>いろ</rt></ruby>と<ruby>同<rt>おな</rt>
+                </ruby>じ<ruby>色<rt>いろ</rt></ruby>を<ruby>作<rt>つく</rt></ruby>ろう！<br>
+                ✨ <ruby>色<rt>いろ</rt></ruby>が<ruby>合<rt>あ</rt></ruby>うと<ruby>自動<rt>じどう</rt></ruby>で<ruby>発射<rt>はっしゃ</rt>
+                </ruby>！<br>
+                💥 <ruby>色<rt>いろ</rt></ruby>を<ruby>作<rt>つく</rt></ruby>れずに<ruby>落<rt>お</rt></ruby>ちたらゲームオーバー<br>
+                ⚡ どんどん<ruby>速<rt>はや</rt></ruby>くなるよ！
+            </div>
+            <button class="btn btn-start" onclick="startGame()">スタート</button>
+            <a href="index.html" class="back-link">🏠 ホームへもどる</a>
+        </div>
+
+        <!-- ゲームオーバー画面 -->
+        <div id="gameover-screen" class="overlay">
+            <div style="font-size: 70px;">🎨</div>
+            <h1 class="result-title" id="result-title" style="color:#e65100;">ゲームオーバー</h1>
+            <p class="result-label">スコア</p>
+            <p class="result-score"><span id="final-score">0</span><span style="font-size:20px; color:#555;"> <ruby>点
+                        <rt>てん</rt>
+                    </ruby></span></p>
+            <div id="result-chars" style="display:flex; justify-content:center; margin:10px 0;">
+                <img src="hi-192.webp" alt="ヒーちゃん" class="char-preview">
+                <img src="hari-an.webp" alt="アンちゃん" class="char-preview">
+            </div>
+            <p id="result-msg" style="font-size:16px; font-weight:bold; color:#555; margin-bottom:10px;"></p>
+            <button class="btn btn-retry" onclick="location.reload()">🔄 もういっかい</button>
+            <a href="index.html" class="back-link">🏠 ホームへ</a>
+        </div>
+    </div>
+
+    <script>
+        // ピンチズーム防止
+        document.addEventListener('gesturestart', e => e.preventDefault());
+        document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+
+        // ===== 12色の定義 =====
+        const COLOR_DEFS = {
+            // 基本色（1色）
+            'R': { name: '<ruby>赤<rt>あか</rt></ruby>', recipe: 'R', color: '#ff1744', textColor: '#fff' },
+            'B': { name: '<ruby>青<rt>あお</rt></ruby>', recipe: 'B', color: '#2979ff', textColor: '#fff' },
+            'Y': { name: '<ruby>黄<rt>き</rt></ruby>', recipe: 'Y', color: '#ffea00', textColor: '#5d4037' },
+            // 二次色（2色）
+            'RB': { name: '<ruby>紫<rt>むらさき</rt></ruby>', recipe: 'R+B', color: '#aa00ff', textColor: '#fff' },
+            'RY': { name: 'オレンジ', recipe: 'R+Y', color: '#ff9100', textColor: '#fff' },
+            'BY': { name: '<ruby>緑<rt>みどり</rt></ruby>', recipe: 'B+Y', color: '#00c853', textColor: '#fff' },
+            // 三次色（3色）
+            'RRB': { name: '<ruby>赤紫<rt>あかむらさき</rt></ruby>', recipe: 'R+R+B', color: '#c51162', textColor: '#fff' },
+            'RBB': { name: '<ruby>青紫<rt>あおむらさき</rt></ruby>', recipe: 'R+B+B', color: '#6200ea', textColor: '#fff' },
+            'RRY': { name: '<ruby>朱色<rt>しゅいろ</rt></ruby>', recipe: 'R+R+Y', color: '#ff6d00', textColor: '#fff' },
+            'RYY': { name: '<ruby>山吹色<rt>やまぶきいろ</rt></ruby>', recipe: 'R+Y+Y', color: '#ffc400', textColor: '#5d4037' },
+            'BBY': { name: '<ruby>青緑<rt>あおみどり</rt></ruby>', recipe: 'B+B+Y', color: '#00bfa5', textColor: '#fff' },
+            'BYY': { name: '<ruby>黄緑<rt>きみどり</rt></ruby>', recipe: 'B+Y+Y', color: '#76ff03', textColor: '#333' },
+        };
+
+        // スタックからキーへ変換
+        function stackToKey(stack) {
+            // R→B→Y の順でソートしてキーにする（アルファベット順だとBR等になりキー不一致になるため）
+            const order = { 'R': 0, 'B': 1, 'Y': 2 };
+            const sorted = [...stack].sort((a, b) => order[a] - order[b]);
+            return sorted.join('');
+        }
+
+        // ===== ゲーム変数 =====
+        let isPlaying = false;
+        let score = 0;
+        let colorStack = []; // 現在のスタック（最大3つ、'R','B','Y'のいずれか）
+        let targets = []; // 画面上に出ているターゲットの配列
+        let baseSpeed = 0.5; // 基本落下速度(px/frame)
+        let spawnInterval = 3000; // ターゲット生成間隔(ms)
+        let spawnTimer = null;
+        let animId = null;
+        let guideTimer = null;
+        let comboCount = 0; // 連続正解数
+        let totalSpawned = 0; // 出題した合計数（出題難易度管理用）
+
+        // 基本色＋二次色のキー（最初の6個用）
+        const EASY_KEYS = ['R', 'B', 'Y', 'RB', 'RY', 'BY'];
+        // 全12色のキー
+        const ALL_KEYS = Object.keys(COLOR_DEFS);
+
+        const gameField = document.getElementById('game-field');
+        const launchBall = document.getElementById('launch-ball');
+        const mixedResult = document.getElementById('mixed-result');
+
+        // --- 色ボタンの個別カラー定義 ---
+        const SLOT_COLORS = {
+            'R': '#ff1744',
+            'B': '#2979ff',
+            'Y': '#ffea00'
+        };
+
+        // ===== スタック操作 =====
+        function addToStack(color) {
+            if (!isPlaying) return;
+            if (colorStack.length >= 3) return;
+
+            colorStack.push(color);
+            updateStackUI();
+            checkAutoShoot();
+        }
+
+        function resetStack() {
+            if (!isPlaying) return;
+            colorStack = [];
+            updateStackUI();
+        }
+
+        function updateStackUI() {
+            // スロット表示更新
+            for (let i = 0; i < 3; i++) {
+                const slot = document.getElementById(`slot-${i}`);
+                if (i < colorStack.length) {
+                    slot.style.backgroundColor = SLOT_COLORS[colorStack[i]];
+                    slot.classList.add('filled');
+                } else {
+                    slot.style.backgroundColor = '#546e7a';
+                    slot.classList.remove('filled');
+                }
+            }
+
+            // 混合結果の表示
+            const key = stackToKey(colorStack);
+            const def = COLOR_DEFS[key];
+
+            if (def) {
+                mixedResult.style.backgroundColor = def.color;
+                mixedResult.classList.add('active');
+                launchBall.style.backgroundColor = def.color;
+            } else if (colorStack.length > 0) {
+                // 有効な色ではないが何かスタックされている
+                // 途中経過として最後に入れた色を薄く表示
+                const lastColor = SLOT_COLORS[colorStack[colorStack.length - 1]];
+                mixedResult.style.backgroundColor = lastColor;
+                mixedResult.classList.remove('active');
+                launchBall.style.backgroundColor = lastColor;
+            } else {
+                mixedResult.style.backgroundColor = '#546e7a';
+                mixedResult.classList.remove('active');
+                launchBall.style.backgroundColor = '#bdbdbd';
+            }
+
+            // マッチ判定（ターゲットと一致していたらグロー）
+            const hasMatch = def && targets.some(t => t.key === key);
+            if (hasMatch) {
+                launchBall.classList.add('matched');
+            } else {
+                launchBall.classList.remove('matched');
+            }
+        }
+
+        // ===== 自動発射チェック =====
+        function checkAutoShoot() {
+            const key = stackToKey(colorStack);
+            const def = COLOR_DEFS[key];
+            if (!def) return;
+
+            // 最も手前（Y座標が最大）のターゲットを探す
+            let frontTarget = null;
+            for (const t of targets) {
+                if (t.key === key) {
+                    if (!frontTarget || t.y > frontTarget.y) {
+                        frontTarget = t;
+                    }
+                }
+            }
+            if (!frontTarget) return;
+
+            // 手前のターゲットが最前面にいるか確認（手前にある別の色を飛び越えない）
+            // → 最もY座標が大きいターゲットと一致する場合のみ発射
+            const frontmost = targets.reduce((a, b) => a.y > b.y ? a : b);
+            if (frontmost !== frontTarget) return;
+
+            // マッチした！発射！
+            shootAt(frontTarget, def);
+        }
+
+        // ===== 発射アニメーション =====
+        function shootAt(target, colorDef) {
+            // 発射台の位置を取得
+            const launcherRect = document.getElementById('launcher').getBoundingClientRect();
+            const fieldRect = gameField.getBoundingClientRect();
+
+            const startX = launcherRect.left - fieldRect.left + launcherRect.width / 2;
+            const startY = launcherRect.top - fieldRect.top;
+
+            // ターゲットの位置
+            const targetEl = target.element;
+            const targetX = parseFloat(targetEl.style.left) + 35;
+            const targetY = target.y + 35;
+
+            // 弾を生成
+            const bullet = document.createElement('div');
+            bullet.className = 'shoot-ball';
+            bullet.style.width = '30px';
+            bullet.style.height = '30px';
+            bullet.style.backgroundColor = colorDef.color;
+            bullet.style.left = (startX - 15) + 'px';
+            bullet.style.top = startY + 'px';
+            bullet.style.boxShadow = `0 0 15px ${colorDef.color}`;
+            bullet.style.border = '3px solid rgba(255,255,255,0.8)';
+            gameField.appendChild(bullet);
+
+            // 弾のアニメーション
+            const dx = targetX - startX;
+            const dy = targetY - startY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const duration = Math.max(150, Math.min(400, dist * 0.8));
+
+            bullet.style.transition = `left ${duration}ms linear, top ${duration}ms linear`;
+            requestAnimationFrame(() => {
+                bullet.style.left = (targetX - 15) + 'px';
+                bullet.style.top = (targetY - 15) + 'px';
+            });
+
+            // ヒット処理
+            setTimeout(() => {
+                bullet.remove();
+                hitTarget(target, colorDef);
+            }, duration);
+
+            // スタックをリセット
+            colorStack = [];
+            updateStackUI();
+
+            // 発射台の弾を揺らすエフェクト
+            launchBall.style.transform = 'scale(0.7)';
+            setTimeout(() => { launchBall.style.transform = 'scale(1)'; }, 150);
+        }
+
+        // ===== ヒット処理 =====
+        function hitTarget(target, colorDef) {
+            // エフェクト
+            const effect = document.createElement('div');
+            effect.className = 'hit-effect';
+            effect.style.width = '70px';
+            effect.style.height = '70px';
+            effect.style.left = (parseFloat(target.element.style.left) + 0) + 'px';
+            effect.style.top = (target.y) + 'px';
+            effect.style.background = `radial-gradient(circle, ${colorDef.color}, transparent)`;
+            gameField.appendChild(effect);
+            setTimeout(() => effect.remove(), 500);
+
+            // ターゲット削除
+            target.element.remove();
+            targets = targets.filter(t => t !== target);
+
+            // スコア加算
+            score += 10;
+            comboCount++;
+            document.getElementById('score-display').textContent = score;
+
+            // 速度更新
+            updateSpeed();
+
+            // ガイドメッセージ
+            if (comboCount === 3) {
+                showGuide('いいかんじ！🎨');
+            } else if (comboCount === 5) {
+                showGuide('すごい！<ruby>連続<rt>れんぞく</rt></ruby>ヒット！✨');
+            } else if (comboCount === 10) {
+                showGuide('<ruby>天才<rt>てんさい</rt></ruby>！もうプロだね！🌟');
+            }
+        }
+
+        // ===== 速度管理 =====
+        function updateSpeed() {
+            // スコアに応じて加速
+            const level = Math.floor(score / 30) + 1;
+            baseSpeed = 0.5 + (level - 1) * 0.15;
+            spawnInterval = Math.max(1200, 3000 - (level - 1) * 200);
+
+            document.getElementById('speed-display').textContent = level;
+        }
+
+        // ===== ターゲット生成 =====
+        function spawnTarget() {
+            if (!isPlaying) return;
+
+            const fieldW = gameField.clientWidth;
+
+            // 最初の6個は基本色＋二次色のみ、7個目以降は三次色も含む全12色
+            const pool = (totalSpawned < 6) ? EASY_KEYS : ALL_KEYS;
+            const key = pool[Math.floor(Math.random() * pool.length)];
+            const def = COLOR_DEFS[key];
+            totalSpawned++;
+
+            // ターゲット要素を生成
+            const ball = document.createElement('div');
+            ball.className = 'target-ball';
+            const size = 70;
+            ball.style.width = size + 'px';
+            ball.style.height = size + 'px';
+            ball.style.backgroundColor = def.color;
+
+            // 位置（ランダムなX座標）
+            const x = Math.random() * (fieldW - size - 20) + 10;
+            ball.style.left = x + 'px';
+            ball.style.top = '-80px';
+
+            // 色名とレシピを表示
+            ball.innerHTML = `
+                <span class="color-name">${def.name}</span>
+                <span class="color-recipe">${def.recipe}</span>
+            `;
+
+            gameField.appendChild(ball);
+
+            const target = {
+                element: ball,
+                key: key,
+                x: x,
+                y: -80
+            };
+
+            targets.push(target);
+
+            // 現在のスタックと一致チェック（スポーン時に既にマッチしている場合）
+            updateStackUI();
+
+            // 次のスポーンをスケジュール
+            scheduleNextSpawn();
+        }
+
+        function scheduleNextSpawn() {
+            if (spawnTimer) clearTimeout(spawnTimer);
+            // ランダムに少しずらす
+            const jitter = (Math.random() - 0.5) * 500;
+            spawnTimer = setTimeout(spawnTarget, spawnInterval + jitter);
+        }
+
+        // ===== ゲームループ =====
+        function gameLoop() {
+            if (!isPlaying) return;
+
+            const fieldH = gameField.clientHeight;
+            const limitY = fieldH - 160; // 発射台エリアの上端
+
+            let missed = false;
+
+            for (let i = targets.length - 1; i >= 0; i--) {
+                const t = targets[i];
+                t.y += baseSpeed; // 全ターゲット同一速度（追い抜き防止）
+                t.element.style.top = t.y + 'px';
+
+                // 画面下端到達判定
+                if (t.y > limitY) {
+                    // 逃した！
+                    missed = true;
+                    // フラッシュ
+                    const flash = document.getElementById('miss-flash');
+                    flash.style.opacity = '1';
+                    setTimeout(() => { flash.style.opacity = '0'; }, 300);
+
+                    t.element.remove();
+                    targets.splice(i, 1);
+                    comboCount = 0;
+                    break;
+                }
+            }
+
+            if (missed) {
+                // ゲームオーバー
+                gameOver();
+                return;
+            }
+
+            animId = requestAnimationFrame(gameLoop);
+        }
+
+        // ===== ガイドメッセージ =====
+        function showGuide(msg) {
+            const area = document.getElementById('guide-area');
+            const bubble = document.getElementById('guide-bubble');
+            bubble.innerHTML = msg;
+            area.classList.add('show');
+
+            if (guideTimer) clearTimeout(guideTimer);
+            guideTimer = setTimeout(() => {
+                area.classList.remove('show');
+            }, 3000);
+        }
+
+        // ===== ゲーム開始 =====
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('gameover-screen').style.display = 'none';
+
+            isPlaying = true;
+            score = 0;
+            colorStack = [];
+            targets = [];
+            baseSpeed = 0.5;
+            spawnInterval = 3000;
+            comboCount = 0;
+            totalSpawned = 0;
+
+            document.getElementById('score-display').textContent = '0';
+            document.getElementById('speed-display').textContent = '1';
+            updateStackUI();
+
+            // 既存のターゲットをクリア
+            gameField.querySelectorAll('.target-ball, .shoot-ball, .hit-effect').forEach(el => el.remove());
+
+            // アンちゃんの開始メッセージ
+            showGuide('３つの<ruby>色<rt>いろ</rt></ruby>をまぜ<ruby>合<rt>あ</rt></ruby>わせれば、<ruby>無限<rt>むげん</rt></ruby>の<ruby>可能性<rt>かのうせい</rt></ruby>が<ruby>広<rt>ひろ</rt></ruby>がるよ！');
+
+            // 少し待ってから最初のターゲット
+            setTimeout(() => {
+                if (isPlaying) spawnTarget();
+            }, 1500);
+
+            // ゲームループ開始
+            if (animId) cancelAnimationFrame(animId);
+            gameLoop();
+        }
+
+        // ===== ゲームオーバー =====
+        function gameOver() {
+            isPlaying = false;
+            if (spawnTimer) clearTimeout(spawnTimer);
+            if (animId) cancelAnimationFrame(animId);
+
+            // ガイドメッセージ
+            showGuide('ざんねん…また<ruby>挑戦<rt>ちょうせん</rt></ruby>してね！');
+
+            // 結果表示
+            setTimeout(() => {
+                document.getElementById('result-title').textContent =
+                    score >= 200 ? '🎉 すばらしい！' :
+                        score >= 100 ? '✨ いいかんじ！' :
+                            'ゲームオーバー';
+                document.getElementById('result-title').style.color =
+                    score >= 200 ? '#2e7d32' :
+                        score >= 100 ? '#f57c00' : '#e65100';
+
+                document.getElementById('final-score').textContent = score;
+
+                // メッセージ
+                let msg = '';
+                if (score >= 200) msg = 'きみは<ruby>色<rt>いろ</rt></ruby>の<ruby>天才<rt>てんさい</rt></ruby>！🌟';
+                else if (score >= 100) msg = '<ruby>色<rt>いろ</rt></ruby>まぜがじょうずだね！🎨';
+                else if (score >= 50) msg = 'いい<ruby>感<rt>かん</rt></ruby>じ！もっとれんしゅうしよう！';
+                else msg = '<ruby>色<rt>いろ</rt></ruby>を<ruby>覚<rt>おぼ</rt></ruby>えて、またちょうせんしてね！';
+                document.getElementById('result-msg').innerHTML = msg;
+
+                document.getElementById('gameover-screen').style.display = 'flex';
+
+                // セーブダイアログ
+                if (typeof showSaveDialog === 'function') {
+                    showSaveDialog('enogu_creator', score);
+                }
+            }, 800);
+        }
+    </script>
+</body>
+
+</html>
