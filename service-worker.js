@@ -1,5 +1,5 @@
 // キャッシュの名前（更新時にバージョンを変えると新しいキャッシュが作られます）
-var CACHE_NAME = 'papanshiki-v4';
+var CACHE_NAME = 'papanshiki-v5';
 var urlsToCache = [
   // === トップページ ===
   './',
@@ -124,6 +124,7 @@ var urlsToCache = [
   './programming.html',
   './record.html',
   './open_record.html',
+  './dashboard.html',
   './backup.html',
   './privacy.html',
   './room.html',

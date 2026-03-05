@@ -276,6 +276,7 @@ e:\ぱぱん式\
 │
 ├── record.html         # 記録・目標管理ページ
 ├── open_record.html    # 全国ランキング閲覧
+├── dashboard.html      # 保護者向けダッシュボード（成績・成長記録）
 ├── calendar.html       # まなびカレンダー
 ├── bank.html           # ぱぱん銀行（為替）
 ├── stock.html          # ぱぱん証券（株取引）
