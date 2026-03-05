@@ -104,6 +104,8 @@
             <option value="touch25">1から25までタッチ</option>
             <option value="rail">つなげて！トロッコ</option>
             <option value="eawase">どうぶつ あわせ</option>
+            <option value="tsumitsumi">漢字つみつみ</option>
+            <option value="math_strike">計算ビリヤード</option>
         </select>
 
         <div id="ranking-container">
@@ -138,12 +140,13 @@
             container.innerHTML = '<div class="loading">データを よみこみ中...</div>';
 
             try {
-                // クエリの作成 (gameIdで絞り込み、scoreの昇順(Timeなら早い順)で上位10件)
-                // ※スコア形式のゲームなら 'desc' に変える必要があります
+                // スコアタイプのゲームは高い順(desc)、タイムタイプは低い順(asc)
+                const scoreTypeGames = ['rain_math', 'rain_vowel', 'rain_consonant', 'tsumitsumi', 'math_strike', 'enogu_creator'];
+                const sortOrder = scoreTypeGames.includes(gameId) ? 'desc' : 'asc';
                 const q = query(
                     collection(db, "world_rankings"),
                     where("gameId", "==", gameId),
-                    orderBy("score", "asc"),
+                    orderBy("score", sortOrder),
                     limit(10)
                 );
 
@@ -161,7 +164,7 @@
                         <li class="ranking-item">
                             <span class="rank">${medal}</span>
                             <span class="name">${data.name}</span>
-                            <span class="score">${data.score} <small>秒</small></span>
+                            <span class="score">${data.score} <small>${scoreTypeGames.includes(gameId) ? 'こ／点' : '秒'}</small></span>
                         </li>
                     `;
                         rank++;
