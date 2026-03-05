@@ -29,7 +29,8 @@ const GAME_LIST = {
     'frac_sub_hard': { name: '分数ひきざん(むずかしい)', type: 'time', unit: '秒' },
     'frac_multi': { name: '分数かけ算', type: 'time', unit: '秒' },
     'math_strike': { name: '計算ビリヤード', type: 'score', unit: '点' },
-    'enogu_creator': { name: 'えのぐクリエーター', type: 'score', unit: '点' }
+    'enogu_creator': { name: 'えのぐクリエーター', type: 'score', unit: '点' },
+    'eigo_nakama': { name: 'えいごDEなかまさがし', type: 'score', unit: '点' }
 };
 
 // --- リアル株価連動設定 ---

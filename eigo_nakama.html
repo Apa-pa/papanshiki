@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>えいごDEなかまさがし - ぱぱん式</title>
+    <script src="ranking.js"></script>
+    <script type="module" src="firebase-ranking.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #e0e0e0;
+            font-family: "UD Digital Kyokasho-tai-R", "Zen Kaku Gothic New", sans-serif;
+            touch-action: none;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 100%;
+            max-height: 900px;
+            background-color: #FFFDE7;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ---------------- UIレイヤー ---------------- */
+        #ui-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #FFF9C4;
+            border-bottom: 4px solid #FFF59D;
+            z-index: 10;
+        }
+
+        #score-box {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #5D4037;
+            border: 3px solid #FFCC80;
+        }
+
+        #action-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-round {
+            background: #FF7043;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 4px #D84315;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-round:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        /* ---------------- NEXT表示・キャラクター ---------------- */
+        #next-box {
+            position: absolute;
+            top: 70px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: #5D4037;
+            border: 3px solid #81D4FA;
+            z-index: 5;
+        }
+
+        .char-img {
+            width: 80px;
+            height: auto;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+        }
+
+        #heechan-area {
+            position: absolute;
+            left: 15px;
+            top: 70px;
+            z-index: 5;
+            animation: bounce 2s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        #anchan-area {
+            position: absolute;
+            right: -120px;
+            bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            z-index: 15;
+            transition: right 0.3s ease-in-out;
+            pointer-events: none;
+        }
+
+        #anchan-area.show {
+            right: 10px;
+        }
+
+        .bubble {
+            background: #fff;
+            border: 3px solid #FF8A65;
+            border-radius: 15px;
+            padding: 10px 15px;
+            font-weight: bold;
+            color: #D84315;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        /* ---------------- キャンバス ---------------- */
+        #canvas-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #game-canvas {
+            background-color: #ffffff;
+            border: 4px solid #BCAAA4;
+            border-radius: 10px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ---------------- オーバーレイ ---------------- */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 253, 231, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            text-align: center;
+        }
+
+        h1 {
+            color: #d84315;
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-family: serif;
+        }
+
+        .btn {
+            background: #d84315;
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px #bf360c;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: none;
+        }
+
+        .back-link {
+            margin-top: 20px;
+            color: #8d6e63;
+            text-decoration: underline;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+
+        <div id="ui-top">
+            <div id="score-box">スコア: <span id="score">0</span></div>
+            <div id="action-btns">
+                <button class="btn-round" onclick="togglePause()">⏸</button>
+                <button class="btn-round" onclick="forceGameOver()"
+                    style="background:#8D6E63;box-shadow:0 4px #5D4037;">⏹</button>
+            </div>
+        </div>
+
+        <!-- NEXT表示 -->
+        <div id="next-box">
+            NEXT<br>
+            <canvas id="next-canvas" width="60" height="120"></canvas>
+        </div>
+
+        <!-- ヒーちゃん -->
+        <div id="heechan-area">
+            <img src="hi-192.webp" alt="ヒーちゃん" class="char-img">
+        </div>
+
+        <!-- キャンバスエリア -->
+        <div id="canvas-wrapper">
+            <canvas id="game-canvas"></canvas>
+        </div>
+
+        <!-- アンちゃん -->
+        <div id="anchan-area">
+            <div id="anchan-msg" class="bubble" style="display:none;">Great!</div>
+            <img src="hari-an.webp" alt="アンちゃん" class="char-img">
+        </div>
+
+        <!-- タイトル画面 -->
+        <div id="start-screen" class="overlay">
+            <h1>えいご<span style="color:#d84315;">DE</span>なかまさがし</h1>
+            <div style="font-size: 60px; margin: 10px;">🧩</div>
+            <p
+                style="color:#5d4037; font-size:16px; line-height: 1.6; font-weight: bold; text-align: left; padding: 0 20px;">
+                【<ruby>遊<rt>あそ</rt></ruby>びかた】<br>
+                1. ２つセットのブロックが<ruby>落<rt>お</rt></ruby>ちてくるよ。<br>
+                2. ブロックの<ruby>近<rt>ちか</rt></ruby>くをタップで「<ruby>回転<rt>かいてん</rt></ruby>」！<br>
+                3. 左右（さゆう）にスワイプで「<ruby>移動<rt>いどう</rt></ruby>」<br>
+                4. 下（した）にタップ・スワイプで「<ruby>落下<rt>らっか</rt></ruby>」<br>
+                5. <ruby>同<rt>おな</rt></ruby>じ<ruby>仲間<rt>なかま</rt></ruby>のカードを<span
+                    style="color:#d84315;">４つ</span>つなげて<ruby>消<rt>け</rt></ruby>そう！<br>
+            </p>
+            <button class="btn" onclick="startGame()">スタート</button>
+            <br>
+            <a href="index.html" class="back-link">🏠 ホームへもどる</a>
+        </div>
+
+        <!-- ポーズ画面 -->
+        <div id="pause-screen" class="overlay" style="display:none;">
+            <h1 style="color:#5d4037;"><ruby>一時停止<rt>いちじていし</rt></ruby></h1>
+            <button class="btn" onclick="togglePause()">つづきから</button>
+            <br>
+            <button class="btn" onclick="forceGameOver()"
+                style="background:#8D6E63;box-shadow:0 5px #5D4037; padding: 10px 30px; font-size: 18px;">やめる</button>
+        </div>
+
+        <!-- ゲームオーバー画面 -->
+        <div id="gameover-screen" class="overlay" style="display:none;">
+            <h1 style="color:#5d4037;">そこまで！</h1>
+            <p style="font-size:24px; color:#d84315; font-weight:bold;">スコア: <span id="final-score">0</span></p>
+            <button class="btn" onclick="resetGame()">もういっかい</button>
+            <br>
+            <a href="index.html" class="back-link">🏠 ホームへ</a>
+        </div>
+
+    </div>
+
+    <script>
+        // --- カテゴリ定義 ---
+        const CATEGORIES = {
+            Animals: { bg: '#FCE4EC', border: '#F48FB1', text: '#880E4F', name: 'Animals', items: ['Dog', 'Cat', 'Bird', 'Lion', '🐶', '🐱', '🐦', '🦁'] },
+            Food: { bg: '#FFF9C4', border: '#FBC02D', text: '#F57F17', name: 'Food', items: ['Apple', 'Banana', 'Cake', 'Egg', '🍎', '🍌', '🍰', '🥚'] },
+            Nature: { bg: '#E8F5E9', border: '#A5D6A7', text: '#1B5E20', name: 'Nature', items: ['Sun', 'Moon', 'Star', 'Rain', '☀️', '🌙', '⭐', '☔'] },
+            Things: { bg: '#E3F2FD', border: '#90CAF9', text: '#0D47A1', name: 'Things', items: ['Car', 'Book', 'Pencil', 'Ball', '🚗', '📖', '✏️', '⚽'] },
+            Body: { bg: '#FFF3E0', border: '#FFCC80', text: '#E65100', name: 'Body', items: ['Eye', 'Hand', 'Ear', 'Foot', '👁️', '✋', '👂', '🦶'] },
+        };
+        const CATEGORY_KEYS = Object.keys(CATEGORIES);
+
+        // --- ゲーム設定 ---
+        const COLS = 6;
+        const ROWS = 12;
+        const CELL_SIZE = 50;
+        const INITAL_DROP_INTERVAL = 1000;
+
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = COLS * CELL_SIZE;
+        canvas.height = ROWS * CELL_SIZE;
+
+        const nextCanvas = document.getElementById('next-canvas');
+        const nxCtx = nextCanvas.getContext('2d');
+
+        class Block {
+            constructor(category, label) {
+                this.category = category;
+                this.label = label;
+            }
+        }
+
+        // --- グローバル状態 ---
+        let grid = [];
+        let activePiece = null;
+        let nextPiece = null;
+        let score = 0;
+        let chainCount = 0;
+
+        let gameState = 'STOPPED'; // STOPPED, PLAYING, PAUSED, GAMEOVER
+        let lastTime = 0;
+        let dropTimer = 0;
+
+        let isAnimatingGravity = false;
+        let gravityDrops = 0;
+
+        let isAnimatingVanish = false;
+        let vanishTimer = 0;
+
+        // --- ウィンドウリサイズとキャンバススケーリング ---
+        function resize() {
+            let wrapper = document.getElementById('canvas-wrapper');
+            let cw = wrapper.clientWidth;
+            let ch = wrapper.clientHeight;
+
+            let pad = 20;
+            let maxW = cw - pad;
+            let maxH = ch - pad;
+
+            // アスペクト比 1:2
+            let w = maxH / 2;
+            if (w > maxW) w = maxW;
+            let h = w * 2;
+
+            canvas.style.width = w + 'px';
+            canvas.style.height = h + 'px';
+        }
+        window.addEventListener('resize', resize);
+
+        // --- タッチ入力変換 ---
+        function getLogicalCoord(e) {
+            let rect = canvas.getBoundingClientRect();
+            let touch = (e.changedTouches && e.changedTouches.length > 0) ? e.changedTouches[0] : e;
+            let tx = touch.clientX - rect.left;
+            let ty = touch.clientY - rect.top;
+            let scaleX = canvas.width / rect.width;
+            let scaleY = canvas.height / rect.height;
+            return { x: tx * scaleX, y: ty * scaleY, rawY: touch.clientY, rawX: touch.clientX };
+        }
+
+        // --- イベントリスナー ---
+        let pointerStartX = 0;
+        let pointerStartY = 0;
+        let isPointerDown = false;
+        let isSwiped = false;
+
+        canvas.addEventListener("pointerdown", e => {
+            if (gameState !== 'PLAYING') return;
+            isPointerDown = true;
+            isSwiped = false;
+            pointerStartX = e.clientX;
+            pointerStartY = e.clientY;
+        });
+
+        canvas.addEventListener("pointermove", e => {
+            if (!isPointerDown || gameState !== 'PLAYING') return;
+            let dx = e.clientX - pointerStartX;
+            let dy = e.clientY - pointerStartY;
+
+            if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) {
+                if (activePiece && !isAnimatingGravity && !isAnimatingVanish) {
+                    if (dx > 0) {
+                        moveRight();
+                    } else {
+                        moveLeft();
+                    }
+                }
+                pointerStartX = e.clientX;
+                pointerStartY = e.clientY;
+                isSwiped = true;
+            } else if (dy > 40 && Math.abs(dy) > Math.abs(dx)) {
+                if (activePiece && !isAnimatingGravity && !isAnimatingVanish) {
+                    hardDrop();
+                }
+                isPointerDown = false; // end swipe
+                isSwiped = true;
+            }
+        });
+
+        canvas.addEventListener("pointerup", e => {
+            if (gameState !== 'PLAYING') return;
+            isPointerDown = false;
+            if (!isSwiped && activePiece && !isAnimatingGravity && !isAnimatingVanish) {
+                let pos = getLogicalCoord(e);
+                let rect = canvas.getBoundingClientRect();
+
+                // 画面下部をタップしたら落下
+                if (pos.y > canvas.height * 0.7) {
+                    hardDrop();
+                } else {
+                    let blockPxX = activePiece.x * CELL_SIZE + CELL_SIZE / 2;
+                    let blockPxY = activePiece.y * CELL_SIZE + CELL_SIZE / 2;
+
+                    // 左右15%のタップ判定
+                    if (pos.rawX < rect.left + rect.width * 0.15) {
+                        moveLeft();
+                    } else if (pos.rawX > rect.right - rect.width * 0.15) {
+                        moveRight();
+                    } else {
+                        // それ以外でブロック中心付近なら回転、そうでなければ左右移動
+                        if (Math.abs(pos.x - blockPxX) < CELL_SIZE * 2 && Math.abs(pos.y - blockPxY) < CELL_SIZE * 2) {
+                            rotate();
+                        } else if (pos.x < blockPxX) {
+                            moveLeft();
+                        } else {
+                            moveRight();
+                        }
+                    }
+                }
+            }
+        });
+
+        // --- ゲームの初期化・ループ ---
+        function startGame() {
+            // iOS等での音声読み上げ許可
+            let u = new SpeechSynthesisUtterance("");
+            u.volume = 0; window.speechSynthesis.speak(u);
+
+            document.getElementById('start-screen').style.display = 'none';
+            resetGame();
+        }
+
+        // ウィンドウに関数を登録（グローバルから呼べるように念のため）
+        window.startGame = startGame;
+        window.togglePause = togglePause;
+        window.forceGameOver = forceGameOver;
+        window.resetGame = resetGame;
+
+        function resetGame() {
+            grid = Array(ROWS).fill(null).map(() => Array(COLS).fill(null));
+            score = 0;
+            chainCount = 0;
+            gameState = 'PLAYING';
+            isAnimatingGravity = false;
+            isAnimatingVanish = false;
+            dropTimer = 0;
+
+            document.getElementById('gameover-screen').style.display = 'none';
+            document.getElementById('pause-screen').style.display = 'none';
+
+            updateUI();
+            resize();
+
+            nextPiece = null;
+            spawnPiece();
+
+            lastTime = performance.now();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function togglePause() {
+            if (gameState === 'PLAYING') {
+                gameState = 'PAUSED';
+                document.getElementById('pause-screen').style.display = 'flex';
+            } else if (gameState === 'PAUSED') {
+                gameState = 'PLAYING';
+                document.getElementById('pause-screen').style.display = 'none';
+                lastTime = performance.now();
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        function forceGameOver() {
+            gameState = 'GAMEOVER';
+            showGameOver();
+        }
+
+        function showGameOver() {
+            document.getElementById('gameover-screen').style.display = 'flex';
+            document.getElementById('final-score').innerText = score;
+
+            // パパン式のセーブ・ポイント処理 (ABOUT_PAPANSHIKI: Type A)
+            // 参加賞30pt + レコード更新や目標達成でのポイントは ranking.js 側で処理される想定。
+            if (typeof showSaveDialog === 'function') {
+                showSaveDialog('eigo_nakama', score);
+            } else if (typeof showPointGetDialog === 'function') {
+                // fallback
+                let earnedPoint = 30 + Math.floor(score / 100);
+                showPointGetDialog(score, earnedPoint);
+            }
+        }
+
+        // --- ブロック生成処理 ---
+        function getRandomItem() {
+            let catKey = CATEGORY_KEYS[Math.floor(Math.random() * CATEGORY_KEYS.length)];
+            let items = CATEGORIES[catKey].items;
+            let label = items[Math.floor(Math.random() * items.length)];
+            return { category: catKey, label: label };
+        }
+
+        function drawNextPiece() {
+            nxCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+            let ox = (nextCanvas.width - CELL_SIZE) / 2;
+            let oy = 60; // 下ブロックの中心付近
+            for (let p of nextPiece.blocks) {
+                drawBlock(nxCtx, ox + p.dx * CELL_SIZE, oy + p.dy * CELL_SIZE, p);
+            }
+        }
+
+        function spawnPiece() {
+            if (!nextPiece) {
+                generateNextPiece();
+            }
+            activePiece = nextPiece;
+            generateNextPiece();
+
+            activePiece.x = Math.floor(COLS / 2) - 1;
+            activePiece.y = 1;
+
+            if (!canMove(activePiece.x, activePiece.y, activePiece.blocks)) {
+                forceGameOver();
+            }
+        }
+
+        function generateNextPiece() {
+            let n1 = getRandomItem();
+            let n2 = getRandomItem();
+            nextPiece = {
+                blocks: [
+                    { dx: 0, dy: 0, category: n1.category, label: n1.label },
+                    { dx: 0, dy: -1, category: n2.category, label: n2.label }
+                ]
+            };
+            drawNextPiece();
+        }
+
+        // --- 移動・回転判定 ---
+        function canMove(tx, ty, blocksArray) {
+            for (let p of blocksArray) {
+                let gx = tx + p.dx;
+                let gy = ty + p.dy;
+                if (gx < 0 || gx >= COLS || gy >= ROWS) return false;
+                if (gy >= 0 && grid[gy][gx]) return false;
+            }
+            return true;
+        }
+
+        function rotate() {
+            if (!activePiece) return;
+            let newBlocks = activePiece.blocks.map(p => {
+                return { dx: -p.dy, dy: p.dx, category: p.category, label: p.label };
+            });
+            if (canMove(activePiece.x, activePiece.y, newBlocks)) {
+                activePiece.blocks = newBlocks;
+            } else if (canMove(activePiece.x - 1, activePiece.y, newBlocks)) {
+                activePiece.x -= 1;
+                activePiece.blocks = newBlocks;
+            } else if (canMove(activePiece.x + 1, activePiece.y, newBlocks)) {
+                activePiece.x += 1;
+                activePiece.blocks = newBlocks;
+            }
+        }
+
+        function moveLeft() {
+            if (activePiece && canMove(activePiece.x - 1, activePiece.y, activePiece.blocks)) {
+                activePiece.x -= 1;
+            }
+        }
+
+        function moveRight() {
+            if (activePiece && canMove(activePiece.x + 1, activePiece.y, activePiece.blocks)) {
+                activePiece.x += 1;
+            }
+        }
+
+        function moveDown() {
+            if (activePiece && canMove(activePiece.x, activePiece.y + 1, activePiece.blocks)) {
+                activePiece.y += 1;
+            } else if (activePiece) {
+                lockPiece();
+            }
+        }
+
+        function hardDrop() {
+            if (!activePiece) return;
+            while (canMove(activePiece.x, activePiece.y + 1, activePiece.blocks)) {
+                activePiece.y += 1;
+            }
+            lockPiece();
+        }
+
+        // --- ロック・重力・消去判定（ぷよぷよ処理） ---
+        function lockPiece() {
+            let gameOverCheck = false;
+            for (let p of activePiece.blocks) {
+                let gx = activePiece.x + p.dx;
+                let gy = activePiece.y + p.dy;
+                if (gy < 0) {
+                    gameOverCheck = true;
+                    continue;
+                }
+                grid[gy][gx] = new Block(p.category, p.label);
+            }
+            activePiece = null;
+
+            if (gameOverCheck) {
+                forceGameOver();
+            } else {
+                startGravity();
+            }
+        }
+
+        function startGravity() {
+            isAnimatingGravity = true;
+            gravityDrops = 0;
+
+            for (let x = 0; x < COLS; x++) {
+                let writeY = ROWS - 1;
+                for (let y = ROWS - 1; y >= 0; y--) {
+                    if (grid[y][x]) {
+                        if (writeY !== y) {
+                            grid[y][x].destY = writeY;
+                            grid[y][x].startY = y;
+                            grid[y][x].animProgress = 0;
+                            grid[writeY][x] = grid[y][x];
+                            grid[y][x] = null;
+                            gravityDrops++;
+                        }
+                        writeY--;
+                    }
+                }
+            }
+
+            if (gravityDrops === 0) {
+                isAnimatingGravity = false;
+                checkMatches();
+            }
+        }
+
+        function checkMatches() {
+            let visited = Array(ROWS).fill(0).map(() => Array(COLS).fill(false));
+            let matchedGroups = [];
+            let matchedCategories = new Set();
+
+            for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    if (grid[y][x] && !visited[y][x]) {
+                        let group = [];
+                        let cat = grid[y][x].category;
+
+                        function dfs(cx, cy) {
+                            if (cx < 0 || cx >= COLS || cy < 0 || cy >= ROWS) return;
+                            if (visited[cy][cx] || !grid[cy][cx]) return;
+                            if (grid[cy][cx].category !== cat) return;
+
+                            visited[cy][cx] = true;
+                            group.push({ x: cx, y: cy });
+                            dfs(cx - 1, cy);
+                            dfs(cx + 1, cy);
+                            dfs(cx, cy - 1);
+                            dfs(cx, cy + 1);
+                        }
+                        dfs(x, y);
+                        if (group.length >= 4) {
+                            matchedGroups.push(group);
+                            matchedCategories.add(cat);
+                        }
+                    }
+                }
+            }
+
+            if (matchedGroups.length > 0) {
+                chainCount++;
+                let points = 0;
+                for (let group of matchedGroups) {
+                    points += group.length * 10 * chainCount;
+                    for (let pos of group) {
+                        grid[pos.y][pos.x].vanishing = true;
+                    }
+                }
+                score += points;
+
+                // Web Speech API 発音
+                let catArr = Array.from(matchedCategories);
+                if (catArr.length > 0) {
+                    let catName = CATEGORIES[catArr[0]].name;
+                    let utterance = new SpeechSynthesisUtterance(catName);
+                    utterance.lang = 'en-US';
+                    window.speechSynthesis.speak(utterance);
+                }
+
+                // アンちゃんの演出
+                if (chainCount >= 2) {
+                    showAnchanMessege(chainCount >= 3 ? "Wonderful!" : "Great!");
+                }
+
+                isAnimatingVanish = true;
+                vanishTimer = 0;
+                updateUI();
+            } else {
+                chainCount = 0;
+                if (gameState === 'PLAYING') spawnPiece();
+            }
+        }
+
+        // --- アニメーションとメインループ ---
+        function updateAnimations(dt) {
+            if (isAnimatingGravity) {
+                let allDone = true;
+                for (let y = 0; y < ROWS; y++) {
+                    for (let x = 0; x < COLS; x++) {
+                        let b = grid[y][x];
+                        if (b && b.destY !== undefined) {
+                            b.animProgress += dt / 200; // 落下速度
+                            if (b.animProgress >= 1) {
+                                delete b.destY;
+                                delete b.startY;
+                                delete b.animProgress;
+                            } else {
+                                allDone = false;
+                            }
+                        }
+                    }
+                }
+                if (allDone) {
+                    isAnimatingGravity = false;
+                    checkMatches();
+                }
+            } else if (isAnimatingVanish) {
+                vanishTimer += dt;
+                if (vanishTimer >= 400) { // 400ms の消去演出
+                    for (let y = 0; y < ROWS; y++) {
+                        for (let x = 0; x < COLS; x++) {
+                            if (grid[y][x] && grid[y][x].vanishing) {
+                                grid[y][x] = null;
+                            }
+                        }
+                    }
+                    isAnimatingVanish = false;
+                    startGravity();
+                }
+            }
+        }
+
+        function update(dt) {
+            if (gameState !== 'PLAYING') return;
+
+            if (isAnimatingGravity || isAnimatingVanish) {
+                updateAnimations(dt);
+                return;
+            }
+
+            dropTimer += dt;
+            // スコアに応じて落下速度アップ
+            let currentInterval = Math.max(150, INITAL_DROP_INTERVAL - Math.floor(score / 500) * 100);
+
+            if (dropTimer >= currentInterval) {
+                dropTimer = 0;
+                moveDown();
+            }
+        }
+
+        function drawBlock(context, x, y, blockData) {
+            let cat = CATEGORIES[blockData.category];
+            let pad = 2;
+
+            context.fillStyle = cat.bg;
+            context.strokeStyle = cat.border;
+            context.lineWidth = 3;
+
+            context.beginPath();
+            context.roundRect(x + pad, y + pad, CELL_SIZE - pad * 2, CELL_SIZE - pad * 2, 8);
+            context.fill();
+            context.stroke();
+
+            context.fillStyle = cat.text;
+            let len = [...blockData.label].length;
+            let fontSize = 24;
+
+            if (blockData.label.match(/[a-zA-Z]/)) {
+                // 英語
+                fontSize = 15;
+                context.font = "bold " + fontSize + "px 'UD Digital Kyokasho-tai-R', sans-serif";
+                let width = context.measureText(blockData.label).width;
+                if (width > 38) { // 幅が大きい場合は自動縮小
+                    fontSize = Math.floor(15 * (38 / width));
+                }
+            } else {
+                // 絵文字等
+                fontSize = 26;
+            }
+
+            context.font = "bold " + fontSize + "px 'UD Digital Kyokasho-tai-R', sans-serif";
+            context.textAlign = "center";
+            context.textBaseline = "middle";
+            context.fillText(blockData.label, x + CELL_SIZE / 2, y + CELL_SIZE / 2);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 背景グリッド描画（オプション）
+            ctx.strokeStyle = "rgba(0,0,0,0.05)";
+            ctx.lineWidth = 1;
+            for (let x = 1; x < COLS; x++) {
+                ctx.beginPath(); ctx.moveTo(x * CELL_SIZE, 0); ctx.lineTo(x * CELL_SIZE, canvas.height); ctx.stroke();
+            }
+            for (let y = 1; y < ROWS; y++) {
+                ctx.beginPath(); ctx.moveTo(0, y * CELL_SIZE); ctx.lineTo(canvas.width, y * CELL_SIZE); ctx.stroke();
+            }
+
+            // 固定ブロックの描画
+            for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    let b = grid[y][x];
+                    if (b) {
+                        let px = x * CELL_SIZE;
+                        let py = y * CELL_SIZE;
+
+                        if (b.destY !== undefined) {
+                            py = (b.startY + (b.destY - b.startY) * b.animProgress) * CELL_SIZE;
+                        }
+
+                        ctx.save();
+                        if (b.vanishing) {
+                            let alpha = Math.max(0, 1 - (vanishTimer / 400));
+                            ctx.globalAlpha = alpha;
+                            ctx.shadowColor = CATEGORIES[b.category].border;
+                            ctx.shadowBlur = 15;
+
+                            // はじけるように少し拡大
+                            let scale = 1 + (vanishTimer / 400) * 0.2;
+                            ctx.translate(px + CELL_SIZE / 2, py + CELL_SIZE / 2);
+                            ctx.scale(scale, scale);
+                            ctx.translate(-(px + CELL_SIZE / 2), -(py + CELL_SIZE / 2));
+                        }
+
+                        drawBlock(ctx, px, py, b);
+                        ctx.restore();
+                    }
+                }
+            }
+
+            // 落下中のブロック描画
+            if (activePiece && !isAnimatingGravity && !isAnimatingVanish) {
+                for (let p of activePiece.blocks) {
+                    let gx = activePiece.x + p.dx;
+                    let gy = activePiece.y + p.dy;
+                    // 画面外（gy < 0）でも位置計算して一部描画する
+                    let px = gx * CELL_SIZE;
+                    let py = gy * CELL_SIZE;
+                    drawBlock(ctx, px, py, p);
+                }
+            }
+        }
+
+        function gameLoop(time) {
+            let dt = time - lastTime;
+            lastTime = time;
+
+            update(dt);
+            draw();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- 演出・更新 ---
+        function updateUI() {
+            document.getElementById('score').innerText = score;
+        }
+
+        function showAnchanMessege(msg) {
+            let area = document.getElementById('anchan-area');
+            let msgEl = document.getElementById('anchan-msg');
+            msgEl.innerText = msg;
+            msgEl.style.display = 'block';
+            area.classList.add('show');
+
+            let utterance = new SpeechSynthesisUtterance(msg);
+            utterance.lang = 'en-US';
+            window.speechSynthesis.speak(utterance);
+
+            setTimeout(() => {
+                area.classList.remove('show');
+            }, 2000);
+        }
+
+    </script>
+</body>
+
+</html>
