@@ -20,6 +20,9 @@ const GAME_LIST = {
     'tsumitsumi': { name: '漢字つみつみ', type: 'score', unit: 'こ' },
     'eawase': { name: 'えあわせ', type: 'time', unit: '秒' },
     'shopping': { name: 'ぴったりしはらい', type: 'time', unit: '秒' },
+    'memory_route': { name: 'きおくルートたんけん', type: 'time', unit: '秒' },
+    'shopping_mission_brain': { name: 'かいものミッション', type: 'time', unit: '秒' },
+    'attention_dual_task': { name: 'デュアルタスク', type: 'score', unit: '点' },
     'water': { name: '水槽パズル', type: 'time', unit: '秒' },
     'rail': { name: 'つなげて！トロッコ', type: 'time', unit: '秒' },
     'daily_english': { name: 'まいにちエイゴ', type: 'time', unit: '秒' },
@@ -147,6 +150,7 @@ const DAILY_MISSION_CANDIDATES = [
     'alphabet',       // アルファベット
     'romaji_hole',    // ローマ字
     'shopping',       // おかいもの
+    'shopping_mission_brain', // かいものミッション
     'rain_math',      // あめふり算数
     'daily_english',  // まいにちえいご
     'water', // 水槽パズル

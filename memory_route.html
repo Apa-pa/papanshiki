@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>きおくルートたんけん</title>
+    <script src="ranking.js"></script>
+    <script type="module" src="firebase-ranking.js"></script>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(160deg, #dff6ff, #e9ffe8);
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+        }
+
+        .wrap {
+            width: min(94vw, 520px);
+            background: #fff;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+            text-align: center;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        h1 {
+            margin: 6px 0 12px;
+            color: #1e6ea0;
+        }
+
+        .guide-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 16px 0 20px;
+        }
+
+        .guide-char {
+            width: 90px;
+            height: auto;
+            animation: bounce 2s infinite ease-in-out;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15));
+        }
+
+        .guide-speech {
+            position: relative;
+            background: #f0f9ff;
+            border: 3px solid #7cd8ff;
+            border-radius: 16px;
+            padding: 12px 18px;
+            text-align: left;
+            font-weight: bold;
+            color: #1e6ea0;
+            box-shadow: 0 4px 0 #d6eefb;
+        }
+
+        .guide-speech::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -12px;
+            transform: translateY(-50%);
+            border: 6px solid transparent;
+            border-right-color: #7cd8ff;
+        }
+
+        .guide-speech p {
+            margin: 6px 0;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        p {
+            margin: 8px 0;
+        }
+
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 12px 0;
+        }
+
+        .cell {
+            aspect-ratio: 1 / 1;
+            border: none;
+            border-radius: 14px;
+            background: #d6eefb;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2f6d93;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+
+        .cell:active {
+            transform: scale(0.96);
+        }
+
+        .cell.show {
+            background: #7cd8ff;
+            color: #0b4260;
+        }
+
+        .cell.correct {
+            background: #9af0b0;
+            color: #1b5e20;
+        }
+
+        .cell.wrong {
+            background: #ffc4c4;
+            color: #8a1b1b;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 999px;
+            padding: 11px 22px;
+            font-size: 17px;
+            font-weight: bold;
+            background: #28a8df;
+            color: #fff;
+            cursor: pointer;
+            margin: 6px;
+        }
+
+        .btn.secondary {
+            background: #78909c;
+        }
+
+        #status {
+            min-height: 1.6em;
+            color: #555;
+            font-weight: bold;
+        }
+
+        #final-time {
+            font-size: 34px;
+            color: #1e6ea0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <section id="home" class="screen active">
+            <h1>きおくルートたんけん</h1>
+
+            <div class="guide-container">
+                <img src="hari-an.webp" alt="アンちゃん" class="guide-char">
+                <div class="guide-speech">
+                    <p>✨ ひかったマスのじゅんばんを<br>おぼえて たどろう！</p>
+                    <p>🌟 5ラウンドクリアでゴール！<br>まちがえると +5びょう だよ。</p>
+                </div>
+            </div>
+
+            <button class="btn" id="start-btn">スタート</button>
+            <a class="btn secondary" href="index.html">もどる</a>
+        </section>
+
+        <section id="game" class="screen">
+            <div class="hud">
+                <span>ラウンド: <span id="round-no">1</span>/5</span>
+                <span>けいか: <span id="timer">0.0</span>びょう</span>
+            </div>
+            <div id="status">ルートをみてね</div>
+            <div class="board" id="board"></div>
+            <a class="btn secondary" href="index.html">やめる</a>
+        </section>
+
+        <section id="result" class="screen">
+            <h1>クリア</h1>
+            <p>きろく</p>
+            <div id="final-time">0.0</div>
+            <button class="btn" id="save-btn">きろくする</button>
+            <button class="btn" id="retry-btn">もういちど</button>
+            <a class="btn secondary" href="index.html">もどる</a>
+        </section>
+    </div>
+
+    <script>
+        const ROUND_MAX = 5;
+        const PENALTY_SEC = 5;
+        const boardEl = document.getElementById("board");
+        const roundEl = document.getElementById("round-no");
+        const timerEl = document.getElementById("timer");
+        const statusEl = document.getElementById("status");
+        const finalTimeEl = document.getElementById("final-time");
+
+        let cells = [];
+        let route = [];
+        let inputIndex = 0;
+        let round = 1;
+        let startMs = 0;
+        let timerId = null;
+        let penaltyMs = 0;
+        let locked = true;
+        let finalTime = 0;
+
+        function changeScreen(id) {
+            document.querySelectorAll(".screen").forEach((el) => el.classList.remove("active"));
+            document.getElementById(id).classList.add("active");
+        }
+
+        function buildBoard() {
+            boardEl.innerHTML = "";
+            cells = [];
+            for (let i = 0; i < 9; i++) {
+                const button = document.createElement("button");
+                button.className = "cell";
+                button.type = "button";
+                button.dataset.index = String(i);
+                button.addEventListener("click", () => onCellClick(i));
+                boardEl.appendChild(button);
+                cells.push(button);
+            }
+        }
+
+        function clearCellStyles() {
+            cells.forEach((c) => c.className = "cell");
+        }
+
+        function generateRoute(len) {
+            const neighbors = (idx) => {
+                const r = Math.floor(idx / 3);
+                const c = idx % 3;
+                const list = [];
+                if (r > 0) list.push(idx - 3);
+                if (r < 2) list.push(idx + 3);
+                if (c > 0) list.push(idx - 1);
+                if (c < 2) list.push(idx + 1);
+                return list;
+            };
+
+            while (true) {
+                const result = [];
+                const used = new Set();
+                let current = Math.floor(Math.random() * 9);
+                result.push(current);
+                used.add(current);
+
+                for (let i = 1; i < len; i++) {
+                    const choices = neighbors(current).filter((n) => !used.has(n));
+                    if (choices.length === 0) break;
+                    current = choices[Math.floor(Math.random() * choices.length)];
+                    result.push(current);
+                    used.add(current);
+                }
+
+                if (result.length === len) return result;
+            }
+        }
+
+        function sleep(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        async function showRoute() {
+            locked = true;
+            clearCellStyles();
+            statusEl.textContent = "ルートをみてね";
+            for (let i = 0; i < route.length; i++) {
+                const idx = route[i];
+                cells[idx].classList.add("show");
+                await sleep(380);
+                cells[idx].classList.remove("show");
+                await sleep(120);
+            }
+            inputIndex = 0;
+            statusEl.textContent = "おなじじゅんでタップ";
+            locked = false;
+        }
+
+        function startRound() {
+            roundEl.textContent = String(round);
+            route = generateRoute(round + 2);
+            showRoute();
+        }
+
+        function onCellClick(idx) {
+            if (locked) return;
+            const expected = route[inputIndex];
+            if (idx === expected) {
+                cells[idx].classList.add("correct");
+                setTimeout(() => cells[idx].classList.remove("correct"), 160);
+                inputIndex += 1;
+                if (inputIndex >= route.length) {
+                    locked = true;
+                    if (round >= ROUND_MAX) {
+                        finishGame();
+                    } else {
+                        round += 1;
+                        setTimeout(startRound, 500);
+                    }
+                }
+            } else {
+                cells[idx].classList.add("wrong");
+                setTimeout(() => cells[idx].classList.remove("wrong"), 220);
+                penaltyMs += PENALTY_SEC * 1000;
+                statusEl.textContent = "ざんねん +5びょう。もういちど";
+                setTimeout(showRoute, 700);
+            }
+        }
+
+        function startGame() {
+            round = 1;
+            penaltyMs = 0;
+            finalTime = 0;
+            startMs = Date.now();
+            buildBoard();
+            changeScreen("game");
+            if (timerId) clearInterval(timerId);
+            timerId = setInterval(() => {
+                const sec = ((Date.now() - startMs + penaltyMs) / 1000).toFixed(1);
+                timerEl.textContent = sec;
+            }, 100);
+            startRound();
+        }
+
+        function finishGame() {
+            if (timerId) clearInterval(timerId);
+            finalTime = ((Date.now() - startMs + penaltyMs) / 1000).toFixed(1);
+            finalTimeEl.textContent = `${finalTime} びょう`;
+            changeScreen("result");
+        }
+
+        function saveScore() {
+            if (typeof showSaveDialog === "function") {
+                showSaveDialog("memory_route", finalTime);
+            } else {
+                alert("ranking.js が読み込まれていません");
+            }
+        }
+
+        document.getElementById("start-btn").addEventListener("click", startGame);
+        document.getElementById("retry-btn").addEventListener("click", startGame);
+        document.getElementById("save-btn").addEventListener("click", saveScore);
+    </script>
+</body>
+
+</html>

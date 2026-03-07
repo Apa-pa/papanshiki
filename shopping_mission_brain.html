@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>かいものミッション</title>
+    <script src="ranking.js"></script>
+    <script type="module" src="firebase-ranking.js"></script>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(155deg, #fff7d8, #f4ffef);
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+        }
+
+        .wrap {
+            width: min(94vw, 640px);
+            background: #fff;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+            text-align: center;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        h1 {
+            margin: 6px 0 12px;
+            color: #836100;
+        }
+
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .mission {
+            background: #fff7d1;
+            border: 2px dashed #f1c84f;
+            border-radius: 14px;
+            padding: 10px;
+            margin-bottom: 12px;
+            line-height: 1.7;
+        }
+
+        .list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin: 12px 0;
+        }
+
+        .item {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: left;
+            cursor: pointer;
+            user-select: none;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .item.selected {
+            border-color: #ff9800;
+            background: #fff4e2;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: #eceff1;
+            color: #455a64;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 999px;
+            padding: 11px 22px;
+            font-size: 17px;
+            font-weight: bold;
+            background: #ff9800;
+            color: #fff;
+            cursor: pointer;
+            margin: 6px;
+        }
+
+        .btn.secondary {
+            background: #78909c;
+        }
+
+        .shop-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .shop-header.row {
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .pippi-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #ffca28;
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .speech-bubble {
+            position: relative;
+            background: #ffecb3;
+            border-radius: 10px;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #ff6f00;
+            margin-top: 10px;
+        }
+
+        .speech-bubble.top-tail::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 10px 10px;
+            border-style: solid;
+            border-color: #ffecb3 transparent;
+            display: block;
+            width: 0;
+        }
+
+        .speech-bubble.left-tail::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -10px;
+            transform: translateY(-50%);
+            border-width: 10px 10px 10px 0;
+            border-style: solid;
+            border-color: transparent #ffecb3 transparent transparent;
+            display: block;
+            width: 0;
+        }
+
+        #status {
+            min-height: 1.5em;
+            font-weight: bold;
+        }
+
+        #final-time {
+            font-size: 34px;
+            color: #836100;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <section id="home" class="screen active">
+            <h1>かいものミッション</h1>
+            <div class="shop-header">
+                <img src="pippi192.webp" alt="くまのピッピ" class="pippi-img">
+                <div class="speech-bubble top-tail">じょうけんにあう かいものを えらぼう！</div>
+            </div>
+            <p style="margin-top: 5px;">よさんピッタリになるように商品をえらぼう！<br>
+                タグをよく確認してね！<br>
+                5ラウンドを はやくクリアすることをめざそう！<br>まちがえると +7びょうになるよ。</p>
+            <button class="btn" id="start-btn">スタート</button>
+            <a class="btn secondary" href="index.html">もどる</a>
+        </section>
+
+        <section id="game" class="screen">
+            <div class="hud">
+                <span>ラウンド: <span id="round-no">1</span>/5</span>
+                <span>けいか: <span id="timer">0.0</span>びょう</span>
+            </div>
+            <div class="mission">
+                よさん: <strong><span id="budget">0</span>えん</strong><br>
+                えらぶ数: <strong><span id="max-count">0</span>こまで</strong><br>
+                タグ: <strong><span id="required-tag">-</span></strong> を1ついじょう
+            </div>
+            <div class="shop-header row" style="margin-bottom: 5px;">
+                <img src="pippi192.webp" alt="くまのピッピ" class="pippi-img" style="width: 50px; height: 50px;">
+                <div class="speech-bubble left-tail" id="status"
+                    style="margin: 0; flex: 1; text-align: left; color: #555;">えらんで「けってい」をおしてね</div>
+            </div>
+            <div class="list" id="item-list"></div>
+            <div><strong>ごうけい: <span id="sum">0</span>えん / えらんだ数: <span id="count">0</span>こ</strong></div>
+            <button class="btn" id="check-btn">けってい</button>
+            <a class="btn secondary" href="index.html">やめる</a>
+        </section>
+
+        <section id="result" class="screen">
+            <h1>クリア</h1>
+            <div class="shop-header">
+                <img src="pippi192.webp" alt="くまのピッピ" class="pippi-img">
+                <div class="speech-bubble top-tail">ミッションコンプリート！<br>おつかれさま！</div>
+            </div>
+            <p style="margin-top: 10px;">きろく</p>
+            <div id="final-time">0.0</div>
+            <button class="btn" id="save-btn">きろくする</button>
+            <button class="btn" id="retry-btn">もういちど</button>
+            <a class="btn secondary" href="index.html">もどる</a>
+        </section>
+    </div>
+
+    <script>
+        const ROUND_MAX = 5;
+        const PENALTY_SEC = 7;
+        const TAGS = ["べんきょう", "たべもの", "あそび"];
+        const ALL_ITEMS = [
+            { name: "えんぴつ", price: 120, tag: "べんきょう", icon: "✏️" },
+            { name: "けしごむ", price: 80, tag: "べんきょう", icon: "🧽" },
+            { name: "ノート", price: 180, tag: "べんきょう", icon: "📓" },
+            { name: "りんご", price: 150, tag: "たべもの", icon: "🍎" },
+            { name: "おにぎり", price: 200, tag: "たべもの", icon: "🍙" },
+            { name: "ヨーグルト", price: 130, tag: "たべもの", icon: "🥣" },
+            { name: "ボール", price: 240, tag: "あそび", icon: "⚽" },
+            { name: "パズル", price: 260, tag: "あそび", icon: "🧩" },
+            { name: "シール", price: 90, tag: "あそび", icon: "🌟" },
+            { name: "ずかん", price: 320, tag: "べんきょう", icon: "📚" },
+            { name: "バナナ", price: 110, tag: "たべもの", icon: "🍌" },
+            { name: "こま", price: 160, tag: "あそび", icon: "🌀" }
+        ];
+
+        let round = 1;
+        let startMs = 0;
+        let penaltyMs = 0;
+        let timerId = null;
+        let finalTime = 0;
+        let current = null;
+        const selected = new Set();
+
+        function changeScreen(id) {
+            document.querySelectorAll(".screen").forEach((el) => el.classList.remove("active"));
+            document.getElementById(id).classList.add("active");
+        }
+
+        function shuffle(arr) {
+            return [...arr].sort(() => Math.random() - 0.5);
+        }
+
+        function pickScenario() {
+            while (true) {
+                const pool = shuffle(ALL_ITEMS).slice(0, 6);
+                const maxCount = 2 + Math.floor(Math.random() * 2); // 2 or 3
+                const requiredTag = TAGS[Math.floor(Math.random() * TAGS.length)];
+                const validCombos = [];
+
+                for (let mask = 1; mask < (1 << pool.length); mask++) {
+                    const picks = [];
+                    let sum = 0;
+                    let tagHit = false;
+                    for (let i = 0; i < pool.length; i++) {
+                        if (mask & (1 << i)) {
+                            picks.push(i);
+                            sum += pool[i].price;
+                            if (pool[i].tag === requiredTag) tagHit = true;
+                        }
+                    }
+                    if (picks.length <= maxCount && tagHit) {
+                        validCombos.push({ picks, sum });
+                    }
+                }
+
+                const uniq = new Map();
+                validCombos.forEach((v) => {
+                    const key = `${v.sum}`;
+                    if (!uniq.has(key)) uniq.set(key, []);
+                    uniq.get(key).push(v);
+                });
+
+                const targetEntries = [...uniq.entries()].filter(([, combos]) => combos.length === 1);
+                if (targetEntries.length === 0) continue;
+                const [budgetStr] = targetEntries[Math.floor(Math.random() * targetEntries.length)];
+                return {
+                    items: pool,
+                    maxCount,
+                    requiredTag,
+                    budget: Number(budgetStr)
+                };
+            }
+        }
+
+        function renderRound() {
+            document.getElementById("round-no").textContent = String(round);
+            document.getElementById("budget").textContent = String(current.budget);
+            document.getElementById("max-count").textContent = String(current.maxCount);
+            document.getElementById("required-tag").textContent = current.requiredTag;
+            document.getElementById("status").textContent = "えらんで「けってい」をおしてね";
+            selected.clear();
+            const list = document.getElementById("item-list");
+            list.innerHTML = "";
+            current.items.forEach((item, idx) => {
+                const el = document.createElement("button");
+                el.type = "button";
+                el.className = "item";
+                el.innerHTML = `
+                    <div style="font-size:32px;">${item.icon}</div>
+                    <div>
+                        <strong style="font-size:16px; color:#555;">${item.name}</strong> ${item.price}えん<br>
+                        <span class="tag">${item.tag}</span>
+                    </div>
+                `;
+                el.addEventListener("click", () => togglePick(idx, el));
+                list.appendChild(el);
+            });
+            renderTotals();
+        }
+
+        function togglePick(idx, el) {
+            if (selected.has(idx)) {
+                selected.delete(idx);
+                el.classList.remove("selected");
+            } else {
+                selected.add(idx);
+                el.classList.add("selected");
+            }
+            renderTotals();
+        }
+
+        function renderTotals() {
+            let sum = 0;
+            selected.forEach((idx) => sum += current.items[idx].price);
+            document.getElementById("sum").textContent = String(sum);
+            document.getElementById("count").textContent = String(selected.size);
+        }
+
+        function checkAnswer() {
+            let sum = 0;
+            let tagHit = false;
+            selected.forEach((idx) => {
+                const item = current.items[idx];
+                sum += item.price;
+                if (item.tag === current.requiredTag) tagHit = true;
+            });
+            const ok = (sum === current.budget && selected.size <= current.maxCount && tagHit);
+            if (ok) {
+                document.getElementById("status").textContent = "せいかい";
+                if (round >= ROUND_MAX) {
+                    finishGame();
+                    return;
+                }
+                round += 1;
+                current = pickScenario();
+                setTimeout(renderRound, 500);
+            } else {
+                penaltyMs += PENALTY_SEC * 1000;
+                document.getElementById("status").textContent = "ざんねん +7びょう。もういちど";
+                setTimeout(() => {
+                    selected.clear();
+                    document.querySelectorAll(".item").forEach((el) => el.classList.remove("selected"));
+                    renderTotals();
+                }, 200);
+            }
+        }
+
+        function startGame() {
+            round = 1;
+            penaltyMs = 0;
+            finalTime = 0;
+            startMs = Date.now();
+            current = pickScenario();
+            changeScreen("game");
+            if (timerId) clearInterval(timerId);
+            timerId = setInterval(() => {
+                const sec = ((Date.now() - startMs + penaltyMs) / 1000).toFixed(1);
+                document.getElementById("timer").textContent = sec;
+            }, 100);
+            renderRound();
+        }
+
+        function finishGame() {
+            if (timerId) clearInterval(timerId);
+            finalTime = ((Date.now() - startMs + penaltyMs) / 1000).toFixed(1);
+            document.getElementById("final-time").textContent = `${finalTime} びょう`;
+            changeScreen("result");
+        }
+
+        function saveScore() {
+            if (typeof showSaveDialog === "function") {
+                showSaveDialog("shopping_mission_brain", finalTime);
+            } else {
+                alert("ranking.js が読み込まれていません");
+            }
+        }
+
+        document.getElementById("start-btn").addEventListener("click", startGame);
+        document.getElementById("retry-btn").addEventListener("click", startGame);
+        document.getElementById("check-btn").addEventListener("click", checkAnswer);
+        document.getElementById("save-btn").addEventListener("click", saveScore);
+    </script>
+</body>
+
+</html>
