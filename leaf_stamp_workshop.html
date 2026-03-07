@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>葉っぱスタンプ工房</title>
+    <script src="ranking.js"></script>
+    <style>
+        :root {
+            --forest-1: #f1f8ee;
+            --forest-2: #d9edd2;
+            --forest-3: #b8d7a4;
+            --forest-4: #6f9d5d;
+            --ink: #24422b;
+            --panel: #ffffffde;
+            --accent: #4f8a47;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--ink);
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background:
+                radial-gradient(1200px 600px at 20% 10%, #f9fff4 0%, transparent 60%),
+                radial-gradient(1000px 500px at 90% 0%, #e1f3d6 0%, transparent 60%),
+                linear-gradient(165deg, var(--forest-1), var(--forest-2) 45%, #d5e7c9 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 14px;
+        }
+
+        .app {
+            width: min(100%, 960px);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 18px 40px rgba(21, 45, 24, 0.2);
+            background: linear-gradient(180deg, #edf7e8 0%, #e3f1db 100%);
+        }
+
+        .screen {
+            display: none;
+            padding: 18px;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .title {
+            margin: 2px 0 8px;
+            font-size: clamp(1.5rem, 4.8vw, 2rem);
+            text-align: center;
+            color: #356237;
+        }
+
+        .subtitle {
+            text-align: center;
+            margin: 0 0 14px;
+            color: #486e46;
+            font-size: 0.98rem;
+        }
+
+        .guide-box {
+            background: var(--panel);
+            border: 2px solid #cde3c2;
+            border-radius: 20px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .guide-img {
+            width: 86px;
+            height: 86px;
+            object-fit: contain;
+            flex-shrink: 0;
+            animation: floaty 2.8s ease-in-out infinite;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15));
+        }
+
+        .guide-talk {
+            position: relative;
+            background: #f8fff4;
+            border: 2px solid #abd49c;
+            border-radius: 14px;
+            padding: 10px 12px;
+            font-weight: bold;
+            color: #346034;
+            line-height: 1.4;
+            width: 100%;
+        }
+
+        .guide-talk::before {
+            content: "";
+            position: absolute;
+            left: -10px;
+            top: 24px;
+            border: 6px solid transparent;
+            border-right-color: #abd49c;
+        }
+
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 999px;
+            padding: 11px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-main {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .btn-sub {
+            background: #789a70;
+            color: #fff;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .studio-grid {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: 1.2fr 0.8fr;
+        }
+
+        .canvas-wrap {
+            background: #f8fff4;
+            border: 2px solid #cce3c4;
+            border-radius: 20px;
+            padding: 10px;
+        }
+
+        #stamp-canvas {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            border-radius: 16px;
+            border: 2px dashed #bad9af;
+            background: #f5fdef;
+            touch-action: none;
+            display: block;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 2px solid #cde3c2;
+            border-radius: 20px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .panel h2 {
+            margin: 0;
+            font-size: 1.05rem;
+            color: #325b36;
+        }
+
+        .swatches {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .swatch {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 2px #bdd8b3;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .swatch.active {
+            box-shadow: 0 0 0 3px #4f8a47;
+            transform: scale(1.05);
+        }
+
+        .shape-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .shape-btn {
+            border: 2px solid #bcd8b2;
+            border-radius: 12px;
+            background: #f6fff1;
+            padding: 8px;
+            font-weight: bold;
+            color: #2d5b2f;
+            cursor: pointer;
+        }
+
+        .shape-btn.active {
+            border-color: #4f8a47;
+            background: #eaf7e1;
+        }
+
+        .line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .line input[type="range"] {
+            width: 100%;
+        }
+
+        .tool-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .tool {
+            border: none;
+            border-radius: 12px;
+            padding: 10px 8px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #5f8b54;
+            color: #fff;
+        }
+
+        .tool.alt {
+            background: #7c9c77;
+        }
+
+        .note {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #3f6440;
+            line-height: 1.45;
+        }
+
+        .home-link {
+            justify-content: center;
+        }
+
+        .status {
+            font-weight: bold;
+            background: #effae8;
+            border: 1px solid #c4ddb9;
+            border-radius: 12px;
+            padding: 8px 10px;
+            min-height: 2.2em;
+        }
+
+        @keyframes floaty {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+
+        @media (max-width: 860px) {
+            .studio-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="app">
+        <section id="home-screen" class="screen active">
+            <h1 class="title">葉っぱスタンプ工房</h1>
+            <p class="subtitle">もりのなかま と いっしょに、葉っぱでコラージュをつくろう</p>
+
+            <div class="guide-box">
+                <img id="home-guide-img" class="guide-img" src="an192.webp" alt="ガイドキャラクター">
+                <div class="guide-talk" id="home-guide-talk">アン「ぽんぽん押して、もりのカードをつくろう」</div>
+            </div>
+
+            <div class="btn-row">
+                <button id="start-btn" class="btn btn-main" type="button">スタート</button>
+                <a class="btn btn-sub" href="index.html">もどる</a>
+            </div>
+        </section>
+
+        <section id="studio-screen" class="screen">
+            <div class="guide-box">
+                <img id="studio-guide-img" class="guide-img" src="an192.webp" alt="ガイドキャラクター">
+                <div class="guide-talk" id="studio-guide-talk">アン「葉っぱスタンプと なかまスタンプで もりをつくろう」</div>
+            </div>
+
+            <div class="studio-grid">
+                <div class="canvas-wrap">
+                    <canvas id="stamp-canvas" width="900" height="675" aria-label="葉っぱスタンプキャンバス"></canvas>
+                </div>
+
+                <aside class="panel">
+                    <h2>スタンプ道具</h2>
+                    <div id="swatch-row" class="swatches"></div>
+
+                    <div id="shape-row" class="shape-row"></div>
+
+                    <label class="line">大きさ
+                        <input id="size-range" type="range" min="14" max="80" step="1" value="36">
+                    </label>
+                    <label class="line">透明度
+                        <input id="alpha-range" type="range" min="35" max="100" step="1" value="86">
+                    </label>
+                    <label class="line">
+                        <input id="rotate-toggle" type="checkbox" checked>
+                        かいてんランダム
+                    </label>
+
+                    <div class="tool-row">
+                        <button class="tool" id="undo-btn" type="button">ひとつ戻す</button>
+                        <button class="tool alt" id="clear-btn" type="button">ぜんぶ消す</button>
+                        <button class="tool" id="save-image-btn" type="button">画像を保存</button>
+                        <button class="tool alt" id="claim-point-btn" type="button">30ptをもらう</button>
+                    </div>
+
+                    <div class="status" id="status-text">キャンバスをタップしてスタンプを置こう</div>
+                    <p class="note">ヒント: 5色くらいでまとめると、もりらしい作品になるよ。</p>
+                    <a class="btn btn-sub home-link" href="index.html">ホームにもどる</a>
+                </aside>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const palette = ["#7cad54", "#9fba66", "#d9a74f", "#d98a4e", "#a87d57", "#5a8f58", "#8f6a49", "#b74f4f"];
+        const stampTools = [
+            { id: "leaf", label: "葉っぱ", kind: "leaf" },
+            { id: "oak", label: "どんぐり葉", kind: "leaf" },
+            { id: "ginkgo", label: "いちょう", kind: "leaf" },
+            { id: "an", label: "アン", kind: "char", image: "an192.webp" },
+            { id: "hii", label: "ヒー", kind: "char", image: "hi-192.webp" },
+            { id: "pippi", label: "ピッピ", kind: "char", image: "pippi192.webp" }
+        ];
+
+        let selectedColor = palette[0];
+        let selectedToolId = stampTools[0].id;
+        let stamps = [];
+        let isDrawing = false;
+        let lastPoint = null;
+        let rewardClaimed = false;
+        const charImages = {};
+
+        const homeScreen = document.getElementById("home-screen");
+        const studioScreen = document.getElementById("studio-screen");
+        const swatchRow = document.getElementById("swatch-row");
+        const shapeRow = document.getElementById("shape-row");
+        const sizeRange = document.getElementById("size-range");
+        const alphaRange = document.getElementById("alpha-range");
+        const rotateToggle = document.getElementById("rotate-toggle");
+        const statusText = document.getElementById("status-text");
+        const canvas = document.getElementById("stamp-canvas");
+        const ctx = canvas.getContext("2d");
+
+        function renderSwatches() {
+            swatchRow.innerHTML = "";
+            palette.forEach((color) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "swatch";
+                button.style.background = color;
+                button.setAttribute("aria-label", "色を選ぶ");
+                button.addEventListener("click", () => {
+                    selectedColor = color;
+                    updateActiveStates();
+                });
+                swatchRow.appendChild(button);
+            });
+        }
+
+        function renderShapes() {
+            shapeRow.innerHTML = "";
+            stampTools.forEach((tool) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "shape-btn";
+                button.textContent = tool.label;
+                button.dataset.shapeId = tool.id;
+                button.addEventListener("click", () => {
+                    selectedToolId = tool.id;
+                    updateActiveStates();
+                });
+                shapeRow.appendChild(button);
+            });
+        }
+
+        function updateActiveStates() {
+            [...swatchRow.children].forEach((el, i) => {
+                el.classList.toggle("active", palette[i] === selectedColor);
+            });
+            [...shapeRow.children].forEach((el) => {
+                el.classList.toggle("active", el.dataset.shapeId === selectedToolId);
+            });
+        }
+
+        function clearCanvasBackground() {
+            const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            g.addColorStop(0, "#f6fff1");
+            g.addColorStop(1, "#e8f5dd");
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < 30; i++) {
+                const x = (i * 97) % canvas.width;
+                const y = (i * 71) % canvas.height;
+                const r = 10 + (i % 9) * 3;
+                ctx.fillStyle = i % 2 === 0 ? "#ffffff38" : "#d3ebc744";
+                ctx.beginPath();
+                ctx.arc(x, y, r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function getSelectedTool() {
+            return stampTools.find((tool) => tool.id === selectedToolId) || stampTools[0];
+        }
+
+        function drawLeafPath(shapeId, size) {
+            const s = size;
+            ctx.beginPath();
+            if (shapeId === "leaf") {
+                ctx.moveTo(0, -s);
+                ctx.bezierCurveTo(s * 0.65, -s * 0.5, s * 0.6, s * 0.35, 0, s);
+                ctx.bezierCurveTo(-s * 0.6, s * 0.35, -s * 0.65, -s * 0.5, 0, -s);
+            } else if (shapeId === "oak") {
+                const steps = 12;
+                for (let i = 0; i <= steps; i++) {
+                    const t = (Math.PI * 2 * i) / steps;
+                    const mod = 1 + 0.2 * Math.sin(6 * t);
+                    const x = Math.cos(t) * s * 0.8 * mod;
+                    const y = Math.sin(t) * s * mod;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+            } else {
+                ctx.moveTo(-s, s * 0.4);
+                ctx.quadraticCurveTo(-s * 0.95, -s * 0.85, 0, -s * 0.95);
+                ctx.quadraticCurveTo(s * 0.95, -s * 0.85, s, s * 0.4);
+                ctx.quadraticCurveTo(0, 0, -s, s * 0.4);
+            }
+            ctx.closePath();
+        }
+
+        function drawStamp(stamp) {
+            ctx.save();
+            ctx.translate(stamp.x, stamp.y);
+            ctx.rotate(stamp.angle);
+            ctx.globalAlpha = stamp.alpha;
+            if (stamp.kind === "char") {
+                const img = charImages[stamp.charId];
+                if (img) {
+                    const w = stamp.size * 2.1;
+                    const h = stamp.size * 2.1;
+                    ctx.drawImage(img, -w / 2, -h / 2, w, h);
+                }
+            } else {
+                drawLeafPath(stamp.shape, stamp.size);
+                ctx.fillStyle = stamp.color;
+                ctx.fill();
+                ctx.lineWidth = Math.max(1, stamp.size * 0.08);
+                ctx.strokeStyle = "#ffffff5c";
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, -stamp.size * 0.86);
+                ctx.lineTo(0, stamp.size * 0.88);
+                ctx.lineWidth = Math.max(1, stamp.size * 0.06);
+                ctx.strokeStyle = "#ffffff66";
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function redrawAll() {
+            clearCanvasBackground();
+            stamps.forEach(drawStamp);
+        }
+
+        function canvasPoint(ev) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (ev.clientX - rect.left) * scaleX,
+                y: (ev.clientY - rect.top) * scaleY
+            };
+        }
+
+        function createStamp(point) {
+            const tool = getSelectedTool();
+            const size = Number(sizeRange.value);
+            const alpha = Number(alphaRange.value) / 100;
+            const angle = rotateToggle.checked ? Math.random() * Math.PI * 2 : 0;
+            return {
+                x: point.x,
+                y: point.y,
+                size,
+                alpha,
+                angle,
+                color: selectedColor,
+                shape: tool.id,
+                kind: tool.kind,
+                charId: tool.kind === "char" ? tool.id : ""
+            };
+        }
+
+        function addStampAt(point) {
+            stamps.push(createStamp(point));
+            redrawAll();
+            statusText.textContent = `スタンプ ${stamps.length} こ`;
+        }
+
+        function handlePointerDown(ev) {
+            isDrawing = true;
+            canvas.setPointerCapture(ev.pointerId);
+            const point = canvasPoint(ev);
+            lastPoint = point;
+            addStampAt(point);
+        }
+
+        function handlePointerMove(ev) {
+            if (!isDrawing) return;
+            if (getSelectedTool().kind === "char") return;
+            const point = canvasPoint(ev);
+            if (!lastPoint) {
+                addStampAt(point);
+                lastPoint = point;
+                return;
+            }
+            const dx = point.x - lastPoint.x;
+            const dy = point.y - lastPoint.y;
+            if (Math.hypot(dx, dy) >= Math.max(6, Number(sizeRange.value) * 0.35)) {
+                addStampAt(point);
+                lastPoint = point;
+            }
+        }
+
+        function handlePointerUp(ev) {
+            isDrawing = false;
+            lastPoint = null;
+            if (canvas.hasPointerCapture(ev.pointerId)) {
+                canvas.releasePointerCapture(ev.pointerId);
+            }
+        }
+
+        function switchToStudio() {
+            homeScreen.classList.remove("active");
+            studioScreen.classList.add("active");
+            redrawAll();
+            statusText.textContent = "キャンバスをタップしてスタンプを置こう";
+        }
+
+        function undoStamp() {
+            if (!stamps.length) return;
+            stamps.pop();
+            redrawAll();
+            statusText.textContent = `スタンプ ${stamps.length} こ`;
+        }
+
+        function clearStamps() {
+            stamps = [];
+            redrawAll();
+            statusText.textContent = "キャンバスをタップしてスタンプを置こう";
+        }
+
+        function saveImage() {
+            const a = document.createElement("a");
+            const now = new Date();
+            const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}`;
+            a.download = `leaf_stamp_${stamp}.png`;
+            a.href = canvas.toDataURL("image/png");
+            a.click();
+            statusText.textContent = "画像を保存したよ";
+        }
+
+        function claimPoint() {
+            if (rewardClaimed) return;
+            rewardClaimed = true;
+            const btn = document.getElementById("claim-point-btn");
+            btn.disabled = true;
+            btn.textContent = "もらいました";
+            btn.style.background = "#95a78f";
+            if (typeof showPointGetDialog === "function") {
+                showPointGetDialog(30);
+                statusText.textContent = "30ポイントを受け取ったよ";
+            } else {
+                statusText.textContent = "30ポイントゲット";
+            }
+        }
+
+        function preloadCharacterImages() {
+            stampTools.filter((tool) => tool.kind === "char").forEach((tool) => {
+                const img = new Image();
+                img.src = tool.image;
+                charImages[tool.id] = img;
+            });
+        }
+
+        function init() {
+            renderSwatches();
+            renderShapes();
+            preloadCharacterImages();
+            updateActiveStates();
+            redrawAll();
+
+            document.getElementById("start-btn").addEventListener("click", switchToStudio);
+            document.getElementById("undo-btn").addEventListener("click", undoStamp);
+            document.getElementById("clear-btn").addEventListener("click", clearStamps);
+            document.getElementById("save-image-btn").addEventListener("click", saveImage);
+            document.getElementById("claim-point-btn").addEventListener("click", claimPoint);
+
+            canvas.addEventListener("pointerdown", handlePointerDown);
+            canvas.addEventListener("pointermove", handlePointerMove);
+            canvas.addEventListener("pointerup", handlePointerUp);
+            canvas.addEventListener("pointercancel", handlePointerUp);
+            canvas.addEventListener("pointerleave", () => {
+                if (isDrawing) {
+                    isDrawing = false;
+                    lastPoint = null;
+                }
+            });
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
