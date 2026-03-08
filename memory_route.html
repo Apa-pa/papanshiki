@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>きおくルートたんけん</title>
     <script src="ranking.js"></script>
-    <script type="module" src="firebase-ranking.js"></script>
     <style>
         body {
             margin: 0;
@@ -68,7 +67,7 @@
         }
 
         .guide-speech::before {
-            content: '';
+            content: "";
             position: absolute;
             top: 50%;
             left: -12px;
@@ -178,10 +177,10 @@
             <h1>きおくルートたんけん</h1>
 
             <div class="guide-container">
-                <img src="hari-an.webp" alt="アンちゃん" class="guide-char">
+                <img src="hari-an.webp" alt="あんちゃん" class="guide-char">
                 <div class="guide-speech">
-                    <p>✨ ひかったマスのじゅんばんを<br>おぼえて たどろう！</p>
-                    <p>🌟 5ラウンドクリアでゴール！<br>まちがえると +5びょう だよ。</p>
+                    <p>ひかった ますの じゅんばんを<br>おぼえて そのとおりに タッチしよう！</p>
+                    <p>1ステージ せいかいで 100てん。<br>まちがえるまで つづいて、まいかい 1マスずつ ながくなるよ。</p>
                 </div>
             </div>
 
@@ -191,17 +190,18 @@
 
         <section id="game" class="screen">
             <div class="hud">
-                <span>ラウンド: <span id="round-no">1</span>/5</span>
-                <span>けいか: <span id="timer">0.0</span>びょう</span>
+                <span>ステージ <span id="round-no">1</span></span>
+                <span>スコア <span id="score">0</span>てん</span>
             </div>
-            <div id="status">ルートをみてね</div>
+            <p>いどうする かず: <span id="route-length">3</span>マス</p>
+            <div id="status">ルートを みて おぼえてね</div>
             <div class="board" id="board"></div>
             <a class="btn secondary" href="index.html">やめる</a>
         </section>
 
         <section id="result" class="screen">
-            <h1>クリア</h1>
-            <p>きろく</p>
+            <h1>おしまい</h1>
+            <p id="result-message">スコア</p>
             <div id="final-time">0.0</div>
             <button class="btn" id="save-btn">きろくする</button>
             <button class="btn" id="retry-btn">もういちど</button>
@@ -210,23 +210,23 @@
     </div>
 
     <script>
-        const ROUND_MAX = 5;
-        const PENALTY_SEC = 5;
+        const SCORE_PER_STAGE = 100;
+        const BASE_ROUTE_LENGTH = 3;
         const boardEl = document.getElementById("board");
         const roundEl = document.getElementById("round-no");
-        const timerEl = document.getElementById("timer");
+        const scoreEl = document.getElementById("score");
+        const routeLengthEl = document.getElementById("route-length");
         const statusEl = document.getElementById("status");
         const finalTimeEl = document.getElementById("final-time");
+        const resultMessageEl = document.getElementById("result-message");
 
         let cells = [];
         let route = [];
         let inputIndex = 0;
-        let round = 1;
-        let startMs = 0;
-        let timerId = null;
-        let penaltyMs = 0;
+        let stage = 1;
+        let score = 0;
         let locked = true;
-        let finalTime = 0;
+        let finalScore = 0;
 
         function changeScreen(id) {
             document.querySelectorAll(".screen").forEach((el) => el.classList.remove("active"));
@@ -248,7 +248,9 @@
         }
 
         function clearCellStyles() {
-            cells.forEach((c) => c.className = "cell");
+            cells.forEach((cell) => {
+                cell.className = "cell";
+            });
         }
 
         function generateRoute(len) {
@@ -263,23 +265,17 @@
                 return list;
             };
 
-            while (true) {
-                const result = [];
-                const used = new Set();
-                let current = Math.floor(Math.random() * 9);
+            const result = [];
+            let current = Math.floor(Math.random() * 9);
+            result.push(current);
+
+            for (let i = 1; i < len; i++) {
+                const choices = neighbors(current);
+                current = choices[Math.floor(Math.random() * choices.length)];
                 result.push(current);
-                used.add(current);
-
-                for (let i = 1; i < len; i++) {
-                    const choices = neighbors(current).filter((n) => !used.has(n));
-                    if (choices.length === 0) break;
-                    current = choices[Math.floor(Math.random() * choices.length)];
-                    result.push(current);
-                    used.add(current);
-                }
-
-                if (result.length === len) return result;
             }
+
+            return result;
         }
 
         function sleep(ms) {
@@ -289,7 +285,7 @@
         async function showRoute() {
             locked = true;
             clearCellStyles();
-            statusEl.textContent = "ルートをみてね";
+            statusEl.textContent = "ルートを みて おぼえてね";
             for (let i = 0; i < route.length; i++) {
                 const idx = route[i];
                 cells[idx].classList.add("show");
@@ -298,68 +294,69 @@
                 await sleep(120);
             }
             inputIndex = 0;
-            statusEl.textContent = "おなじじゅんでタップ";
+            statusEl.textContent = "おなじ じゅんばんで タッチしよう";
             locked = false;
         }
 
         function startRound() {
-            roundEl.textContent = String(round);
-            route = generateRoute(round + 2);
+            roundEl.textContent = String(stage);
+            routeLengthEl.textContent = String(BASE_ROUTE_LENGTH + stage - 1);
+            route = generateRoute(BASE_ROUTE_LENGTH + stage - 1);
             showRoute();
         }
 
         function onCellClick(idx) {
             if (locked) return;
+
             const expected = route[inputIndex];
             if (idx === expected) {
                 cells[idx].classList.add("correct");
                 setTimeout(() => cells[idx].classList.remove("correct"), 160);
                 inputIndex += 1;
+
                 if (inputIndex >= route.length) {
                     locked = true;
-                    if (round >= ROUND_MAX) {
-                        finishGame();
-                    } else {
-                        round += 1;
-                        setTimeout(startRound, 500);
-                    }
+                    score += SCORE_PER_STAGE;
+                    scoreEl.textContent = String(score);
+                    statusEl.textContent = `${SCORE_PER_STAGE}てん げっと！ つぎは もっと ながくなるよ`;
+                    stage += 1;
+                    setTimeout(startRound, 550);
                 }
-            } else {
-                cells[idx].classList.add("wrong");
-                setTimeout(() => cells[idx].classList.remove("wrong"), 220);
-                penaltyMs += PENALTY_SEC * 1000;
-                statusEl.textContent = "ざんねん +5びょう。もういちど";
-                setTimeout(showRoute, 700);
+                return;
             }
+
+            cells[idx].classList.add("wrong");
+            setTimeout(() => cells[idx].classList.remove("wrong"), 220);
+            statusEl.textContent = "ざんねん！ ミスで おしまい";
+            setTimeout(finishGame, 350);
         }
 
         function startGame() {
-            round = 1;
-            penaltyMs = 0;
-            finalTime = 0;
-            startMs = Date.now();
+            stage = 1;
+            score = 0;
+            finalScore = 0;
+            locked = true;
+            scoreEl.textContent = "0";
+            routeLengthEl.textContent = String(BASE_ROUTE_LENGTH);
+            resultMessageEl.textContent = "スコア";
             buildBoard();
             changeScreen("game");
-            if (timerId) clearInterval(timerId);
-            timerId = setInterval(() => {
-                const sec = ((Date.now() - startMs + penaltyMs) / 1000).toFixed(1);
-                timerEl.textContent = sec;
-            }, 100);
             startRound();
         }
 
         function finishGame() {
-            if (timerId) clearInterval(timerId);
-            finalTime = ((Date.now() - startMs + penaltyMs) / 1000).toFixed(1);
-            finalTimeEl.textContent = `${finalTime} びょう`;
+            locked = true;
+            finalScore = score;
+            finalTimeEl.textContent = `${finalScore} てん`;
+            resultMessageEl.textContent = `ステージ${stage}で ミス。 ${Math.max(stage - 1, 0)}ステージ クリアしたよ。`;
             changeScreen("result");
         }
 
         function saveScore() {
             if (typeof showSaveDialog === "function") {
-                showSaveDialog("memory_route", finalTime);
+                showSaveDialog("memory_route", finalScore);
             } else {
-                alert("ranking.js が読み込まれていません");
+                alert("ranking.js が読みこまれていません");
             }
         }
 

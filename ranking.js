@@ -20,7 +20,7 @@ const GAME_LIST = {
     'tsumitsumi': { name: '漢字つみつみ', type: 'score', unit: 'こ' },
     'eawase': { name: 'えあわせ', type: 'time', unit: '秒' },
     'shopping': { name: 'ぴったりしはらい', type: 'time', unit: '秒' },
-    'memory_route': { name: 'きおくルートたんけん', type: 'time', unit: '秒' },
+    'memory_route': { name: 'きおくルートたんけん', type: 'score', unit: '点' },
     'shopping_mission_brain': { name: 'かいものミッション', type: 'time', unit: '秒' },
     'attention_dual_task': { name: 'デュアルタスク', type: 'score', unit: '点' },
     'water': { name: '水槽パズル', type: 'time', unit: '秒' },
