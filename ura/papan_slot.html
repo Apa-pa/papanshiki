@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ぱぱんスロット</title>
+    <style>
+        /* ベガス風のスタイル */
+        body {
+            font-family: 'Arial Black', 'Impact', sans-serif;
+            background: linear-gradient(135deg, #1a0000, #4d0000, #000000);
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            touch-action: manipulation;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 背景のキラキラ効果 */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(white, rgba(255, 255, 255, .2) 2px, transparent 5px),
+                radial-gradient(#ffd700, rgba(255, 215, 0, .15) 1px, transparent 3px);
+            background-size: 350px 350px, 250px 250px;
+            background-position: 0 0, 40px 60px;
+            opacity: 0.2;
+            z-index: -1;
+        }
+
+        h1 {
+            color: #ffd700;
+            font-size: 32px;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 0 #b8860b, 0 0 10px #ffd700, 0 0 20px #ff00de;
+        }
+
+        .slot-machine {
+            background: #222;
+            border: 5px solid #ffd700;
+            border-radius: 20px;
+            padding: 30px 20px;
+            box-shadow: 0 0 20px #ffd700, inset 0 0 20px rgba(255, 0, 100, 0.5);
+            margin-bottom: 20px;
+            width: 90%;
+            max-width: 400px;
+            transition: box-shadow 0.3s;
+        }
+
+        .reels {
+            display: flex;
+            justify-content: space-around;
+            background: #fff;
+            border: 3px solid #333;
+            border-radius: 10px;
+            padding: 20px 10px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9);
+        }
+
+        .reel {
+            width: 80px;
+            height: 100px;
+            background: #f0f0f0;
+            border: 2px solid #888;
+            border-radius: 5px;
+            font-size: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: inset 0 10px 15px rgba(0, 0, 0, 0.4), inset 0 -10px 15px rgba(0, 0, 0, 0.4);
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            transition: filter 0.1s;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .stop-buttons {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        button {
+            font-family: 'Arial Black', sans-serif;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.1s;
+            text-transform: uppercase;
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: none !important;
+        }
+
+        .btn-stop {
+            background: linear-gradient(to bottom, #ff4c4c, #cc0000);
+            color: white;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #800000;
+            box-shadow: 0 5px 0 #800000, 0 5px 10px rgba(0, 0, 0, 0.5);
+            width: 30%;
+        }
+
+        .btn-stop:disabled {
+            background: #555;
+            border-color: #333;
+            box-shadow: 0 2px 0 #222;
+            color: #888;
+            transform: translateY(3px);
+            cursor: not-allowed;
+        }
+
+        .exchange-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
+            margin-bottom: 20px;
+            /* 余白を追加 */
+        }
+
+        .btn-add-credit,
+        .btn-exchange {
+            flex: 1;
+            padding: 10px 5px;
+            font-size: 13px;
+            border-radius: 12px;
+            letter-spacing: 0px;
+            line-height: 1.4;
+        }
+
+        .btn-add-credit {
+            background: linear-gradient(to bottom, #00e5ff, #0099cc);
+            color: #000;
+            border: 2px solid #005580;
+            box-shadow: 0 4px 0 #005580, 0 4px 10px rgba(0, 229, 255, 0.4);
+        }
+
+        .btn-exchange {
+            background: linear-gradient(to bottom, #ff9900, #cc7a00);
+            color: #000;
+            border: 2px solid #804d00;
+            box-shadow: 0 4px 0 #804d00, 0 4px 10px rgba(255, 153, 0, 0.4);
+        }
+
+        .btn-add-credit:disabled,
+        .btn-exchange:disabled {
+            background: #333;
+            border-color: #222;
+            box-shadow: 0 2px 0 #111;
+            color: #666;
+            cursor: not-allowed;
+            transform: translateY(2px);
+        }
+
+        .btn-start {
+            background: linear-gradient(to bottom, #ffd700, #daa520);
+            color: #000;
+            padding: 15px 30px;
+            font-size: 28px;
+            border: 2px solid #b8860b;
+            box-shadow: 0 6px 0 #b8860b, 0 5px 15px rgba(255, 215, 0, 0.4);
+            border-radius: 30px;
+            align-self: center;
+            width: 80%;
+            letter-spacing: 2px;
+            margin-top: 10px;
+            /* 上との余白を追加 */
+        }
+
+        .btn-start:disabled {
+            background: #555;
+            border-color: #333;
+            box-shadow: 0 3px 0 #222;
+            color: #777;
+            transform: translateY(3px);
+            cursor: not-allowed;
+        }
+
+        .status-board {
+            background: #000;
+            border: 2px solid #00e5ff;
+            color: #00e5ff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 18px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 5px #00e5ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bet-info {
+            font-size: 16px;
+            color: #ff3366;
+            text-shadow: 0 0 5px #ff3366;
+        }
+
+        .message-area {
+            min-height: 40px;
+            margin-bottom: 10px;
+        }
+
+        .message {
+            font-size: 20px;
+            color: #ff00de;
+            text-shadow: 0 0 10px #ff00de;
+            margin: 0;
+            transition: 0.3s;
+        }
+
+        .payout-table {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #ffd700;
+            border-radius: 10px;
+            padding: 10px;
+            width: 90%;
+            max-width: 400px;
+            margin-bottom: 20px;
+            font-family: sans-serif;
+            font-size: 14px;
+        }
+
+        .payout-table table {
+            width: 100%;
+            color: #ddd;
+            border-collapse: collapse;
+        }
+
+        .payout-table td {
+            padding: 3px;
+        }
+
+        .payout-table .symbol-col {
+            text-align: right;
+            font-size: 18px;
+        }
+
+        .payout-table .prize-col {
+            text-align: left;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .nav-btn {
+            color: #00e5ff;
+            border: 2px solid #00e5ff;
+            background: transparent;
+            padding: 12px 25px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: auto;
+            margin-bottom: 20px;
+            transition: 0.3s;
+            font-family: sans-serif;
+        }
+
+        .nav-btn:hover {
+            background: #00e5ff;
+            color: #000;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.8);
+        }
+
+        @keyframes jackpotFlash {
+            0% {
+                box-shadow: 0 0 20px #ffd700, inset 0 0 20px rgba(255, 0, 100, 0.5);
+            }
+
+            50% {
+                box-shadow: 0 0 60px #fff, inset 0 0 60px #ffd700;
+                transform: scale(1.02);
+            }
+
+            100% {
+                box-shadow: 0 0 20px #ffd700, inset 0 0 20px rgba(255, 0, 100, 0.5);
+            }
+        }
+
+        .jackpot-anim {
+            animation: jackpotFlash 0.5s ease-in-out 3;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🎰 PAPAN SLOT 🎰</h1>
+
+    <div class="message-area">
+        <p class="message" id="message">1どんぐりで3回まわせるよ！</p>
+    </div>
+
+    <div class="slot-machine" id="machine-body">
+        <div class="status-board">
+            <span class="bet-info">クレジット: <span id="credit-count">0</span></span>
+            <span>どんぐり: <span id="acorn-count">---</span></span>
+        </div>
+
+        <div class="reels">
+            <div class="reel" id="reel-0">🍒</div>
+            <div class="reel" id="reel-1">🍒</div>
+            <div class="reel" id="reel-2">🍒</div>
+        </div>
+
+        <div class="controls">
+            <div class="stop-buttons">
+                <button class="btn-stop" id="stop-0" disabled>STOP 1</button>
+                <button class="btn-stop" id="stop-1" disabled>STOP 2</button>
+                <button class="btn-stop" id="stop-2" disabled>STOP 3</button>
+            </div>
+            <!-- スピンとストップを近づける（スピンを下へ） -->
+            <button class="btn-start" id="start-btn">SPIN !!</button>
+
+            <div class="exchange-buttons">
+                <!-- クレジット投入ボタン -->
+                <button class="btn-add-credit" id="add-credit-btn">🪙 どんぐり投入<br>(1個=3クレ)</button>
+                <!-- 精算ボタン -->
+                <button class="btn-exchange" id="payout-btn">💰 精算する<br>(3クレ=1個)</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="payout-table">
+        <table>
+            <tr>
+                <td class="symbol-col">7️⃣ 7️⃣ 7️⃣</td>
+                <td>...</td>
+                <td class="prize-col">120 クレジット</td>
+                <td class="symbol-col">⭐ ⭐ ⭐</td>
+                <td>...</td>
+                <td class="prize-col">40 クレジット</td>
+            </tr>
+            <tr>
+                <td class="symbol-col">🍉 🍉 🍉</td>
+                <td>...</td>
+                <td class="prize-col">15 クレジット</td>
+                <td class="symbol-col">🍒 🍒 🍒</td>
+                <td>...</td>
+                <td class="prize-col">5 クレジット</td>
+            </tr>
+            <tr>
+                <td class="symbol-col">🔔 🔔 🔔</td>
+                <td>...</td>
+                <td class="prize-col">2 クレジット</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+
+    <a href="secret_home.html" class="nav-btn">🔙 ぱぱんべガスへ戻る</a>
+
+    <script>
+        // 絵柄リスト
+        const symbols = ['🍒', '🔔', '🍉', '⭐', '💎', '7️⃣'];
+
+        // パチスロ風の小役確率・フラグ抽選用データ
+        // 機械割（ペイアウト率）を100%以下に抑えるための設定
+        const payoutInfo = {
+            '7️⃣': { prob: 1 / 400, payout: 120 },  // 1/200だと高すぎるので1/400
+            '⭐': { prob: 1 / 200, payout: 40 },
+            '🍉': { prob: 1 / 100, payout: 15 },
+            '🍒': { prob: 1 / 50, payout: 5 },
+            '🔔': { prob: 1 / 8, payout: 2 }
+        };
+
+        // DOM要素の取得
+        const reels = [
+            document.getElementById('reel-0'),
+            document.getElementById('reel-1'),
+            document.getElementById('reel-2')
+        ];
+        const stopBtns = [
+            document.getElementById('stop-0'),
+            document.getElementById('stop-1'),
+            document.getElementById('stop-2')
+        ];
+        const startBtn = document.getElementById('start-btn');
+        const addCreditBtn = document.getElementById('add-credit-btn');
+        const payoutBtn = document.getElementById('payout-btn');
+        const messageEl = document.getElementById('message');
+        const acornCountEl = document.getElementById('acorn-count');
+        const creditCountEl = document.getElementById('credit-count');
+        const machineBody = document.getElementById('machine-body');
+
+        // 状態管理
+        let spinning = [false, false, false];
+        let intervals = [null, null, null];
+        let currentSymbols = ['🍒', '🍒', '🍒'];
+        let targetSymbols = ['🍒', '🍒', '🍒']; // フラグ当選により事前に決まる出目
+        let acorns = 0;
+        let credits = 0; // スピン用のクレジット
+
+        // --- 初期化 ---
+        function init() {
+            const savedAcorns = localStorage.getItem('acorns');
+            if (savedAcorns) {
+                acorns = parseInt(savedAcorns, 10);
+            } else {
+                acorns = 500;
+                localStorage.setItem('acorns', acorns);
+            }
+            updateDisplays();
+
+            // イベントリスナー登録
+            startBtn.addEventListener('click', startSpin);
+            addCreditBtn.addEventListener('click', addCredit);
+            payoutBtn.addEventListener('click', payoutCredits);
+            stopBtns.forEach((btn, index) => {
+                btn.addEventListener('click', () => stopReel(index));
+            });
+        }
+
+        // --- どんぐり・クレジット表示の更新 ---
+        function updateDisplays() {
+            acornCountEl.textContent = acorns;
+            creditCountEl.textContent = credits;
+            localStorage.setItem('acorns', acorns);
+        }
+
+        // --- クレジット投入 (1どんぐり = 3クレジット) ---
+        function addCredit() {
+            if (acorns < 1) {
+                showMessage('どんぐりが足りないよ！', '#ff4c4c');
+                return;
+            }
+            acorns -= 1;
+            credits += 3;
+            updateDisplays();
+            showMessage('3クレジット追加！', '#00e5ff');
+        }
+
+        // --- 精算 (3クレジット = 1どんぐり) ---
+        function payoutCredits() {
+            if (credits >= 3) {
+                const exchangeAcorns = Math.floor(credits / 3);
+                acorns += exchangeAcorns;
+                credits = credits % 3; // 3で割った余りをクレジットに残す
+                updateDisplays();
+                showMessage(`${exchangeAcorns} どんぐりに精算したよ！`, '#ffd700');
+            } else {
+                showMessage('3クレジット以上で精算できるよ', '#ff9900');
+            }
+        }
+
+        // --- スピン開始 ---
+        function startSpin() {
+            // オートクレジット機能
+            if (credits < 1) {
+                if (acorns >= 1) {
+                    acorns -= 1;
+                    credits += 3;
+                    updateDisplays();
+                    showMessage('どんぐりから3クレジット追加！', '#00e5ff');
+                } else {
+                    showMessage('どんぐりが足りないよ！', '#ff4c4c');
+                    return;
+                }
+            }
+
+            // クレジットを消費
+            credits -= 1;
+            updateDisplays();
+
+            machineBody.classList.remove('jackpot-anim');
+
+            startBtn.disabled = true;
+            addCreditBtn.disabled = true;
+            payoutBtn.disabled = true; // スピン中は精算不可
+            spinning = [true, true, true];
+
+            // 🎯 【フラグ抽選処理 (パチスロ風)】
+            const r = Math.random();
+            let currentFlag = null;
+            let probSum = 0;
+
+            for (const [symbol, info] of Object.entries(payoutInfo)) {
+                probSum += info.prob;
+                if (r < probSum) {
+                    currentFlag = symbol;
+                    break;
+                }
+            }
+
+            if (currentFlag) {
+                // 当たりフラグ：必ずその絵柄が3つ揃うようにターゲットを設定
+                targetSymbols = [currentFlag, currentFlag, currentFlag];
+            } else {
+                // ハズレフラグ：絶対に3つ揃わないようにターゲットを設定
+                targetSymbols = getRandomMishmash();
+            }
+
+            let speedOffsets = [40, 60, 80];
+
+            reels.forEach((reel, index) => {
+                stopBtns[index].disabled = false;
+                reel.style.filter = 'blur(2px)';
+
+                intervals[index] = setInterval(() => {
+                    const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+                    reel.textContent = randomSymbol;
+                }, speedOffsets[index]);
+            });
+        }
+
+        // ハズレ用のバラバラな出目を生成
+        function getRandomMishmash() {
+            let s1 = symbols[Math.floor(Math.random() * symbols.length)];
+            let s2 = symbols[Math.floor(Math.random() * symbols.length)];
+            let s3 = symbols[Math.floor(Math.random() * symbols.length)];
+            // 偶然3つ揃ってしまったら一番右をズラす
+            while (s1 === s2 && s2 === s3) {
+                s3 = symbols[Math.floor(Math.random() * symbols.length)];
+            }
+            return [s1, s2, s3];
+        }
+
+        // --- リール停止 ---
+        function stopReel(index) {
+            if (!spinning[index]) return;
+
+            spinning[index] = false;
+            clearInterval(intervals[index]);
+            stopBtns[index].disabled = true;
+
+            reels[index].style.filter = 'none';
+
+            // 🎯 設定されたターゲット絵柄でビタ止まりさせる
+            reels[index].textContent = targetSymbols[index];
+            currentSymbols[index] = targetSymbols[index];
+
+            checkResult();
+        }
+
+        // --- 結果判定 ---
+        function checkResult() {
+            // すべてのリールが止まったか確認
+            if (spinning.includes(true)) return;
+
+            startBtn.disabled = false;
+            addCreditBtn.disabled = false;
+            payoutBtn.disabled = false;
+
+            const s1 = currentSymbols[0];
+            const s2 = currentSymbols[1];
+            const s3 = currentSymbols[2];
+
+            if (s1 === s2 && s2 === s3) {
+                // 当たり
+                const winAmount = payoutInfo[s1].payout;
+                credits += winAmount; // ここでどんぐりではなくクレジットに払い出し
+                updateDisplays();
+
+                showMessage(`🎉 ${winAmount} クレジット獲得！ 🎉`, '#ffd700');
+
+                machineBody.classList.add('jackpot-anim');
+
+            } else {
+                // ハズレ
+                showMessage(`（のこり ${credits} クレジット）`, '#aaaaaa');
+            }
+        }
+
+        // 実行開始
+        init();
+    </script>
+</body>
+
+</html>

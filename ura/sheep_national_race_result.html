@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>全国レース 最新結果速報</title>
+    <!-- firebaseの読み込み -->
+    <script type="module" src="../firebase-ranking.js"></script>
+    <style>
+        body {
+            font-family: 'Arial Black', sans-serif;
+            background: linear-gradient(135deg, #1b5e20, #003300);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        /* アニメーションコンテナ */
+        #animation-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #2e7d32, #1b5e20);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s;
+        }
+
+        .anim-title {
+            font-size: 28px;
+            color: #ffd700;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 0px #b8860b;
+            animation: pulse 1s infinite alternate;
+            text-align: center;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            100% {
+                transform: scale(1.1);
+            }
+        }
+
+        .track {
+            position: relative;
+            width: 100%;
+            height: 100px;
+            border-bottom: 4px dashed rgba(255, 255, 255, 0.5);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .running-sheep {
+            position: absolute;
+            left: -120px;
+            bottom: 5px;
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            animation: runAcross 3s linear forwards;
+        }
+
+        .running-sheep.s1 {
+            animation-duration: 2.5s;
+            animation-delay: 0.2s;
+        }
+
+        .running-sheep.s2 {
+            animation-duration: 3.2s;
+            animation-delay: 0s;
+        }
+
+        .running-sheep.s3 {
+            animation-duration: 2.8s;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes runAcross {
+            0% {
+                left: -120px;
+            }
+
+            100% {
+                left: 120vw;
+            }
+        }
+
+        /* 結果コンテナ */
+        #result-container {
+            display: none;
+            width: 100%;
+            max-width: 500px;
+            animation: fadeIn 1s forwards;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .league-section {
+            background: rgba(0, 0, 0, 0.6);
+            border: 3px solid #ffca28;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .league-title {
+            font-size: 20px;
+            color: #ffd700;
+            text-align: center;
+            border-bottom: 2px solid #555;
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        .rank-row {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .rank-medal {
+            font-size: 24px;
+            margin-right: 15px;
+            width: 30px;
+            text-align: center;
+        }
+
+        .rank-1 .rank-medal {
+            color: #ffd700;
+            text-shadow: 0 0 10px #ffca28;
+        }
+
+        .rank-2 .rank-medal {
+            color: #c0c0c0;
+            text-shadow: 0 0 10px #ccc;
+        }
+
+        .rank-3 .rank-medal {
+            color: #cd7f32;
+            text-shadow: 0 0 10px #b87333;
+        }
+
+        .rank-details {
+            flex: 1;
+        }
+
+        .owner-name {
+            font-size: 14px;
+            color: #bbb;
+        }
+
+        .sheep-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .score-box {
+            background: #ff5252;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .back-btn {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 30px auto 0;
+            padding: 15px;
+            text-align: center;
+            background: #ff5252;
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 30px;
+            box-shadow: 0 4px #c62828;
+            font-size: 16px;
+        }
+
+        .back-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 #c62828;
+        }
+
+        #loading-text {
+            text-align: center;
+            padding: 20px;
+            font-size: 16px;
+            color: #ccc;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- アニメーション画面 -->
+    <div id="animation-container">
+        <h2 class="anim-title">🏆 全国レース 結果発表 🏆</h2>
+        <div class="track">
+            <img src="hitsuji_run1.webp" class="running-sheep s1" id="sheep1">
+        </div>
+        <div class="track">
+            <img src="hitsuji_run2.webp" class="running-sheep s2" id="sheep2">
+        </div>
+        <div class="track">
+            <img src="hitsuji_run1.webp" class="running-sheep s3" id="sheep3">
+        </div>
+    </div>
+
+    <!-- 結果画面 -->
+    <div id="result-container">
+        <div class="header">
+            <h1 style="color:#ffd700; margin:0; font-size:24px;">全国レース 最新結果</h1>
+            <p id="race-date" style="margin:5px 0 10px; font-size:12px; color:#aaa;">(データ取得中...)</p>
+        </div>
+
+        <div id="results-content">
+            <div id="loading-text">結果を読み込んでいます...</div>
+        </div>
+
+        <a href="sheep_stable.html" class="back-btn">🐴 厩舎にもどる</a>
+    </div>
+
+    <script>
+        // ヒツジの走りアニメーション交互切替
+        const sheepImgs = [
+            document.getElementById('sheep1'),
+            document.getElementById('sheep2'),
+            document.getElementById('sheep3')
+        ];
+        let frame = 1;
+        setInterval(() => {
+            frame = frame === 1 ? 2 : 1;
+            sheepImgs.forEach((img, i) => {
+                // 画像を交互に切り替え (若干の遅延をつけることでアニメーションを自然に)
+                const useFrame = (i % 2 === 0) ? frame : (frame === 1 ? 2 : 1);
+                img.src = `hitsuji_run${useFrame}.webp`;
+            });
+        }, 150);
+
+        // 表示制御
+        window.addEventListener('load', async () => {
+            let resultsData = null;
+            // データ取得開始
+            if (typeof window.fetchLatestNationalResults === 'function') {
+                resultsData = await window.fetchLatestNationalResults();
+            }
+
+            // アニメーションを最低でも3.5秒は表示
+            setTimeout(() => {
+                const animContainer = document.getElementById('animation-container');
+                animContainer.style.opacity = '0';
+
+                setTimeout(() => {
+                    animContainer.style.display = 'none';
+                    const resultContainer = document.getElementById('result-container');
+                    resultContainer.style.display = 'block';
+
+                    renderResults(resultsData);
+                }, 1000); // フェードアウト後に切り替え
+            }, 3500);
+        });
+
+        function formatTime(totalSeconds) {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = Math.floor(totalSeconds % 60);
+            // ミリ秒の部分は適当なばらつきが出るように小数部分から取る
+            const ms = Math.floor((totalSeconds % 1) * 100);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+        }
+
+        // スコアをタイムに変換する式 (スコアが高いほどタイムが短い)
+        // クラスごとに基準タイム(秒)を設ける
+        const baseTimes = {
+            'legend': 120, // 2分ベース
+            'pro': 140,    // 2分20秒ベース
+            'rookie': 160  // 2分40秒ベース
+        };
+
+        function renderResults(data) {
+            const content = document.getElementById('results-content');
+            if (!data) {
+                document.getElementById('race-date').innerText = "";
+                content.innerHTML = `<div style="text-align:center; padding:30px; color:#ff9800; font-weight:bold; font-size:18px;">🏆 まだレース結果がありません 🏆<br><span style="font-size:12px; color:#ccc;">(次回開催をお待ちください)</span></div>`;
+                return;
+            }
+
+            // 開催日時のフォーマット (例: 2024-05-18-1600 -> 2024/05/18 16:00版)
+            let dateStr = data.raceId || "不明";
+            if (dateStr.length === 15) {
+                dateStr = `${dateStr.substring(0, 4)}/${dateStr.substring(5, 7)}/${dateStr.substring(8, 10)} ${dateStr.substring(11, 13)}:00 開催レース`;
+            }
+            document.getElementById('race-date').innerText = `【 ${dateStr} 】`;
+
+            let html = "";
+            const leagues = [
+                { id: 'legend', name: 'レジェンド・クラス' },
+                { id: 'pro', name: 'プロ・クラス' },
+                { id: 'rookie', name: 'ルーキー・クラス' }
+            ];
+
+            leagues.forEach(league => {
+                const runners = data[league.id];
+                html += `<div class="league-section">
+                            <h3 class="league-title">${league.name}</h3>`;
+
+                if (!runners || runners.length === 0) {
+                    html += `<p style="text-align:center; color:#ccc; font-size:12px;">出走者がいませんでした。</p>`;
+                } else {
+                    runners.forEach((runner, index) => {
+                        const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
+
+                        // タイムの計算: (ベースタイム) - (スコア ÷ 係数) 
+                        // ※ スコアが大きすぎてもマイナスにならないよう調整＆ちょっとしたランダム要素
+                        const baseSec = baseTimes[league.id] || 150;
+                        const calcTime = Math.max(20, baseSec - (runner.score / 6.5) + (runner.uid.charCodeAt(0) % 3));
+                        const timeStr = formatTime(calcTime);
+
+                        html += `
+                        <div class="rank-row rank-${index + 1}">
+                            <div class="rank-medal">${medal}</div>
+                            <div class="rank-details">
+                                <div class="owner-name">${runner.ownerName} オーナー</div>
+                                <div class="sheep-name">${runner.sheepName}</div>
+                            </div>
+                            <div class="score-box" style="background:#0d47a1; border:2px solid #64b5f6; font-family:'Courier New', monospace; letter-spacing:1px; width:75px; text-align:center;">
+                                🕒<br>${timeStr}
+                            </div>
+                        </div>`;
+                    });
+                }
+                html += `</div>`;
+            });
+
+            content.innerHTML = html;
+        }
+    </script>
+</body>
+
+</html>
