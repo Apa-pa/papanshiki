@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 
 <head>
@@ -203,9 +203,10 @@
             <h1>おしまい</h1>
             <p id="result-message">スコア</p>
             <div id="final-time">0.0</div>
-            <button class="btn" id="save-btn">きろくする</button>
-            <button class="btn" id="retry-btn">もういちど</button>
-            <a class="btn secondary" href="index.html">もどる</a>
+            <div id="post-point-actions" hidden>
+            <button class="btn" id="retry-btn">もういっかい</button>
+            <a class="btn secondary" href="index.html">ホームにもどる</a>
+        </div>
         </section>
     </div>
 
@@ -219,6 +220,7 @@
         const statusEl = document.getElementById("status");
         const finalTimeEl = document.getElementById("final-time");
         const resultMessageEl = document.getElementById("result-message");
+        const postPointActionsEl = document.getElementById("post-point-actions");
 
         let cells = [];
         let route = [];
@@ -227,6 +229,10 @@
         let score = 0;
         let locked = true;
         let finalScore = 0;
+
+        function setPostPointActionsVisible(visible) {
+            if (postPointActionsEl) postPointActionsEl.hidden = !visible;
+        }
 
         function changeScreen(id) {
             document.querySelectorAll(".screen").forEach((el) => el.classList.remove("active"));
@@ -332,6 +338,7 @@
         }
 
         function startGame() {
+            setPostPointActionsVisible(false);
             stage = 1;
             score = 0;
             finalScore = 0;
@@ -350,20 +357,22 @@
             finalTimeEl.textContent = `${finalScore} てん`;
             resultMessageEl.textContent = `ステージ${stage}で ミス。 ${Math.max(stage - 1, 0)}ステージ クリアしたよ。`;
             changeScreen("result");
+            setPostPointActionsVisible(false);
+            saveScore(() => setPostPointActionsVisible(true));
         }
 
-        function saveScore() {
+        function saveScore(onComplete) {
             if (typeof showSaveDialog === "function") {
-                showSaveDialog("memory_route", finalScore);
+                showSaveDialog("memory_route", finalScore, undefined, onComplete);
             } else {
+                if (typeof onComplete === "function") onComplete();
                 alert("ranking.js が読みこまれていません");
             }
         }
 
         document.getElementById("start-btn").addEventListener("click", startGame);
         document.getElementById("retry-btn").addEventListener("click", startGame);
-        document.getElementById("save-btn").addEventListener("click", saveScore);
-    </script>
+        </script>
 </body>
 
 </html>

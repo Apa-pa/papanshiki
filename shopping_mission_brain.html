@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 
 <head>
@@ -225,9 +225,10 @@
             </div>
             <p style="margin-top: 10px;">きろく</p>
             <div id="final-time">0.0</div>
-            <button class="btn" id="save-btn">きろくする</button>
-            <button class="btn" id="retry-btn">もういちど</button>
-            <a class="btn secondary" href="index.html">もどる</a>
+            <div id="post-point-actions" hidden>
+            <button class="btn" id="retry-btn">もういっかい</button>
+            <a class="btn secondary" href="index.html">ホームにもどる</a>
+        </div>
         </section>
     </div>
 
@@ -255,8 +256,13 @@
         let penaltyMs = 0;
         let timerId = null;
         let finalTime = 0;
+        const postPointActionsEl = document.getElementById("post-point-actions");
         let current = null;
         const selected = new Set();
+
+        function setPostPointActionsVisible(visible) {
+            if (postPointActionsEl) postPointActionsEl.hidden = !visible;
+        }
 
         function changeScreen(id) {
             document.querySelectorAll(".screen").forEach((el) => el.classList.remove("active"));
@@ -383,6 +389,7 @@
         }
 
         function startGame() {
+            setPostPointActionsVisible(false);
             round = 1;
             penaltyMs = 0;
             finalTime = 0;
@@ -402,12 +409,15 @@
             finalTime = ((Date.now() - startMs + penaltyMs) / 1000).toFixed(1);
             document.getElementById("final-time").textContent = `${finalTime} びょう`;
             changeScreen("result");
+            setPostPointActionsVisible(false);
+            saveScore(() => setPostPointActionsVisible(true));
         }
 
-        function saveScore() {
+        function saveScore(onComplete) {
             if (typeof showSaveDialog === "function") {
-                showSaveDialog("shopping_mission_brain", finalTime);
+                showSaveDialog("shopping_mission_brain", finalTime, undefined, onComplete);
             } else {
+                if (typeof onComplete === "function") onComplete();
                 alert("ranking.js が読み込まれていません");
             }
         }
@@ -415,8 +425,7 @@
         document.getElementById("start-btn").addEventListener("click", startGame);
         document.getElementById("retry-btn").addEventListener("click", startGame);
         document.getElementById("check-btn").addEventListener("click", checkAnswer);
-        document.getElementById("save-btn").addEventListener("click", saveScore);
-    </script>
+        </script>
 </body>
 
 </html>

@@ -307,9 +307,10 @@
             <h1>しゅうりょう</h1>
             <p>さいしゅうスコア</p>
             <div id="final-score">0 てん</div>
-            <button class="btn" id="save-btn">きろくする</button>
-            <button class="btn" id="retry-btn">もういちど</button>
-            <a class="btn secondary" href="index.html">もどる</a>
+            <div id="post-point-actions" hidden>
+            <button class="btn" id="retry-btn">もういっかい</button>
+            <a class="btn secondary" href="index.html">ホームにもどる</a>
+        </div>
         </section>
     </div>
 
@@ -330,6 +331,11 @@
         let timerId = null;
         let signalId = null;
         let finalScore = 0;
+        const postPointActionsEl = document.getElementById("post-point-actions");
+
+        function setPostPointActionsVisible(visible) {
+            if (postPointActionsEl) postPointActionsEl.hidden = !visible;
+        }
 
         function changeScreen(id) {
             document.querySelectorAll(".screen").forEach((el) => el.classList.remove("active"));
@@ -423,9 +429,12 @@
             finalScore = score;
             document.getElementById("final-score").textContent = `${finalScore} てん`;
             changeScreen("result");
+            setPostPointActionsVisible(false);
+            saveScore(() => setPostPointActionsVisible(true));
         }
 
         function startGame() {
+            setPostPointActionsVisible(false);
             score = 0;
             mathOk = 0;
             hits = 0;
@@ -448,10 +457,11 @@
             }, 1000);
         }
 
-        function saveScore() {
+        function saveScore(onComplete) {
             if (typeof showSaveDialog === "function") {
-                showSaveDialog("attention_dual_task", finalScore);
+                showSaveDialog("attention_dual_task", finalScore, undefined, onComplete);
             } else {
+                if (typeof onComplete === "function") onComplete();
                 alert("ranking.js が読み込まれていません");
             }
         }
@@ -459,8 +469,7 @@
         document.getElementById("start-btn").addEventListener("click", startGame);
         document.getElementById("retry-btn").addEventListener("click", startGame);
         document.getElementById("signal-btn").addEventListener("click", onSignalPress);
-        document.getElementById("save-btn").addEventListener("click", saveScore);
-    </script>
+        </script>
 </body>
 
 </html>

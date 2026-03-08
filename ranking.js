@@ -1,4 +1,4 @@
-/* ranking.js - 記録・目標・ポイント・スタンプ・どんぐり・株 管理 (全国ランキングUI改善版) */
+﻿/* ranking.js - 記録・目標・ポイント・スタンプ・どんぐり・株 管理 (全国ランキングUI改善版) */
 
 const GAME_LIST = {
     'make10': { name: 'あわせて10', type: 'time', unit: '秒' },
@@ -617,7 +617,7 @@ function checkAndAwardPoints(userName, gameId, currentRecord) {
 
 // ★★★ セーブダイアログ (UI改善＆空欄送信防止版) ★★★
 // ★★★ セーブダイアログ (UI改善 & 全国ランキング & 日替わりミッション統合版) ★★★
-function showSaveDialog(gameId, resultValue, customBasePoint) {
+function showSaveDialog(gameId, resultValue, customBasePoint, onComplete) {
     const old = document.getElementById('ranking-overlay');
     if (old) old.remove();
 
@@ -696,12 +696,13 @@ function showSaveDialog(gameId, resultValue, customBasePoint) {
                     <button onclick="Ranking.registerNew()" style="padding:10px 20px; font-size:16px; background:#2196F3; color:white; border:none; border-radius:5px; font-weight:bold;">OK</button>
                 </div>
             </div>
-            <button onclick="document.getElementById('ranking-overlay').remove()" style="margin-top:25px; background:none; border:none; color:#999; text-decoration:underline; cursor:pointer;">とじる</button>
+            <button onclick="document.getElementById('ranking-overlay').remove(); if(typeof Ranking.onComplete === 'function') Ranking.onComplete();" style="margin-top:25px; background:none; border:none; color:#999; text-decoration:underline; cursor:pointer;">とじる</button>
         </div>
     `;
     document.body.appendChild(overlay);
 
     window.Ranking = {
+        onComplete: onComplete,
         selectUser: (localName) => {
             // 1. 基本ポイント付与 (参加賞)
             const basePoint = (customBasePoint !== undefined) ? customBasePoint : (gameId === 'rail') ? 100 : 30;
@@ -738,6 +739,7 @@ function showSaveDialog(gameId, resultValue, customBasePoint) {
             }
 
             document.getElementById('ranking-overlay').remove();
+            if (typeof Ranking.onComplete === 'function') Ranking.onComplete();
 
             // メッセージ生成
             setTimeout(() => {
