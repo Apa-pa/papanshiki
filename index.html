@@ -353,6 +353,10 @@
                 <a href="gacha.html" class="menu-btn">🧸 ガチャ</a>
                 <a href="bank.html" class="menu-btn">🏦 ぱぱん銀行</a>
                 <a href="room.html" class="menu-btn">🏠 ルーム</a>
+                <button onclick="openHowtoModal()"
+                    style="display: inline-block; background: #fff8e1; color: #f57f17; border: 2px solid #fbc02d; font-size: 0.85rem; padding: 4px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(251, 192, 45, 0.2); transition: transform 0.2s, background 0.2s; margin: 5px; white-space: nowrap;"
+                    onmouseover="this.style.background='#ffecb3'" onmouseout="this.style.background='#fff8e1'">
+                    あそびかた</button>
             </div>
         </div>
 
@@ -1061,6 +1065,175 @@
 
         if (typeof showDailyMissionWidget === 'function') {
             showDailyMissionWidget('daily-mission-area');
+        }
+    </script>
+
+    <!-- 「あそびかた」モーダル -->
+    <div id="howto-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+        <div
+            style="background: #fff; border-radius: 20px; max-width: 500px; width: 100%; padding: 25px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; max-height: 90vh; overflow-y: auto; overflow-x: hidden; border: 4px solid #ffad60;">
+            <button onclick="closeHowtoModal()"
+                style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; color: #999; cursor: pointer; padding: 5px; line-height: 1;">✖</button>
+            <h2 style="color: #ff9800; margin-top: 10px; font-size: 1.6rem; margin-bottom: 20px;">🌟 ぱぱん<ruby>式<rt>しき
+                    </rt></ruby>へようこそ 🌟</h2>
+
+            <!-- Step 1 -->
+            <div id="howto-step-0" class="howto-step">
+                <div style="display: flex; justify-content: center; margin-bottom: 15px;">
+                    <img src="hi-192.webp" alt="ヒー" style="width: 80px; height: 80px;">
+                </div>
+                <p
+                    style="font-weight: bold; color: #554c46; font-size: 1.2rem; margin-bottom: 10px; border-bottom: 2px dashed #ffad60; padding-bottom: 5px;">
+                    ① まずはすきなゲームを<ruby>遊<rt>あそ</rt></ruby>ぼう
+                </p>
+                <div
+                    style="text-align: left; color: #554c46; font-size: 1.05rem; line-height: 1.6; margin-bottom: 25px; background: #fff3e0; padding: 15px 20px; border-radius: 10px;">
+                    はじめは「あわせて10（メイクテン）」や「どうぶつあわせ」などがおすすめだよ！いろんなゲームであそんでみてね。
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div id="howto-step-1" class="howto-step" style="display: none;">
+                <div style="display: flex; justify-content: center; margin-bottom: 15px;">
+                    <img src="an192.webp" alt="アン" style="width: 80px; height: 80px;">
+                </div>
+                <p
+                    style="font-weight: bold; color: #554c46; font-size: 1.2rem; margin-bottom: 10px; border-bottom: 2px dashed #ffad60; padding-bottom: 5px;">
+                    ② クリア<ruby>画面<rt>がめん</rt></ruby>でなまえを<ruby>登録<rt>とうろく</rt></ruby>しよう
+                </p>
+                <div
+                    style="text-align: left; color: #554c46; font-size: 1.05rem; line-height: 1.6; margin-bottom: 25px; background: #fff3e0; padding: 15px 20px; border-radius: 10px;">
+                    ゲームをクリアすると、きろくをほぞんする<ruby>画面<rt>がめん</rt></ruby>がでるよ。はじめてのときは自分のなまえを<ruby>入力<rt>にゅうりょく</rt>
+                        </ruby>しよう！つぎからはじぶんのなまえをえらんでね！
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div id="howto-step-2" class="howto-step" style="display: none;">
+                <div style="display: flex; justify-content: center; margin-bottom: 15px;">
+                    <img src="pippi192.webp" alt="ピッピ" style="width: 80px; height: 80px;">
+                </div>
+                <p
+                    style="font-weight: bold; color: #554c46; font-size: 1.2rem; margin-bottom: 10px; border-bottom: 2px dashed #ffad60; padding-bottom: 5px;">
+                    ③ ゲームに<ruby>挑戦<rt>ちょうせん</rt></ruby>するとポイントゲット
+                </p>
+                <div
+                    style="text-align: left; color: #554c46; font-size: 1.05rem; line-height: 1.6; margin-bottom: 25px; background: #fff3e0; padding: 15px 20px; border-radius: 10px;">
+                    ゲームをあそびおわると、「ポイント」がもらえるよ。<ruby>日替<rt>ひが</rt></ruby>わりのボーナスコンテンツをクリアするとさらにポイントゲット！
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div id="howto-step-3" class="howto-step" style="display: none;">
+                <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;">
+                    <img src="hi-192.webp" alt="ヒー" style="width: 60px; height: 60px;">
+                    <img src="an192.webp" alt="アン" style="width: 60px; height: 60px;">
+                </div>
+                <p
+                    style="font-weight: bold; color: #554c46; font-size: 1.2rem; margin-bottom: 10px; border-bottom: 2px dashed #ffad60; padding-bottom: 5px;">
+                    ④ <ruby>記録<rt>きろく</rt></ruby>ページで<ruby>目標<rt>もくひょう</rt></ruby>を<ruby>作<rt>つく</rt></ruby>ろう
+                </p>
+                <div
+                    style="text-align: left; color: #554c46; font-size: 1.05rem; line-height: 1.6; margin-bottom: 25px; background: #fff3e0; padding: 15px 20px; border-radius: 10px;">
+                    「🏆きろく」ページでは、じぶんのベストきろくがみられるよ。つぎの<ruby>目標<rt>もくひょう</rt></ruby>をたててみよう！「おまかせ」をつかうと<ruby>簡単<rt>かんたん
+                        </rt></ruby>！
+                </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div id="howto-step-4" class="howto-step" style="display: none;">
+                <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 15px;">
+                    <img src="hi-192.webp" alt="ヒー" style="width: 60px; height: 60px;">
+                    <img src="an192.webp" alt="アン" style="width: 60px; height: 60px;">
+                    <img src="pippi192.webp" alt="ピッピ" style="width: 60px; height: 60px;">
+                </div>
+                <p
+                    style="font-weight: bold; color: #554c46; font-size: 1.2rem; margin-bottom: 10px; border-bottom: 2px dashed #ffad60; padding-bottom: 5px;">
+                    ⑤ ポイントが<ruby>貯<rt>た</rt></ruby>まったら…
+                </p>
+                <div
+                    style="text-align: left; color: #554c46; font-size: 1.05rem; line-height: 1.6; margin-bottom: 25px; background: #fff3e0; padding: 15px 20px; border-radius: 10px;">
+                    ガチャをまわしたり、じぶんの「ルーム」をかざったり、「<ruby>銀行<rt>ぎんこう</rt></ruby>」や「<ruby>証券<rt>しょうけん</rt>
+                    </ruby>」でおかねのべんきょうができるよ！さっそくあそんでみよう！
+                </div>
+            </div>
+
+            <!-- ドットインジケーター -->
+            <div style="margin-bottom: 15px;" id="howto-dots">
+                <span class="howto-dot"
+                    style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#ffad60; margin:0 5px; transition: 0.3s;"></span>
+                <span class="howto-dot"
+                    style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#e0e0e0; margin:0 5px; transition: 0.3s;"></span>
+                <span class="howto-dot"
+                    style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#e0e0e0; margin:0 5px; transition: 0.3s;"></span>
+                <span class="howto-dot"
+                    style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#e0e0e0; margin:0 5px; transition: 0.3s;"></span>
+                <span class="howto-dot"
+                    style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#e0e0e0; margin:0 5px; transition: 0.3s;"></span>
+            </div>
+
+            <!-- ボタンエリア -->
+            <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                <button onclick="closeHowtoModal()"
+                    style="background: #fff; color: #ff9800; border: 2px solid #ff9800; padding: 10px 20px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.2s;"
+                    onmouseover="this.style.background='#fff3e0'" onmouseout="this.style.background='#fff'">
+                    すぐにはじめる！
+                </button>
+                <button id="howto-next-btn" onclick="nextHowtoStep()"
+                    style="background: #ff9800; color: #fff; border: none; padding: 12px 30px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3); transition: transform 0.2s;"
+                    onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <ruby>次<rt>つぎ</rt></ruby>へ ➡
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentHowtoStep = 0;
+        const totalHowtoSteps = 5;
+
+        // 初回訪問時のモーダル表示
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!localStorage.getItem('papan_first_visit_v1')) {
+                openHowtoModal();
+            }
+        });
+
+        function updateHowtoView() {
+            for (let i = 0; i < totalHowtoSteps; i++) {
+                document.getElementById('howto-step-' + i).style.display = (i === currentHowtoStep) ? 'block' : 'none';
+            }
+
+            const dots = document.querySelectorAll('.howto-dot');
+            dots.forEach((dot, i) => {
+                dot.style.background = (i === currentHowtoStep) ? '#ffad60' : '#e0e0e0';
+            });
+
+            const nextBtn = document.getElementById('howto-next-btn');
+            if (currentHowtoStep === totalHowtoSteps - 1) {
+                nextBtn.style.display = 'none';
+            } else {
+                nextBtn.style.display = 'inline-block';
+            }
+        }
+
+        function nextHowtoStep() {
+            if (currentHowtoStep < totalHowtoSteps - 1) {
+                currentHowtoStep++;
+                updateHowtoView();
+            }
+        }
+
+        function openHowtoModal() {
+            currentHowtoStep = 0;
+            updateHowtoView();
+            document.getElementById('howto-modal').style.display = 'flex';
+        }
+
+        function closeHowtoModal() {
+            localStorage.setItem('papan_first_visit_v1', 'true');
+            document.getElementById('howto-modal').style.display = 'none';
         }
     </script>
 </body>
