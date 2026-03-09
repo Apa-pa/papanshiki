@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>デュアルタスク</title>
     <script src="ranking.js"></script>
-    <script type="module" src="firebase-ranking.js"></script>
     <style>
         body {
             margin: 0;
@@ -308,9 +307,9 @@
             <p>さいしゅうスコア</p>
             <div id="final-score">0 てん</div>
             <div id="post-point-actions" hidden>
-            <button class="btn" id="retry-btn">もういっかい</button>
-            <a class="btn secondary" href="index.html">ホームにもどる</a>
-        </div>
+                <button class="btn" id="retry-btn">もういっかい</button>
+                <a class="btn secondary" href="index.html">ホームにもどる</a>
+            </div>
         </section>
     </div>
 
@@ -469,7 +468,7 @@
         document.getElementById("start-btn").addEventListener("click", startGame);
         document.getElementById("retry-btn").addEventListener("click", startGame);
         document.getElementById("signal-btn").addEventListener("click", onSignalPress);
-        </script>
+    </script>
 </body>
 
 </html>

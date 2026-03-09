@@ -142,7 +142,7 @@
 
             try {
                 // スコアタイプのゲームは高い順(desc)、タイムタイプは低い順(asc)
-                const scoreTypeGames = ['rain_math', 'rain_vowel', 'rain_consonant', 'tsumitsumi', 'math_strike', 'enogu_creator'];
+                const scoreTypeGames = ['rain_math', 'rain_vowel', 'rain_consonant', 'tsumitsumi', 'math_strike', 'enogu_creator', 'eigo_nakama'];
                 const sortOrder = scoreTypeGames.includes(gameId) ? 'desc' : 'asc';
                 const q = query(
                     collection(db, "world_rankings"),
