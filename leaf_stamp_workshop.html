@@ -122,6 +122,8 @@
             font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .btn-main {
@@ -178,7 +180,7 @@
 
         .swatches {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(5, minmax(0, 1fr));
             gap: 8px;
         }
 
@@ -198,18 +200,21 @@
 
         .shape-row {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 8px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 6px;
         }
 
         .shape-btn {
             border: 2px solid #bcd8b2;
             border-radius: 12px;
             background: #f6fff1;
-            padding: 8px;
+            padding: 6px 4px;
+            font-size: 0.85rem;
             font-weight: bold;
             color: #2d5b2f;
             cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .shape-btn.active {
@@ -223,6 +228,8 @@
             gap: 8px;
             font-size: 0.9rem;
             font-weight: bold;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .line input[type="range"] {
@@ -243,6 +250,8 @@
             cursor: pointer;
             background: #5f8b54;
             color: #fff;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .tool.alt {
@@ -269,7 +278,37 @@
             min-height: 2.2em;
         }
 
+        .home-description {
+            background: var(--panel);
+            border: 2px solid #cde3c2;
+            border-radius: 20px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            color: #345c36;
+        }
+
+        .home-description p {
+            margin: 0 0 10px;
+            text-align: center;
+        }
+
+        .home-description ul {
+            margin: 0 0 16px;
+            padding-left: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .home-description li {
+            margin-bottom: 6px;
+        }
+
+        .home-description ul:last-child {
+            margin-bottom: 0;
+        }
+
         @keyframes floaty {
+
             0%,
             100% {
                 transform: translateY(0);
@@ -297,6 +336,20 @@
             <div class="guide-box">
                 <img id="home-guide-img" class="guide-img" src="an192.webp" alt="ガイドキャラクター">
                 <div class="guide-talk" id="home-guide-talk">アン「ぽんぽん押して、もりのカードをつくろう」</div>
+            </div>
+
+            <div class="home-description">
+                <p><strong>🌲 あそびかた 🌲</strong></p>
+                <ul>
+                    <li>好きな「はっぱ」や「なかま」のスタンプをえらぼう！</li>
+                    <li>色や大きさ、透明度（すけかた）を自由にかえられるよ。</li>
+                    <li>「かいてんランダム」にチェックを入れると、いい感じに散らばるよ。</li>
+                </ul>
+                <p><strong>✨ おすすめポイント ✨</strong></p>
+                <ul>
+                    <li>できあがった作品は、画像として保存して残せるよ！</li>
+                    <li>作品をつくると、30ポイントのボーナスがもらえるよ。</li>
+                </ul>
             </div>
 
             <div class="btn-row">
@@ -349,11 +402,13 @@
     </main>
 
     <script>
-        const palette = ["#7cad54", "#9fba66", "#d9a74f", "#d98a4e", "#a87d57", "#5a8f58", "#8f6a49", "#b74f4f"];
+        const palette = ["#7cad54", "#9fba66", "#d9a74f", "#d98a4e", "#a87d57", "#5a8f58", "#8f6a49", "#b74f4f", "#ff9bb2", "#ffffff"];
         const stampTools = [
             { id: "leaf", label: "葉っぱ", kind: "leaf" },
             { id: "oak", label: "どんぐり葉", kind: "leaf" },
             { id: "ginkgo", label: "いちょう", kind: "leaf" },
+            { id: "sakura", label: "さくら", kind: "leaf" },
+            { id: "heart", label: "ハート", kind: "char", image: "heart256.webp" },
             { id: "an", label: "アン", kind: "char", image: "an192.webp" },
             { id: "hii", label: "ヒー", kind: "char", image: "hi-192.webp" },
             { id: "pippi", label: "ピッピ", kind: "char", image: "pippi192.webp" }
@@ -457,11 +512,22 @@
                     if (i === 0) ctx.moveTo(x, y);
                     else ctx.lineTo(x, y);
                 }
+            } else if (shapeId === "sakura") {
+                ctx.moveTo(0, s);
+                ctx.bezierCurveTo(s * 0.8, s * 0.5, s * 0.8, -s * 0.4, s * 0.4, -s * 0.8);
+                ctx.quadraticCurveTo(s * 0.2, -s, 0, -s * 0.6);
+                ctx.quadraticCurveTo(-s * 0.2, -s, -s * 0.4, -s * 0.8);
+                ctx.bezierCurveTo(-s * 0.8, -s * 0.4, -s * 0.8, s * 0.5, 0, s);
             } else {
-                ctx.moveTo(-s, s * 0.4);
-                ctx.quadraticCurveTo(-s * 0.95, -s * 0.85, 0, -s * 0.95);
-                ctx.quadraticCurveTo(s * 0.95, -s * 0.85, s, s * 0.4);
-                ctx.quadraticCurveTo(0, 0, -s, s * 0.4);
+                ctx.moveTo(-s * 0.03, s * 0.5);
+                ctx.lineTo(-s * 0.02, s * 1.2);
+                ctx.lineTo(s * 0.02, s * 1.2);
+                ctx.lineTo(s * 0.03, s * 0.5);
+                ctx.quadraticCurveTo(s * 0.2, 0, s * 0.85, -s * 0.6);
+                ctx.quadraticCurveTo(s * 0.4, -s * 0.95, s * 0.05, -s * 0.75);
+                ctx.quadraticCurveTo(0, -s * 0.65, -s * 0.05, -s * 0.75);
+                ctx.quadraticCurveTo(-s * 0.4, -s * 0.95, -s * 0.85, -s * 0.6);
+                ctx.quadraticCurveTo(-s * 0.2, 0, -s * 0.03, s * 0.5);
             }
             ctx.closePath();
         }
@@ -474,8 +540,13 @@
             if (stamp.kind === "char") {
                 const img = charImages[stamp.charId];
                 if (img) {
-                    const w = stamp.size * 2.1;
-                    const h = stamp.size * 2.1;
+                    let w = stamp.size * 2.1;
+                    let h = stamp.size * 2.1;
+                    if (stamp.charId === "heart") {
+                        const aspect = img.width / img.height || 1;
+                        h = stamp.size * 5.6;
+                        w = h * aspect;
+                    }
                     ctx.drawImage(img, -w / 2, -h / 2, w, h);
                 }
             } else {
@@ -485,12 +556,25 @@
                 ctx.lineWidth = Math.max(1, stamp.size * 0.08);
                 ctx.strokeStyle = "#ffffff5c";
                 ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(0, -stamp.size * 0.86);
-                ctx.lineTo(0, stamp.size * 0.88);
-                ctx.lineWidth = Math.max(1, stamp.size * 0.06);
-                ctx.strokeStyle = "#ffffff66";
-                ctx.stroke();
+                if (stamp.shape === "ginkgo") {
+                    ctx.beginPath();
+                    for (let i = -3; i <= 3; i++) {
+                        ctx.moveTo(0, stamp.size * 0.45);
+                        ctx.lineTo(i * stamp.size * 0.24, -stamp.size * 0.65 + Math.abs(i) * stamp.size * 0.05);
+                    }
+                    ctx.moveTo(0, stamp.size * 0.5);
+                    ctx.lineTo(0, stamp.size * 1.0);
+                    ctx.lineWidth = Math.max(1, stamp.size * 0.03);
+                    ctx.strokeStyle = "#ffffff66";
+                    ctx.stroke();
+                } else if (stamp.shape !== "sakura") {
+                    ctx.beginPath();
+                    ctx.moveTo(0, -stamp.size * 0.86);
+                    ctx.lineTo(0, stamp.size * 0.88);
+                    ctx.lineWidth = Math.max(1, stamp.size * 0.06);
+                    ctx.strokeStyle = "#ffffff66";
+                    ctx.stroke();
+                }
             }
             ctx.restore();
         }

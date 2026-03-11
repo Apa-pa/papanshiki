@@ -259,10 +259,11 @@
                 style="color:#5d4037; font-size:16px; line-height: 1.6; font-weight: bold; text-align: left; padding: 0 20px;">
                 【<ruby>遊<rt>あそ</rt></ruby>びかた】<br>
                 1. ２つセットのブロックが<ruby>落<rt>お</rt></ruby>ちてくるよ。<br>
-                2. ブロックの<ruby>近<rt>ちか</rt></ruby>くをタップで「<ruby>回転<rt>かいてん</rt></ruby>」！<br>
-                3. 左右（さゆう）にスワイプで「<ruby>移動<rt>いどう</rt></ruby>」<br>
-                4. 下（した）にタップ・スワイプで「<ruby>落下<rt>らっか</rt></ruby>」<br>
-                5. <ruby>同<rt>おな</rt></ruby>じ<ruby>仲間<rt>なかま</rt></ruby>のカードを<span
+                2. タップで「<ruby>時計<rt>とけい</rt></ruby>まわりに<ruby>回転<rt>かいてん</rt></ruby>」！<br>
+                3. 上（うえ）にスワイプで「<ruby>逆回転<rt>ぎゃくかいてん</rt></ruby>」！<br>
+                4. 左右（さゆう）にスワイプで「<ruby>移動<rt>いどう</rt></ruby>」<br>
+                5. 下（した）にスワイプで「<ruby>落下<rt>らっか</rt></ruby>」（おしつづけるとどんどんおちる！）<br>
+                6. <ruby>同<rt>おな</rt></ruby>じ<ruby>仲間<rt>なかま</rt></ruby>のカードを<span
                     style="color:#d84315;">４つ</span>つなげて<ruby>消<rt>け</rt></ruby>そう！<br>
             </p>
             <button class="btn" onclick="startGame()">スタート</button>
@@ -339,6 +340,10 @@
         let isAnimatingVanish = false;
         let vanishTimer = 0;
 
+        // ソフトドロップ「押し続け」管理
+        let isSoftDropping = false;
+        let softDropTimer = 0;
+
         // --- ウィンドウリサイズとキャンバススケーリング ---
         function resize() {
             let wrapper = document.getElementById('canvas-wrapper');
@@ -371,6 +376,11 @@
         }
 
         // --- イベントリスナー ---
+        // スマホでの画面ズレ（バウンスやスクロール）を防止
+        document.addEventListener('touchmove', function (e) {
+            e.preventDefault();
+        }, { passive: false });
+
         let pointerStartX = 0;
         let pointerStartY = 0;
         let isPointerDown = false;
@@ -390,6 +400,7 @@
             let dy = e.clientY - pointerStartY;
 
             if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) {
+                // 左右スワイプ → 左右移動
                 if (activePiece && !isAnimatingGravity && !isAnimatingVanish) {
                     if (dx > 0) {
                         moveRight();
@@ -401,10 +412,21 @@
                 pointerStartY = e.clientY;
                 isSwiped = true;
             } else if (dy > 40 && Math.abs(dy) > Math.abs(dx)) {
+                // 下スワイプ → ソフトドロップ（1マス）＋押し続けフラグON
                 if (activePiece && !isAnimatingGravity && !isAnimatingVanish) {
-                    hardDrop();
+                    moveDown();
                 }
-                isPointerDown = false; // end swipe
+                isSoftDropping = true;
+                pointerStartX = e.clientX;
+                pointerStartY = e.clientY;
+                isSwiped = true;
+            } else if (dy < -30 && Math.abs(dy) > Math.abs(dx)) {
+                // 上スワイプ → 逆回転（反時計回り）
+                if (activePiece && !isAnimatingGravity && !isAnimatingVanish) {
+                    rotateReverse();
+                }
+                pointerStartX = e.clientX;
+                pointerStartY = e.clientY;
                 isSwiped = true;
             }
         });
@@ -412,34 +434,13 @@
         canvas.addEventListener("pointerup", e => {
             if (gameState !== 'PLAYING') return;
             isPointerDown = false;
+            // タップ（スワイプなし）は常に時計回り回転
             if (!isSwiped && activePiece && !isAnimatingGravity && !isAnimatingVanish) {
-                let pos = getLogicalCoord(e);
-                let rect = canvas.getBoundingClientRect();
-
-                // 画面下部をタップしたら落下
-                if (pos.y > canvas.height * 0.7) {
-                    hardDrop();
-                } else {
-                    let blockPxX = activePiece.x * CELL_SIZE + CELL_SIZE / 2;
-                    let blockPxY = activePiece.y * CELL_SIZE + CELL_SIZE / 2;
-
-                    // 左右15%のタップ判定
-                    if (pos.rawX < rect.left + rect.width * 0.15) {
-                        moveLeft();
-                    } else if (pos.rawX > rect.right - rect.width * 0.15) {
-                        moveRight();
-                    } else {
-                        // それ以外でブロック中心付近なら回転、そうでなければ左右移動
-                        if (Math.abs(pos.x - blockPxX) < CELL_SIZE * 2 && Math.abs(pos.y - blockPxY) < CELL_SIZE * 2) {
-                            rotate();
-                        } else if (pos.x < blockPxX) {
-                            moveLeft();
-                        } else {
-                            moveRight();
-                        }
-                    }
-                }
+                rotate();
             }
+            // ソフトドロップ状態を解除
+            isSoftDropping = false;
+            softDropTimer = 0;
         });
 
         // --- ゲームの初期化・ループ ---
@@ -568,9 +569,27 @@
         }
 
         function rotate() {
+            // 時計回り回転
             if (!activePiece) return;
             let newBlocks = activePiece.blocks.map(p => {
                 return { dx: -p.dy, dy: p.dx, category: p.category, label: p.label };
+            });
+            if (canMove(activePiece.x, activePiece.y, newBlocks)) {
+                activePiece.blocks = newBlocks;
+            } else if (canMove(activePiece.x - 1, activePiece.y, newBlocks)) {
+                activePiece.x -= 1;
+                activePiece.blocks = newBlocks;
+            } else if (canMove(activePiece.x + 1, activePiece.y, newBlocks)) {
+                activePiece.x += 1;
+                activePiece.blocks = newBlocks;
+            }
+        }
+
+        function rotateReverse() {
+            // 反時計回り回転（上スワイプで呼び出す）
+            if (!activePiece) return;
+            let newBlocks = activePiece.blocks.map(p => {
+                return { dx: p.dy, dy: -p.dx, category: p.category, label: p.label };
             });
             if (canMove(activePiece.x, activePiece.y, newBlocks)) {
                 activePiece.blocks = newBlocks;
@@ -779,6 +798,15 @@
             if (dropTimer >= currentInterval) {
                 dropTimer = 0;
                 moveDown();
+            }
+
+            // ソフトドロップ「押し続け」：100msごとに1マス落下
+            if (isSoftDropping) {
+                softDropTimer += dt;
+                if (softDropTimer >= 100) {
+                    softDropTimer = 0;
+                    moveDown();
+                }
             }
         }
 
