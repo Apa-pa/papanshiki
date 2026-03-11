@@ -311,6 +311,12 @@
     <div id="daily-mission-area"></div>
 
     <main>
+        <div style="text-align: right; margin-top: -25px; margin-bottom: 5px;">
+            <button onclick="openHowtoModal()"
+                style="display: inline-block; background: #fff8e1; color: #f57f17; border: 2px solid #fbc02d; font-size: 0.85rem; padding: 4px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(251, 192, 45, 0.2); transition: transform 0.2s, background 0.2s; white-space: nowrap;"
+                onmouseover="this.style.background='#ffecb3'" onmouseout="this.style.background='#fff8e1'">
+                あそびかた</button>
+        </div>
         <div class="filter-container">
             <div class="filter-row">
                 <div class="filter-group">
@@ -329,7 +335,7 @@
                 <div class="filter-group">
                     <span class="filter-icon">🎮</span>
                     <select class="filter-select" id="type-filter" onchange="applyFilters()">
-                        <option value="all">あそびかた：ぜんぶ</option>
+                        <option value="all">タイプ：ぜんぶ</option>
                         <option value="クイズ">クイズ</option>
                         <option value="ゲーム">ゲーム</option>
                         <option value="がくしゅう">がくしゅう</option>
@@ -353,10 +359,6 @@
                 <a href="gacha.html" class="menu-btn">🧸 ガチャ</a>
                 <a href="bank.html" class="menu-btn">🏦 ぱぱん銀行</a>
                 <a href="room.html" class="menu-btn">🏠 ルーム</a>
-                <button onclick="openHowtoModal()"
-                    style="display: inline-block; background: #fff8e1; color: #f57f17; border: 2px solid #fbc02d; font-size: 0.85rem; padding: 4px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(251, 192, 45, 0.2); transition: transform 0.2s, background 0.2s; margin: 5px; white-space: nowrap;"
-                    onmouseover="this.style.background='#ffecb3'" onmouseout="this.style.background='#fff8e1'">
-                    あそびかた</button>
             </div>
         </div>
 
