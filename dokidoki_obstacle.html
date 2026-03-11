@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ドキドキ障害物</title>
+    <script src="ranking.js"></script>
+    <style>
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #e0f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #game-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            width: 95%;
+            max-width: 500px;
+            border: 5px solid #b2ebf2;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #00838f;
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        #canvas-wrapper {
+            position: relative;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 2 / 3;
+        }
+
+        canvas {
+            background-color: #fce4ec;
+            border-radius: 15px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            height: 100%;
+            display: block;
+            touch-action: none;
+            cursor: crosshair;
+        }
+
+        .char-img {
+            width: 60px;
+            height: auto;
+            position: absolute;
+            z-index: 10;
+            pointer-events: none;
+            display: none;
+            filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.2));
+            transform: translate(-50%, -50%);
+        }
+
+        .start-btn,
+        .next-btn,
+        .retry-btn {
+            font-size: 20px;
+            padding: 12px 30px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 15px 5px;
+            font-weight: bold;
+            box-shadow: 0 5px #e65100;
+        }
+
+        .start-btn:active,
+        .next-btn:active,
+        .retry-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 3px #e65100;
+        }
+
+        .back-btn {
+            background: #90a4ae;
+            font-size: 14px;
+            padding: 8px 20px;
+            color: white;
+            border-radius: 20px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        #game-message {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e65100;
+            height: 28px;
+            margin-bottom: 5px;
+        }
+
+        .stage-info {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00838f;
+            margin-bottom: 5px;
+        }
+
+        .instruction {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <div id="home-screen" class="screen active">
+            <h1>ドキドキ障害物</h1>
+            <div style="font-size: 60px; margin: 10px;">⚡</div>
+            <p>スタートからゴールまで<br>かべに ぶつからないように<br>なぞって 進もう！</p>
+            <p class="instruction" style="color:#d32f2f; font-weight:bold;">※とちゅうで はなすと 失敗だよ</p>
+
+            <div id="level-selection">
+                <p style="font-size: 18px; color: #00838f; font-weight: bold; margin-bottom: 5px;">あそぶレベルをえらんでね</p>
+                <button class="start-btn" onclick="startGame(1)" style="margin: 5px;">🟢 レベル 1</button>
+                <button class="start-btn" onclick="startGame(2)"
+                    style="margin: 5px; background: #f44336; box-shadow: 0 5px #c62828;">🔴 レベル 2</button>
+            </div>
+
+            <br><a href="index.html" class="back-btn">🏠 もどる</a>
+        </div>
+
+        <div id="game-screen" class="screen">
+            <div class="stage-info" id="stage-display">ステージ 1</div>
+            <div id="game-message">はじめの 黄色いワクを さわってね！</div>
+
+            <div id="canvas-wrapper">
+                <canvas id="game-canvas"></canvas>
+                <img src="hi-192.webp" id="hi-img" class="char-img" alt="ヒーちゃん">
+                <img src="an192.webp" id="an-img" class="char-img" alt="アンちゃん">
+            </div>
+
+            <button class="retry-btn" id="retry-btn" onclick="retryStage()" style="display:none;">もういっかい</button>
+            <button class="next-btn" id="next-btn" onclick="nextStage()" style="display:none;">つぎのステージへ</button>
+
+            <br><a href="index.html" class="back-btn" id="giveup-btn">🏠 やめる</a>
+
+            <div id="result-area" style="display:none;">
+                <button id="reward-btn" onclick="getPoints()"
+                    style="padding:10px 20px; font-size:16px; background:#4CAF50; color:white; border:none; border-radius:30px; font-weight:bold; cursor:pointer; margin-top:10px; box-shadow: 0 4px #2e7d32;">
+                    🎁 50ポイントをもらう
+                </button>
+                <br>
+                <button id="restart-btn" class="start-btn" onclick="retryLevel()"
+                    style="display:none; margin-top:15px;">もういっかい</button>
+                <br><button class="back-btn" onclick="changeScreen('home-screen')"
+                    style="margin-top:20px; border:none; cursor:pointer;">🏠 レベルえらびにもどる</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+        // オフスクリーンキャンバス（当たり判定用）
+        const hitCanvas = document.createElement('canvas');
+        const hitCtx = hitCanvas.getContext('2d', { willReadFrequently: true });
+
+        // UI要素
+        const screens = {
+            home: document.getElementById('home-screen'),
+            game: document.getElementById('game-screen')
+        };
+        const messageEl = document.getElementById('game-message');
+        const stageDisplay = document.getElementById('stage-display');
+        const retryBtn = document.getElementById('retry-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const giveupBtn = document.getElementById('giveup-btn');
+        const resultArea = document.getElementById('result-area');
+        const rewardBtn = document.getElementById('reward-btn');
+
+        const hiImg = document.getElementById('hi-img');
+        const anImg = document.getElementById('an-img');
+
+        // ゲーム状態
+        let currentLevel = 1;
+        let currentStage = 1;
+        let maxStage = 5;
+        let gameState = 'waiting'; // waiting, playing, cleared, failed, finished
+        let isDrawing = false;
+        let pointerPos = { x: 0, y: 0 };
+        let animationId = null;
+        let time = 0; // アニメーション用経過時間
+        let lastTime = 0;
+
+        // 定数（内部解像度）
+        const CANVAS_WIDTH = 400;
+        const CANVAS_HEIGHT = 600;
+
+        // カラー
+        const COLOR_BG = '#fce4ec';
+        const COLOR_PATH = '#bbdefb';
+        const COLOR_START = '#ffcc80';
+        const COLOR_GOAL = '#c8e6c9';
+        const COLOR_DANGER = '#ef5350'; // トゲや壁の色（追加）
+
+        // ステージデータ構造（後で実装）
+        let stageData = {};
+
+        function init() {
+            // キャンバスの内部解像度を固定
+            canvas.width = CANVAS_WIDTH;
+            canvas.height = CANVAS_HEIGHT;
+            hitCanvas.width = CANVAS_WIDTH;
+            hitCanvas.height = CANVAS_HEIGHT;
+
+            // イベントリスナー
+            canvas.addEventListener('pointerdown', onPointerDown);
+            canvas.addEventListener('pointermove', onPointerMove);
+            window.addEventListener('pointerup', onPointerUp);
+            canvas.addEventListener('contextmenu', e => e.preventDefault());
+        }
+
+        function changeScreen(id) {
+            Object.values(screens).forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if (id === 'home-screen') {
+                resultArea.style.display = 'none';
+            }
+        }
+
+        function startGame(levelNum) {
+            currentLevel = levelNum;
+            // レベル1ならステージ1〜5、レベル2ならステージ6〜10
+            currentStage = (levelNum - 1) * 5 + 1;
+            maxStage = currentStage + 4;
+
+            changeScreen('game-screen');
+            prepareStage();
+        }
+
+        function retryLevel() {
+            startGame(currentLevel);
+        }
+
+        function prepareStage() {
+            // 表示上は各レベルで 1〜5 になるように計算して表示する
+            const displayStageNum = currentStage - (currentLevel - 1) * 5;
+            stageDisplay.innerText = `レベル ${currentLevel} - ステージ ${displayStageNum}`;
+            gameState = 'waiting';
+            isDrawing = false;
+            time = 0;
+            lastTime = performance.now();
+
+            retryBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+            resultArea.style.display = 'none';
+            giveupBtn.style.display = 'inline-block';
+
+            messageEl.innerText = "はじめの 黄色いワクを さわってね！";
+            messageEl.style.color = "#00838f";
+
+            // キャラクター画像初期化
+            hiImg.style.display = 'block';
+            anImg.style.display = 'block';
+
+            // （スタブ）ステージ構築・描画開始
+            loadStageData(currentStage);
+
+            if (animationId) cancelAnimationFrame(animationId);
+            animationId = requestAnimationFrame(loop);
+        }
+
+        function retryStage() {
+            prepareStage();
+        }
+
+        function nextStage() {
+            currentStage++;
+            if (currentStage > maxStage) {
+                finishGame();
+            } else {
+                prepareStage();
+            }
+        }
+
+        function finishGame() {
+            gameState = 'finished';
+            if (animationId) cancelAnimationFrame(animationId);
+
+            messageEl.innerText = "ぜんぶクリア！ おめでとう！🎉";
+            messageEl.style.color = "#4CAF50";
+
+            retryBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+            giveupBtn.style.display = 'none';
+            resultArea.style.display = 'block';
+
+            if (rewardBtn) {
+                rewardBtn.disabled = false;
+                rewardBtn.innerText = '🎁 50ポイントをもらう';
+                rewardBtn.style.background = '#4CAF50';
+                const restartBtn = document.getElementById('restart-btn');
+                if (restartBtn) restartBtn.style.display = 'none';
+            }
+        }
+
+        function loadStageData(stage) {
+            stageData = {
+                start: { x: 50, y: 530, w: 80, h: 80 },
+                goal: { x: 350, y: 70, w: 80, h: 80 },
+                paths: [],
+                movingPaths: [],
+                obstacles: [],
+                blinkingObstacles: []
+            };
+
+            if (stage === 1) {
+                stageData.paths = [
+                    { x: 10, y: 490, w: 380, h: 80 },
+                    { x: 310, y: 30, w: 80, h: 540 }
+                ];
+            } else if (stage === 2) {
+                stageData.goal = { x: 50, y: 70, w: 80, h: 80 };
+                stageData.paths = [
+                    { x: 10, y: 490, w: 200, h: 80 },
+                    { x: 130, y: 300, w: 80, h: 270 },
+                    { x: 130, y: 300, w: 260, h: 80 },
+                    { x: 310, y: 150, w: 80, h: 230 },
+                    { x: 10, y: 150, w: 380, h: 80 },
+                    { x: 10, y: 30, w: 80, h: 200 }
+                ];
+            } else if (stage === 3) {
+                stageData.paths = [
+                    { x: 10, y: 490, w: 380, h: 80 },  // 下段（横）
+                    { x: 310, y: 300, w: 80, h: 270 }, // 右上がり（縦）
+                    { x: 10, y: 300, w: 380, h: 80 },  // 中段（横）
+                    { x: 10, y: 110, w: 80, h: 270 },  // 左上がり（縦）
+                    { x: 10, y: 30, w: 380, h: 80 }    // 上段（ゴール前）
+                ];
+                // 回転トゲ（右上がりの道に配置）
+                stageData.obstacles.push({ type: 'rotator', cx: 350, cy: 400, length: 160, angle: 0, speed: 2.0 });
+                // スライダー1：中段（横380幅）に対して、上下（縦）に動いて道を塞ぐ
+                stageData.obstacles.push({ type: 'slider', x: 200, y: 340, w: 40, h: 100, baseX: 200, baseY: 340, moveRange: 100, speed: 3, angle: 0, isVertical: true });
+                // スライダー2：左上がり（縦270幅）に対して、左右（横）に動いて道を塞ぐ
+                stageData.obstacles.push({ type: 'slider', x: 50, y: 200, w: 100, h: 40, baseX: 50, baseY: 200, moveRange: 100, speed: 2, angle: 0, isVertical: false });
+            } else if (stage === 4) {
+                stageData.paths = [
+                    // スタート付近の道
+                    { x: 10, y: 490, w: 140, h: 80 },
+                    { x: 70, y: 380, w: 80, h: 110 }, // 無駄を削除して短く
+                    // 休けい足場 
+                    { x: 260, y: 380, w: 80, h: 80 },
+                    // ゴール付近の道
+                    { x: 150, y: 150, w: 240, h: 80 },
+                    { x: 310, y: 30, w: 80, h: 200 }
+                ];
+                // 動く足場1：スタート側(70,380付近)から休けい(260,380)へ横移動（ゆっくりに）
+                stageData.movingPaths.push({ x: 120, y: 380, w: 80, h: 80, baseX: 160, baseY: 380, moveRange: 60, speed: 0.8, angle: 0, dir: 'x' });
+
+                // 動く足場2：休けい(260,380)からゴール側(150,150)へ縦横移動は難しいため縦移動のみ（ゆっくりに）
+                stageData.movingPaths.push({ x: 260, y: 250, w: 80, h: 80, baseX: 260, baseY: 280, moveRange: 90, speed: 1.0, angle: 0, dir: 'y' });
+
+            } else if (stage === 5) {
+                stageData.goal = { x: 50, y: 70, w: 80, h: 80 };
+                stageData.paths = [
+                    { x: 10, y: 490, w: 80, h: 80 },  // スタート固定
+                    { x: 160, y: 490, w: 80, h: 80 }, // 休けい固定足場
+                    { x: 160, y: 70, w: 80, h: 80 },  // ゴール前休けい固定足場
+                    { x: 10, y: 30, w: 80, h: 80 }    // ゴール固定
+                ];
+                // スタート〜休けい足場をつなぐ明滅
+                stageData.blinkingObstacles.push({ x: 90, y: 490, w: 70, h: 80, activeTime: 1.5, inactiveTime: 1.5, timer: 0, isActive: false });
+                // ゴール前休けい〜ゴールをつなぐ明滅
+                stageData.blinkingObstacles.push({ x: 90, y: 30, w: 70, h: 80, activeTime: 1.5, inactiveTime: 1.5, timer: 0, isActive: false });
+
+                // 観覧車風の動く足場（速度をゆっくりに）
+                for (let i = 0; i < 3; i++) {
+                    stageData.movingPaths.push({
+                        type: 'orbit', cx: 200, cy: 320, r: 150,
+                        w: 60, h: 60, angle: ((Math.PI * 2) / 3) * i, speed: 0.4
+                    });
+                }
+            } else if (stage === 6) {
+                // レベル2-1：細いジグザグとスライダー
+                stageData.goal = { x: 350, y: 70, w: 60, h: 60 };
+                stageData.paths = [
+                    { x: 30, y: 510, w: 60, h: 60 },
+                    { x: 30, y: 400, w: 60, h: 110 },
+                    { x: 30, y: 400, w: 280, h: 60 },
+                    { x: 250, y: 250, w: 60, h: 150 },
+                    { x: 90, y: 250, w: 160, h: 60 },
+                    { x: 90, y: 70, w: 60, h: 180 },
+                    { x: 90, y: 70, w: 260, h: 60 }
+                ];
+                // トゲとスライダー
+                stageData.obstacles.push({ type: 'rotator', cx: 280, cy: 300, length: 120, angle: 0, speed: 2.5 });
+                stageData.obstacles.push({ type: 'slider', x: 170, y: 50, w: 30, h: 100, baseX: 170, baseY: 60, moveRange: 60, speed: 3.5, angle: 0, isVertical: true });
+            } else if (stage === 7) {
+                // レベル2-2：細く長いクネクネ道 + 明滅障害物 + 長距離スライダー
+                stageData.goal = { x: 50, y: 70, w: 60, h: 60 };
+                stageData.paths = [
+                    { x: 30, y: 510, w: 60, h: 60 },
+                    { x: 30, y: 450, w: 340, h: 60 },
+                    { x: 310, y: 300, w: 60, h: 150 },
+                    { x: 150, y: 300, w: 160, h: 60 },
+                    { x: 150, y: 150, w: 60, h: 150 },
+                    { x: 30, y: 150, w: 120, h: 60 },
+                    { x: 30, y: 70, w: 60, h: 80 }
+                ];
+                stageData.blinkingObstacles.push({ x: 160, y: 450, w: 60, h: 60, activeTime: 1.0, inactiveTime: 1.5, timer: 0, isActive: false });
+                stageData.blinkingObstacles.push({ x: 270, y: 450, w: 60, h: 60, activeTime: 1.0, inactiveTime: 1.5, timer: 0.5, isActive: false });
+                stageData.obstacles.push({ type: 'slider', x: 150, y: 200, w: 100, h: 30, baseX: 150, baseY: 200, moveRange: 120, speed: 2.5, angle: 0, isVertical: false });
+            } else if (stage === 8) {
+                // レベル2-3：動く足場とスライダー・トゲの複合
+                stageData.start = { x: 40, y: 520, w: 60, h: 60 };
+                stageData.goal = { x: 340, y: 60, w: 60, h: 60 };
+                stageData.paths = [
+                    { x: 10, y: 490, w: 60, h: 60 }, // スタート休けい
+                    { x: 310, y: 490, w: 60, h: 60 }, // 右下の休けい
+                    { x: 310, y: 30, w: 60, h: 60 } // ゴール休けい
+                ];
+                // スタートから右下への横移動足場（サイズ+10、スピードゆっくり）
+                stageData.movingPaths.push({ x: 160, y: 485, w: 70, h: 70, baseX: 160, baseY: 485, moveRange: 150, speed: 0.9, angle: 0, dir: 'x' });
+                // 右下からゴールへの縦移動足場（サイズ+10、スピードゆっくり）
+                stageData.movingPaths.push({ x: 305, y: 260, w: 70, h: 70, baseX: 305, baseY: 260, moveRange: 230, speed: 1.0, angle: Math.PI / 2, dir: 'y' });
+
+                // 横移動足場の経路上に回転トゲ
+                stageData.obstacles.push({ type: 'rotator', cx: 160, cy: 450, length: 120, angle: 0, speed: 3.0 });
+                // 縦移動足場の経路上に横移動スライダー
+                stageData.obstacles.push({ type: 'slider', x: 310, y: 260, w: 100, h: 20, baseX: 310, baseY: 260, moveRange: 80, speed: 2.0, angle: 0, isVertical: false });
+            } else if (stage === 9) {
+                // レベル2-4：クラッシャーと細いクネクネ
+                stageData.start = { x: 50, y: 530, w: 60, h: 60 };
+                stageData.goal = { x: 50, y: 70, w: 60, h: 60 };
+                stageData.paths = [
+                    { x: 20, y: 500, w: 60, h: 60 },
+                    { x: 20, y: 500, w: 200, h: 50 },
+                    { x: 170, y: 300, w: 50, h: 200 },
+                    { x: 170, y: 300, w: 180, h: 50 },
+                    { x: 300, y: 100, w: 50, h: 200 },
+                    { x: 20, y: 100, w: 280, h: 50 },
+                    { x: 20, y: 40, w: 60, h: 60 }
+                ];
+
+                // 1. 最初の横道（500の高さ）を上下に動く障害物。スタート(50)から右へずらして配置(120)
+                stageData.obstacles.push({ type: 'slider', x: 120, y: 480, w: 30, h: 80, baseX: 120, baseY: 525, moveRange: 60, speed: 4.0, angle: 0, isVertical: true });
+
+                // 2. 最初の縦道（x:170幅50）を左右から挟み込むクラッシャー
+                // 左から
+                stageData.obstacles.push({ type: 'slider', x: 140, y: 380, w: 60, h: 30, baseX: 140, baseY: 380, moveRange: 40, speed: 3.0, angle: 0, isVertical: false });
+                // 右から (逆位相)
+                stageData.obstacles.push({ type: 'slider', x: 250, y: 380, w: 60, h: 30, baseX: 250, baseY: 380, moveRange: 40, speed: 3.0, angle: Math.PI, isVertical: false });
+
+                // 3. 最後の横道（y:100幅50）を上下から挟み込むクラッシャー
+                // 上から
+                stageData.obstacles.push({ type: 'slider', x: 150, y: 70, w: 30, h: 60, baseX: 150, baseY: 70, moveRange: 40, speed: 3.5, angle: 0, isVertical: true });
+                // 下から (逆位相)
+                stageData.obstacles.push({ type: 'slider', x: 150, y: 180, w: 30, h: 60, baseX: 150, baseY: 180, moveRange: 40, speed: 3.5, angle: Math.PI, isVertical: true });
+
+            } else if (stage === 10) {
+                // レベル2-5：ツイン観覧車と明滅と細道の集大成
+                stageData.start = { x: 50, y: 530, w: 60, h: 60 };
+                stageData.goal = { x: 330, y: 70, w: 60, h: 60 };
+                stageData.paths = [
+                    { x: 20, y: 500, w: 120, h: 60 }, // スタート横道
+                    { x: 300, y: 40, w: 60, h: 60 }, // ゴール地点
+                    { x: 300, y: 240, w: 60, h: 100 }, // 中継地点
+                    { x: 300, y: 100, w: 60, h: 140 } // 中継からゴールへの細道
+                ];
+                // 観覧車1(左下、時計回り)
+                for (let i = 0; i < 4; i++) {
+                    stageData.movingPaths.push({
+                        type: 'orbit', cx: 130, cy: 430, r: 80,
+                        w: 50, h: 50, angle: (Math.PI / 2) * i, speed: 0.8
+                    });
+                }
+                // 観覧車2(右上、反時計回り)
+                for (let i = 0; i < 4; i++) {
+                    stageData.movingPaths.push({
+                        type: 'orbit', cx: 240, cy: 320, r: 80,
+                        w: 50, h: 50, angle: (Math.PI / 2) * i, speed: -0.8
+                    });
+                }
+                // 中継からゴールへの細道を塞ぐ明滅×3
+                stageData.blinkingObstacles.push({ x: 290, y: 190, w: 80, h: 40, activeTime: 1.0, inactiveTime: 1.5, timer: 0, isActive: false });
+                stageData.blinkingObstacles.push({ x: 290, y: 130, w: 80, h: 40, activeTime: 1.0, inactiveTime: 1.5, timer: 1.0, isActive: false });
+            }
+            updateCharPositions(stageData.start, stageData.goal);
+        }
+
+        function updateCharPositions(start, goal) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = CANVAS_WIDTH / rect.width;
+            const scaleY = CANVAS_HEIGHT / rect.height;
+
+            hiImg.style.left = `${start.x * scaleX}px`;
+            hiImg.style.top = `${start.y * scaleY}px`;
+
+            anImg.style.left = `${goal.x * scaleX}px`;
+            anImg.style.top = `${goal.y * scaleY}px`;
+        }
+
+        function getPointerPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = CANVAS_WIDTH / rect.width;
+            const scaleY = CANVAS_HEIGHT / rect.height;
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+
+        function onPointerDown(e) {
+            if (gameState !== 'waiting' && gameState !== 'playing') return;
+
+            const pos = getPointerPos(e);
+            pointerPos = pos;
+
+            if (gameState === 'waiting') {
+                const s = stageData.start;
+                if (pos.x >= s.x - s.w / 2 && pos.x <= s.x + s.w / 2 &&
+                    pos.y >= s.y - s.h / 2 && pos.y <= s.y + s.h / 2) {
+                    gameState = 'playing';
+                    isDrawing = true;
+                    messageEl.innerText = "かべに ふれないように 進め！";
+                    messageEl.style.color = "#ff9800";
+                }
+            } else if (gameState === 'playing') {
+                isDrawing = true;
+            }
+
+            if (isDrawing) checkCollision(pos.x, pos.y);
+        }
+
+        function onPointerMove(e) {
+            if (!isDrawing || gameState !== 'playing') return;
+            const pos = getPointerPos(e);
+            pointerPos = pos;
+            checkCollision(pos.x, pos.y);
+        }
+
+        function onPointerUp(e) {
+            if (gameState === 'playing' && isDrawing) {
+                isDrawing = false;
+                failStage("とちゅうで はなしちゃ ダメ！");
+            }
+            isDrawing = false;
+        }
+
+        function checkCollision(px, py) {
+            if (px < 0 || px >= CANVAS_WIDTH || py < 0 || py >= CANVAS_HEIGHT) {
+                failStage("かべに ぶつかった！");
+                return;
+            }
+
+            const pixel = hitCtx.getImageData(Math.floor(px), Math.floor(py), 1, 1).data;
+            const r = pixel[0];
+            const g = pixel[1];
+            const b = pixel[2];
+            const a = pixel[3];
+
+            if (a === 0) {
+                failStage("かべに ぶつかった！");
+            } else if (r === 0 && g === 255 && b === 0) {
+                clearStage();
+            } else if (r === 255 && g === 255 && b === 255) {
+                failStage("かべに ぶつかった！");
+            }
+        }
+
+        function failStage(reason) {
+            gameState = 'failed';
+            isDrawing = false;
+            messageEl.innerText = reason + " あきらめないで！";
+            messageEl.style.color = "#d32f2f";
+            retryBtn.style.display = 'inline-block';
+        }
+
+        function clearStage() {
+            gameState = 'cleared';
+            isDrawing = false;
+            messageEl.innerText = "ゴール！ やったね！";
+            messageEl.style.color = "#4CAF50";
+            if (currentStage < maxStage) {
+                nextBtn.style.display = 'inline-block';
+            } else {
+                finishGame();
+            }
+        }
+
+        function updatePhysics(dt) {
+            time += dt;
+
+            stageData.movingPaths.forEach(p => {
+                if (p.type === 'orbit') {
+                    p.angle += p.speed * dt;
+                    p.x = p.cx + Math.cos(p.angle) * p.r - p.w / 2;
+                    p.y = p.cy + Math.sin(p.angle) * p.r - p.h / 2;
+                } else {
+                    p.angle += p.speed * dt;
+                    if (p.dir === 'x') {
+                        p.x = p.baseX + Math.sin(p.angle) * p.moveRange;
+                    } else if (p.dir === 'y') {
+                        p.y = p.baseY + Math.sin(p.angle) * p.moveRange;
+                    }
+                }
+            });
+
+            stageData.obstacles.forEach(o => {
+                o.angle += o.speed * dt;
+                if (o.type === 'slider') {
+                    if (o.isVertical) {
+                        o.y = o.baseY + Math.sin(o.angle) * o.moveRange;
+                    } else {
+                        o.x = o.baseX + Math.sin(o.angle) * o.moveRange;
+                    }
+                }
+            });
+
+            stageData.blinkingObstacles.forEach(o => {
+                o.timer += dt;
+                if (o.isActive && o.timer >= o.activeTime) {
+                    o.isActive = false;
+                    o.timer = 0;
+                } else if (!o.isActive && o.timer >= o.inactiveTime) {
+                    o.isActive = true;
+                    o.timer = 0;
+                }
+            });
+
+            if (isDrawing && (gameState === 'playing' || gameState === 'failed')) {
+                ctx.beginPath();
+                ctx.arc(pointerPos.x, pointerPos.y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = (gameState === 'failed') ? '#f44336' : '#2196f3';
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            hitCtx.fillStyle = '#FFFFFF';
+            hitCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            const drawSafe = (x, y, w, h, isStartGoal = false, col) => {
+                ctx.fillStyle = col;
+                ctx.fillRect(x, y, w, h);
+                hitCtx.fillStyle = isStartGoal ? col : '#000000';
+                hitCtx.fillRect(x, y, w, h);
+            };
+
+            stageData.paths.forEach(p => drawSafe(p.x, p.y, p.w, p.h, false, COLOR_PATH));
+
+            // 観覧車の支柱と軸の描画（背景側）
+            const orbits = stageData.movingPaths.filter(p => p.type === 'orbit');
+            if (orbits.length > 0) {
+                // ユニークな中心座標を抽出して軸を描く
+                const centers = [];
+                orbits.forEach(o => {
+                    if (!centers.some(c => c.cx === o.cx && c.cy === o.cy)) {
+                        centers.push({ cx: o.cx, cy: o.cy });
+                    }
+                });
+                centers.forEach(c => {
+                    ctx.beginPath();
+                    ctx.arc(c.cx, c.cy, 10, 0, Math.PI * 2);
+                    ctx.fillStyle = '#b0bec5';
+                    ctx.fill();
+                });
+
+                // 支柱（線）を描く
+                orbits.forEach(p => {
+                    ctx.beginPath();
+                    ctx.moveTo(p.cx, p.cy);
+                    ctx.lineTo(p.x + p.w / 2, p.y + p.h / 2);
+                    ctx.strokeStyle = '#cfd8dc';
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+                });
+            }
+
+            stageData.movingPaths.forEach(p => drawSafe(p.x, p.y, p.w, p.h, false, COLOR_PATH));
+
+            const s = stageData.start;
+            drawSafe(s.x - s.w / 2, s.y - s.h / 2, s.w, s.h, false, COLOR_START);
+
+            ctx.fillStyle = COLOR_GOAL;
+            ctx.fillRect(stageData.goal.x - stageData.goal.w / 2, stageData.goal.y - stageData.goal.h / 2, stageData.goal.w, stageData.goal.h);
+            hitCtx.fillStyle = '#00FF00';
+            hitCtx.fillRect(stageData.goal.x - stageData.goal.w / 2, stageData.goal.y - stageData.goal.h / 2, stageData.goal.w, stageData.goal.h);
+
+            const drawDanger = (drawFunc) => {
+                ctx.fillStyle = COLOR_DANGER;
+                hitCtx.fillStyle = '#FFFFFF';
+                drawFunc(ctx);
+                drawFunc(hitCtx);
+            };
+
+            stageData.obstacles.forEach(o => {
+                if (o.type === 'slider') {
+                    drawDanger((context) => {
+                        context.fillRect(o.x - o.w / 2, o.y - o.h / 2, o.w, o.h);
+                    });
+                } else if (o.type === 'rotator') {
+                    drawDanger((context) => {
+                        context.save();
+                        context.translate(o.cx, o.cy);
+                        context.rotate(o.angle);
+                        context.fillRect(-o.length / 2, -10, o.length, 20);
+                        context.restore();
+                    });
+                }
+            });
+
+            stageData.blinkingObstacles.forEach(o => {
+                if (o.isActive) {
+                    drawDanger((context) => {
+                        context.fillRect(o.x, o.y, o.w, o.h);
+                    });
+                } else {
+                    ctx.fillStyle = 'rgba(187, 222, 251, 0.5)';
+                    ctx.fillRect(o.x, o.y, o.w, o.h);
+                    hitCtx.fillStyle = '#000000';
+                    hitCtx.fillRect(o.x, o.y, o.w, o.h);
+                }
+            });
+
+            if (isDrawing && (gameState === 'playing' || gameState === 'failed')) {
+                ctx.beginPath();
+                ctx.arc(pointerPos.x, pointerPos.y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = (gameState === 'failed') ? '#f44336' : '#2196f3';
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+
+        function loop(timestamp) {
+            const dt = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+
+            if (gameState === 'playing' || gameState === 'waiting') {
+                updatePhysics(dt);
+            }
+            draw();
+
+            // キャラ画像の位置調整（リサイズ対策）
+            if (stageData.start) {
+                updateCharPositions(stageData.start, stageData.goal);
+            }
+
+            if (gameState !== 'finished') {
+                animationId = requestAnimationFrame(loop);
+            }
+        }
+
+        function getPoints() {
+            if (rewardBtn.disabled) return;
+            rewardBtn.disabled = true;
+            rewardBtn.innerText = 'もらいました';
+            rewardBtn.style.background = '#ccc';
+
+            const restartBtn = document.getElementById('restart-btn');
+            if (restartBtn) restartBtn.style.display = 'inline-block';
+
+            if (typeof showPointGetDialog === 'function') {
+                showPointGetDialog(50, 'dokidoki_obstacle');
+            } else {
+                alert("50ポイント獲得！（ローカル確認用）");
+            }
+        }
+
+        // 初期化実行
+        init();
+
+    </script>
+
+</body>
+
+</html>
