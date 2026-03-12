@@ -345,11 +345,11 @@
             if (furniture.left) { furnLeft.src = `room/${furniture.left}.webp`; furnLeft.style.display = 'block'; } else { furnLeft.style.display = 'none'; }
             if (furniture.right) { furnRight.src = `room/${furniture.right}.webp`; furnRight.style.display = 'block'; } else { furnRight.style.display = 'none'; }
 
-            // 勲章
+            // 勲章・絵画（同じ4スロットを共有: medals.left1/left2/right1/right2）
             const medals = data.medals || {};
-            const setMedal = (elementId, key, fallbackKey) => {
+            const setWallItem = (elementId, key, fallbackKey) => {
                 const el = document.getElementById(elementId);
-                const itemId = medals[key] || medals[fallbackKey];
+                const itemId = medals[key] || (fallbackKey ? medals[fallbackKey] : null);
                 if (itemId) {
                     el.src = `room/${itemId}.webp`;
                     el.style.display = 'block';
@@ -358,10 +358,10 @@
                 }
             };
 
-            setMedal('medal-left-1', 'left1', 'left');
-            setMedal('medal-left-2', 'left2', null);
-            setMedal('medal-right-1', 'right1', 'right');
-            setMedal('medal-right-2', 'right2', null);
+            setWallItem('medal-left-1', 'left1', 'left');
+            setWallItem('medal-left-2', 'left2', null);
+            setWallItem('medal-right-1', 'right1', 'right');
+            setWallItem('medal-right-2', 'right2', null);
         }
 
         // ヘルプ表示（変更なし）

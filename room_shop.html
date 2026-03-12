@@ -149,6 +149,14 @@
             gap: 2px;
         }
 
+        .btn-remove {
+            background: #ef9a9a;
+            color: #b71c1c;
+            margin-top: 2px;
+            font-size: 11px;
+            padding: 5px 0;
+        }
+
         .back-link {
             display: inline-block;
             margin-top: 10px;
@@ -198,6 +206,9 @@
             <div class="section-title">🏆 勲章 (くんしょう)</div>
             <div id="medal-list" class="item-grid"></div>
 
+            <div class="section-title">🖼️ 絵画 (かいが)</div>
+            <div id="picture-list" class="item-grid"></div>
+
             <div class="section-title">🪑 家具 (かぐ)</div>
             <div id="furniture-list" class="item-grid"></div>
         </div>
@@ -219,6 +230,11 @@
         const MEDALS = [
             { id: 'shield_silver', name: 'シルバーのたて', src: 'room/shield_silver.webp', requiredPoints: 100000, desc: '銀！100000ポイントの 証！' },
             { id: 'shield_gold', name: 'ゴールドのたて', src: 'room/shield_gold.webp', requiredPoints: 1000000, desc: '金！1000000ポイントの証！' }
+        ];
+
+        const PICTURES = [
+            { id: 'pic_01', name: 'えかき その1', src: 'room/pic_01.webp', price: 1000, desc: 'おしゃれな絵画1' },
+            { id: 'pic_02', name: 'えかき その2', src: 'room/pic_02.webp', price: 800, desc: 'おしゃれな絵画2' }
         ];
 
         const FURNITURE = [
@@ -263,6 +279,8 @@
             if (!userData.currentRoom) userData.currentRoom = 'none';
             if (!userData.ownedMedals) userData.ownedMedals = [];
             if (!userData.medals) userData.medals = {};
+            if (!userData.ownedPictures) userData.ownedPictures = [];
+            // 絵画はmedalsと同じスロットを共有する
             if (!userData.ownedFurniture) userData.ownedFurniture = [];
             if (!userData.furniture) userData.furniture = { left: null, right: null };
 
@@ -275,7 +293,16 @@
                 const canBuy = (currentPoints >= item.price);
                 const card = document.createElement('div');
                 card.className = `item-card ${isOwned ? 'owned' : ''}`;
-                let btnHtml = isOwned ? (isEquipped ? `<button class="action-btn btn-equipped">使用中</button>` : `<button class="action-btn btn-equip" onclick="equipRoom('${userName}', '${item.id}')">もようがえ</button>`) : (canBuy ? `<button class="action-btn btn-buy" onclick="buyRoom('${userName}', '${item.id}', ${item.price})">${item.price}ptで購入</button>` : `<button class="action-btn btn-disabled">${item.price}pt (不足)</button>`);
+                let btnHtml = '';
+                if (isOwned) {
+                    if (isEquipped) {
+                        btnHtml = `<button class="action-btn btn-equipped">使用中</button><button class="action-btn btn-remove" onclick="unequipRoom('${userName}')">はずす</button>`;
+                    } else {
+                        btnHtml = `<button class="action-btn btn-equip" onclick="equipRoom('${userName}', '${item.id}')">もようがえ</button>`;
+                    }
+                } else {
+                    btnHtml = canBuy ? `<button class="action-btn btn-buy" onclick="buyRoom('${userName}', '${item.id}', ${item.price})">${item.price}ptで購入</button>` : `<button class="action-btn btn-disabled">${item.price}pt (不足)</button>`;
+                }
                 card.innerHTML = `<img src="${item.src || 'https://placehold.jp/300x200.png?text=Simple'}" class="item-img"><div style="font-weight:bold;">${item.name}</div>${btnHtml}`;
                 roomContainer.appendChild(card);
             });
@@ -306,13 +333,15 @@
 
                 let btnHtml = '';
                 if (isOwned) {
+                    const isAnyEquipped = isEqL1 || isEqL2 || isEqR1 || isEqR2;
                     btnHtml = `
                     <div class="medal-btn-group">
                         <button class="action-btn btn-equip" onclick="equipMedal('${userName}', '${item.id}', 'left2')">左外</button>
                         <button class="action-btn btn-equip" onclick="equipMedal('${userName}', '${item.id}', 'left1')">左内</button>
                         <button class="action-btn btn-equip" onclick="equipMedal('${userName}', '${item.id}', 'right1')">右内</button>
                         <button class="action-btn btn-equip" onclick="equipMedal('${userName}', '${item.id}', 'right2')">右外</button>
-                    </div>`;
+                    </div>
+                    ${isAnyEquipped ? `<button class="action-btn btn-remove" onclick="unequipMedal('${userName}', '${item.id}')">はずす</button>` : ''}`;
                 } else if (canGet) {
                     btnHtml = `<button class="action-btn btn-buy" onclick="getMedal('${userName}', '${item.id}')">${req.toLocaleString()}pt達成！タダでもらう🎉</button>`;
                 } else {
@@ -323,7 +352,47 @@
                 medalContainer.appendChild(card);
             });
 
-            // 3. 家具
+            // 3. 絵画（勲章と同じ4スロットを共有: medals.left1/left2/right1/right2）
+            const picContainer = document.getElementById('picture-list');
+            picContainer.innerHTML = '';
+            PICTURES.forEach(item => {
+                const isOwned = userData.ownedPictures.includes(item.id);
+                // 勲章と同じmedalsオブジェクトのスロットをチェック
+                const isEqL1 = (userData.medals.left1 === item.id);
+                const isEqL2 = (userData.medals.left2 === item.id);
+                const isEqR1 = (userData.medals.right1 === item.id);
+                const isEqR2 = (userData.medals.right2 === item.id);
+                const canBuy = (currentPoints >= item.price);
+
+                let badge = '';
+                if (isEqL1) badge = '<div class="badge-equipped">左内に飾り中</div>';
+                else if (isEqL2) badge = '<div class="badge-equipped">左外に飾り中</div>';
+                else if (isEqR1) badge = '<div class="badge-equipped">右内に飾り中</div>';
+                else if (isEqR2) badge = '<div class="badge-equipped">右外に飾り中</div>';
+
+                const card = document.createElement('div');
+                card.className = `item-card ${isOwned ? 'owned' : ''}`;
+
+                let btnHtml = '';
+                if (isOwned) {
+                    const isAnyEquipped = isEqL1 || isEqL2 || isEqR1 || isEqR2;
+                    btnHtml = `
+                    <div class="medal-btn-group">
+                        <button class="action-btn btn-equip" onclick="equipPicture('${userName}', '${item.id}', 'left2')">左外</button>
+                        <button class="action-btn btn-equip" onclick="equipPicture('${userName}', '${item.id}', 'left1')">左内</button>
+                        <button class="action-btn btn-equip" onclick="equipPicture('${userName}', '${item.id}', 'right1')">右内</button>
+                        <button class="action-btn btn-equip" onclick="equipPicture('${userName}', '${item.id}', 'right2')">右外</button>
+                    </div>
+                    ${isAnyEquipped ? `<button class="action-btn btn-remove" onclick="unequipPicture('${userName}', '${item.id}')">はずす</button>` : ''}`;
+                } else {
+                    btnHtml = canBuy ? `<button class="action-btn btn-buy" onclick="buyPicture('${userName}', '${item.id}', ${item.price})">${item.price}pt購入</button>` : `<button class="action-btn btn-disabled">${item.price}pt (不足)</button>`;
+                }
+
+                card.innerHTML = `${badge}<img src="${item.src}" class="item-img" onerror="this.src='https://placehold.jp/150x150.png?text=Picture'"><div style="font-weight:bold; margin-top:5px;">${item.name}</div>${btnHtml}`;
+                picContainer.appendChild(card);
+            });
+
+            // 4. 家具
             const furnContainer = document.getElementById('furniture-list');
             furnContainer.innerHTML = '';
             FURNITURE.forEach(item => {
@@ -336,9 +405,18 @@
                 card.className = `item-card ${isOwned ? 'owned' : ''}`;
 
                 let badge = isEqLeft ? `<div class="badge-equipped">左におき中</div>` : (isEqRight ? `<div class="badge-equipped">右におき中</div>` : '');
-                let btnHtml = isOwned ?
-                    `<div style="display:flex; gap:5px;"><button class="action-btn btn-equip" onclick="equipFurniture('${userName}', '${item.id}', 'left')">左におく</button><button class="action-btn btn-equip" onclick="equipFurniture('${userName}', '${item.id}', 'right')">右におく</button></div>` :
-                    (canBuy ? `<button class="action-btn btn-buy" onclick="buyFurniture('${userName}', '${item.id}', ${item.price})">${item.price}pt購入</button>` : `<button class="action-btn btn-disabled">${item.price}pt (不足)</button>`);
+                let btnHtml = '';
+                if (isOwned) {
+                    const isAnyEquipped = isEqLeft || isEqRight;
+                    btnHtml = `
+                    <div style="display:flex; gap:5px;">
+                        <button class="action-btn btn-equip" onclick="equipFurniture('${userName}', '${item.id}', 'left')">左におく</button>
+                        <button class="action-btn btn-equip" onclick="equipFurniture('${userName}', '${item.id}', 'right')">右におく</button>
+                    </div>
+                    ${isAnyEquipped ? `<button class="action-btn btn-remove" onclick="unequipFurniture('${userName}', '${item.id}')">はずす</button>` : ''}`;
+                } else {
+                    btnHtml = canBuy ? `<button class="action-btn btn-buy" onclick="buyFurniture('${userName}', '${item.id}', ${item.price})">${item.price}pt購入</button>` : `<button class="action-btn btn-disabled">${item.price}pt (不足)</button>`;
+                }
 
                 card.innerHTML = `${badge}<img src="${item.src}" class="item-img" onerror="this.src='https://placehold.jp/150x150.png?text=Furniture'"><div style="font-weight:bold; margin-top:5px;">${item.name}</div>${btnHtml}`;
                 furnContainer.appendChild(card);
@@ -348,6 +426,7 @@
         // --- 処理関数 ---
         function buyRoom(u, i, p) { if (confirm(`${p}ptで購入？`)) if (spendPoints(u, p)) { let d = getUserData(); if (!d[u]) d[u] = {}; if (!d[u].ownedRooms) d[u].ownedRooms = ['none']; d[u].ownedRooms.push(i); saveUserData(d); loadShop(); } }
         function equipRoom(u, i) { let d = getUserData(); d[u].currentRoom = i; saveUserData(d); loadShop(); }
+        function unequipRoom(u) { let d = getUserData(); d[u].currentRoom = 'none'; saveUserData(d); loadShop(); }
         // 勲章の獲得（ポイント消費なし、条件はUI側で判定済み）
         function getMedal(u, i) {
             if (confirm('勲章をもらいますか？🏆')) {
@@ -384,6 +463,57 @@
             loadShop();
         }
 
+        // 勲章を全てはずす
+        function unequipMedal(u, i) {
+            let d = getUserData();
+            if (!d[u].medals) return;
+            Object.keys(d[u].medals).forEach(key => {
+                if (d[u].medals[key] === i) delete d[u].medals[key];
+            });
+            saveUserData(d);
+            loadShop();
+        }
+
+        // 絵画の購入
+        function buyPicture(userName, itemId, price) {
+            if (!confirm(`${price}ポイントで 購入しますか？`)) return;
+            if (spendPoints(userName, price)) {
+                const allData = getUserData();
+                if (!allData[userName]) allData[userName] = {};
+                if (!allData[userName].ownedPictures) allData[userName].ownedPictures = [];
+                allData[userName].ownedPictures.push(itemId);
+                saveUserData(allData);
+                alert('購入しました！✨');
+                loadShop();
+            } else { alert('ポイントが足りないようです…'); }
+        }
+
+        // 絵画を飾る（勲章と同じmedalsスロットを使用）
+        function equipPicture(userName, itemId, slot) {
+            const allData = getUserData();
+            if (!allData[userName].medals) allData[userName].medals = {};
+            // 他のスロットに同じ絵がある場合は外す（移動のため）
+            Object.keys(allData[userName].medals).forEach(key => {
+                if (allData[userName].medals[key] === itemId) delete allData[userName].medals[key];
+            });
+            allData[userName].medals[slot] = itemId;
+            saveUserData(allData);
+            const slotNames = { left1: '左内', left2: '左外', right1: '右内', right2: '右外' };
+            alert(`${slotNames[slot] || slot}に 飾りました！🖼️`);
+            loadShop();
+        }
+
+        // 絵画をはずす（medalsスロットから削除）
+        function unequipPicture(userName, itemId) {
+            const allData = getUserData();
+            if (!allData[userName].medals) return;
+            Object.keys(allData[userName].medals).forEach(key => {
+                if (allData[userName].medals[key] === itemId) delete allData[userName].medals[key];
+            });
+            saveUserData(allData);
+            loadShop();
+        }
+
         function buyFurniture(userName, itemId, price) {
             if (!confirm(`${price}ポイントで 購入しますか？`)) return;
             if (spendPoints(userName, price)) {
@@ -403,6 +533,17 @@
             allData[userName].furniture[side] = itemId;
             saveUserData(allData);
             alert(`${side === 'left' ? '左' : '右'}に おきました！🪑`);
+            loadShop();
+        }
+
+        // 家具をはずす
+        function unequipFurniture(userName, itemId) {
+            const allData = getUserData();
+            if (!allData[userName].furniture) return;
+            Object.keys(allData[userName].furniture).forEach(key => {
+                if (allData[userName].furniture[key] === itemId) allData[userName].furniture[key] = null;
+            });
+            saveUserData(allData);
             loadShop();
         }
     </script>
