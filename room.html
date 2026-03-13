@@ -149,8 +149,8 @@
             position: absolute;
             bottom: -5px;
             /* 地面に密着するように下げました */
-            width: 310px;
-            /* 横幅を大きくしました */
+            width: auto;
+            /* widthはJSで動的に設定します */
             height: auto;
             max-height: 310px;
             object-fit: contain;
@@ -342,8 +342,67 @@
 
             // 家具
             const furniture = data.furniture || {};
-            if (furniture.left) { furnLeft.src = `room/${furniture.left}.webp`; furnLeft.style.display = 'block'; } else { furnLeft.style.display = 'none'; }
-            if (furniture.right) { furnRight.src = `room/${furniture.right}.webp`; furnRight.style.display = 'block'; } else { furnRight.style.display = 'none'; }
+            
+            // room_shop.htmlのFURNITUREデータを参照（本来は共通化すべきですが、今回は簡易的に現在のページで家具の詳細を特定するロジックを想定）
+            // ※本来は room_shop.html とデータを共有する必要がありますが、一旦ここでは「指定がなければ310」という処理を入れます
+            const applyFurnitureStyle = (el, itemId) => {
+                if (!itemId) {
+                    el.style.display = 'none';
+                    return;
+                }
+                
+                // room_shop.html で定義されている FURNITURE を取得（本来は global か import）
+                // 暫定的に room_shop.html からデータを取得する処理がないため、widthが記録されているか、デフォルトの310を適用
+                let itemWidth = 310;
+                
+                // ここで本来は商品データからwidthを探す
+                // 提示されたコード構造では FURNITURE は room_shop.html 内にあるため、
+                // room.html 側でもその設定を反映させる必要があります。
+                // ユーザーは room_shop.html に width を追加したので、それを反映させます。
+                
+                el.src = `room/${itemId}.webp`;
+                el.style.display = 'block';
+                
+                // ユーザーが room_shop.html に追加した width プロパティを反映させる仕組み
+                // 簡易的な実装として、特定のIDに対してサイズを適用するか、
+                // あるいは本来は localStorage 等に width 情報も保存するのが理想的です。
+                // 今回は room_shop.html の FURNITURE 配列をこちらでも定義するか、
+                // あるいは「特定のIDならこのサイズ」とする必要があります。
+                
+                // 【補足】本来は room_shop.html の FURNITURE を外部ファイルに切り出して
+                // 両方から include するのがベストですが、現状の構造を維持したまま
+                // 「データの読み取り」を強化します。
+            };
+
+            // FURNITURE データをここでも定義（整合性を保つため）
+            const FURNITURE_DATA = [
+                { id: 'table_01', width: 310 },
+                { id: 'table_02', width: 310 },
+                { id: 'table_03', width: 310 },
+                { id: 'table_04', width: 250 },
+                { id: 'table_05', width: 250 }
+            ];
+
+            const getWidth = (id) => {
+                const item = FURNITURE_DATA.find(f => f.id === id);
+                return item ? item.width : 310;
+            };
+
+            if (furniture.left) {
+                furnLeft.src = `room/${furniture.left}.webp`;
+                furnLeft.style.width = getWidth(furniture.left) + 'px';
+                furnLeft.style.display = 'block';
+            } else {
+                furnLeft.style.display = 'none';
+            }
+
+            if (furniture.right) {
+                furnRight.src = `room/${furniture.right}.webp`;
+                furnRight.style.width = getWidth(furniture.right) + 'px';
+                furnRight.style.display = 'block';
+            } else {
+                furnRight.style.display = 'none';
+            }
 
             // 勲章・絵画（同じ4スロットを共有: medals.left1/left2/right1/right2）
             const medals = data.medals || {};
