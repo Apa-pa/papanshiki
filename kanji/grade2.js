@@ -192,4 +192,7 @@ const GRADE2_KANJI = [
     { kanji: "戸", readings: ["と", "コ"], meaning: "と、いりぐち", strokes: 4, example: "戸 をあける", hint: "とびら のかたち" },
     { kanji: "力", readings: ["ちから", "リキ"], meaning: "ちから", strokes: 2, example: "力もち になる", hint: "カタカナ の カ" },
     { kanji: "万", readings: ["マン", "バン"], meaning: "いちまん", strokes: 3, example: "万歳！", hint: "一 の した に ノ" },
+    { kanji: "晴", readings: ["は(れる)", "セイ"], meaning: "おてんきがよい", strokes: 12, example: "今日は 晴れだ", hint: "日 と 青" },
+    { kanji: "聞", readings: ["き(く)", "ブン"], meaning: "みみできく", strokes: 14, example: "音楽を 聞く", hint: "門 の なかに 耳" },
+    { kanji: "鳴", readings: ["な(く)", "メイ"], meaning: "とりなどが こえをだす", strokes: 14, example: "鳥が 鳴く", hint: "口 と 鳥" },
 ];

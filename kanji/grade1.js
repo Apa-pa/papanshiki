@@ -84,6 +84,7 @@ const GRADE1_KANJI = [
     { kanji: "名", readings: ["な", "メイ"], meaning: "なまえ", strokes: 6, example: "名前 をかく", hint: "夕 と 口 のくみあわせ" },
     { kanji: "正", readings: ["ただ(しい)", "セイ"], meaning: "ただしい", strokes: 5, example: "正しい こたえ", hint: "一 と 止 のくみあわせ" },
     { kanji: "円", readings: ["えん", "エン"], meaning: "おかねの たんい、まる", strokes: 4, example: "百 円 だま", hint: "まるい おかね の い（囲）" },
+    { kanji: "糸", readings: ["いと", "シ"], meaning: "ぬうとき につかうもの", strokes: 6, example: "糸 でぬう", hint: "いと が からまっている かたち" },
 
     // --- 色 ---
     { kanji: "赤", readings: ["あか", "セキ"], meaning: "あかいろ", strokes: 7, example: "赤い りんご", hint: "土 の した に ひ" },

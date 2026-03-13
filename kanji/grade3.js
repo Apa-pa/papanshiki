@@ -211,5 +211,12 @@ const GRADE3_KANJI = [
     { kanji: "昭", readings: ["ショウ"], meaning: "あきらか", strokes: 9, example: "昭和", hint: "日 と 召" },
     { kanji: "想", readings: ["ソウ"], meaning: "おもう", strokes: 13, example: "想像 する", hint: "相 と 心" },
     { kanji: "旅", readings: ["たび", "リョ"], meaning: "たび", strokes: 10, example: "旅行 にいく", hint: "方 と ひとやね と 氏" },
-    { kanji: "礼", readings: ["レイ"], meaning: "おじぎ、おかえし", strokes: 5, example: "お礼 をいう", hint: "しめすへん に L" }
+    { kanji: "礼", readings: ["レイ"], meaning: "おじぎ、おかえし", strokes: 5, example: "お礼 をいう", hint: "しめすへん に L" },
+    { kanji: "丁", readings: ["チョウ", "テイ"], meaning: "まちのくぎり", strokes: 2, example: "一丁目", hint: "一 のしたに 亅" },
+    { kanji: "他", readings: ["ほか", "タ"], meaning: "ほかのひとやもの", strokes: 5, example: "他の 人にきく", hint: "にんべん に 也" },
+    { kanji: "短", readings: ["みじか(い)", "タン"], meaning: "みじかい", strokes: 12, example: "短い えんぴつ", hint: "矢 と 豆" },
+    { kanji: "柱", readings: ["はしら", "チュウ"], meaning: "いえをささえる たてのき", strokes: 9, example: "家の 柱", hint: "木へん に 主" },
+    { kanji: "帳", readings: ["チョウ"], meaning: "ノート", strokes: 11, example: "連絡帳 をかく", hint: "巾へん に 長" },
+    { kanji: "昔", readings: ["むかし", "セキ"], meaning: "ずっとまえ", strokes: 8, example: "昔 ばなし", hint: "廿 と 日" },
+    { kanji: "第", readings: ["ダイ"], meaning: "じゅんばん", strokes: 11, example: "第一位 になる", hint: "たけかんむり と 弓 に 似た形" },
 ];
