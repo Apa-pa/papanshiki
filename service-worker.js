@@ -119,6 +119,7 @@ var urlsToCache = [
   './stock.html',
   './about_stock.html',
   './bank.html',
+  './eiyou_balance.html',
 
   // === プリント ===
   './print_alphabet.html',

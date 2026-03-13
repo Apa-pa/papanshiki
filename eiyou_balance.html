@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>栄養バランスゲーム | ぱぱん式</title>
+    <script src="ranking.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Helvetica Neue", Arial, Meiryo, sans-serif;
+            background: linear-gradient(135deg, #fff5e1 0%, #ffe0b2 100%);
+            color: #5d4037;
+            text-align: center;
+            margin: 0;
+            padding: 10px;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            min-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== ヘッダー ===== */
+        .game-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #ff9800, #ffb74d);
+            padding: 15px 20px;
+            border-radius: 15px;
+            color: white;
+            flex-wrap: wrap;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+            flex: 1;
+        }
+
+        .timer {
+            background: #fff;
+            color: #ff6f00;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 18px;
+            min-width: 100px;
+        }
+
+        /* ===== キャラクター紹介 ===== */
+        .character-intro {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #fff3e0;
+            border-radius: 12px;
+            border-left: 4px solid #ff9800;
+        }
+
+        .character-intro p {
+            margin: 5px 0;
+            font-size: 14px;
+            font-weight: bold;
+            color: #ff6f00;
+        }
+
+        /* ===== ゲーム説明 ===== */
+        .game-description {
+            background: #e8f5e9;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #2e7d32;
+        }
+
+        /* ===== メインゲーム画面 ===== */
+        .game-main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .menu-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .menu-tab-btn {
+            padding: 10px 20px;
+            border: 2px solid #ff9800;
+            background: white;
+            color: #ff9800;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.3s;
+            flex: 0 1 auto;
+        }
+
+        .menu-tab-btn.active {
+            background: #ff9800;
+            color: white;
+        }
+
+        .menu-tab-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* ===== 献立作成エリア ===== */
+        .menu-section {
+            display: none;
+            animation: slideIn 0.3s ease-in-out;
+        }
+
+        .menu-section.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .day-menu {
+            background: #f5f5f5;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .day-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ff6f00;
+        }
+
+        .meal-group {
+            background: white;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ffb74d;
+        }
+
+        .meal-name {
+            font-weight: bold;
+            color: #5d4037;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .food-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .food-btn {
+            border: 2px solid;
+            padding: 10px 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            word-break: break-word;
+        }
+
+        /* 主食（穀物） */
+        .food-btn.category-staple {
+            background: #fff9c4;
+            border-color: #fdd835;
+            color: #f57f17;
+        }
+
+        .food-btn.category-staple:hover {
+            background: #fdd835;
+            transform: scale(1.02);
+        }
+
+        .food-btn.category-staple.selected {
+            background: #ffb300;
+            border-color: #ff8f00;
+            color: white;
+        }
+
+        /* 主菜（タンパク質） */
+        .food-btn.category-protein {
+            background: #ffccbc;
+            border-color: #ff7043;
+            color: #bf360c;
+        }
+
+        .food-btn.category-protein:hover {
+            background: #ff7043;
+            transform: scale(1.02);
+        }
+
+        .food-btn.category-protein.selected {
+            background: #e64a19;
+            border-color: #bf360c;
+            color: white;
+        }
+
+        /* 副菜・他（野菜・果物等） */
+        .food-btn.category-side {
+            background: #c8e6c9;
+            border-color: #4caf50;
+            color: #1b5e20;
+        }
+
+        .food-btn.category-side:hover {
+            background: #4caf50;
+            transform: scale(1.02);
+        }
+
+        .food-btn.category-side.selected {
+            background: #2e7d32;
+            border-color: #1b5e20;
+            color: white;
+        }
+
+        .selected-food {
+            background: #e8f5e9;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #2e7d32;
+            font-weight: bold;
+            margin-top: 8px;
+            min-height: 20px;
+        }
+
+        /* ===== 栄養バランス表示 ===== */
+        .nutrition-summary {
+            background: linear-gradient(135deg, #fce4ec 0%, #f3e5f5 100%);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .nutrition-title {
+            font-weight: bold;
+            color: #7b1fa2;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .nutrition-chart {
+            background: white;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .nutrition-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .nutrition-label {
+            text-align: left;
+            font-weight: bold;
+            color: #5d4037;
+            min-width: 100px;
+        }
+
+        .nutrition-bar-container {
+            flex-grow: 1;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 10px;
+            position: relative;
+        }
+
+        .nutrition-bar {
+            height: 100%;
+            transition: width 0.3s;
+            background: linear-gradient(90deg, #4caf50, #66bb6a);
+            position: relative;
+        }
+
+        .nutrition-bar.warning {
+            background: linear-gradient(90deg, #ff9800, #ffb74d);
+        }
+
+        .nutrition-bar.danger {
+            background: linear-gradient(90deg, #f44336, #ef5350);
+        }
+
+        .nutrition-value {
+            text-align: right;
+            min-width: 60px;
+            font-weight: bold;
+            color: #ff6f00;
+        }
+
+        .balance-score {
+            background: white;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #7b1fa2;
+        }
+
+        .balance-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .balance-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #7b1fa2;
+        }
+
+        .balance-stars {
+            font-size: 20px;
+            margin-top: 8px;
+        }
+
+        /* ===== ボタンエリア ===== */
+        .button-area {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+            border: 2px solid #ccc;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+            transform: scale(1.02);
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #4caf50, #66bb6a);
+            color: white;
+            border: 2px solid #2e7d32;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ===== フッター ===== */
+        .game-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #f0f0f0;
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* ===== リセットボタン ===== */
+        .reset-btn {
+            background: #ffebee;
+            color: #c62828;
+            border: 2px solid #ef5350;
+        }
+
+        .reset-btn:hover {
+            background: #ef5350;
+            color: white;
+            transform: scale(1.02);
+        }
+
+        /* ===== フィードバックモーダル ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90vw;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-emoji {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff9800;
+            margin-bottom: 10px;
+        }
+
+        .modal-score {
+            font-size: 36px;
+            font-weight: bold;
+            color: #7b1fa2;
+            margin: 15px 0;
+        }
+
+        .modal-stars {
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+
+        .modal-feedback {
+            font-size: 14px;
+            color: #5d4037;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 10px;
+            border-left: 4px solid #ff9800;
+        }
+
+        .modal-analysis {
+            font-size: 12px;
+            color: #666;
+            background: #fff3e0;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .modal-analysis-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 6px 0;
+        }
+
+        .modal-analysis-label {
+            font-weight: bold;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .modal-button {
+            background: linear-gradient(90deg, #4caf50, #66bb6a);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .modal-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .modal-button.home-btn {
+            background: linear-gradient(90deg, #ff9800, #ffb74d);
+        }
+
+        .modal-button.home-btn:hover {
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+        }
+
+        .modal-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ===== レスポンシブ ===== */
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px;
+                min-height: 100vh;
+            }
+
+            .header-title {
+                font-size: 18px;
+            }
+
+            .timer {
+                font-size: 16px;
+                padding: 6px 12px;
+            }
+
+            .food-buttons {
+                grid-template-columns: repeat(1, 1fr);
+            }
+
+            .nutrition-item {
+                font-size: 12px;
+            }
+
+            .nutrition-label {
+                min-width: 70px;
+                font-size: 12px;
+            }
+
+            .nutrition-value {
+                min-width: 50px;
+                font-size: 12px;
+            }
+
+            .menu-tabs {
+                gap: 5px;
+            }
+
+            .menu-tab-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- ===== ヘッダー ===== -->
+        <div class="game-header">
+            <h1 class="header-title">🍽️ 栄養バランスゲーム</h1>
+            <div class="timer"><span id="timer">0</span>秒</div>
+        </div>
+
+        <!-- ===== キャラクター紹介 ===== -->
+        <div class="character-intro">
+            <p>🥬 アンのお手伝い</p>
+            <p>3日間の献立を作ってね。栄養バランスが良いほどハイスコア！</p>
+        </div>
+
+        <!-- ===== ゲーム説明 ===== -->
+        <div class="game-description">
+            ✨ ポイント: 朝・昼・晩×3日分の献立を作成。栄養バランスの美しさでスコア判定します
+        </div>
+
+        <!-- ===== メインゲーム画面 ===== -->
+        <div class="game-main">
+            <!-- メニュータブ選択 -->
+            <div class="menu-tabs">
+                <button class="menu-tab-btn active" onclick="switchDay(1)">1日目</button>
+                <button class="menu-tab-btn" onclick="switchDay(2)">2日目</button>
+                <button class="menu-tab-btn" onclick="switchDay(3)">3日目</button>
+                <button class="menu-tab-btn" onclick="switchDay('summary')">栄養一覧</button>
+            </div>
+
+            <!-- 1日目献立 -->
+            <div id="day-1" class="menu-section active">
+                <div class="day-menu">
+                    <div class="day-title">📅 1日目の献立</div>
+
+                    <!-- 朝食 -->
+                    <div class="meal-group">
+                        <div class="meal-name">🌅 朝食 (朝ごはん)</div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-staple" onclick="selectFood('day-1', 'breakfast', 'rice', 'ごはん')">ごはん</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-1', 'breakfast', 'bread', 'パン')">パン</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-staple" onclick="selectFood('day-1', 'breakfast-2', 'oatmeal', 'オートミール')">オートミール</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-1', 'breakfast-2', 'none', 'なし')">なし</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-protein" onclick="selectFood('day-1', 'breakfast-3', 'egg', '卵焼き')">卵焼き</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-1', 'breakfast-3', 'bacon', 'ベーコン')">ベーコン</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-protein" onclick="selectFood('day-1', 'breakfast-4', 'tofu', '豆腐')">豆腐</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-1', 'breakfast-4', 'none', 'なし')">なし</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-side" onclick="selectFood('day-1', 'breakfast-5', 'salad', 'サラダ')">サラダ</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-1', 'breakfast-5', 'fruit', 'フルーツ')">フルーツ</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-side" onclick="selectFood('day-1', 'breakfast-6', 'milk', '牛乳')">牛乳</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-1', 'breakfast-6', 'none', 'なし')">なし</button>
+                        </div>
+                        <div class="selected-food" id="day-1-breakfast-display">未選択</div>
+                    </div>
+
+                    <!-- 昼食 -->
+                    <div class="meal-group">
+                        <div class="meal-name">☀️ 昼食 (ランチ)</div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-staple" onclick="selectFood('day-1', 'lunch', 'rice', 'ごはん')">ごはん</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-1', 'lunch', 'pasta', 'パスタ')">パスタ</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-1', 'lunch', 'bread', 'パン')">パン</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-1', 'lunch', 'udon', 'うどん')">うどん</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-protein" onclick="selectFood('day-1', 'lunch-2', 'fish', '魚')">魚</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-1', 'lunch-2', 'chicken', '鶏肉')">鶏肉</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-1', 'lunch-2', 'beef', '牛肉')">牛肉</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-1', 'lunch-2', 'tofu', '豆腐')">豆腐</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-side" onclick="selectFood('day-1', 'lunch-3', 'vegetable', '野菜')">野菜</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-1', 'lunch-3', 'soup', 'スープ')">スープ</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-1', 'lunch-3', 'salad', 'サラダ')">サラダ</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-1', 'lunch-3', 'none', 'なし')">なし</button>
+                        </div>
+                        <div class="selected-food" id="day-1-lunch-display">未選択</div>
+                    </div>
+
+                    <!-- 夕食 -->
+                    <div class="meal-group">
+                        <div class="meal-name">🌙 夕食 (ディナー)</div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-staple" onclick="selectFood('day-1', 'dinner', 'rice', 'ごはん')">ごはん</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-1', 'dinner', 'bread', 'パン')">パン</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-1', 'dinner', 'pasta', 'パスタ')">パスタ</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-1', 'dinner', 'ramen', 'ラーメン')">ラーメン</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-protein" onclick="selectFood('day-1', 'dinner-2', 'fish', '魚')">魚</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-1', 'dinner-2', 'chicken', '鶏肉')">鶏肉</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-1', 'dinner-2', 'beef', '牛肉')">牛肉</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-1', 'dinner-2', 'shrimp', 'エビ')">エビ</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-side" onclick="selectFood('day-1', 'dinner-3', 'vegetable', '野菜')">野菜</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-1', 'dinner-3', 'soup', 'スープ')">スープ</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-1', 'dinner-3', 'pickles', 'ぬか漬け')">ぬか漬け</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-1', 'dinner-3', 'none', 'なし')">なし</button>
+                        </div>
+                        <div class="selected-food" id="day-1-dinner-display">未選択</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2日目献立 (1日目と同じ構造) -->
+            <div id="day-2" class="menu-section">
+                <div class="day-menu">
+                    <div class="day-title">📅 2日目の献立</div>
+                    <div class="meal-group">
+                        <div class="meal-name">🌅 朝食</div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-staple" onclick="selectFood('day-2', 'breakfast', 'rice', 'ごはん')">ごはん</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-2', 'breakfast', 'bread', 'パン')">パン</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-staple" onclick="selectFood('day-2', 'breakfast-2', 'oatmeal', 'オートミール')">オートミール</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-2', 'breakfast-2', 'none', 'なし')">なし</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-protein" onclick="selectFood('day-2', 'breakfast-3', 'egg', '卵焼き')">卵焼き</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-2', 'breakfast-3', 'bacon', 'ベーコン')">ベーコン</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-protein" onclick="selectFood('day-2', 'breakfast-4', 'tofu', '豆腐')">豆腐</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-2', 'breakfast-4', 'none', 'なし')">なし</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-side" onclick="selectFood('day-2', 'breakfast-5', 'salad', 'サラダ')">サラダ</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-2', 'breakfast-5', 'fruit', 'フルーツ')">フルーツ</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-side" onclick="selectFood('day-2', 'breakfast-6', 'milk', '牛乳')">牛乳</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-2', 'breakfast-6', 'none', 'なし')">なし</button>
+                        </div>
+                        <div class="selected-food" id="day-2-breakfast-display">未選択</div>
+                    </div>
+                    <div class="meal-group">
+                        <div class="meal-name">☀️ 昼食</div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-staple" onclick="selectFood('day-2', 'lunch', 'rice', 'ごはん')">ごはん</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-2', 'lunch', 'pasta', 'パスタ')">パスタ</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-2', 'lunch', 'bread', 'パン')">パン</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-2', 'lunch', 'udon', 'うどん')">うどん</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-protein" onclick="selectFood('day-2', 'lunch-2', 'fish', '魚')">魚</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-2', 'lunch-2', 'chicken', '鶏肉')">鶏肉</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-2', 'lunch-2', 'beef', '牛肉')">牛肉</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-2', 'lunch-2', 'tofu', '豆腐')">豆腐</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-side" onclick="selectFood('day-2', 'lunch-3', 'vegetable', '野菜')">野菜</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-2', 'lunch-3', 'soup', 'スープ')">スープ</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-2', 'lunch-3', 'salad', 'サラダ')">サラダ</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-2', 'lunch-3', 'none', 'なし')">なし</button>
+                        </div>
+                        <div class="selected-food" id="day-2-lunch-display">未選択</div>
+                    </div>
+                    <div class="meal-group">
+                        <div class="meal-name">🌙 夕食</div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-staple" onclick="selectFood('day-2', 'dinner', 'rice', 'ごはん')">ごはん</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-2', 'dinner', 'bread', 'パン')">パン</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-2', 'dinner', 'pasta', 'パスタ')">パスタ</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-2', 'dinner', 'ramen', 'ラーメン')">ラーメン</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-protein" onclick="selectFood('day-2', 'dinner-2', 'fish', '魚')">魚</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-2', 'dinner-2', 'chicken', '鶏肉')">鶏肉</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-2', 'dinner-2', 'beef', '牛肉')">牛肉</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-2', 'dinner-2', 'shrimp', 'エビ')">エビ</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-side" onclick="selectFood('day-2', 'dinner-3', 'vegetable', '野菜')">野菜</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-2', 'dinner-3', 'soup', 'スープ')">スープ</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-2', 'dinner-3', 'pickles', 'ぬか漬け')">ぬか漬け</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-2', 'dinner-3', 'none', 'なし')">なし</button>
+                        </div>
+                        <div class="selected-food" id="day-2-dinner-display">未選択</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3日目献立 (1日目と同じ構造) -->
+            <div id="day-3" class="menu-section">
+                <div class="day-menu">
+                    <div class="day-title">📅 3日目の献立</div>
+                    <div class="meal-group">
+                        <div class="meal-name">🌅 朝食</div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-staple" onclick="selectFood('day-3', 'breakfast', 'rice', 'ごはん')">ごはん</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-3', 'breakfast', 'bread', 'パン')">パン</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-staple" onclick="selectFood('day-3', 'breakfast-2', 'oatmeal', 'オートミール')">オートミール</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-3', 'breakfast-2', 'none', 'なし')">なし</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-protein" onclick="selectFood('day-3', 'breakfast-3', 'egg', '卵焼き')">卵焼き</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-3', 'breakfast-3', 'bacon', 'ベーコン')">ベーコン</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-protein" onclick="selectFood('day-3', 'breakfast-4', 'tofu', '豆腐')">豆腐</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-3', 'breakfast-4', 'none', 'なし')">なし</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-side" onclick="selectFood('day-3', 'breakfast-5', 'salad', 'サラダ')">サラダ</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-3', 'breakfast-5', 'fruit', 'フルーツ')">フルーツ</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-side" onclick="selectFood('day-3', 'breakfast-6', 'milk', '牛乳')">牛乳</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-3', 'breakfast-6', 'none', 'なし')">なし</button>
+                        </div>
+                        <div class="selected-food" id="day-3-breakfast-display">未選択</div>
+                    </div>
+                    <div class="meal-group">
+                        <div class="meal-name">☀️ 昼食</div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-staple" onclick="selectFood('day-3', 'lunch', 'rice', 'ごはん')">ごはん</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-3', 'lunch', 'pasta', 'パスタ')">パスタ</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-3', 'lunch', 'bread', 'パン')">パン</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-3', 'lunch', 'udon', 'うどん')">うどん</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-protein" onclick="selectFood('day-3', 'lunch-2', 'fish', '魚')">魚</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-3', 'lunch-2', 'chicken', '鶏肉')">鶏肉</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-3', 'lunch-2', 'beef', '牛肉')">牛肉</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-3', 'lunch-2', 'tofu', '豆腐')">豆腐</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-side" onclick="selectFood('day-3', 'lunch-3', 'vegetable', '野菜')">野菜</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-3', 'lunch-3', 'soup', 'スープ')">スープ</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-3', 'lunch-3', 'salad', 'サラダ')">サラダ</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-3', 'lunch-3', 'none', 'なし')">なし</button>
+                        </div>
+                        <div class="selected-food" id="day-3-lunch-display">未選択</div>
+                    </div>
+                    <div class="meal-group">
+                        <div class="meal-name">🌙 夕食</div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-staple" onclick="selectFood('day-3', 'dinner', 'rice', 'ごはん')">ごはん</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-3', 'dinner', 'bread', 'パン')">パン</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-3', 'dinner', 'pasta', 'パスタ')">パスタ</button>
+                            <button class="food-btn category-staple" onclick="selectFood('day-3', 'dinner', 'ramen', 'ラーメン')">ラーメン</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-protein" onclick="selectFood('day-3', 'dinner-2', 'fish', '魚')">魚</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-3', 'dinner-2', 'chicken', '鶏肉')">鶏肉</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-3', 'dinner-2', 'beef', '牛肉')">牛肉</button>
+                            <button class="food-btn category-protein" onclick="selectFood('day-3', 'dinner-2', 'shrimp', 'エビ')">エビ</button>
+                        </div>
+                        <div class="food-buttons">
+                            <button class="food-btn category-side" onclick="selectFood('day-3', 'dinner-3', 'vegetable', '野菜')">野菜</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-3', 'dinner-3', 'soup', 'スープ')">スープ</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-3', 'dinner-3', 'pickles', 'ぬか漬け')">ぬか漬け</button>
+                            <button class="food-btn category-side" onclick="selectFood('day-3', 'dinner-3', 'none', 'なし')">なし</button>
+                        </div>
+                        <div class="selected-food" id="day-3-dinner-display">未選択</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 栄養一覧・スコア表示 -->
+            <div id="summary" class="menu-section">
+                <div class="nutrition-summary">
+                    <div class="nutrition-title">📊 3日間の栄養バランス分析</div>
+                    <div class="nutrition-chart">
+                        <div class="nutrition-item">
+                            <div class="nutrition-label">たんぱく質</div>
+                            <div class="nutrition-bar-container">
+                                <div class="nutrition-bar" id="bar-protein" style="width: 0%"></div>
+                            </div>
+                            <div class="nutrition-value"><span id="value-protein">0</span>g</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="nutrition-label">炭水化物</div>
+                            <div class="nutrition-bar-container">
+                                <div class="nutrition-bar" id="bar-carbs" style="width: 0%"></div>
+                            </div>
+                            <div class="nutrition-value"><span id="value-carbs">0</span>g</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="nutrition-label">脂質</div>
+                            <div class="nutrition-bar-container">
+                                <div class="nutrition-bar" id="bar-fat" style="width: 0%"></div>
+                            </div>
+                            <div class="nutrition-value"><span id="value-fat">0</span>g</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="nutrition-label">ビタミン</div>
+                            <div class="nutrition-bar-container">
+                                <div class="nutrition-bar" id="bar-vitamin" style="width: 0%"></div>
+                            </div>
+                            <div class="nutrition-value"><span id="value-vitamin">0</span>種</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="nutrition-label">ミネラル</div>
+                            <div class="nutrition-bar-container">
+                                <div class="nutrition-bar" id="bar-mineral" style="width: 0%"></div>
+                            </div>
+                            <div class="nutrition-value"><span id="value-mineral">0</span>種</div>
+                        </div>
+                    </div>
+                    <div class="balance-score">
+                        <div class="balance-label">バランススコア</div>
+                        <div class="balance-value" id="balance-score">0</div>
+                        <div class="balance-stars" id="balance-stars">☆☆☆</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== フィードバックモーダル ===== -->
+        <div id="feedback-modal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-emoji" id="modal-emoji">🎉</div>
+                <div class="modal-title" id="modal-title">素晴らしい!</div>
+                <div class="modal-score" id="modal-score">0</div>
+                <div class="modal-stars" id="modal-stars">⭐⭐⭐</div>
+                <div class="modal-feedback" id="modal-feedback">フィードバック</div>
+                <div class="modal-analysis" id="modal-analysis"></div>
+                <div class="modal-buttons">
+                    <button class="modal-button" onclick="proceedToRecord()">💾 きろく画面へ</button>
+                    <button class="modal-button home-btn" onclick="goHome()">🏠 ホームに戻る</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ボタンエリア ===== -->
+        <div class="button-area">
+            <button class="btn btn-secondary" onclick="resetGame()">リセット</button>
+            <button class="btn btn-primary" onclick="completeGame()">完成！スコア送信</button>
+            <button class="btn btn-secondary" onclick="returnHome()" style="background: #fff3e0; border-color: #ffb74d; color: #ff9800;">🏠 ホームに戻る</button>
+        </div>
+
+        <!-- ===== フッター ===== -->
+        <div class="game-footer">
+            <p>💡 ヒント: バランスの良い栄養摂取には、たんぱく質・炭水化物・脂質のPFC比率が大切！</p>
+        </div>
+    </div>
+
+    <script>
+        // ===== 栄養データベース =====
+        const FOOD_NUTRITION = {
+            // 穀物類（主食）
+            rice: { name: 'ごはん', category: 'staple', protein: 2.6, carbs: 28, fat: 0.3, vitamin: 1, mineral: 2 },
+            bread: { name: 'パン', category: 'staple', protein: 8, carbs: 44, fat: 3.3, vitamin: 1, mineral: 1 },
+            pasta: { name: 'パスタ', category: 'staple', protein: 12.5, carbs: 70, fat: 1.1, vitamin: 1, mineral: 1 },
+            udon: { name: 'うどん', category: 'staple', protein: 8, carbs: 50, fat: 0.5, vitamin: 0, mineral: 1 },
+            ramen: { name: 'ラーメン', category: 'staple', protein: 12, carbs: 55, fat: 4, vitamin: 1, mineral: 1 },
+            oatmeal: { name: 'オートミール', category: 'staple', protein: 10, carbs: 54, fat: 5, vitamin: 1, mineral: 2 },
+
+            // タンパク質食（主菜）
+            egg: { name: '卵焼き', category: 'protein', protein: 12.3, carbs: 0.5, fat: 10, vitamin: 1, mineral: 1 },
+            fish: { name: '魚', category: 'protein', protein: 25, carbs: 0, fat: 10, vitamin: 1, mineral: 2 },
+            chicken: { name: '鶏肉', category: 'protein', protein: 25, carbs: 0, fat: 5, vitamin: 1, mineral: 1 },
+            beef: { name: '牛肉', category: 'protein', protein: 26, carbs: 0, fat: 15, vitamin: 1, mineral: 2 },
+            tofu: { name: '豆腐', category: 'protein', protein: 8, carbs: 1.5, fat: 4.8, vitamin: 1, mineral: 1 },
+            shrimp: { name: 'エビ', category: 'protein', protein: 20, carbs: 0, fat: 1, vitamin: 0, mineral: 1 },
+            bacon: { name: 'ベーコン', category: 'protein', protein: 12, carbs: 0, fat: 20, vitamin: 0, mineral: 1 },
+
+            // 野菜・野菜製品・他（副菜）
+            vegetable: { name: '野菜', category: 'side', protein: 2, carbs: 5, fat: 0.2, vitamin: 3, mineral: 2 },
+            salad: { name: 'サラダ', category: 'side', protein: 1.5, carbs: 3, fat: 0.3, vitamin: 2, mineral: 1 },
+            soup: { name: 'スープ', category: 'side', protein: 2, carbs: 4, fat: 1, vitamin: 1, mineral: 1 },
+            pickles: { name: 'ぬか漬け', category: 'side', protein: 1, carbs: 2, fat: 0.1, vitamin: 1, mineral: 1 },
+            yogurt: { name: 'ヨーグルト', category: 'side', protein: 3.6, carbs: 4.7, fat: 0.4, vitamin: 1, mineral: 1 },
+            milk: { name: '牛乳', category: 'side', protein: 3.6, carbs: 4.8, fat: 3.8, vitamin: 1, mineral: 2 },
+            fruit: { name: 'フルーツ', category: 'side', protein: 0.5, carbs: 12, fat: 0.3, vitamin: 2, mineral: 1 },
+            none: { name: 'なし', category: 'side', protein: 0, carbs: 0, fat: 0, vitamin: 0, mineral: 0 }
+        };
+
+        // ===== ゲーム状態 =====
+        const gameState = {
+            'day-1': {
+                breakfast: 'none',
+                'breakfast-2': 'none',
+                'breakfast-3': 'none',
+                'breakfast-4': 'none',
+                'breakfast-5': 'none',
+                'breakfast-6': 'none',
+                lunch: 'none',
+                'lunch-2': 'none',
+                'lunch-3': 'none',
+                dinner: 'none',
+                'dinner-2': 'none',
+                'dinner-3': 'none'
+            },
+            'day-2': {
+                breakfast: 'none',
+                'breakfast-2': 'none',
+                'breakfast-3': 'none',
+                'breakfast-4': 'none',
+                'breakfast-5': 'none',
+                'breakfast-6': 'none',
+                lunch: 'none',
+                'lunch-2': 'none',
+                'lunch-3': 'none',
+                dinner: 'none',
+                'dinner-2': 'none',
+                'dinner-3': 'none'
+            },
+            'day-3': {
+                breakfast: 'none',
+                'breakfast-2': 'none',
+                'breakfast-3': 'none',
+                'breakfast-4': 'none',
+                'breakfast-5': 'none',
+                'breakfast-6': 'none',
+                lunch: 'none',
+                'lunch-2': 'none',
+                'lunch-3': 'none',
+                dinner: 'none',
+                'dinner-2': 'none',
+                'dinner-3': 'none'
+            }
+        };
+
+        let gameStartTime = Date.now();
+        let timerInterval = null;
+
+        // ===== タイマー開始 =====
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - gameStartTime) / 1000);
+                document.getElementById('timer').textContent = elapsed;
+            }, 100);
+        }
+
+        // ===== 食材選択 =====
+        function selectFood(day, mealType, foodId, displayName) {
+            gameState[day][mealType] = foodId;
+
+            // ボタンの表示更新
+            const buttons = event.target.parentElement.querySelectorAll('.food-btn');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+
+            // 選択結果表示
+            updateMealDisplay(day, mealType);
+            updateNutritionDisplay();
+        }
+
+        function updateMealDisplay(day, mealType) {
+            // 朝食系mealTypeから表示要素IDを決定
+            const baseMealType = mealType.startsWith('breakfast') ? 'breakfast' : mealType;
+            const displayId = `${day}-${baseMealType}-display`;
+            const displayEl = document.getElementById(displayId);
+            if (!displayEl) return;
+
+            // 朝食の場合、複数の選択を統合して表示
+            if (baseMealType === 'breakfast') {
+                const state = gameState[day];
+                const foods = [];
+
+                // 朝食の全mealTypeから選ばれたものを集める
+                for (const mt of ['breakfast', 'breakfast-2', 'breakfast-3', 'breakfast-4', 'breakfast-5', 'breakfast-6']) {
+                    const fid = state[mt];
+                    if (fid !== 'none') {
+                        foods.push(FOOD_NUTRITION[fid]?.name);
+                    }
+                }
+
+                if (foods.length > 0) {
+                    displayEl.textContent = `✓ ${foods.join(', ')}`;
+                    displayEl.style.background = '#c8e6c9';
+                } else {
+                    displayEl.textContent = '未選択';
+                    displayEl.style.background = '#e8f5e9';
+                }
+                return;
+            }
+
+            // 昼食・夕食の処理（従来通り）
+            const foodId = gameState[day][mealType];
+            const food = FOOD_NUTRITION[foodId];
+            const displayId2 = `${day}-${mealType}-display`;
+            const displayEl2 = document.getElementById(displayId2);
+            if (!displayEl2) return;
+
+            if (food && foodId !== 'none') {
+                displayEl2.textContent = `✓ ${food.name}`;
+                displayEl2.style.background = '#c8e6c9';
+            } else if (foodId === 'none') {
+                displayEl2.textContent = '（選択なし）';
+                displayEl2.style.background = '#e8f5e9';
+            }
+        }
+
+        // ===== 栄養計算 =====
+        function calculateTotalNutrition() {
+            let totalProtein = 0, totalCarbs = 0, totalFat = 0, vitamins = new Set(), minerals = new Set();
+
+            Object.keys(gameState).forEach(day => {
+                Object.keys(gameState[day]).forEach(mealType => {
+                    const foodId = gameState[day][mealType];
+                    const food = FOOD_NUTRITION[foodId];
+                    if (food && foodId !== 'none') {
+                        totalProtein += food.protein;
+                        totalCarbs += food.carbs;
+                        totalFat += food.fat;
+                        if (food.vitamin > 0) vitamins.add(mealType);
+                        if (food.mineral > 0) minerals.add(mealType);
+                    }
+                });
+            });
+
+            return {
+                protein: Math.round(totalProtein * 10) / 10,
+                carbs: Math.round(totalCarbs * 10) / 10,
+                fat: Math.round(totalFat * 10) / 10,
+                vitaminCount: vitamins.size,
+                mineralCount: minerals.size,
+                vitamins: vitamins,
+                minerals: minerals
+            };
+        }
+
+        // ===== バランススコア計算 =====
+        // 計算式の説明：
+        // 1. PFC比率スコア（最大100点）: 理想値（P:15% F:25% C:60%）に対するズレが少ないほど高い
+        // 2. ビタミン・ミネラルボーナス: 摂取した食材の種類数 × 5点
+        // 3. 最終スコア: min(PFCスコア + ボーナス, 100) ← 最大100点でキャップ
+        // 例: PFCが完璧（100点）でボーナスが2種類（10点）→ 110点 → 最終的に100点
+        function calculateBalanceScore(nutrition) {
+            const totalNutrients = nutrition.protein + nutrition.carbs + nutrition.fat;
+            if (totalNutrients === 0) return 0;
+
+            // PFC比率の理想値: P 15%, F 25%, C 60%
+            const idealP = totalNutrients * 0.15;
+            const idealF = totalNutrients * 0.25;
+            const idealC = totalNutrients * 0.60;
+
+            // 各栄養素のズレを算出（理想値からどれだけ離れているか）
+            const pDiff = Math.abs(nutrition.protein - idealP) / idealP;
+            const fDiff = Math.abs(nutrition.fat - idealF) / idealF;
+            const cDiff = Math.abs(nutrition.carbs - idealC) / idealC;
+            const avgDiff = (pDiff + fDiff + cDiff) / 3;
+
+            // ズレが少ないほど高スコア（完璧なら100点）
+            let pfcScore = Math.max(0, 100 - avgDiff * 100);
+
+            // ビタミン・ミネラルボーナス（食材の多様性を評価）
+            let bonusScore = (nutrition.vitaminCount + nutrition.mineralCount) * 5;
+
+            let totalScore = Math.round(pfcScore + bonusScore);
+            return Math.min(totalScore, 100);  // 最大100点でキャップ
+        }
+
+        // ===== 栄養表示更新 =====
+        function updateNutritionDisplay() {
+            const nutrition = calculateTotalNutrition();
+            const score = calculateBalanceScore(nutrition);
+
+            // 栄養値表示
+            document.getElementById('value-protein').textContent = nutrition.protein;
+            document.getElementById('value-carbs').textContent = nutrition.carbs;
+            document.getElementById('value-fat').textContent = nutrition.fat;
+            document.getElementById('value-vitamin').textContent = nutrition.vitaminCount;
+            document.getElementById('value-mineral').textContent = nutrition.mineralCount;
+
+            // バー表示（最大値で正規化）
+            const maxValue = 300;
+            document.getElementById('bar-protein').style.width = (nutrition.protein / maxValue) * 100 + '%';
+            document.getElementById('bar-carbs').style.width = (nutrition.carbs / maxValue) * 100 + '%';
+            document.getElementById('bar-fat').style.width = (nutrition.fat / maxValue) * 100 + '%';
+            document.getElementById('bar-vitamin').style.width = (nutrition.vitaminCount / 10) * 100 + '%';
+            document.getElementById('bar-mineral').style.width = (nutrition.mineralCount / 10) * 100 + '%';
+
+            // スコア表示
+            document.getElementById('balance-score').textContent = score;
+            const stars = Math.ceil(score / 20);
+            document.getElementById('balance-stars').textContent = `${'⭐'.repeat(stars)}${Math.max(0, 5 - stars) > 0 ? '☆'.repeat(Math.max(0, 5 - stars)) : ''}`;
+        }
+
+        // ===== ゲーム完成 =====
+        function completeGame() {
+            clearInterval(timerInterval);
+            const nutrition = calculateTotalNutrition();
+            const score = calculateBalanceScore(nutrition);
+            const timeElapsed = Math.floor((Date.now() - gameStartTime) / 1000);
+
+            // フィードバック表示
+            showFeedback(score, nutrition, timeElapsed);
+
+            // ボタン無効化（再送信防止）
+            document.querySelector('.btn-primary').disabled = true;
+        }
+
+        // ===== フィードバック表示 =====
+        function showFeedback(score, nutrition, timeElapsed) {
+            const modal = document.getElementById('feedback-modal');
+            
+            // スコアレベルの決定
+            let emoji, title, feedback, analysisHtml;
+
+            if (score >= 85) {
+                emoji = '🌟';
+                title = 'すごい！';
+                feedback = 'からだに良い、素晴らしい献立だね！バランスの取れた栄養摂取で、元気いっぱい過ごせるよ！';
+            } else if (score >= 70) {
+                emoji = '😊';
+                title = '良いね！';
+                feedback = 'なかなか良い献立だね。もう少し、栄養のバランスを意識すると、さらに良くなるよ！';
+            } else if (score >= 50) {
+                emoji = '👍';
+                title = 'まあまあ';
+                feedback = '悪くないけど、もっと色々な食材を組み合わせてみよう。ビタミンしたり、ミネラルをもっと取るといいね！';
+            } else {
+                emoji = '💡';
+                title = 'もう一度挑戦！';
+                feedback = '献立を見直してみよう。主食・主菜・副菜をバランスよく選ぶのがコツだよ！';
+            }
+
+            // 栄養分析表示
+            const totalNutrients = nutrition.protein + nutrition.carbs + nutrition.fat;
+            const proteinRatio = totalNutrients > 0 ? ((nutrition.protein / totalNutrients) * 100).toFixed(0) : 0;
+            const carbsRatio = totalNutrients > 0 ? ((nutrition.carbs / totalNutrients) * 100).toFixed(0) : 0;
+            const fatRatio = totalNutrients > 0 ? ((nutrition.fat / totalNutrients) * 100).toFixed(0) : 0;
+
+            analysisHtml = `
+                <div class="modal-analysis-item">
+                    <span class="modal-analysis-label">たんぱく質:</span>
+                    <span>${nutrition.protein}g (${proteinRatio}%)</span>
+                </div>
+                <div class="modal-analysis-item">
+                    <span class="modal-analysis-label">炭水化物:</span>
+                    <span>${nutrition.carbs}g (${carbsRatio}%)</span>
+                </div>
+                <div class="modal-analysis-item">
+                    <span class="modal-analysis-label">脂質:</span>
+                    <span>${nutrition.fat}g (${fatRatio}%)</span>
+                </div>
+                <div class="modal-analysis-item">
+                    <span class="modal-analysis-label">ビタミン・ミネラル:</span>
+                    <span>${nutrition.vitaminCount + nutrition.mineralCount}種類</span>
+                </div>
+                <div class="modal-analysis-item">
+                    <span class="modal-analysis-label">所要時間:</span>
+                    <span>${timeElapsed}秒</span>
+                </div>
+            `;
+
+            // モーダル更新
+            document.getElementById('modal-emoji').textContent = emoji;
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-score').textContent = score + ' 点';
+            const stars = Math.ceil(score / 20);
+            document.getElementById('modal-stars').textContent = `${'⭐'.repeat(stars)}${Math.max(0, 5 - stars) > 0 ? '☆'.repeat(Math.max(0, 5 - stars)) : ''}`;
+            document.getElementById('modal-feedback').textContent = feedback;
+            document.getElementById('modal-analysis').innerHTML = analysisHtml;
+
+            // ボタンを再度有効化（前回の記録があればリセット）
+            const button = document.querySelector('.modal-button');
+            button.disabled = false;
+            button.style.opacity = '1';
+            button.style.cursor = 'pointer';
+
+            // 保存用スコア（タイム加算）
+            window.finalGameScore = Math.max(10, score - Math.floor(timeElapsed / 10));
+
+            modal.classList.add('active');
+        }
+
+        // ===== 記録画面に進む =====
+        function proceedToRecord() {
+            // ボタン無効化（重複送信防止）
+            const buttons = document.querySelectorAll('.modal-button');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+            });
+
+            // スコア送信
+            showSaveDialog('eiyou_balance', window.finalGameScore);
+
+            // 2秒後にモーダルを閉じる
+            setTimeout(() => {
+                document.getElementById('feedback-modal').classList.remove('active');
+            }, 2000);
+        }
+
+        // ===== ホームに戻る =====
+        function goHome() {
+            // ボタン無効化
+            const buttons = document.querySelectorAll('.modal-button');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+            });
+
+            // ホームページへリダイレクト
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 300);
+        }
+
+        // ===== ゲーム中にホームに戻る =====
+        function returnHome() {
+            if (confirm('ゲームを中断してホームに戻りますか？')) {
+                // タイマーをクリア
+                clearInterval(timerInterval);
+                
+                // ホームページへリダイレクト
+                window.location.href = 'index.html';
+            }
+        }
+
+        // ===== リセット =====
+        function resetGame() {
+            if (confirm('すべてのデータをリセットしますか？')) {
+                // モーダル非表示
+                document.getElementById('feedback-modal').classList.remove('active');
+
+                Object.keys(gameState).forEach(day => {
+                    Object.keys(gameState[day]).forEach(mealType => {
+                        gameState[day][mealType] = 'none';
+                    });
+                });
+
+                // UI更新
+                document.querySelectorAll('.food-btn').forEach(btn => btn.classList.remove('selected'));
+                document.querySelectorAll('.selected-food').forEach(el => {
+                    el.textContent = '未選択';
+                    el.style.background = '#f5f5f5';
+                });
+
+                // ボタン有効化
+                document.querySelector('.btn-primary').disabled = false;
+
+                updateNutritionDisplay();
+                gameStartTime = Date.now();
+                clearInterval(timerInterval);
+                startTimer();
+            }
+        }
+
+        // ===== タブ切り替え =====
+        function switchDay(day) {
+            // 全セクション非表示
+            document.querySelectorAll('.menu-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.menu-tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            // 選択セクション表示
+            const sectionId = day === 'summary' ? 'summary' : `day-${day}`;
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // ===== ゲーム開始 =====
+        window.addEventListener('DOMContentLoaded', () => {
+            startTimer();
+            updateNutritionDisplay();
+            document.querySelector('.btn-primary').disabled = false;
+        });
+    </script>
+</body>
+
+</html>
