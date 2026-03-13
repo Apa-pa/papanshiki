@@ -143,6 +143,86 @@
         .item-card.has-item {
             border-color: #ffca28;
             background: #fffde7;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .item-card.has-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 詳細画面（オーバーレイ） */
+        .detail-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            animation: fadeIn 0.3s;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .detail-content {
+            background: white;
+            color: #333;
+            width: 90%;
+            max-width: 450px;
+            border-radius: 30px;
+            padding: 30px;
+            position: relative;
+            text-align: center;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .detail-img-box {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 20px;
+            background: #fdf5e6;
+            border-radius: 20px;
+            padding: 15px;
+            border: 3px solid #ffcc80;
+        }
+
+        .detail-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .detail-name {
+            font-size: 26px;
+            font-weight: bold;
+            color: #7b1fa2;
+            margin-bottom: 5px;
+        }
+
+        .detail-rarity {
+            font-size: 18px;
+            color: #ffa000;
+            margin-bottom: 20px;
+        }
+
+        .detail-desc {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            text-align: left;
+            border-left: 5px solid #ba68c8;
         }
 
         /* 結果画面（オーバーレイ） */
@@ -333,17 +413,30 @@
         </div>
     </div>
 
+    <div id="detail-overlay" class="detail-overlay" onclick="closeDetail(event)">
+        <div class="detail-content" onclick="event.stopPropagation()">
+            <div class="detail-img-box">
+                <img id="det-img" class="detail-img" src="" alt="キャラ画像">
+            </div>
+            <div id="det-rarity" class="detail-rarity">★★★★★</div>
+            <div id="det-name" class="detail-name">キャラ名</div>
+            <div id="det-desc" class="detail-desc">
+                ここに説明文が入ります。
+            </div>
+            <button class="close-btn" style="background: #7b1fa2; color: white;" onclick="closeDetail()">とじる</button>
+        </div>
+    </div>
+
     <script>
-        // ガチャの中身リスト
         const gachaItems = [
-            { id: 'hi-an', name: 'ヒー＆アン', img: 'hi-an-192.webp', rarity: '★★★' },
-            { id: 'hi-an-s', name: '水彩ヒー＆アン', img: 'hi-an-suisai-192.webp', rarity: '★★★★★' }, // レア！
-            { id: 'pippi', name: 'くまのピッピ', img: 'pippi192.webp', rarity: '★★★' },
-            { id: 'an', name: 'ハリネズミのアン', img: 'an192.webp', rarity: '★★★★' },
-            { id: 'hi', name: 'エゾリスのヒー', img: 'hi-192.webp', rarity: '★★★★' },
-            { id: 'yuri', name: 'キツネのユーリ', img: 'yu-ri192.webp', rarity: '★★★★★' },
-            { id: 'kou', name: 'キツネのコウ', img: 'kou192.webp', rarity: '★★★★★' },
-            { id: 'calm', name: 'しらかばのハート', img: 'heart256.webp', rarity: '★★★★★' }
+            { id: 'hi-an', name: 'ヒー＆アン', img: 'hi-an-192.webp', rarity: '★★★', description: 'エゾリスのヒーとハリネズミのアン。森でであっていっしょにくらしているよ。' },
+            { id: 'hi-an-s', name: '水彩ヒー＆アン', img: 'hi-an-suisai-192.webp', rarity: '★★★★★', description: 'ふんわりやさしい水彩タッチのヒーとアン。とってもレアだよ！' },
+            { id: 'pippi', name: 'くまのピッピ', img: 'pippi192.webp', rarity: '★★★', description: 'くまのピッピはやさしくて植物がだいすき。植物を育てたりしているんだ。' },
+            { id: 'an', name: 'ハリネズミのアン', img: 'an192.webp', rarity: '★★★★', description: 'ハリネズミのおんなのこアン。アンはヒーちゃんよりもおねえさん。ヒーのことがだいすきでヒーをまもっている。' },
+            { id: 'hi', name: 'エゾリスのヒー', img: 'hi-192.webp', rarity: '★★★★', description: 'エゾリスのおんなのこヒー。すこしこわがりなところがあるおちゃめさん。アンのことがだいすき。' },
+            { id: 'yuri', name: 'キツネのユーリ', img: 'yu-ri192.webp', rarity: '★★★★★', description: 'キツネのおんなのこユーリ。コウのおねえさん。めんどうみがいい。' },
+            { id: 'kou', name: 'キツネのコウ', img: 'kou192.webp', rarity: '★★★★★', description: 'キツネのおとこのこコウ。ユーリとはきょうだいでコウがおとうと。かっぱつでユーリといつもじゃれあっている。' },
+            { id: 'calm', name: 'しらかばのハート', img: 'heart256.webp', rarity: '★★★★★', description: 'しらかばの木のハート。みんながよろこぶえがおがだいすき。おだやかなもりをみまもっている。' }
         ];
 
         const GACHA_COST = 50;
@@ -475,11 +568,29 @@
 
                 if (hasIt) {
                     div.innerHTML = `<img src="${item.img}">`;
+                    div.onclick = () => showDetail(item.id);
                 } else {
                     div.innerHTML = `<span class="unknown">?</span>`;
                 }
                 list.appendChild(div);
             });
+        }
+
+        // 詳細表示
+        function showDetail(itemId) {
+            const item = gachaItems.find(i => i.id === itemId);
+            if (!item) return;
+
+            document.getElementById('det-img').src = item.img;
+            document.getElementById('det-name').innerText = item.name;
+            document.getElementById('det-rarity').innerText = item.rarity;
+            document.getElementById('det-desc').innerText = item.description || "説明文がまだありません。";
+
+            document.getElementById('detail-overlay').style.display = 'flex';
+        }
+
+        function closeDetail(event) {
+            document.getElementById('detail-overlay').style.display = 'none';
         }
     </script>
 
