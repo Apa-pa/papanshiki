@@ -337,43 +337,14 @@
             if (roomId === 'none') {
                 roomBg.style.backgroundImage = 'none';
             } else {
-                roomBg.style.backgroundImage = `url('room/${roomId}.jpg')`;
+                // room_04, room_05 以降は webp, それ以前は jpg
+                const ext = (roomId === 'room_04' || roomId === 'room_05') ? 'webp' : 'jpg';
+                roomBg.style.backgroundImage = `url('room/${roomId}.${ext}')`;
             }
 
             // 家具
             const furniture = data.furniture || {};
             
-            // room_shop.htmlのFURNITUREデータを参照（本来は共通化すべきですが、今回は簡易的に現在のページで家具の詳細を特定するロジックを想定）
-            // ※本来は room_shop.html とデータを共有する必要がありますが、一旦ここでは「指定がなければ310」という処理を入れます
-            const applyFurnitureStyle = (el, itemId) => {
-                if (!itemId) {
-                    el.style.display = 'none';
-                    return;
-                }
-                
-                // room_shop.html で定義されている FURNITURE を取得（本来は global か import）
-                // 暫定的に room_shop.html からデータを取得する処理がないため、widthが記録されているか、デフォルトの310を適用
-                let itemWidth = 310;
-                
-                // ここで本来は商品データからwidthを探す
-                // 提示されたコード構造では FURNITURE は room_shop.html 内にあるため、
-                // room.html 側でもその設定を反映させる必要があります。
-                // ユーザーは room_shop.html に width を追加したので、それを反映させます。
-                
-                el.src = `room/${itemId}.webp`;
-                el.style.display = 'block';
-                
-                // ユーザーが room_shop.html に追加した width プロパティを反映させる仕組み
-                // 簡易的な実装として、特定のIDに対してサイズを適用するか、
-                // あるいは本来は localStorage 等に width 情報も保存するのが理想的です。
-                // 今回は room_shop.html の FURNITURE 配列をこちらでも定義するか、
-                // あるいは「特定のIDならこのサイズ」とする必要があります。
-                
-                // 【補足】本来は room_shop.html の FURNITURE を外部ファイルに切り出して
-                // 両方から include するのがベストですが、現状の構造を維持したまま
-                // 「データの読み取り」を強化します。
-            };
-
             // FURNITURE データをここでも定義（整合性を保つため）
             const FURNITURE_DATA = [
                 { id: 'table_01', width: 310 },
