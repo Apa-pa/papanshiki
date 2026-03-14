@@ -344,14 +344,16 @@
 
             // 家具
             const furniture = data.furniture || {};
-            
+
             // FURNITURE データをここでも定義（整合性を保つため）
             const FURNITURE_DATA = [
                 { id: 'table_01', width: 310 },
                 { id: 'table_02', width: 310 },
                 { id: 'table_03', width: 310 },
                 { id: 'table_04', width: 250 },
-                { id: 'table_05', width: 250 }
+                { id: 'table_05', width: 250 },
+                { id: 'an_doll', width: 150 },
+                { id: 'hi_doll', width: 150 }
             ];
 
             const getWidth = (id) => {
