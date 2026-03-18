@@ -1,40 +1,40 @@
 ﻿/* ranking.js - 記録・目標・ポイント・スタンプ・どんぐり・株 管理 (全国ランキングUI改善版) */
 
 const GAME_LIST = {
-    'make10': { name: 'あわせて10', type: 'time', unit: '秒' },
-    'math_add_easy': { name: 'たしざん(くりあがりなし)', type: 'time', unit: '秒' },
-    'math_add_hard': { name: 'たしざん(くりあがりあり)', type: 'time', unit: '秒' },
-    'math_sub_easy': { name: 'ひきざん(くりさがりなし)', type: 'time', unit: '秒' },
-    'math_sub_hard': { name: 'ひきざん(くりさがりあり)', type: 'time', unit: '秒' },
-    'math_multi': { name: 'かけざん九九', type: 'time', unit: '秒' },
-    'math_div': { name: 'わりざん(わりきれる)', type: 'time', unit: '秒' },
-    'rain_math': { name: 'あめふり算数', type: 'score', unit: '点' },
-    'clock_read': { name: 'とけいの読み方', type: 'time', unit: '秒' },
-    'triangle_angle': { name: '三角形の内角', type: 'time', unit: '秒' },
-    'katakana': { name: 'カタカナ変換', type: 'time', unit: '秒' },
-    'alphabet': { name: 'a-zアルファベット', type: 'time', unit: '秒' },
-    'romaji_hole': { name: 'ローマ字虫くい', type: 'time', unit: '秒' },
-    'rain_vowel': { name: 'あめふりローマ字(母)', type: 'score', unit: '点' },
-    'rain_consonant': { name: 'あめふりローマ字(子)', type: 'score', unit: '点' },
-    'touch25': { name: '1から25までタッチ', type: 'time', unit: '秒' },
-    'tsumitsumi': { name: '漢字つみつみ', type: 'score', unit: 'こ' },
-    'eawase': { name: 'えあわせ', type: 'time', unit: '秒' },
-    'shopping': { name: 'ぴったりしはらい', type: 'time', unit: '秒' },
-    'memory_route': { name: 'きおくルートたんけん', type: 'score', unit: '点' },
-    'shopping_mission_brain': { name: 'かいものミッション', type: 'time', unit: '秒' },
-    'attention_dual_task': { name: 'デュアルタスク', type: 'score', unit: '点' },
-    'water': { name: '水槽パズル', type: 'time', unit: '秒' },
-    'rail': { name: 'つなげて！トロッコ', type: 'time', unit: '秒' },
-    'daily_english': { name: 'まいにちエイゴ', type: 'time', unit: '秒' },
-    'frac_add_easy': { name: '分数たしざん(やさしい)', type: 'time', unit: '秒' },
-    'frac_add_hard': { name: '分数たしざん(むずかしい)', type: 'time', unit: '秒' },
-    'frac_sub_easy': { name: '分数ひきざん(やさしい)', type: 'time', unit: '秒' },
-    'frac_sub_hard': { name: '分数ひきざん(むずかしい)', type: 'time', unit: '秒' },
-    'frac_multi': { name: '分数かけ算', type: 'time', unit: '秒' },
-    'math_strike': { name: '計算ビリヤード', type: 'score', unit: '点' },
-    'enogu_creator': { name: 'えのぐクリエーター', type: 'score', unit: '点' },
-    'eigo_nakama': { name: 'えいごDEなかまさがし', type: 'score', unit: '点' },
-    'eiyou_balance': { name: '栄養バランスゲーム', type: 'score', unit: '点' }
+    'make10': { name: 'あわせて10', type: 'time', unit: '秒', url: 'make10.html' },
+    'math_add_easy': { name: 'たしざん(くりあがりなし)', type: 'time', unit: '秒', url: 'sansuu.html' },
+    'math_add_hard': { name: 'たしざん(くりあがりあり)', type: 'time', unit: '秒', url: 'sansuu.html' },
+    'math_sub_easy': { name: 'ひきざん(くりさがりなし)', type: 'time', unit: '秒', url: 'sansuu.html' },
+    'math_sub_hard': { name: 'ひきざん(くりさがりあり)', type: 'time', unit: '秒', url: 'sansuu.html' },
+    'math_multi': { name: 'かけざん九九', type: 'time', unit: '秒', url: 'sansuu.html' },
+    'math_div': { name: 'わりざん(わりきれる)', type: 'time', unit: '秒', url: 'sansuu.html' },
+    'rain_math': { name: 'あめふり算数', type: 'score', unit: '点', url: 'rain.html' },
+    'clock_read': { name: 'とけいの読み方', type: 'time', unit: '秒', url: 'whattime.html' },
+    'triangle_angle': { name: '三角形の内角', type: 'time', unit: '秒', url: 'triangle.html' },
+    'katakana': { name: 'カタカナ変換', type: 'time', unit: '秒', url: 'katakana.html' },
+    'alphabet': { name: 'a-zアルファベット', type: 'time', unit: '秒', url: 'alphabet.html' },
+    'romaji_hole': { name: 'ローマ字虫くい', type: 'time', unit: '秒', url: 'romaji_quiz.html' },
+    'rain_vowel': { name: 'あめふりローマ字(母)', type: 'score', unit: '点', url: 'rain_vowel.html' },
+    'rain_consonant': { name: 'あめふりローマ字(子)', type: 'score', unit: '点', url: 'rain_romaji.html' },
+    'touch25': { name: '1から25までタッチ', type: 'time', unit: '秒', url: 'numbers.html' },
+    'tsumitsumi': { name: '漢字つみつみ', type: 'score', unit: 'こ', url: 'tsumitsumi.html' },
+    'eawase': { name: 'えあわせ', type: 'time', unit: '秒', url: 'memory.html' },
+    'shopping': { name: 'ぴったりしはらい', type: 'time', unit: '秒', url: 'shopping.html' },
+    'memory_route': { name: 'きおくルートたんけん', type: 'score', unit: '点', url: 'memory_route.html' },
+    'shopping_mission_brain': { name: 'かいものミッション', type: 'time', unit: '秒', url: 'shopping_mission_brain.html' },
+    'attention_dual_task': { name: 'デュアルタスク', type: 'score', unit: '点', url: 'attention_dual_task.html' },
+    'water': { name: '水槽パズル', type: 'time', unit: '秒', url: 'water.html' },
+    'rail': { name: 'つなげて！トロッコ', type: 'time', unit: '秒', url: 'rail.html' },
+    'daily_english': { name: 'まいにちエイゴ', type: 'time', unit: '秒', url: 'daily_english.html' },
+    'frac_add_easy': { name: '分数たしざん(やさしい)', type: 'time', unit: '秒', url: 'sansuu_bunsu.html' },
+    'frac_add_hard': { name: '分数たしざん(むずかしい)', type: 'time', unit: '秒', url: 'sansuu_bunsu.html' },
+    'frac_sub_easy': { name: '分数ひきざん(やさしい)', type: 'time', unit: '秒', url: 'sansuu_bunsu.html' },
+    'frac_sub_hard': { name: '分数ひきざん(むずかしい)', type: 'time', unit: '秒', url: 'sansuu_bunsu.html' },
+    'frac_multi': { name: '分数かけ算', type: 'time', unit: '秒', url: 'sansuu_bunsu.html' },
+    'math_strike': { name: '計算ビリヤード', type: 'score', unit: '点', url: 'math_strike.html' },
+    'enogu_creator': { name: 'えのぐクリエーター', type: 'score', unit: '点', url: 'enogu_creator.html' },
+    'eigo_nakama': { name: 'えいごDEなかまさがし', type: 'score', unit: '点', url: 'eigo_nakama.html' },
+    'eiyou_balance': { name: '栄養バランスゲーム', type: 'score', unit: '点', url: 'eiyou_balance.html' }
 };
 
 // --- リアル株価連動設定 ---
@@ -238,12 +238,22 @@ function showDailyMissionWidget(elementId) {
     let htmlList = targets.map(id => {
         const info = GAME_LIST[id];
         const name = info ? info.name : id;
-        // ゲーム名のチップ
-        return `<span style="display:inline-block; background:white; color:#e65100; padding:2px 8px; margin-left:5px; border-radius:10px; font-size:12px; border:1px solid #ffcc80; white-space:nowrap;">${name}</span>`;
+        const url = info && info.url ? info.url : '#';
+        // ゲーム名のチップ (リンク化 + クラス付与)
+        return `<a href="${url}" class="daily-mission-chip" style="display:inline-block; background:white; color:#e65100; padding:2px 8px; margin-left:5px; border-radius:10px; font-size:12px; border:1px solid #ffcc80; white-space:nowrap; text-decoration:none; box-shadow:0 1px 2px rgba(0,0,0,0.1);">${name}</a>`;
     }).join('');
 
-    // 横並びコンテナ (flexbox)
+    // 横並びコンテナ (flexbox) + hover用のスタイルを追加
     const html = `
+        <style>
+            .daily-mission-chip {
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+            .daily-mission-chip:hover {
+                transform: scale(1.05) translateY(-1px);
+                box-shadow: 0 3px 6px rgba(0,0,0,0.15) !important;
+            }
+        </style>
         <div style="background:#fff3e0; padding:8px 5px; border-radius:8px; margin:5px auto; max-width:95%; overflow-x:auto; white-space:nowrap; -webkit-overflow-scrolling: touch; border:1px dashed #ffb74d;">
             <div style="display:inline-flex; align-items:center;">
                 <span style="font-weight:bold; color:#bf360c; font-size:12px; margin-right:5px;">📅 きょうのボーナスコンテンツ(ひとつ+${BONUS_PT}):</span>
