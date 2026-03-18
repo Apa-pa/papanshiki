@@ -127,8 +127,10 @@
         .menu-container {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 1px; /* ボックス間の線 */
-            background: #ffad60; /* 境界線の色 */
+            gap: 1px;
+            /* ボックス間の線 */
+            background: #ffad60;
+            /* 境界線の色 */
             border: 2px solid #ffad60;
             border-radius: 15px;
             overflow: hidden;
@@ -414,7 +416,8 @@
                 <button class="category-chip chip-brain" onclick="filterByCategory('title-brain', this)">脳トレ</button>
                 <button class="category-chip chip-art" onclick="filterByCategory('title-art', this)">アート</button>
                 <button class="category-chip chip-money" onclick="filterByCategory('title-money', this)">くらし</button>
-                <button class="category-chip chip-science" onclick="filterByCategory('title-science', this)">かがく</button>
+                <button class="category-chip chip-science"
+                    onclick="filterByCategory('title-science', this)">かがく</button>
             </div>
         </div>
 
@@ -441,12 +444,12 @@
                 cursor: pointer;
                 transition: all 0.2s;
                 -webkit-tap-highlight-color: transparent;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             }
 
             .category-chip:hover {
                 transform: translateY(-1px);
-                box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+                box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
             }
 
             /* 選択状態とカテゴリごとの色 */
@@ -454,15 +457,40 @@
                 color: white;
                 border-color: transparent;
             }
-            .category-chip.active.chip-math { background-color: #4dd0e1; box-shadow: 0 3px 6px rgba(77, 208, 225, 0.4); }
-            .category-chip.active.chip-jp { background-color: #ff8a65; box-shadow: 0 3px 6px rgba(255, 138, 101, 0.4); }
-            .category-chip.active.chip-brain { background-color: #aed581; box-shadow: 0 3px 6px rgba(174, 213, 129, 0.4); }
-            .category-chip.active.chip-art { background-color: #fc316b; box-shadow: 0 3px 6px rgba(252, 49, 107, 0.4); }
-            .category-chip.active.chip-money { background-color: #65ff6a; box-shadow: 0 3px 6px rgba(101, 255, 106, 0.4); }
-            .category-chip.active.chip-science { background-color: #4dd0e1; box-shadow: 0 3px 6px rgba(77, 208, 225, 0.4); }
+
+            .category-chip.active.chip-math {
+                background-color: #4dd0e1;
+                box-shadow: 0 3px 6px rgba(77, 208, 225, 0.4);
+            }
+
+            .category-chip.active.chip-jp {
+                background-color: #ff8a65;
+                box-shadow: 0 3px 6px rgba(255, 138, 101, 0.4);
+            }
+
+            .category-chip.active.chip-brain {
+                background-color: #aed581;
+                box-shadow: 0 3px 6px rgba(174, 213, 129, 0.4);
+            }
+
+            .category-chip.active.chip-art {
+                background-color: #fc316b;
+                box-shadow: 0 3px 6px rgba(252, 49, 107, 0.4);
+            }
+
+            .category-chip.active.chip-money {
+                background-color: #65ff6a;
+                box-shadow: 0 3px 6px rgba(101, 255, 106, 0.4);
+            }
+
+            .category-chip.active.chip-science {
+                background-color: #4dd0e1;
+                box-shadow: 0 3px 6px rgba(77, 208, 225, 0.4);
+            }
         </style>
 
-        <h2 class="section-title title-math"><img src="image/math_icon.webp" class="category-icon" alt=""> さんすう・けいさん</h2>
+        <h2 class="section-title title-math"><img src="image/math_icon.webp" class="category-icon" alt=""> さんすう・けいさん
+        </h2>
         <div class="grid">
 
 
@@ -573,7 +601,8 @@
 
         </div>
 
-        <h2 class="section-title title-jp"><img src="image/language_icon.webp" class="category-icon" alt=""> こくご・ことば</h2>
+        <h2 class="section-title title-jp"><img src="image/Language_icon.webp" class="category-icon" alt=""> こくご・ことば
+        </h2>
         <div class="grid">
             <a href="kanji_learn.html" class="card" data-age="6,7,8,9,10">
                 <span class="label label-quiz">がくしゅう</span>
@@ -681,7 +710,8 @@
             </a>
         </div>
 
-        <h2 class="section-title title-brain"><img src="image/puzzle_icon.webp" class="category-icon" alt=""> 脳トレ・パズル</h2>
+        <h2 class="section-title title-brain"><img src="image/puzzle_icon.webp" class="category-icon" alt=""> 脳トレ・パズル
+        </h2>
         <div class="grid">
             <a href="memory.html" class="card" data-age="4,5,6,7">
                 <span class="label label-quiz">ゲーム</span>
@@ -823,7 +853,8 @@
 
         </div>
 
-        <h2 class="section-title title-money"><img src="image/money_icon.webp" class="category-icon" alt=""> おかね・しごと・くらし</h2>
+        <h2 class="section-title title-money"><img src="image/money_icon.webp" class="category-icon" alt=""> おかね・しごと・くらし
+        </h2>
         <div class="grid">
 
             <a href="shopping.html" class="card" data-age="5,6,7,8,9">
@@ -882,7 +913,7 @@
                 <p>ヒーとアンと話し方や仲良しになる方法をまなぶ！</p>
             </a>
 
-             <a href="eiyou_balance.html" class="card" data-age="6,7,8,9,10,11,12">
+            <a href="eiyou_balance.html" class="card" data-age="6,7,8,9,10,11,12">
                 <span class="label label-quiz">たいけん</span>
                 <div class="icon">🥗</div>
                 <h3>栄養バランスゲーム</h3>
@@ -891,7 +922,8 @@
 
         </div>
 
-        <h2 class="section-title title-science"><img src="image/science_icon.webp" class="category-icon" alt=""> サイエンス</h2>
+        <h2 class="section-title title-science"><img src="image/science_icon.webp" class="category-icon" alt=""> サイエンス
+        </h2>
         <div class="grid">
             <a href="science.html" class="card" data-age="7,8,9,10,11,12">
                 <span class="label label-quiz">クイズ</span>
@@ -1171,7 +1203,7 @@
         // ▼▼▼ カテゴリチップ用フィルター機能 ▼▼▼
         function filterByCategory(targetClass, buttonEl) {
             const isAlreadyActive = buttonEl.classList.contains('active');
-            
+
             // 全チップのactiveクラスを解除
             document.querySelectorAll('.category-chip').forEach(btn => {
                 btn.classList.remove('active');
@@ -1190,12 +1222,12 @@
             } else {
                 // 新しいチップを選択した場合
                 buttonEl.classList.add('active');
-                
+
                 // 上部フィルター（年齢など）をリセットしておく（競合を防ぐため）
                 document.getElementById('age-filter').value = 'all';
                 document.getElementById('type-filter').value = 'all';
                 document.getElementById('keyword-search').value = '';
-                
+
                 // すべてのカードを一旦表示
                 document.querySelectorAll('.card').forEach(card => card.style.display = 'flex');
 
