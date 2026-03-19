@@ -130,6 +130,37 @@
             color: #555;
             margin-bottom: 10px;
         }
+
+        /* 完了画面のオーバーレイ設定 */
+        #result-area {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px 20px;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 85%;
+            z-index: 100;
+            border: 4px solid #4CAF50;
+            display: none;
+            box-sizing: border-box;
+        }
+
+        #result-area h2 {
+            color: #4CAF50;
+            margin-top: 0;
+            font-size: 22px;
+        }
+
+        .result-btn-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            margin-top: 15px;
+        }
     </style>
 </head>
 
@@ -167,16 +198,20 @@
 
             <br><a href="index.html" class="back-btn" id="giveup-btn">🏠 やめる</a>
 
-            <div id="result-area" style="display:none;">
-                <button id="reward-btn" onclick="getPoints()"
-                    style="padding:10px 20px; font-size:16px; background:#4CAF50; color:white; border:none; border-radius:30px; font-weight:bold; cursor:pointer; margin-top:10px; box-shadow: 0 4px #2e7d32;">
-                    🎁 50ポイントをもらう
-                </button>
-                <br>
-                <button id="restart-btn" class="start-btn" onclick="retryLevel()"
-                    style="display:none; margin-top:15px;">もういっかい</button>
-                <br><button class="back-btn" onclick="changeScreen('home-screen')"
-                    style="margin-top:20px; border:none; cursor:pointer;">🏠 レベルえらびにもどる</button>
+            <div id="result-area">
+                <h2 id="result-title">ぜんぶクリア！</h2>
+                <div class="result-btn-container">
+                    <button id="reward-btn" onclick="getPoints()"
+                        style="padding:12px 25px; font-size:18px; background:#4CAF50; color:white; border:none; border-radius:30px; font-weight:bold; cursor:pointer; box-shadow: 0 4px #2e7d32; width: 100%;">
+                        🎁 50ポイントをもらう
+                    </button>
+                    <button id="restart-btn" class="start-btn" onclick="retryLevel()"
+                        style="display:none; margin: 0; width: 100%;">もういっかい あそぶ</button>
+                    <button class="back-btn" onclick="changeScreen('home-screen')"
+                        style="margin: 0; border:none; cursor:pointer; width: 100%; font-size: 16px; padding: 10px;">🚩 レベルえらびにもどる</button>
+                    <a href="index.html" class="back-btn"
+                        style="margin: 0; width: 100%; box-sizing: border-box; text-align: center; background: #546e7a; font-size: 16px; padding: 10px;">🏠 ホームにもどる</a>
+                </div>
             </div>
         </div>
     </div>
@@ -321,6 +356,7 @@
 
             if (rewardBtn) {
                 rewardBtn.disabled = false;
+                rewardBtn.style.display = 'block';
                 rewardBtn.innerText = '🎁 50ポイントをもらう';
                 rewardBtn.style.background = '#4CAF50';
                 const restartBtn = document.getElementById('restart-btn');
@@ -784,7 +820,7 @@
             rewardBtn.style.background = '#ccc';
 
             const restartBtn = document.getElementById('restart-btn');
-            if (restartBtn) restartBtn.style.display = 'inline-block';
+            if (restartBtn) restartBtn.style.display = 'block';
 
             if (typeof showPointGetDialog === 'function') {
                 showPointGetDialog(50, 'dokidoki_obstacle');
