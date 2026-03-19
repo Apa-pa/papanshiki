@@ -207,6 +207,19 @@
             text-decoration: underline;
         }
 
+        /* どんぐりアイコンのサイズ調整 */
+        .donguri-icon {
+            width: 28px;
+            height: 28px;
+            vertical-align: middle;
+            object-fit: contain;
+            margin-top: -4px;
+        }
+        .input-label .donguri-icon {
+            width: 24px;
+            height: 24px;
+        }
+
     </style>
 </head>
 <body>
@@ -239,7 +252,7 @@
 
     <div class="rate-board">
         <div>げんざいのレート</div>
-        <div>1 🌰 = <span id="rate-display" class="rate-val">---</span> pt</div>
+        <div>1 <img src="image/donguri.webp" class="donguri-icon" alt="どんぐり"> = <span id="rate-display" class="rate-val">---</span> pt</div>
         
         <a href="ura/secret_home.html" class="secret-key">🗝️</a>
     </div>
@@ -252,7 +265,7 @@
         <div style="border-right: 2px solid #c5e1a5;"></div>
         <div class="wallet-item">
             <div class="w-label">もってるどんぐり</div>
-            <div class="w-val">🌰 <span id="my-donguri">0</span></div>
+            <div class="w-val"><img src="image/donguri.webp" class="donguri-icon" alt="どんぐり"> <span id="my-donguri">0</span></div>
         </div>
     </div>
 
@@ -267,7 +280,7 @@
         </div>
 
         <div class="input-group">
-            <span class="input-label">🌰</span>
+            <span class="input-label"><img src="image/donguri.webp" class="donguri-icon" alt="どんぐり"></span>
             <input type="number" id="input-donguri" placeholder="0" oninput="calcFromDonguri()">
             <span style="font-size:14px;">こ</span>
         </div>

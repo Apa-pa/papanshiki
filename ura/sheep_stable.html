@@ -99,6 +99,14 @@
             margin-bottom: 10px;
         }
 
+        .donguri-icon {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            object-fit: contain;
+            margin-top: -2px;
+        }
+
         .stat-container {
             text-align: left;
             margin: 10px 0;
@@ -285,7 +293,7 @@
 
     <div class="header">
         <div id="user-display" style="font-weight:bold;">名前: ---</div>
-        <div class="balance-box">🌰 <span id="balance">0</span></div>
+        <div class="balance-box"><img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり"> <span id="balance">0</span></div>
     </div>
 
     <div id="current-sheep-area" class="current-sheep-card">
@@ -296,7 +304,7 @@
             <p style="margin:0; font-size:11px; color:#ff9800; font-weight:bold;">🏆 契約中のアスリート</p>
             <input type="text" id="my-sheep-name" class="name-input" onchange="renameSheep()">
             <div id="remaining-races" class="contract-info">残り契約レース: -- 回</div>
-            <div id="record-info" class="contract-info" style="color:#4caf50;">📊 0戦 0勝 ｜ 累計賞金: 0 🌰</div>
+            <div id="record-info" class="contract-info" style="color:#4caf50;">📊 0戦 0勝 ｜ 累計賞金: 0 <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり"></div>
 
             <img src="hitsuji_shomen.webp" class="sheep-main-img" id="my-sheep-img">
 
@@ -323,15 +331,15 @@
                 </div>
 
                 <div class="train-area">
-                    <button class="train-btn btn-speed" onclick="trainSheep('speed')">💨 スピード<br>(1🌰)</button>
-                    <button class="train-btn btn-stamina" onclick="trainSheep('stamina')">🍖 スタミナ<br>(1🌰)</button>
-                    <button class="train-btn btn-tenacity" onclick="trainSheep('tenacity')">🔥 根性<br>(1🌰)</button>
+                    <button class="train-btn btn-speed" onclick="trainSheep('speed')">💨 スピード<br>(1<img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">)</button>
+                    <button class="train-btn btn-stamina" onclick="trainSheep('stamina')">🍖 スタミナ<br>(1<img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">)</button>
+                    <button class="train-btn btn-tenacity" onclick="trainSheep('tenacity')">🔥 根性<br>(1<img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">)</button>
                 </div>
             </div>
 
             <button class="contract-btn"
                 style="background:#4caf50; box-shadow:0 4px #2e7d32; width:100%; margin-bottom:10px;"
-                onclick="startLocalRace()">🏁 ローカルレースに出る (5🌰)</button>
+                onclick="startLocalRace()">🏁 ローカルレースに出る (5<img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">)</button>
             <button class="contract-btn" style="background:#2196f3; box-shadow:0 4px #1565c0; width:100%;"
                 onclick="entryNationalRace()">全国レースに出走登録！</button>
             <p id="entry-status" style="font-size:12px; color:#e91e63; margin-top:10px; font-weight:bold;"></p>
@@ -422,7 +430,7 @@
                 // 戦績表示
                 const rec = s.record || { totalRaces: 0, wins: 0, totalPrize: 0 };
                 document.getElementById('record-info').innerText =
-                    `📊 ${rec.totalRaces}戦 ${rec.wins}勝 ｜ 累計賞金: ${rec.totalPrize} 🌰`;
+                    `📊 ${rec.totalRaces}戦 ${rec.wins}勝 ｜ 累計賞金: ${rec.totalPrize} <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">`;
 
                 const isMax = (currentTotal >= s.totalMax);
                 document.querySelectorAll('.train-btn').forEach(btn => btn.disabled = isMax);
@@ -444,7 +452,7 @@
                 <div class="scout-info">
                     <span class="rank-label rank-${m.rank.toLowerCase()}">${m.rank}</span>
                     <div style="font-weight:bold; font-size:13px; color:#ffd700;">${m.name}</div>
-                    <div style="font-size:11px; color:#fff; font-weight:bold;">契約金: ${m.cost} 🌰</div>
+                    <div style="font-size:11px; color:#fff; font-weight:bold;">契約金: ${m.cost} <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり"></div>
                     <div style="font-size:9px; color:#ccc;">${m.desc}</div>
                 </div>
                 <button class="contract-btn" onclick="signContract('${m.rank}')">契約</button>
@@ -532,7 +540,7 @@
             const bal = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
             if (bal < 5) { alert("出走料が足りません！"); return; }
 
-            if (confirm(`出走料 5 🌰 を払って出場しますか？`)) {
+            if (confirm(`出走料 5 <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり"> を払って出場しますか？`)) {
                 if (typeof spendDonguri === 'function') spendDonguri(currentUserName, 5);
                 const allData = getUserData();
                 const s = allData[currentUserName];
@@ -555,7 +563,7 @@
             if (!publicName) return;
 
             // 現在は「無料」であることを明示
-            if (confirm(`「${s.name}」を全国レースに登録しますか？\n（今だけ出走料：無料！ 🌰）`)) {
+            if (confirm(`「${s.name}」を全国レースに登録しますか？\n（今だけ出走料：無料！ <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">）`)) {
 
                 // IDがない場合は発行
                 if (!s.uid) {
@@ -603,7 +611,7 @@
                         prize = (myRank === 1) ? 20 : (myRank === 2) ? 10 : 5;
                         if (typeof addDonguri === 'function') {
                             addDonguri(currentUserName, prize);
-                            alert(`🏆全国レース結果発表！\nあなたは第${myRank}位でした！\n賞金 ${prize} 🌰 を受け取りました！`);
+                            alert(`🏆全国レース結果発表！\nあなたは第${myRank}位でした！\n賞金 ${prize} <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり"> を受け取りました！`);
                         }
                     } else {
                         // 入賞圏外でも結果を通知

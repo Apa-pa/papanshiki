@@ -1,5 +1,5 @@
 // キャッシュの名前（更新時にバージョンを変えると新しいキャッシュが作られます）
-var CACHE_NAME = 'papanshiki-v7';
+var CACHE_NAME = 'papanshiki-v8';
 var urlsToCache = [
   // === トップページ ===
   './',
@@ -18,6 +18,13 @@ var urlsToCache = [
   './hi-kagaku-410.webp',
   './hari-an.webp',
   './hari-an-zannen.webp',
+  './image/kiroku_icon.webp',
+  './image/calender_icon.webp',
+  './image/gacha_icon.webp',
+  './image/bank_icon.webp',
+  './image/stock_icon.webp',
+  './image/myroom_icon.webp',
+  './image/donguri.webp',
 
   // === 算数・数学系 ===
   './unit_runner.html',

@@ -99,10 +99,18 @@
         /* カードデザイン */
         .card {
             background: white;
-            border-radius: 15px;
+            border-radius: 20px;
             padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            border: 2px solid #fff;
+            box-shadow: 0 8px 16px rgba(135, 206, 235, 0.2);
+            border: 2px solid #e1f5fe;
+        }
+
+        .donguri-icon {
+            width: 18px;
+            height: 18px;
+            vertical-align: middle;
+            object-fit: contain;
+            margin-top: -3px;
         }
 
         .card h2 {
@@ -252,15 +260,15 @@
                     </div>
                     <div class="summary-item">
                         <span class="summary-label">現在のどんぐり</span>
-                        <span class="summary-value" id="currentDonguri">0 🌰</span>
+                        <span class="summary-value" id="currentDonguri">0 <img src="image/donguri.webp" class="donguri-icon" alt="どんぐり"></span>
                     </div>
                     <div class="summary-item">
                         <span class="summary-label">保有株の評価額(pt)</span>
                         <span class="summary-value" id="stockValuePt">0 pt</span>
                     </div>
                     <div class="summary-item">
-                        <span class="summary-label">保有株の評価額(🌰)</span>
-                        <span class="summary-value" id="stockValueDg">0 🌰</span>
+                        <span class="summary-label">保有株の評価額(<img src="image/donguri.webp" class="donguri-icon" alt="どんぐり">)</span>
+                        <span class="summary-value" id="stockValueDg">0 <img src="image/donguri.webp" class="donguri-icon" alt="どんぐり"></span>
                     </div>
                     <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ccc; text-align: right;">
                         <span style="font-size: 0.8rem; color: #999;">※評価額は今の株価ですべて売った場合の金額</span>
@@ -382,7 +390,7 @@
             const dg = getUserDonguri(userName);
 
             document.getElementById('currentPoints').textContent = `${pts.toLocaleString()} pt`;
-            document.getElementById('currentDonguri').textContent = `${dg.toLocaleString()} 🌰`;
+            document.getElementById('currentDonguri').textContent = `${dg.toLocaleString()} <img src="image/donguri.webp" class="donguri-icon" alt="どんぐり">`;
 
             const stocks = getUserStocks(userName);
             const market = getMarketData();
@@ -405,7 +413,7 @@
             }
 
             document.getElementById('stockValuePt').textContent = `${stockValPt.toLocaleString()} pt`;
-            document.getElementById('stockValueDg').textContent = `${stockValDg.toLocaleString()} 🌰`;
+            document.getElementById('stockValueDg').textContent = `${stockValDg.toLocaleString()} <img src="image/donguri.webp" class="donguri-icon" alt="どんぐり">`;
         }
 
         function getPlayedCount(userName) {

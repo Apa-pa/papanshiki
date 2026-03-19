@@ -94,15 +94,23 @@
         }
         input:focus { outline: none; box-shadow: 0 0 10px #ffd700; }
 
-        /* バトルボタン */
         .battle-btn {
             width: 100%; padding: 20px; font-size: 28px; font-weight: bold;
             border: none; border-radius: 50px; cursor: pointer; color: #000;
             background: linear-gradient(to bottom, #ffd700, #ffa000);
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-            transition: 0.1s; text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            transition: 0.1s;
         }
-        .battle-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        .donguri-icon {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            object-fit: contain;
+            margin-top: -2px;
+        }
+
+        .battle-btn:active { transform: translateY(2px); box-shadow: none; }
         .battle-btn:disabled {
             background: #555; color: #888; cursor: not-allowed; box-shadow: none;
         }
@@ -132,7 +140,7 @@
     </select>
 
     <div style="text-align:right; font-size:16px; font-weight:bold;">
-        所持: 🌰 <span id="my-donguri" style="color:#ffd700;">0</span>
+        所持: <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり"> <span id="my-donguri" style="color:#ffd700;">0</span>
     </div>
 
     <div class="battle-area">
@@ -153,7 +161,7 @@
 
     <div class="bet-area">
         <span style="font-size:18px;">BET:</span>
-        <input type="number" id="bet-amount" placeholder="0"> 🌰
+        <input type="number" id="bet-amount" placeholder="0"> <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">
     </div>
 
     <button id="battle-btn" class="battle-btn" onclick="startBattle()" disabled>BATTLE !</button>
@@ -258,7 +266,7 @@
             // 勝ち
             const reward = bet * 2;
             addDonguri(userName, reward);
-            msg.innerHTML = `YOU WIN !! <br><span style="color:#00e676; font-size:16px;">(+${reward} 🌰)</span>`;
+            msg.innerHTML = `YOU WIN !! <br><span style="color:#00e676; font-size:16px;">(+${reward} <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">)</span>`;
             msg.style.color = "#ffd700";
             myCardEl.classList.add('winner');
             enCardEl.classList.add('loser');

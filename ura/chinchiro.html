@@ -145,6 +145,14 @@
         .action-btn:active { transform: translateY(2px); box-shadow: none; }
         .action-btn:disabled { background: #555; color: #888; cursor: not-allowed; box-shadow: none; }
 
+        .donguri-icon {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            object-fit: contain;
+            margin-top: -2px;
+        }
+
         .roll-count { font-size: 12px; color: #aaa; margin-top: 5px; }
 
         .back-link {
@@ -215,7 +223,7 @@
     <div class="status-bar">
         <div id="turn-badge" class="turn-indicator turn-wait">待機中</div>
         <div style="text-align:right;">
-            所持: 🌰 <span id="my-donguri" style="color:#ffd700; font-weight:bold;">0</span>
+            所持: <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり"> <span id="my-donguri" style="color:#ffd700; font-weight:bold;">0</span>
         </div>
     </div>
 
@@ -255,7 +263,7 @@
     <div class="control-area">
         <div id="bet-phase">
             <span style="font-size:18px;">BET:</span>
-            <input type="number" id="bet-amount" class="bet-input" placeholder="0"> 🌰
+            <input type="number" id="bet-amount" class="bet-input" placeholder="0"> <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">
             <button class="action-btn" onclick="startPlayerTurn()">勝負！</button>
         </div>
         
@@ -504,7 +512,7 @@
             const winAmount = currentBet * multiplier;
             addDonguri(userName, winAmount);
             
-            msg.innerHTML = `YOU WIN !! (+${winAmount}🌰)`;
+            msg.innerHTML = `YOU WIN !! (+${winAmount}<img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">)`;
             msg.style.color = "#00e676";
         } else if (myStr < enStr) {
             let multiplier = enemyHand.payout;
@@ -516,7 +524,7 @@
             
             spendDonguri(userName, actualLoss);
 
-            msg.innerHTML = `YOU LOSE ... (-${actualLoss}🌰)`;
+            msg.innerHTML = `YOU LOSE ... (-${actualLoss}<img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">)`;
             msg.style.color = "#ff1744";
         } else {
             msg.innerText = "DRAW (返金)";

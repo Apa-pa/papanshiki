@@ -97,6 +97,15 @@
             background: #e1f5fe;
         }
 
+        /* どんぐりアイコンのサイズ調整 */
+        .donguri-icon {
+            width: 28px;
+            height: 28px;
+            vertical-align: middle;
+            object-fit: contain;
+            margin-top: -4px;
+        }
+
         /* ポートフォリオダッシュボード */
         .portfolio-dash {
             background: linear-gradient(135deg, #1a237e, #283593);
@@ -355,7 +364,7 @@
             </div>
             <div id="desc-content" class="desc-content">
                 <br>
-                💰 ポイントや 🌰どんぐりを 使って、株や 商品を 買えるよ。<br>
+                💰 ポイントや <img src="image/donguri.webp" class="donguri-icon" alt="どんぐり">どんぐりを 使って、株や 商品を 買えるよ。<br>
                 📤 買った 株は、いつでも 売って ポイント・どんぐりに もどせるよ。<br>
                 🎁 株をもっていると、<b>毎日 配当（はいとう）</b>が もらえるよ！<br>
                 <br>
@@ -379,7 +388,7 @@
                 </div>
                 <div class="portfolio-total-item">
                     <div class="portfolio-total-label">総資産 (どんぐり)</div>
-                    <div>🌰 <span id="val-total-don" class="portfolio-total-val">0</span></div>
+                    <div><img src="image/donguri.webp" class="donguri-icon" alt="どんぐり"> <span id="val-total-don" class="portfolio-total-val">0</span></div>
                 </div>
             </div>
             <hr class="portfolio-divider">
@@ -396,7 +405,7 @@
                 </div>
                 <div class="portfolio-card">
                     <div class="portfolio-card-label">手持ちどんぐり</div>
-                    <div>🌰 <span id="my-don" class="portfolio-card-val">0</span></div>
+                    <div><img src="image/donguri.webp" class="donguri-icon" alt="どんぐり"> <span id="my-don" class="portfolio-card-val">0</span></div>
                 </div>
                 <div class="portfolio-card">
                     <div class="portfolio-card-label">株評価額 (どんぐり)</div>
@@ -520,7 +529,7 @@
                 if (diff > 0) { colorClass = 'up'; sign = '+'; }
                 else if (diff < 0) { colorClass = 'down'; sign = ''; }
 
-                const unit = info.currency === 'point' ? 'pt' : '🌰';
+                const unit = info.currency === 'point' ? 'pt' : '<img src="image/donguri.webp" class="donguri-icon" alt="どんぐり">';
 
                 const html = `
                 <div class="stock-card ${colorClass}">
@@ -554,7 +563,7 @@
                 const market = getMarketData();
                 const price = market.prices[stockId];
                 const info = STOCK_MASTER[stockId];
-                const unit = info.currency === 'point' ? 'pt' : '🌰';
+                const unit = info.currency === 'point' ? 'pt' : '<img src="image/donguri.webp" class="donguri-icon" alt="どんぐり">';
 
                 if (confirm(`${info.name} を ${price}${unit} で 1株 買いますか？`)) {
                     const success = buyStock(userName, stockId, amount);
