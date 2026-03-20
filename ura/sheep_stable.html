@@ -430,7 +430,7 @@
                 // 戦績表示
                 const rec = s.record || { totalRaces: 0, wins: 0, totalPrize: 0 };
                 document.getElementById('record-info').innerText =
-                    `📊 ${rec.totalRaces}戦 ${rec.wins}勝 ｜ 累計賞金: ${rec.totalPrize} <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">`;
+                    `📊 ${rec.totalRaces}戦 ${rec.wins}勝 ｜ 累計賞金: ${rec.totalPrize} 🌰`;
 
                 const isMax = (currentTotal >= s.totalMax);
                 document.querySelectorAll('.train-btn').forEach(btn => btn.disabled = isMax);
@@ -540,7 +540,7 @@
             const bal = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
             if (bal < 5) { alert("出走料が足りません！"); return; }
 
-            if (confirm(`出走料 5 <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり"> を払って出場しますか？`)) {
+            if (confirm(`出走料 5 🌰 を払って出場しますか？`)) {
                 if (typeof spendDonguri === 'function') spendDonguri(currentUserName, 5);
                 const allData = getUserData();
                 const s = allData[currentUserName];
@@ -563,7 +563,7 @@
             if (!publicName) return;
 
             // 現在は「無料」であることを明示
-            if (confirm(`「${s.name}」を全国レースに登録しますか？\n（今だけ出走料：無料！ <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">）`)) {
+            if (confirm(`「${s.name}」を全国レースに登録しますか？\n（今だけ出走料：無料！ 🌰）`)) {
 
                 // IDがない場合は発行
                 if (!s.uid) {
@@ -611,7 +611,7 @@
                         prize = (myRank === 1) ? 20 : (myRank === 2) ? 10 : 5;
                         if (typeof addDonguri === 'function') {
                             addDonguri(currentUserName, prize);
-                            alert(`🏆全国レース結果発表！\nあなたは第${myRank}位でした！\n賞金 ${prize} <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり"> を受け取りました！`);
+                            alert(`🏆全国レース結果発表！\nあなたは第${myRank}位でした！\n賞金 ${prize} 🌰 を受け取りました！`);
                         }
                     } else {
                         // 入賞圏外でも結果を通知
