@@ -36,7 +36,7 @@ const GRADE1_KANJI = [
     { kanji: "下", readings: ["した", "カ"], meaning: "ひくいほう", strokes: 3, example: "下 をむく", hint: "よこぼうの した にたてぼう", example_reading: ["した"] },
     { kanji: "左", readings: ["ひだり", "サ"], meaning: "ひだりがわ", strokes: 5, example: "左 にまがる", hint: "ナ と エ のくみあわせ", example_reading: ["ひだり"] },
     { kanji: "右", readings: ["みぎ", "ウ"], meaning: "みぎがわ", strokes: 5, example: "右 にまがる", hint: "ナ と 口 のくみあわせ", example_reading: ["みぎ"] },
-    { kanji: "中", readings: ["なか", "チュウ"], meaning: "まんなか", strokes: 4, example: "まんなか にたつ", hint: "口 の まんなか にぼう", example_reading: ["なか"] },
+    { kanji: "中", readings: ["なか", "チュウ"], meaning: "まんなか", strokes: 4, example: "まん中 にたつ", hint: "口 の まんなか にぼう", example_reading: ["なか"] },
     { kanji: "大", readings: ["おお(きい)", "ダイ"], meaning: "おおきい", strokes: 3, example: "大きい いぬ", hint: "ひと がてをひろげた かたち", example_reading: ["おお"] },
     { kanji: "小", readings: ["ちい(さい)", "ショウ"], meaning: "ちいさい", strokes: 3, example: "小さい ねこ", hint: "ハ の あいだに たてぼう", example_reading: ["ちい"] },
 
