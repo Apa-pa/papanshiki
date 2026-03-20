@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>かんじ かきとりプリント</title>
+    <!-- 漢字データの読み込み -->
+    <script src="kanji/grade1.js"></script>
+    <script src="kanji/grade2.js"></script>
+    <script src="kanji/grade3.js"></script>
+    <script src="kanji/grade4.js"></script>
+    <script src="kanji/grade5.js"></script>
+    <script src="kanji/grade6.js"></script>
+    <style>
+        /* --- デザイン設定 --- */
+        @font-face {
+            font-family: "UD Digital Kyokasho-tai-R";
+            src: local("UD Digital Kyokasho-tai-R"), local("UDDigitalKyokasho-tai-R");
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Helvetica Neue", Arial, "Meiryo", sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        /* 操作パネル */
+        .controls {
+            background-color: #fff;
+            padding: 20px;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            box-shadow: 0 4px rgba(0,0,0,0.2);
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px rgba(0,0,0,0.2);
+        }
+
+        .btn-orange { background-color: #ff9800; color: white; }
+        .btn-green { background-color: #4caf50; color: white; }
+        .btn-blue { background-color: #2196f3; color: white; }
+        .btn-gray { background-color: #9e9e9e; color: white; }
+
+        select {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: 2px solid #ff9800;
+            font-family: inherit;
+        }
+
+        /* 印刷用紙エリア */
+        .sheet {
+            background-color: white;
+            width: 297mm;
+            height: 210mm;
+            margin: 20px auto;
+            padding: 15mm;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column; /* 上段と下段を分ける */
+            position: relative;
+        }
+
+        .sheet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            height: 40px;
+        }
+
+        .sheet-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .name-area {
+            font-size: 18px;
+            border-bottom: 1px solid #333;
+            width: 250px;
+            text-align: right;
+            padding-bottom: 2px;
+        }
+
+        /* 縦書きの段組み */
+        .tier-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding-right: 20px; /* 右端のフリガナが見切れないように余白を追加 */
+        }
+
+        .tier {
+            flex: 1;
+            writing-mode: vertical-rl; /* 縦書き、右から左へ */
+            padding: 10px 0;
+            border-bottom: 1px dashed #ccc;
+            box-sizing: border-box;
+            text-align: left; /* 縦書き時の開始位置 */
+        }
+
+        .tier:last-child {
+            border-bottom: none;
+        }
+
+        /* 各問題のスタイル */
+        .problem {
+            display: inline-block; /* 縦書きの中で横（次の列）に並ぶ */
+            height: 100%;
+            margin-left: 20px; /* 12問入るように間隔を狭める */
+            margin-right: 15px; /* フリガナ用のスペースを確保 */
+            vertical-align: top;
+            font-size: 22px; /* 12問入るように少し小さく */
+            line-height: 1.4;
+            position: relative;
+        }
+
+        .problem-text {
+            display: inline;
+        }
+
+        /* 漢字の箱と読み */
+        .kanji-box-wrapper {
+            display: inline-block;
+            position: relative;
+            margin: 8px 0;
+            vertical-align: middle;
+        }
+
+        .kanji-box {
+            display: inline-block;
+            width: 45px; /* 箱も少し小さく */
+            height: 45px;
+            border: 1px solid #000;
+            position: relative;
+            background: #fff;
+            vertical-align: middle;
+        }
+
+        /* 十字の点線 */
+        .kanji-box::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            border-top: 1px dotted #aaa;
+        }
+        .kanji-box::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 50%;
+            height: 100%;
+            border-left: 1px dotted #aaa;
+        }
+
+        .reading-hint {
+            position: absolute;
+            top: 50%;
+            right: -1.6em; /* 箱の右側に配置 */
+            transform: translateY(-50%);
+            font-size: 13px; /* 少し小さく */
+            color: #444;
+            white-space: nowrap;
+            letter-spacing: 1px;
+        }
+
+        /* キャラクター画像（左下の空きスペース） */
+        .char-images {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .char-img {
+            width: 80px;
+            height: auto;
+            opacity: 0.9;
+        }
+
+        /* 印刷時 */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background-color: white;
+            }
+            .sheet {
+                margin: 0;
+                box-shadow: none;
+                width: 100%;
+                height: 100vh;
+                border: none;
+                padding: 10mm;
+            }
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls no-print">
+        <select id="grade-select" onchange="changeGrade()">
+            <option value="1">1ねんせい</option>
+            <option value="2">2ねんせい</option>
+            <option value="3">3ねんせい</option>
+            <option value="4">4ねんせい</option>
+            <option value="5">5ねんせい</option>
+            <option value="6">6ねんせい</option>
+        </select>
+        <button class="btn btn-orange" onclick="refreshProblems()">🎲 もんだいを かえる</button>
+        <button class="btn btn-green" onclick="window.print()">🖨️ いんさつ する</button>
+        <a href="index.html" class="btn btn-gray">🏠 もどる</a>
+        <p style="font-size: 12px; color: #666; width: 100%; text-align: center; margin-top: 5px;">
+            ※読み方は例文に合わせて自動で選ばれますが、まちがっている場合は「もんだいを かえる」を押してください。
+        </p>
+    </div>
+
+    <div class="sheet">
+        <header class="sheet-header">
+            <div class="sheet-title" id="display-title">かんじ かきとり (1ねんせい)</div>
+            <div class="name-area">なまえ：</div>
+        </header>
+
+        <div class="tier-container">
+            <div class="tier" id="top-tier"></div>
+            <div class="tier" id="bottom-tier"></div>
+        </div>
+
+        <div class="char-images">
+            <img src="hi-an-192.webp" class="char-img" alt="ヒーとアン">
+            <img src="pippi192.webp" class="char-img" alt="ピッピ">
+        </div>
+    </div>
+
+    <script>
+        let currentGrade = 1;
+
+        function getGradeData(grade) {
+            switch(parseInt(grade)) {
+                case 1: return GRADE1_KANJI;
+                case 2: return GRADE2_KANJI;
+                case 3: return GRADE3_KANJI;
+                case 4: return GRADE4_KANJI;
+                case 5: return GRADE5_KANJI;
+                case 6: return GRADE6_KANJI;
+                default: return GRADE1_KANJI;
+            }
+        }
+
+        function changeGrade() {
+            currentGrade = document.getElementById('grade-select').value;
+            const titles = ["", "1ねんせい", "2ねんせい", "3ねんせい", "4ねんせい", "5ねんせい", "6ねんせい"];
+            document.getElementById('display-title').innerText = "かんじ かきとり (" + titles[currentGrade] + ")";
+            refreshProblems();
+        }
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // 読み方を判定する
+        function selectBestReading(p) {
+            // 1. 新しく追加された example_reading を最優先で使用
+            if (p.example_reading && p.example_reading.length > 0) {
+                return p.example_reading[0];
+            }
+
+            const kanji = p.kanji;
+            const readings = p.readings;
+            const example = p.example || "";
+            if (!readings || readings.length === 0) return "";
+
+            // --- 以下、データがない場合のバックアップ（旧ロジック） ---
+            
+            // 曜日などの例外処理
+            const exceptions = [
+                { k: "日", ex: "ようび", r: "にち" },
+                { k: "月", ex: "ようび", r: "げつ" },
+                { k: "火", ex: "ようび", r: "か" },
+                { k: "水", ex: "ようび", r: "すい" },
+                { k: "木", ex: "ようび", r: "もく" },
+                { k: "金", ex: "ようび", r: "きん" },
+                { k: "土", ex: "ようび", r: "ど" },
+                { k: "一", ex: "一年生", r: "いち" },
+                { k: "百", ex: "百てん", r: "ひゃく" },
+                { k: "千", ex: "千円", r: "せん" }
+            ];
+            
+            for (let exc of exceptions) {
+                if (kanji === exc.k && example.includes(exc.ex)) {
+                    return exc.r;
+                }
+            }
+
+            // スペースを除去して次の文字を判定しやすくする
+            const exampleNoSpace = example.replace(/\s+/g, "");
+            const kanjiIdx = exampleNoSpace.indexOf(kanji);
+            
+            if (kanjiIdx !== -1 && kanjiIdx + 1 < exampleNoSpace.length) {
+                const nextChar = exampleNoSpace[kanjiIdx + 1];
+                
+                // 送り仮名マッチング
+                for (let r of readings) {
+                    const match = r.match(/\((.*)\)/);
+                    if (match && match[1].length > 0 && nextChar === match[1][0]) {
+                        return r.replace(/\(.*\)/, "");
+                    }
+                }
+            }
+
+            // マッチしない場合は最初の読み（カッコを除去してひらがな化）
+            let res = readings[0].split('(')[0];
+            // カタカナをひらがなに変える
+            return res.replace(/[\u30A1-\u30F6]/g, function(s) {
+                return String.fromCharCode(s.charCodeAt(0) - 0x60);
+            });
+        }
+
+        function refreshProblems() {
+            const data = getGradeData(currentGrade);
+            const shuffled = shuffleArray(data);
+            
+            // 1段に12問（上下で24問）
+            const topProblems = shuffled.slice(0, 12);
+            const bottomProblems = shuffled.slice(12, 24);
+
+            renderTier('top-tier', topProblems);
+            renderTier('bottom-tier', bottomProblems);
+        }
+
+        function renderTier(elementId, problems) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = "";
+
+            problems.forEach((p) => {
+                const div = document.createElement('div');
+                div.className = 'problem';
+                
+                const example = p.example || "";
+                const kanji = p.kanji;
+                const reading = selectBestReading(p);
+
+                if (example.includes(kanji)) {
+                    const parts = example.split(kanji);
+                    const before = parts[0];
+                    const after = parts.slice(1).join(kanji);
+
+                    div.innerHTML = `
+                        <div class="problem-text">
+                            <span>${before}</span>
+                            <div class="kanji-box-wrapper">
+                                <span class="reading-hint">${reading}</span>
+                                <div class="kanji-box"></div>
+                            </div>
+                            <span>${after}</span>
+                        </div>
+                    `;
+                } else {
+                    div.innerHTML = `
+                        <div class="problem-text">
+                            <div class="kanji-box-wrapper">
+                                <span class="reading-hint">${reading}</span>
+                                <div class="kanji-box"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+                container.appendChild(div);
+            });
+        }
+
+        window.onload = refreshProblems;
+    </script>
+</body>
+</html>

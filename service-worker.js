@@ -1,5 +1,5 @@
 // キャッシュの名前（更新時にバージョンを変えると新しいキャッシュが作られます）
-var CACHE_NAME = 'papanshiki-v8';
+var CACHE_NAME = 'papanshiki-v10';
 var urlsToCache = [
   // === トップページ ===
   './',
@@ -64,6 +64,10 @@ var urlsToCache = [
   './kanji_learn.html',
   './kanji/grade1.js',
   './kanji/grade2.js',
+  './kanji/grade3.js',
+  './kanji/grade4.js',
+  './kanji/grade5.js',
+  './kanji/grade6.js',
   './bunpo_learn.html',
 
   // === 分数学習・小数学習・割り算・割合 ===
@@ -131,6 +135,7 @@ var urlsToCache = [
   // === プリント ===
   './print_alphabet.html',
   './print_kana.html',
+  './print_kanji.html',
 
   // === その他ページ ===
   './programming.html',
