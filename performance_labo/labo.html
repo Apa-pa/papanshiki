@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>パフォーマンスラボ｜ぱぱん式 まなびポータル</title>
+    <meta name="description" content="5つのミニゲームで、あなたのかくれた能力をはかろう！スターフラッシュ・ものさしキャッチ・ストループ・アニマル追跡・シャッターチャンス">
+
+    <!-- ぱぱん式 共通スクリプト -->
+    <script src="../ranking.js"></script>
+
+    <!-- Chart.js (レーダーチャート用) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- 共通スタイル -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- ===== メインコンテナ ===== -->
+    <div id="labo-container">
+
+        <!-- ヘッダー -->
+        <div id="labo-header">
+            <span style="font-size:1.8rem;">🔬</span>
+            <div>
+                <div class="header-title">パフォーマンスラボ</div>
+                <div class="header-sub">のうりょくそくていプログラム</div>
+            </div>
+        </div>
+
+        <!-- プログレスバー -->
+        <div id="progress-bar-wrap">
+            <div class="step-labels">
+                <span class="step-label" id="step-label-0">⭐</span>
+                <span class="step-label" id="step-label-1">📏</span>
+                <span class="step-label" id="step-label-2">🎨</span>
+                <span class="step-label" id="step-label-3">🐿️</span>
+                <span class="step-label" id="step-label-4">📷</span>
+                <span class="step-label" id="step-label-5">📊</span>
+            </div>
+            <div id="progress-bar-bg">
+                <div id="progress-bar-fill"></div>
+            </div>
+        </div>
+
+        <!-- フィードバックオーバーレイ（全シーン共通） -->
+        <div id="feedback-overlay"></div>
+
+        <!-- ===== タイトルシーン ===== -->
+        <div class="scene active" id="title-scene">
+
+            <!-- キャラクターナビ -->
+            <div class="character-nav">
+                <img src="../hi-192.webp" alt="エゾリスのヒー" onerror="this.style.display='none'">
+                <div class="speech-bubble">
+                    5つのゲームで、きみのかくれたのうりょくをはかるよ！<br>
+                    <ruby>全力<rt>ぜんりょく</rt></ruby>でどんどんいこう！
+                </div>
+            </div>
+
+            <div class="scene-title">🔬 パフォーマンスラボ</div>
+            <div class="scene-title-sub">のうりょくそくていプログラム</div>
+
+            <!-- ゲーム一覧プレビュー -->
+            <div class="game-list" id="game-list-preview">
+                <!-- main.js が動的に生成 -->
+            </div>
+
+            <button class="btn btn-accent" id="start-btn">
+                ▶ そくていスタート！
+            </button>
+            <a href="../index.html" class="home-link">🏠 ホームへもどる</a>
+        </div>
+
+        <!-- ===== カウントダウンシーン ===== -->
+        <div class="scene" id="countdown-scene">
+            <div style="text-align:center; padding-top:20px;">
+                <div style="font-size:1rem; color:#777; margin-bottom:10px;">つぎのゲームがはじまるよ！</div>
+                <div id="countdown-display" style="
+                    font-size: 6rem;
+                    font-weight: bold;
+                    color: #5c6bc0;
+                    animation: popIn 0.3s ease;
+                ">3</div>
+            </div>
+        </div>
+
+        <!-- ===== ゲームプレイシーン ===== -->
+        <div class="scene" id="game-scene">
+
+            <!-- ゲームバナー -->
+            <div class="game-banner" id="game-banner">
+                <div class="game-banner-icon">⭐</div>
+                <div class="game-banner-text">
+                    <div class="game-banner-name">スターフラッシュ</div>
+                    <div class="game-banner-ability">はっけんスピードをそくてい</div>
+                </div>
+            </div>
+
+            <!-- ゲームコンテンツエリア -->
+            <div id="game-area">
+                <!-- 各ゲームJSが動的にHTMLを注入 -->
+            </div>
+        </div>
+
+        <!-- ===== リザルトシーン ===== -->
+        <div class="scene" id="result-scene">
+
+            <!-- キャラクターナビ -->
+            <div class="character-nav">
+                <img src="../hari-an.webp" alt="ハリネズミのアン" onerror="this.style.display='none'">
+                <div class="speech-bubble" id="result-summary">
+                    けっかはっぴょう！
+                </div>
+            </div>
+
+            <div class="scene-title" style="margin-top:4px;">🏆 のうりょく<ruby>測定<rt>そくてい</rt></ruby><ruby>結果<rt>けっか</rt></ruby></div>
+
+            <!-- レーダーチャート -->
+            <div class="radar-wrap">
+                <canvas id="radar-chart"></canvas>
+            </div>
+
+            <!-- スコア一覧 -->
+            <div class="result-ability-list">
+                <div class="result-ability-item">
+                    <div class="result-ability-label">⭐ はっけんスピード</div>
+                    <div class="result-ability-score" id="result-score-starflash">--</div>
+                </div>
+                <div class="result-ability-item">
+                    <div class="result-ability-label">📏 はんのうスピード</div>
+                    <div class="result-ability-score" id="result-score-ruler">--</div>
+                </div>
+                <div class="result-ability-item">
+                    <div class="result-ability-label">🎨 はんだんりょく</div>
+                    <div class="result-ability-score" id="result-score-stroop">--</div>
+                </div>
+                <div class="result-ability-item">
+                    <div class="result-ability-label">🐿️ きおく・しゅうちゅう</div>
+                    <div class="result-ability-score" id="result-score-animalMot">--</div>
+                </div>
+                <div class="result-ability-item" style="grid-column: span 2;">
+                    <div class="result-ability-label">📷 タイミング・どうたいしりょく</div>
+                    <div class="result-ability-score" id="result-score-timing">--</div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="location.reload()">
+                🔄 もういちどそくてい
+            </button>
+            <a href="../index.html" class="home-link">🏠 ホームへもどる</a>
+        </div>
+        <!-- /result-scene -->
+
+    </div><!-- /labo-container -->
+
+    <!-- ===== ゲームJSの読み込み ===== -->
+    <script src="game1_starflash.js"></script>
+    <script src="game2_ruler.js"></script>
+    <script src="game3_stroop.js"></script>
+    <script src="game4_animal_mot.js"></script>
+    <script src="game5_timing.js"></script>
+    <script src="result.js"></script>
+    <script src="main.js"></script>
+
+</body>
+
+</html>

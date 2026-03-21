@@ -261,6 +261,10 @@
             border-color: #ff8a65;
         }
 
+        .title-labo {
+            border-color: #ce93d8;
+        }
+
         .title-brain {
             border-color: #aed581;
         }
@@ -415,6 +419,7 @@
 
             <!-- ▼ カテゴリフィルターチップ ▼ -->
             <div class="category-chip-container">
+                <button class="category-chip chip-labo" onclick="filterByCategory('title-labo', this)">ラボ</button>
                 <button class="category-chip chip-math" onclick="filterByCategory('title-math', this)">さんすう</button>
                 <button class="category-chip chip-jp" onclick="filterByCategory('title-jp', this)">ことば</button>
                 <button class="category-chip chip-brain" onclick="filterByCategory('title-brain', this)">脳トレ</button>
@@ -460,6 +465,11 @@
             .category-chip.active {
                 color: white;
                 border-color: transparent;
+            }
+
+            .category-chip.active.chip-labo {
+                background-color: #ab47bc;
+                box-shadow: 0 3px 6px rgba(171, 71, 188, 0.4);
             }
 
             .category-chip.active.chip-math {
@@ -711,6 +721,16 @@
                 <div class="icon">🗣️</div>
                 <h3>アンと英語でおしゃべり</h3>
                 <p>プロフィールを入力してから、アンと英語でおしゃべりしよう！</p>
+            </a>
+        </div>
+
+        <h2 class="section-title title-labo" id="title-labo">🔬 パフォーマンスラボ</h2>
+        <div class="grid">
+            <a href="performance_labo/labo.html" class="card" data-age="6,7,8,9,10,11,12" data-type="ゲーム">
+                <span class="label label-quiz">そくてい</span>
+                <div class="icon">🔬</div>
+                <h3>パフォーマンスラボ</h3>
+                <p>5つのミニゲームで、きみのかくれた<ruby>能力<rt>のうりょく</rt></ruby>をはかろう！レーダーチャートで<ruby>結果<rt>けっか</rt></ruby>がみえるよ</p>
             </a>
         </div>
 
