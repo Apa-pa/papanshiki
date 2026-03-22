@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>感覚測定ラボ（ラボ2） せいせき｜ぱぱん式 まなびポータル</title>
+    <meta name="description" content="感覚測定ラボの測定結果を確認しよう。ユーザーごとのベスト記録と直近3回のレーダーチャートを表示します。">
+
+    <!-- ぱぱん式 共通スクリプト -->
+    <script src="../ranking.js"></script>
+
+    <!-- Chart.js (レーダーチャート用) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- 共通スタイル -->
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* ===== 成績ページ固有スタイル ===== */
+
+        /* ユーザー選択エリア */
+        .user-select-section {
+            text-align: center;
+            padding: 16px 0 8px;
+        }
+        .user-select-section h2 {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 12px;
+        }
+        .user-btn-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            padding: 0 8px;
+        }
+        .user-btn {
+            padding: 10px 22px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #e65100;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .user-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #e65100;
+        }
+        .user-btn.selected {
+            background: #5c6bc0;
+            box-shadow: 0 3px 0 #3949ab;
+        }
+
+        /* 成績エリア */
+        #results-area {
+            display: none;
+            margin-top: 12px;
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 総合スコアカード */
+        .total-score-card {
+            background: linear-gradient(135deg, #5c6bc0 0%, #7e57c2 100%);
+            color: white;
+            border-radius: 20px;
+            text-align: center;
+            padding: 18px 16px 14px;
+            margin: 0 8px 16px;
+            box-shadow: 0 4px 12px rgba(92,107,192,0.35);
+        }
+        .total-score-label {
+            font-size: 0.85rem;
+            opacity: 0.85;
+            letter-spacing: 0.05em;
+        }
+        .total-score-value {
+            font-size: 3rem;
+            font-weight: bold;
+            line-height: 1.1;
+        }
+        .total-score-unit {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+        .total-score-sub {
+            font-size: 0.78rem;
+            opacity: 0.75;
+            margin-top: 4px;
+        }
+
+        /* 各ゲームベスト */
+        .game-best-section {
+            margin: 0 8px 16px;
+        }
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 8px;
+            padding-left: 4px;
+        }
+        .game-best-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .game-best-item {
+            background: white;
+            border-radius: 14px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .game-best-item:last-child:nth-child(odd) {
+            grid-column: span 2;
+            max-width: 50%;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .game-best-icon {
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+        .game-best-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .game-best-name {
+            font-size: 0.72rem;
+            color: #888;
+            line-height: 1.2;
+        }
+        .game-best-score {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #5c6bc0;
+        }
+        .game-best-score span {
+            font-size: 0.75rem;
+            font-weight: normal;
+            color: #aaa;
+        }
+        .game-best-score.no-data {
+            font-size: 1rem;
+            color: #ccc;
+        }
+
+        /* レーダーチャートエリア */
+        .history-section {
+            margin: 0 8px 16px;
+        }
+        .history-legend {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+            padding-left: 4px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.78rem;
+            color: #555;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .history-radar-wrap {
+            background: white;
+            border-radius: 18px;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        /* データなし表示 */
+        .no-records-msg {
+            text-align: center;
+            color: #aaa;
+            font-size: 0.9rem;
+            padding: 24px;
+        }
+
+        /* ナビゲーション */
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0 20px;
+        }
+        .btn-back-labo {
+            display: inline-block;
+            padding: 12px 28px;
+            background: #e8f5e9;
+            color: #388e3c;
+            border: 2px solid #a5d6a7;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            text-decoration: none;
+            font-family: inherit;
+            box-shadow: 0 3px 0 #a5d6a7;
+            touch-action: manipulation;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .btn-back-labo:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #a5d6a7;
+        }
+
+        /* 回数バッジ */
+        .record-count-badge {
+            display: inline-block;
+            background: #e0f7fa;
+            color: #00838f;
+            border-radius: 10px;
+            padding: 2px 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="labo-container">
+
+        <!-- ヘッダー -->
+        <div id="labo-header">
+            <span style="font-size:1.8rem;">📊</span>
+            <div>
+                <div class="header-title">せいせき かくにん</div>
+                <div class="header-sub">感覚測定ラボ（ラボ2）</div>
+            </div>
+        </div>
+
+        <!-- ユーザー選択 -->
+        <div class="user-select-section">
+            <h2>だれのきろくをみる？</h2>
+            <div class="user-btn-wrap" id="user-btn-wrap">
+                <!-- JS が動的に生成 -->
+            </div>
+        </div>
+
+        <!-- 成績表示エリア -->
+        <div id="results-area">
+
+            <!-- 総合スコア ベスト -->
+            <div class="total-score-card">
+                <div class="total-score-label">🏆 かんかくスコア ベスト</div>
+                <div class="total-score-value" id="best-total">--</div>
+                <div class="total-score-unit">ポイント</div>
+                <div class="total-score-sub" id="best-total-date"></div>
+            </div>
+
+            <!-- 各ゲーム ベスト -->
+            <div class="game-best-section">
+                <div class="section-title">
+                    ✨ かんかくごとの ベスト
+                </div>
+                <div class="game-best-grid" id="game-best-grid">
+                    <!-- JS が動的に生成 -->
+                </div>
+            </div>
+
+            <!-- 直近3回のレーダーチャート -->
+            <div class="history-section">
+                <div class="section-title">
+                    📈 さいきんの きろく
+                    <span class="record-count-badge" id="record-count-badge">0回</span>
+                </div>
+                <div class="history-legend" id="history-legend"></div>
+                <div class="history-radar-wrap">
+                    <canvas id="history-radar-chart"></canvas>
+                </div>
+            </div>
+
+        </div>
+        <!-- /results-area -->
+
+        <!-- データなし表示 -->
+        <div id="no-records-msg" class="no-records-msg" style="display:none;">
+            まだ きろくがないよ！<br>
+            <span style="font-size:0.8rem; color:#bbb;">感覚測定ラボをプレイしてみよう！</span>
+        </div>
+
+        <!-- ナビゲーション -->
+        <div class="nav-links">
+            <a href="labo2.html" class="btn-back-labo">🧪 ラボ2にもどる</a>
+            <a href="../index.html" class="home-link">🏠 ホームへもどる</a>
+        </div>
+
+    </div><!-- /labo-container -->
+
+    <script>
+    'use strict';
+
+    /* ===== 定数・設定 ===== */
+    const LABO_RECORDS_KEY = 'papan_labo2_records_v1';
+
+    /* ゲーム定義（表示用） */
+    const GAME_DEFS = [
+        { key: 'quantity', icon: '🍎', name: 'りょうのかんかく', color: '#ff7043' },
+        { key: 'speed',    icon: '🚆', name: 'スピードのかんかく', color: '#26c6da' },
+        { key: 'space',    icon: '🧊', name: 'くうかん・かたち', color: '#ab47bc' },
+        { key: 'length',   icon: '📏', name: 'ながさ・きょり',     color: '#26a69a' },
+        { key: 'color',    icon: '🎨', name: 'いろのかんかく',   color: '#ec407a' },
+    ];
+
+    /* 直近N回 */
+    const MAX_HISTORY = 3;
+
+    /* 過去回の色・スタイル */
+    const HISTORY_COLORS = [
+        { border: 'rgba(255,152,0,0.9)',  bg: 'rgba(255,152,0,0.15)',  label: 'いちばん新しい' },
+        { border: 'rgba(38,198,218,0.85)', bg: 'rgba(38,198,218,0.12)',  label: '2かいまえ' },
+        { border: 'rgba(236,64,122,0.75)', bg: 'rgba(236,64,122,0.10)',  label: '3かいまえ' },
+    ];
+
+    /* ===== データ読み込み ===== */
+    function getAllLaboRecords() {
+        return JSON.parse(localStorage.getItem(LABO_RECORDS_KEY) || '{}');
+    }
+
+    function getUserRecords(userName) {
+        const all = getAllLaboRecords();
+        return all[userName] || [];
+    }
+
+    /* ===== ユーザーリスト描画 ===== */
+    function renderUserList() {
+        const wrap = document.getElementById('user-btn-wrap');
+        if (!wrap) return;
+
+        // ranking.js の getUserNames() を使用（ポイント・記録・株など全ユーザー）
+        const users = (typeof getUserNames === 'function') ? getUserNames() : [];
+
+        // ラボ記録があるユーザーも補完（ranking.js 未登録の可能性に備える）
+        const laboUsers = Object.keys(getAllLaboRecords());
+        const allUsers = [...new Set([...users, ...laboUsers])].sort();
+
+        if (allUsers.length === 0) {
+            wrap.innerHTML = '<p style="color:#aaa; font-size:0.9rem;">まだ ユーザーがいません</p>';
+            return;
+        }
+
+        wrap.innerHTML = allUsers.map(u => `
+            <button class="user-btn" id="user-btn-${CSS.escape(u)}"
+                onclick="selectUser('${u.replace(/'/g, "\\'")}')">${u}</button>
+        `).join('');
+    }
+
+    /* ===== ユーザー選択 ===== */
+    function selectUser(userName) {
+        // ボタンのハイライト更新
+        document.querySelectorAll('.user-btn').forEach(b => b.classList.remove('selected'));
+        const btn = document.getElementById(`user-btn-${CSS.escape(userName)}`);
+        if (btn) btn.classList.add('selected');
+
+        const records = getUserRecords(userName);
+        const area = document.getElementById('results-area');
+        const noMsg = document.getElementById('no-records-msg');
+
+        if (records.length === 0) {
+            area.style.display = 'none';
+            noMsg.style.display = 'block';
+            return;
+        }
+        noMsg.style.display = 'none';
+        area.style.display = 'block';
+        area.style.animation = 'none';
+        void area.offsetWidth;
+        area.style.animation = '';
+
+        renderTotalBest(records);
+        renderGameBests(records);
+        renderHistoryChart(records);
+    }
+
+    /* ===== 総合スコア ベスト ===== */
+    function renderTotalBest(records) {
+        const best = records.reduce((b, r) => r.total > b.total ? r : b, records[0]);
+        const el = document.getElementById('best-total');
+        const dateEl = document.getElementById('best-total-date');
+        if (el) el.textContent = best.total;
+        if (dateEl) dateEl.textContent = `${best.date} の きろく`;
+    }
+
+    /* ===== 各ゲーム ベスト ===== */
+    function renderGameBests(records) {
+        const grid = document.getElementById('game-best-grid');
+        if (!grid) return;
+
+        grid.innerHTML = GAME_DEFS.map(def => {
+            // そのゲームのスコアが存在する記録だけ抽出
+            const validScores = records
+                .map(r => r.scores?.[def.key])
+                .filter(s => s !== undefined && s !== null);
+
+            const hasData = validScores.length > 0;
+            const best = hasData ? Math.max(...validScores) : null;
+
+            return `
+            <div class="game-best-item">
+                <div class="game-best-icon">${def.icon}</div>
+                <div class="game-best-info">
+                    <div class="game-best-name">${def.name}</div>
+                    <div class="game-best-score ${hasData ? '' : 'no-data'}">
+                        ${hasData ? `${best}<span> pt</span>` : '-- pt'}
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    /* ===== 直近3回のレーダーチャート ===== */
+    function renderHistoryChart(records) {
+        // 直近 MAX_HISTORY 件を取得（新しい順で取得して逆転 → 古い順にチャートに積む）
+        const recent = records.slice(-MAX_HISTORY);
+
+        // 件数バッジ
+        const badge = document.getElementById('record-count-badge');
+        if (badge) badge.textContent = `${records.length}かい`;
+
+        // 凡例
+        renderLegend(recent);
+
+        // Chart.js
+        const canvas = document.getElementById('history-radar-chart');
+        if (!canvas || typeof Chart === 'undefined') return;
+
+        const existing = Chart.getChart(canvas);
+        if (existing) existing.destroy();
+
+        const labels = GAME_DEFS.map(d => d.name.replace('・', '\n'));
+
+        // datasets: 古い順（先頭）→ 新しい順（末尾）で描画し、新しいものが前面に
+        const datasets = recent.map((rec, i) => {
+            const colorIdx = recent.length - 1 - i; // 最新=0番色
+            const c = HISTORY_COLORS[colorIdx] || HISTORY_COLORS[HISTORY_COLORS.length - 1];
+            const labelText = colorIdx === 0
+                ? `最新 (${rec.date})`
+                : `${colorIdx + 1}かいまえ (${rec.date})`;
+            return {
+                label: labelText,
+                data: GAME_DEFS.map(d => rec.scores?.[d.key] ?? 0),
+                backgroundColor:   c.bg,
+                borderColor:       c.border,
+                borderWidth:       colorIdx === 0 ? 2.5 : 1.8,
+                pointBackgroundColor: GAME_DEFS.map(d => d.color),
+                pointBorderColor:     '#fff',
+                pointBorderWidth:     2,
+                pointRadius:          colorIdx === 0 ? 6 : 4,
+                pointHoverRadius:     8,
+                borderDash:           colorIdx === 0 ? [] : (colorIdx === 1 ? [4,3] : [2,2]),
+            };
+        });
+
+        new Chart(canvas, {
+            type: 'radar',
+            data: { labels, datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                animation: { duration: 600, easing: 'easeOutQuart' },
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 100,
+                        ticks: {
+                            stepSize: 25,
+                            font:     { size: 9 },
+                            color:    '#aaa',
+                            backdropColor: 'transparent',
+                        },
+                        pointLabels: {
+                            font: {
+                                size:   10,
+                                family: '"UD Digital Kyokasho-tai-R", "Helvetica Neue", sans-serif',
+                            },
+                            color: '#444',
+                        },
+                        grid:       { color: 'rgba(0,0,0,0.08)' },
+                        angleLines: { color: 'rgba(0,0,0,0.1)'  },
+                    },
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ` ${ctx.dataset.label}: ${ctx.raw} pt`,
+                        },
+                    },
+                },
+            },
+        });
+    }
+
+    /* ===== 凡例 ===== */
+    function renderLegend(recent) {
+        const wrap = document.getElementById('history-legend');
+        if (!wrap) return;
+        wrap.innerHTML = recent.map((rec, i) => {
+            const colorIdx = recent.length - 1 - i;
+            const c = HISTORY_COLORS[colorIdx] || HISTORY_COLORS[HISTORY_COLORS.length - 1];
+            const labelText = colorIdx === 0 ? `最新 (${rec.date})` : `${colorIdx + 1}かいまえ (${rec.date})`;
+            return `
+            <div class="legend-item">
+                <div class="legend-dot" style="background:${c.border};"></div>
+                <span>${labelText}</span>
+            </div>`;
+        }).join('');
+    }
+
+    /* ===== 初期化 ===== */
+    document.addEventListener('DOMContentLoaded', () => {
+        renderUserList();
+    });
+    </script>
+
+</body>
+</html>

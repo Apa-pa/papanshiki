@@ -1,4 +1,4 @@
-﻿/* ranking.js - 記録・目標・ポイント・スタンプ・どんぐり・株 管理 (全国ランキングUI改善版) */
+/* ranking.js - 記録・目標・ポイント・スタンプ・どんぐり・株 管理 (全国ランキングUI改善版) */
 
 const GAME_LIST = {
     'make10': { name: 'あわせて10', type: 'time', unit: '秒', url: 'make10.html' },
@@ -798,7 +798,8 @@ function showPointGetDialog(amount, onComplete = null) {
             if (typeof toggleStamp === 'function') toggleStamp(name, getTodayString(), true);
             document.getElementById('ranking-overlay').remove();
             alert(`${name}さんに ${pts}ポイント！`);
-            if (typeof RankingPoint.onComplete === 'function') RankingPoint.onComplete();
+            // ユーザー名を引数に渡してコールバックを呼ぶ
+            if (typeof RankingPoint.onComplete === 'function') RankingPoint.onComplete(name);
         }
     };
 }

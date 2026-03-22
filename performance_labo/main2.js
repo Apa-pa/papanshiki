@@ -1,12 +1,12 @@
 /* ============================================
-   main.js — パフォーマンスラボ 進行管理
+   main2.js — 感覚測定ラボ（Labo 2） 進行管理
    各ゲームの切り替えとスコア集計を担当
    ============================================ */
 
 'use strict';
 
-/* ---------- ラボ記録のストレージキー ---------- */
-const LABO_RECORDS_KEY = 'papan_labo_records_v1';
+/* ---------- ラボ2記録のストレージキー ---------- */
+const LABO_RECORDS_KEY = 'papan_labo2_records_v1';
 
 /**
  * ラボ測定結果を localStorage に保存する。
@@ -29,79 +29,73 @@ const measurementState = {
     currentScene: 'title',   // 現在のシーン名
     currentGameIndex: 0,      // 現在のゲーム番号（0〜4）
     results: {                // 各ゲームの生結果
-        starflash:  null,     // { taps, avgReactionMs }
-        ruler:      null,     // { bestMs }
-        stroop:     null,     // { correctRate, avgSpeedMs }
-        animalMot:  null,     // { correctRate }
-        timing:     null,     // { avgOffset, shots }
+        quantity:   null,
+        speed:      null,
+        space:      null,
+        length:     null,
+        color:      null,
     },
     scores: {                 // 正規化後の0〜100スコア
-        starflash:  0,
-        ruler:      0,
-        stroop:     0,
-        animalMot:  0,
-        timing:     0,
+        quantity:   0,
+        speed:      0,
+        space:      0,
+        length:     0,
+        color:      0,
     }
 };
 
 /* ---------- ゲーム定義一覧 ---------- */
 const GAME_SEQUENCE = [
     {
-        id: 'starflash',
-        moduleKey: 'Game1',            // window.Game1 として登録される
-        scene: 'game',                 // 遷移先シーンID
-        name: 'スターフラッシュ',
-        icon: '⭐',
-        ability: 'はっけんスピード',
+        id: 'quantity',
+        moduleKey: 'Labo2Game1',       // window.Labo2Game1 として登録される予定
+        scene: 'game',
+        name: 'ぱっと見どっち？',
+        icon: '🍎',
+        ability: 'りょうのかんかく',
         bannerClass: 'g1',
     },
     {
-        id: 'ruler',
-        moduleKey: 'Game2',
+        id: 'speed',
+        moduleKey: 'Labo2Game2',
         scene: 'game',
-        name: 'ものさしキャッチ',
-        icon: '📏',
-        ability: 'はんのうスピード',
+        name: 'トンネルれっしゃ',
+        icon: '🚆',
+        ability: 'スピードのかんかく',
         bannerClass: 'g2',
     },
     {
-        id: 'stroop',
-        moduleKey: 'Game3',
+        id: 'space',
+        moduleKey: 'Labo2Game3',
         scene: 'game',
-        name: 'いろとことばのわな',
-        icon: '🎨',
-        ability: 'はんだんりょく',
+        name: 'くるくるシルエット',
+        icon: '🧊',
+        ability: 'くうかん・かたち',
         bannerClass: 'g3',
     },
     {
-        id: 'animalMot',
-        moduleKey: 'Game4',
+        id: 'length',
+        moduleKey: 'Labo2Game4',
         scene: 'game',
-        name: 'アニマルついせき',
-        icon: '🐿️',
-        ability: 'きおく・しゅうちゅう',
+        name: 'ピタッとおなじながさ',
+        icon: '📏',
+        ability: 'ながさ・きょり',
         bannerClass: 'g4',
     },
     {
-        id: 'timing',
-        moduleKey: 'Game5',
+        id: 'color',
+        moduleKey: 'Labo2Game5',
         scene: 'game',
-        name: 'シャッターチャンス',
-        icon: '📷',
-        ability: 'タイミング・どうたいしりょく',
+        name: 'ピタッとカラー',
+        icon: '🎨',
+        ability: 'いろのかんかく',
         bannerClass: 'g5',
     },
 ];
 
 /* ---------- シーン遷移 ---------- */
-/**
- * 指定したシーンに切り替える。
- * @param {string} nextScene - 遷移先シーンID
- */
 function changeScene(nextScene) {
-    // 全シーンを非表示に
     document.querySelectorAll('.scene').forEach(el => el.classList.remove('active'));
-    // 対象シーンを表示
     const target = document.getElementById(`${nextScene}-scene`);
     if (target) {
         target.classList.add('active');
@@ -112,7 +106,7 @@ function changeScene(nextScene) {
 
 /* ---------- プログレスバー更新 ---------- */
 function updateProgressBar() {
-    const total = GAME_SEQUENCE.length; // 5ゲーム
+    const total = GAME_SEQUENCE.length;
     const idx   = measurementState.currentGameIndex;
     const scene = measurementState.currentScene;
 
@@ -124,44 +118,32 @@ function updateProgressBar() {
     const fill = document.getElementById('progress-bar-fill');
     if (fill) fill.style.width = `${progress}%`;
 
-    // ステップラベルのハイライト
     document.querySelectorAll('.step-label').forEach((el, i) => {
         el.classList.toggle('active', i < idx || scene === 'result');
     });
 }
 
 /* ---------- App インターフェース ---------- */
-/**
- * 各ゲームJSが終了時に呼び出す共通インターフェース。
- * @param {string} gameId   - ゲームID（measurementState.results のキー）
- * @param {object} data     - ゲームの生データ（ゲームごとに異なる構造）
- */
 const App = {
     saveResult(gameId, data) {
-        // 結果を保存
         if (gameId in measurementState.results) {
             measurementState.results[gameId] = data;
         }
 
-        // 次のゲームへ進む
         measurementState.currentGameIndex++;
 
         if (measurementState.currentGameIndex < GAME_SEQUENCE.length) {
-            // 次のゲームを開始
             startNextGame();
         } else {
-            // 全ゲーム終了 → リザルトへ
             showResult();
         }
     },
 
-    // ゲームエリアの HTML を設定するヘルパー
     setGameHTML(html) {
         const area = document.getElementById('game-area');
         if (area) area.innerHTML = html;
     },
 
-    // ゲームバナーのスタイルを更新するヘルパー
     setGameBanner(gameIdx) {
         const info = GAME_SEQUENCE[gameIdx];
         const banner = document.getElementById('game-banner');
@@ -172,8 +154,7 @@ const App = {
         banner.querySelector('.game-banner-ability').textContent = info.ability;
     },
 
-    // フィードバック（正解・不正解）を表示するヘルパー
-    showFeedback(type) {  // type: 'correct' | 'wrong'
+    showFeedback(type) { 
         const overlay = document.getElementById('feedback-overlay');
         if (!overlay) return;
         overlay.className = `show ${type}`;
@@ -200,10 +181,6 @@ function initTitle() {
 }
 
 /* ---------- カウントダウン ---------- */
-/**
- * カウントダウン後にコールバックを実行する。
- * @param {Function} callback - カウントダウン完了後に呼ぶ関数
- */
 function startCountdown(callback) {
     changeScene('countdown');
     let count = 3;
@@ -214,7 +191,6 @@ function startCountdown(callback) {
         if (count > 0) {
             display.textContent = count;
             display.style.animation = 'none';
-            // リフロー強制でアニメーションをリセット
             void display.offsetWidth;
             display.style.animation = '';
             count--;
@@ -238,42 +214,37 @@ function startNextGame() {
         changeScene('game');
         App.setGameBanner(idx);
 
-        // 対応するゲームモジュールを呼び出す
         const gameModule = window[info.moduleKey];
         if (gameModule && typeof gameModule.start === 'function') {
             gameModule.start();
         } else {
             console.warn(`ゲームモジュール ${info.moduleKey} が見つかりません`);
-            // スタブ: ゲームがない場合は5秒後に自動でダミーデータを保存して次へ
+            App.setGameHTML(`<div style="padding:40px;text-align:center;">まだ工事中だよ！<br>（自動でつぎへすすみます）</div>`);
             setTimeout(() => {
                 App.saveResult(info.id, { stub: true });
-            }, 2000);
+            }, 3000);
         }
     });
 }
 
 /* ---------- リザルト表示 ---------- */
 function showResult() {
-    // スコア正規化を実行してからリザルト画面へ
-    if (window.ResultModule && typeof ResultModule.normalize === 'function') {
-        ResultModule.normalize(measurementState.results, measurementState.scores);
+    if (window.ResultModule2 && typeof ResultModule2.normalize === 'function') {
+        ResultModule2.normalize(measurementState.results, measurementState.scores);
     }
     changeScene('result');
 
-    if (window.ResultModule && typeof ResultModule.draw === 'function') {
-        ResultModule.draw(measurementState.scores);
+    if (window.ResultModule2 && typeof ResultModule2.draw === 'function') {
+        ResultModule2.draw(measurementState.scores);
     }
 
-    // ポイント付与（タイプD: 全ゲームプレイ完了で固定報酬）
     const totalScore = Object.values(measurementState.scores).reduce((a, b) => a + b, 0);
-    const pt = Math.round(totalScore / GAME_SEQUENCE.length); // 平均スコアをポイントに
+    const pt = Math.round(totalScore / GAME_SEQUENCE.length) || 10; 
 
-    // スコアのスナップショットを保持（コールバック時に使う）
     const scoreSnapshot = { ...measurementState.scores };
 
     if (typeof showPointGetDialog === 'function') {
         showPointGetDialog(pt, (selectedUserName) => {
-            // ユーザー選択後に記録を保存
             if (selectedUserName) {
                 saveLaboRecord(selectedUserName, scoreSnapshot);
             }
@@ -281,17 +252,15 @@ function showResult() {
     }
 }
 
-/* ---------- DOMContentLoaded 後の初期化 ---------- */
+/* ---------- 初期化 ---------- */
 document.addEventListener('DOMContentLoaded', () => {
     initTitle();
     changeScene('title');
 
-    // スタートボタン
     const startBtn = document.getElementById('start-btn');
     if (startBtn) {
         startBtn.addEventListener('click', () => {
             measurementState.currentGameIndex = 0;
-            // 全結果をリセット
             Object.keys(measurementState.results).forEach(k => measurementState.results[k] = null);
             Object.keys(measurementState.scores).forEach(k => measurementState.scores[k] = 0);
             startNextGame();
