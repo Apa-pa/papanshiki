@@ -6,9 +6,17 @@
 window.ResultModule2 = (function() {
 
     function normalize(rawResults, outScores) {
-        // 1. 量の感覚 (correctRate がそのままスコア)
+        // 1. 量の感覚 (平均誤差でスコアを計算)
         if (rawResults.quantity) {
-            outScores.quantity = rawResults.quantity.correctRate || 0;
+            if (rawResults.quantity.hasOwnProperty('correctRate')) {
+                // 過去のデータ用フォーールバック
+                outScores.quantity = rawResults.quantity.correctRate || 0;
+            } else {
+                const err = rawResults.quantity.avgErrorCount || 0;
+                // 最大誤差（ズレ）は12個。0個なら100点、6個ズレで約10点になる緩やかなカーブ
+                let score = 100 - (err * 15);
+                outScores.quantity = Math.max(0, Math.min(100, Math.round(score)));
+            }
         }
 
         // 2. 速度の感覚 (100点は難しいが、0点にはなりにくい評価)

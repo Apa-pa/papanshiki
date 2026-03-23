@@ -38,17 +38,21 @@ window.Labo2Game4 = (function() {
                 
                 <div style="background:#fff; border-radius:12px; padding:20px 10px; margin-bottom:20px; border:2px dashed #ccc;">
                     <!-- おてほん -->
-                    <div style="margin-bottom:15px; text-align:left;">
+                    <div style="margin-bottom:15px; text-align:center;">
                         <span style="font-size:0.8rem; color:#777; font-weight:bold;">おてほん</span>
-                        <div style="width:100%; height:30px; background:#f5f5f5; border-radius:15px; position:relative; overflow:hidden;">
-                            <div id="len-target-bar" style="height:100%; width:0%; background:#66bb6a; transition: width 0.3s, opacity 0.5s; opacity:1; border-radius:15px;"></div>
+                        <div style="height: 300px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #fafafa; border-radius: 8px; margin-top: 5px;">
+                            <div id="len-target-wrapper" style="width: 280px; height: 24px; background: #e0e0e0; border-radius: 12px; position: relative;">
+                                <div id="len-target-bar" style="height:100%; width:0%; background:#66bb6a; border-radius:12px; transition: width 0.3s, opacity 0.5s; opacity:1;"></div>
+                            </div>
                         </div>
                     </div>
                     
                     <!-- じぶん -->
-                    <div style="text-align:left; position:relative;">
+                    <div style="text-align:center; position:relative;">
                         <span style="font-size:0.8rem; color:#777; font-weight:bold;">きみのバー（つまみをうごかしてね）</span>
-                        <input type="range" id="len-slider" min="0" max="100" value="0" style="width:100%; height:30px; margin-top:5px; accent-color:#ff9800; cursor:pointer;" disabled>
+                        <div style="display: flex; justify-content: center; margin-top: 5px;">
+                            <input type="range" id="len-slider" min="0" max="100" value="0" style="width: 280px; max-width: 100%; height:30px; accent-color:#ff9800; cursor:pointer;" disabled>
+                        </div>
                     </div>
                 </div>
 
@@ -71,6 +75,7 @@ window.Labo2Game4 = (function() {
         STATE.currentTrial++;
         const msg = document.getElementById('len-message');
         const targetBar = document.getElementById('len-target-bar');
+        const targetWrapper = document.getElementById('len-target-wrapper');
         const slider = document.getElementById('len-slider');
         const btn = document.getElementById('len-btn');
 
@@ -84,6 +89,10 @@ window.Labo2Game4 = (function() {
         targetBar.style.width = '0%';
         targetBar.style.background = '#66bb6a';
         msg.innerHTML = `第${STATE.currentTrial}もん：<br>ながさをおぼえて！`;
+
+        // 指や定規で測るのを防ぐため、ランダムな角度にする
+        const randomAngle = Math.floor(Math.random() * 360);
+        targetWrapper.style.transform = `rotate(${randomAngle}deg)`;
 
         STATE.targetPct = Math.floor(Math.random() * 60) + 20; // 20% to 80%
 

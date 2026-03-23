@@ -7,7 +7,7 @@ window.Labo2Game1 = (function() {
     const STATE = {
         trialsTotal: 5,
         currentTrial: 0,
-        correctCount: 0,
+        errors: [],
         leftCount: 0,
         rightCount: 0,
         isPlaying: false,
@@ -16,23 +16,31 @@ window.Labo2Game1 = (function() {
 
     function start() {
         STATE.currentTrial = 0;
-        STATE.correctCount = 0;
+        STATE.errors = [];
         STATE.isPlaying = true;
 
         const html = `
-            <div id="q-game-container" style="text-align:center; padding: 20px 0;">
-                <div id="q-message" style="font-size: 1.2rem; font-weight:bold; margin-bottom: 20px; color:var(--text-main); height:1.5em;">
-                    どっちがおおい？よくみてね！
+            <div id="q-game-container" style="text-align:center; padding: 10px 0;">
+                <div id="q-message" style="font-size: 1.2rem; font-weight:bold; margin-bottom: 15px; color:var(--text-main); height:1.5em;">
+                    どっちが どのくらい おおい？
                 </div>
                 
-                <div style="display: flex; justify-content: space-around; gap: 10px; margin-bottom: 20px; height: 50px;">
-                    <button id="q-btn-left" class="btn" style="flex:1; background: #fff; border: 3px solid #ff9800; color: #ff9800; font-size: 1.2rem; display:none; padding:10px;" onclick="Labo2Game1.answer('left')">◀ ひだり</button>
-                    <button id="q-btn-right" class="btn" style="flex:1; background: #fff; border: 3px solid #ff9800; color: #ff9800; font-size: 1.2rem; display:none; padding:10px;" onclick="Labo2Game1.answer('right')">みぎ ▶</button>
-                </div>
-
-                <div style="display: flex; justify-content: space-around; gap: 10px; height: 260px;">
+                <div style="display: flex; justify-content: space-around; gap: 10px; height: 180px; margin-bottom: 20px;">
                     <div id="q-box-left" style="flex:1; background: #fdfdfd; border-radius: 16px; border: 3px dashed #ccc; position: relative; overflow: hidden; display:flex; flex-wrap:wrap; align-content:center; justify-content:center; padding:10px; gap:4px; box-shadow: inset 0 3px 6px rgba(0,0,0,0.05);"></div>
                     <div id="q-box-right" style="flex:1; background: #fdfdfd; border-radius: 16px; border: 3px dashed #ccc; position: relative; overflow: hidden; display:flex; flex-wrap:wrap; align-content:center; justify-content:center; padding:10px; gap:4px; box-shadow: inset 0 3px 6px rgba(0,0,0,0.05);"></div>
+                </div>
+
+                <div id="q-input-area" style="display:none; flex-direction:column; align-items:center; background:#fff; border-radius:12px; padding:15px; border:2px dashed #ff9800;">
+                    <div id="q-slider-val" style="font-size:1.2rem; font-weight:bold; color:#ff9800; margin-bottom:10px;">おなじ かず</div>
+                    <input type="range" id="q-slider" min="-6" max="6" value="0" style="width: 280px; max-width: 100%; height:30px; accent-color:#ff9800; cursor:pointer;" oninput="Labo2Game1.updateSliderText()">
+                    <div style="display:flex; justify-content:space-between; width:280px; max-width:100%; padding:0 5px; font-size:0.8rem; color:#777; margin-top:5px; margin-bottom:15px;">
+                        <span>◀ ひだり</span>
+                        <span>おなじ</span>
+                        <span>みぎ ▶</span>
+                    </div>
+                    <button class="btn btn-accent" style="font-size: 1.2rem; padding: 12px 30px; border-radius: 50px;" onclick="Labo2Game1.answer()">
+                        ✨ けってい！
+                    </button>
                 </div>
             </div>
         `;
@@ -71,8 +79,6 @@ window.Labo2Game1 = (function() {
         const msg = document.getElementById('q-message');
         const boxL = document.getElementById('q-box-left');
         const boxR = document.getElementById('q-box-right');
-        const btnL = document.getElementById('q-btn-left');
-        const btnR = document.getElementById('q-btn-right');
 
         if (!msg) return;
 
@@ -81,11 +87,12 @@ window.Labo2Game1 = (function() {
         boxR.innerHTML = '';
         boxL.style.background = '#fdfdfd';
         boxR.style.background = '#fdfdfd';
-        btnL.style.display = 'none';
-        btnR.style.display = 'none';
+        
+        const inputArea = document.getElementById('q-input-area');
+        if (inputArea) inputArea.style.display = 'none';
 
-        // 難易度調整 (8〜16個、差は1〜4個)
-        const baseCount = Math.floor(Math.random() * 9) + 8; 
+        // 難易度調整 (8〜14個、差は1〜4個)
+        const baseCount = Math.floor(Math.random() * 7) + 8; 
         const diff = Math.floor(Math.random() * 4) + 1; 
 
         if (Math.random() > 0.5) {
@@ -101,36 +108,59 @@ window.Labo2Game1 = (function() {
             boxR.innerHTML = generateApples(STATE.rightCount);
             msg.textContent = 'パッ！';
 
-            // 0.8秒後に隠す
+            // ちょっと見せてから隠す (1秒)
             STATE.timeoutId = setTimeout(() => {
                 boxL.innerHTML = '<div style="font-size:4rem; color:#bbb; align-self:center;">？</div>';
                 boxR.innerHTML = '<div style="font-size:4rem; color:#bbb; align-self:center;">？</div>';
                 boxL.style.background = '#eceff1'; // 隠した感
                 boxR.style.background = '#eceff1';
-                msg.textContent = 'どっちがおおかった？';
-                btnL.style.display = 'block';
-                btnR.style.display = 'block';
-            }, 800);
+                msg.innerHTML = 'どっちが どれくらい おおい？';
+                
+                const slider = document.getElementById('q-slider');
+                slider.value = 0;
+                Labo2Game1.updateSliderText();
+                document.getElementById('q-input-area').style.display = 'flex';
+            }, 1000);
         }, 1000);
     }
 
-    function answer(choice) {
+    function updateSliderText() {
         if (!STATE.isPlaying) return;
-        clearTimeout(STATE.timeoutId);
+        const val = parseInt(document.getElementById('q-slider').value, 10);
+        const textEl = document.getElementById('q-slider-val');
+        if (val < 0) {
+            textEl.innerHTML = `「ひだり」が <span style="font-size:1.5rem; color:#ef5350;">${Math.abs(val)}こ</span> おおい`;
+        } else if (val > 0) {
+            textEl.innerHTML = `「みぎ」が <span style="font-size:1.5rem; color:#1e88e5;">${val}こ</span> おおい`;
+        } else {
+            textEl.innerHTML = `おなじ かず`;
+        }
+    }
 
-        const btnL = document.getElementById('q-btn-left');
-        const btnR = document.getElementById('q-btn-right');
-        btnL.style.display = 'none';
-        btnR.style.display = 'none';
+    function answer() {
+        if (!STATE.isPlaying) return;
 
-        let isCorrect = false;
-        if (choice === 'left' && STATE.leftCount > STATE.rightCount) isCorrect = true;
-        if (choice === 'right' && STATE.rightCount > STATE.leftCount) isCorrect = true;
+        document.getElementById('q-input-area').style.display = 'none';
 
-        if (isCorrect) {
-            STATE.correctCount++;
+        const slider = document.getElementById('q-slider');
+        const userVal = parseInt(slider.value, 10);
+        // actualVal > 0 means Right is more
+        const actualVal = STATE.rightCount - STATE.leftCount; 
+
+        const errorCount = Math.abs(userVal - actualVal);
+        STATE.errors.push(errorCount);
+
+        const msg = document.getElementById('q-message');
+        if (errorCount === 0) {
+            msg.innerHTML = `<span style="color:#ef5350;">ピッタリ大正解！！すごすぎる！</span>`;
+            App.showFeedback('correct');
+        } else if (errorCount <= 2) {
+            const txt = actualVal < 0 ? 'ひだり' : 'みぎ';
+            msg.innerHTML = `<span style="color:#ff9800;">おしい！いいセンいってる！</span><br><span style="font-size:1rem;">正解は「${txt}」が ${Math.abs(actualVal)}こ おおい</span>`;
             App.showFeedback('correct');
         } else {
+            const txt = actualVal < 0 ? 'ひだり' : 'みぎ';
+            msg.innerHTML = `<span style="color:#3949ab;">ちょっとズレちゃった...</span><br><span style="font-size:1rem;">正解は「${txt}」が ${Math.abs(actualVal)}こ おおい</span>`;
             App.showFeedback('wrong');
         }
 
@@ -141,14 +171,14 @@ window.Labo2Game1 = (function() {
         boxL.style.background = '#fdfdfd';
         boxR.style.background = '#fdfdfd';
 
-        setTimeout(nextTrial, 2000);
+        setTimeout(nextTrial, 3500);
     }
 
     function endGame() {
         STATE.isPlaying = false;
-        const correctRate = Math.round((STATE.correctCount / STATE.trialsTotal) * 100);
-        App.saveResult('quantity', { correctRate: correctRate, trials: STATE.trialsTotal, correct: STATE.correctCount });
+        const avgError = STATE.errors.reduce((a, b) => a + b, 0) / STATE.trialsTotal;
+        App.saveResult('quantity', { avgErrorCount: avgError, trials: STATE.trialsTotal });
     }
 
-    return { start, answer };
+    return { start, answer, updateSliderText };
 })();
