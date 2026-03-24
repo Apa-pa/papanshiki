@@ -1,5 +1,5 @@
 /* ============================================
-   labo2_game3_space.js — 空間の感覚（くるくるシルエット）
+   labo2_game3_space.js — 空間の感覚（ブロックいくつ？）
    ============================================ */
 'use strict';
 
@@ -7,86 +7,137 @@ window.Labo2Game3 = (function() {
     const STATE = {
         trialsTotal: 3,
         currentTrial: 0,
-        correctCount: 0,
+        errors: [],
         isPlaying: false,
-        timerList: []
+        actualCount: 0
     };
-
-    function clearAllTimers() {
-        STATE.timerList.forEach(clearTimeout);
-        STATE.timerList = [];
-    }
-
-    function addTimer(fn, delay) {
-        const id = setTimeout(fn, delay);
-        STATE.timerList.push(id);
-        return id;
-    }
 
     function start() {
         STATE.currentTrial = 0;
-        STATE.correctCount = 0;
+        STATE.errors = [];
         STATE.isPlaying = true;
-        clearAllTimers();
 
         const html = `
             <div id="spc-game-container" style="text-align:center; padding: 10px 0;">
                 <div id="spc-message" style="font-size: 1.1rem; font-weight:bold; margin-bottom: 20px; color:var(--text-main); height: 2.5em;">
-                    このかたちをまわすと、<br>どの影になるかな？
+                    かくれているのも いれて<br>ぜんぶで いくつある？
                 </div>
                 
-                <div style="display:flex; justify-content:center; align-items:center; height: 140px; margin-bottom:20px;">
-                    <div id="spc-target" style="display:grid; grid-template-columns:repeat(3, 40px); grid-template-rows:repeat(3, 40px); gap:3px; transition: transform 0.8s ease-in-out;">
-                    </div>
+                <div style="display:flex; justify-content:center; align-items:center; height: 260px; margin-bottom:10px;">
+                    <canvas id="spc-canvas" width="260" height="260"></canvas>
                 </div>
 
-                <div id="spc-choices" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:0 20px;">
+                <div id="spc-input-area" style="display:flex; flex-direction:column; align-items:center; background:#fff; border-radius:12px; padding:15px; border:2px dashed #9c27b0;">
+                    <div id="spc-slider-val" style="font-size:1.6rem; font-weight:bold; color:#9c27b0; margin-bottom:10px;">10こ</div>
+                    <input type="range" id="spc-slider" min="5" max="25" value="10" style="width: 280px; max-width: 100%; height:30px; accent-color:#9c27b0; cursor:pointer;" oninput="Labo2Game3.updateSliderText()">
+                    <div style="display:flex; justify-content:space-between; width:280px; max-width:100%; padding:0 5px; font-size:0.8rem; color:#777; margin-top:5px; margin-bottom:15px;">
+                        <span>すくない</span>
+                        <span>おおい</span>
+                    </div>
+                    <button id="spc-btn" class="btn btn-primary" style="font-size: 1.2rem; padding: 12px 30px; border-radius: 50px; background:#ab47bc; box-shadow:0 6px 0 #7b1fa2;" onclick="Labo2Game3.answer()">
+                        ✨ これだ！
+                    </button>
                 </div>
             </div>
         `;
         App.setGameHTML(html);
 
-        addTimer(nextTrial, 1000);
+        setTimeout(nextTrial, 1000);
     }
 
-    function getRandomGrid() {
-        const grid = [0,0,0,0,0,0,0,0,0];
+    // アイソメトリック描画用 (x:右下, y:左下, z:上)
+    function drawCube(ctx, ox, oy, x, y, z, size) {
+        // 等角投影法の変換 (30度)
+        const dx = (x - y) * size * Math.cos(Math.PI / 6);
+        const dy = (x + y) * size * Math.sin(Math.PI / 6) - (z * size);
+
+        const cx = ox + dx;
+        const cy = oy + dy;
+
+        const h = size * Math.sin(Math.PI / 6); // 半分の高さ
+        const w = size * Math.cos(Math.PI / 6); // 半分の幅
+
+        // 上面 (明るい)
+        ctx.fillStyle = '#4dd0e1';
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - size);
+        ctx.lineTo(cx + w, cy - size + h);
+        ctx.lineTo(cx, cy); // 2*h == size
+        ctx.lineTo(cx - w, cy - size + h);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // 左面 (少し暗い)
+        ctx.fillStyle = '#00bcd4';
+        ctx.beginPath();
+        ctx.moveTo(cx - w, cy - size + h);
+        ctx.lineTo(cx, cy);
+        ctx.lineTo(cx, cy + size); 
+        ctx.lineTo(cx - w, cy + h); 
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // 右面 (最も暗い)
+        ctx.fillStyle = '#00acc1';
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + w, cy - size + h);
+        ctx.lineTo(cx + w, cy + h);
+        ctx.lineTo(cx, cy + size);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+    }
+
+    function generateCubes() {
+        const grid = [];
         let count = 0;
-        while(count < 5) {
-            let r = Math.floor(Math.random()*9);
-            if (grid[r] === 0) {
-                grid[r] = 1;
-                count++;
+        for (let x=0; x<3; x++) {
+            grid[x] = [];
+            for (let y=0; y<3; y++) {
+                // 0〜3段
+                const h = Math.floor(Math.random() * 4);
+                grid[x][y] = h;
+                count += h;
             }
         }
-        return grid;
+        
+        // 5〜25個に収まるようにリトライ
+        if (count < 5 || count > 20) {
+            return generateCubes(); 
+        }
+
+        return { grid, count };
     }
 
-    function rotate90(grid) {
-        return [
-            grid[6], grid[3], grid[0],
-            grid[7], grid[4], grid[1],
-            grid[8], grid[5], grid[2]
-        ];
-    }
+    function renderCubes(gridConfig) {
+        const canvas = document.getElementById('spc-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    function rotate180(grid) { return rotate90(rotate90(grid)); }
-    function rotate270(grid) { return rotate90(rotate180(grid)); }
-    
-    function mirrorX(grid) {
-        return [
-            grid[2], grid[1], grid[0],
-            grid[5], grid[4], grid[3],
-            grid[8], grid[7], grid[6]
-        ];
-    }
-    
-    function createGridHTML(grid, color) {
-        return grid.map(v => `<div style="background-color:${v ? color : 'transparent'}; border-radius:4px; ${v ? 'box-shadow:inset 0 -2px 0 rgba(0,0,0,0.15)' : ''}"></div>`).join('');
-    }
+        ctx.strokeStyle = '#006064'; 
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 1.0;
 
-    function gridToString(grid) {
-        return grid.join('');
+        // 起点
+        const ox = canvas.width / 2;
+        const oy = canvas.height / 2 + 15;
+        const size = 30; // ブロックの辺サイズ
+
+        // ペインターズアルゴリズム：x+yが大きい（奥）順に描画して手前を正しく重ねる
+        for (let xy = 4; xy >= 0; xy--) {
+            for (let x = 0; x < 3; x++) {
+                const y = xy - x;
+                if (y < 0 || y > 2) continue;
+                const height = gridConfig.grid[x][y];
+                for (let z = 0; z < height; z++) {
+                    drawCube(ctx, ox, oy, x, y, z, size);
+                }
+            }
+        }
     }
 
     function nextTrial() {
@@ -97,124 +148,70 @@ window.Labo2Game3 = (function() {
 
         STATE.currentTrial++;
         const msg = document.getElementById('spc-message');
-        const targetDiv = document.getElementById('spc-target');
-        const choicesDiv = document.getElementById('spc-choices');
+        const btn = document.getElementById('spc-btn');
+        const slider = document.getElementById('spc-slider');
+        const inputArea = document.getElementById('spc-input-area');
 
         if (!msg) return;
 
-        msg.innerHTML = `第${STATE.currentTrial}もん：<br>まわすと、どの影になる？`;
-        choicesDiv.style.pointerEvents = "auto";
+        msg.innerHTML = `第${STATE.currentTrial}もん：<br>ぜんぶで いくつある？`;
+        inputArea.style.pointerEvents = "auto";
+        btn.style.display = "block";
+        btn.style.transform = "translateY(0)";
+        btn.style.boxShadow = "0 6px 0 #7b1fa2";
         
-        const baseGrid = getRandomGrid();
-        targetDiv.style.transition = 'none';
-        targetDiv.style.transform = 'rotate(0deg) scale(1)';
-        targetDiv.innerHTML = createGridHTML(baseGrid, '#29b6f6'); // 水色
+        const gridConfig = generateCubes();
+        STATE.actualCount = gridConfig.count;
         
-        const rotDegrees = [90, 180, 270];
-        const rotDeg = rotDegrees[Math.floor(Math.random() * rotDegrees.length)];
-        let correctGrid = baseGrid;
-        if (rotDeg === 90) correctGrid = rotate90(baseGrid);
-        if (rotDeg === 180) correctGrid = rotate180(baseGrid);
-        if (rotDeg === 270) correctGrid = rotate270(baseGrid);
+        slider.value = 10;
+        updateSliderText();
 
-        // 正解になり得る「すべての回転パターン」を記録
-        const validRotations = new Set([
-            gridToString(baseGrid),
-            gridToString(rotate90(baseGrid)),
-            gridToString(rotate180(baseGrid)),
-            gridToString(rotate270(baseGrid))
-        ]);
-
-        // クイズの選択肢の重複を防ぐための Set
-        const correctStr = gridToString(correctGrid);
-        const optionSet = new Set();
-        optionSet.add(correctStr);
-        const options = [{ grid: correctGrid, isCorrect: true }];
-
-        function tryAddDummy(dummyGrid) {
-            const str = gridToString(dummyGrid);
-            // ダミーが「別の角度に回しただけの正解」になってしまうのを防ぐ！
-            // （※プレイヤーから見て複数正解があるように見えるバグの修正）
-            if (!validRotations.has(str) && !optionSet.has(str)) {
-                optionSet.add(str);
-                options.push({ grid: dummyGrid, isCorrect: false });
-            }
-        }
-
-        // まずは鏡文字の回転をダミー候補に入れる
-        tryAddDummy(rotate90(mirrorX(baseGrid)));
-        tryAddDummy(rotate180(mirrorX(baseGrid)));
-        tryAddDummy(rotate270(mirrorX(baseGrid)));
-        tryAddDummy(mirrorX(baseGrid));
-        
-        // 十字のような対称的な形などによって、もし重複して選択肢が4つ作れなかった場合は、完全な別ブロックを生成して追加
-        while(options.length < 4) {
-            tryAddDummy(getRandomGrid());
-        }
-
-        options.sort(() => Math.random() - 0.5);
-
-        choicesDiv.innerHTML = '';
-        options.forEach(opt => {
-            choicesDiv.innerHTML += `
-                <div onclick="Labo2Game3.answer(this, ${opt.isCorrect}, ${rotDeg})" style="display:grid; grid-template-columns:repeat(3, 24px); grid-template-rows:repeat(3, 24px); gap:1px; background:#fff; padding:15px; border-radius:12px; border:3px solid #e0e0e0; justify-content:center; cursor:pointer; box-shadow:0 5px 0 #e0e0e0; transition: transform 0.1s;">
-                    ${createGridHTML(opt.grid, '#424242')}
-                </div>
-            `;
-        });
+        renderCubes(gridConfig);
     }
 
-    function answer(el, isCorrect, rotDeg) {
+    function updateSliderText() {
         if (!STATE.isPlaying) return;
-        clearAllTimers();
+        const val = parseInt(document.getElementById('spc-slider').value, 10);
+        const textEl = document.getElementById('spc-slider-val');
+        textEl.innerText = `${val} こ`;
+    }
+
+    function answer() {
+        if (!STATE.isPlaying) return;
+
+        const btn = document.getElementById('spc-btn');
+        btn.style.display = "none";
         
-        const choicesDiv = document.getElementById('spc-choices');
-        choicesDiv.style.pointerEvents = "none";
+        const inputArea = document.getElementById('spc-input-area');
+        inputArea.style.pointerEvents = "none";
+
+        const slider = document.getElementById('spc-slider');
+        const userVal = parseInt(slider.value, 10);
         
-        // 押したボタンをへこませる
-        el.style.transform = "translateY(5px)";
-        el.style.boxShadow = "none";
-        
-        if (isCorrect) {
-            el.style.borderColor = "#66bb6a";
-        } else {
-            el.style.borderColor = "#ef5350";
-        }
+        const errorCount = Math.abs(userVal - STATE.actualCount);
+        STATE.errors.push(errorCount);
 
         const msg = document.getElementById('spc-message');
-        msg.innerHTML = `くるっとまわすと...<br>せいかいはこれ！`;
 
-        const targetDiv = document.getElementById('spc-target');
-        
-        // アニメーション付きで回転して黒色になる（答え合わせ）
-        targetDiv.style.transition = `transform 0.8s ease-in-out`;
-        targetDiv.style.transform = `rotate(${rotDeg}deg) scale(0.8)`;
-        
-        Array.from(targetDiv.children).forEach(child => {
-            if (child.style.backgroundColor !== 'transparent') {
-                child.style.backgroundColor = '#424242';
-                child.style.boxShadow = 'none';
-            }
-        });
+        if (errorCount === 0) {
+            msg.innerHTML = `<span style="color:#ef5350;">ピッタリ大正解！！</span><br><span style="font-size:1rem;">すごい空間認識力！</span>`;
+            App.showFeedback('correct');
+        } else if (errorCount <= 1) {
+            msg.innerHTML = `<span style="color:#ff9800;">おしい！ほぼ正解！</span><br><span style="font-size:1rem;">正解は ${STATE.actualCount}こ</span>`;
+            App.showFeedback('correct');
+        } else {
+            msg.innerHTML = `<span style="color:#3949ab;">ズレちゃった...</span><br><span style="font-size:1rem;">正解は ${STATE.actualCount}こ</span>`;
+            App.showFeedback('wrong');
+        }
 
-        // 回転を見せてからフィードバック
-        addTimer(() => {
-            if (isCorrect) {
-                STATE.correctCount++;
-                App.showFeedback('correct');
-            } else {
-                App.showFeedback('wrong');
-            }
-            
-            addTimer(nextTrial, 1800);
-        }, 900);
+        setTimeout(nextTrial, 3000);
     }
 
     function endGame() {
         STATE.isPlaying = false;
-        const correctRate = Math.round((STATE.correctCount / STATE.trialsTotal) * 100);
-        App.saveResult('space', { correctRate, trials: STATE.trialsTotal, correct: STATE.correctCount });
+        const avgError = STATE.errors.reduce((a, b) => a + b, 0) / STATE.trialsTotal;
+        App.saveResult('space', { avgErrorCount: avgError, trials: STATE.trialsTotal });
     }
 
-    return { start, answer };
+    return { start, answer, updateSliderText };
 })();

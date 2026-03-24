@@ -27,9 +27,16 @@ window.ResultModule2 = (function() {
             outScores.speed = Math.max(0, Math.min(100, Math.round(score)));
         }
 
-        // 3. 空間の感覚 (correctRateそのまま)
+        // 3. 空間の感覚 (平均誤差でスコア計算)
         if (rawResults.space) {
-            outScores.space = rawResults.space.correctRate || 0;
+            if (rawResults.space.hasOwnProperty('correctRate')) {
+                outScores.space = rawResults.space.correctRate || 0;
+            } else {
+                const err = rawResults.space.avgErrorCount || 0;
+                // 平均誤差0で100点。8個間違いで0点になるカーブ（1個間違いで -12.5点）
+                let score = 100 - (err * 12.5);
+                outScores.space = Math.max(0, Math.min(100, Math.round(score)));
+            }
         }
 
         // 4. 長さの感覚 (100点は難しいが、0点にはなりにくい評価)
@@ -40,9 +47,16 @@ window.ResultModule2 = (function() {
             outScores.length = Math.max(0, Math.min(100, Math.round(score)));
         }
 
-        // 5. 色の感覚 (correctRateそのまま)
+        // 5. 色の感覚 (平均誤差でスコア計算)
         if (rawResults.color) {
-            outScores.color = rawResults.color.correctRate || 0;
+            if (rawResults.color.hasOwnProperty('correctRate')) {
+                outScores.color = rawResults.color.correctRate || 0;
+            } else {
+                const err = rawResults.color.avgErrorDeg || 0;
+                // 誤差30くらい（違う色になりかけている）で0点になる厳しいカーブ（1度あたり約3.33点減点）
+                let score = 100 - (err * 3.33);
+                outScores.color = Math.max(0, Math.min(100, Math.round(score)));
+            }
         }
     }
 

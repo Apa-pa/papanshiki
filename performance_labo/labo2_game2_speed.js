@@ -31,7 +31,7 @@ window.Labo2Game2 = (function() {
                     <div style="position:absolute; bottom:20px; left:0; width:100%; height:6px; background:#90a4ae; border-top:2px dashed #fff;"></div>
                     
                     <!-- 列車 -->
-                    <div id="sp-train" style="position:absolute; bottom:23px; left:${STATE.animStartPos}px; font-size: 3rem; transition: transform linear; z-index:5; white-space:nowrap;">🚆</div>
+                    <img id="sp-train" src="train.webp" style="position:absolute; bottom:23px; left:${STATE.animStartPos}px; width:100px; height:auto; transition: transform linear; z-index:5;">
                     
                     <!-- トンネル -->
                     <div style="position:absolute; bottom:0; left: 40%; width: 55%; height: 120px; background: #546e7a; border-radius: 20px 0 0 0; z-index: 10; border-left: 5px solid #37474f;">
@@ -74,11 +74,11 @@ window.Labo2Game2 = (function() {
         train.style.transition = 'none';
         train.style.transform = `translateX(0px)`;
         train.style.zIndex = "5"; // トンネル(10)の下
-        train.style.textShadow = "none";
+        train.style.filter = "none";
         
         // 画面幅に基づく距離
         const containerWidth = document.getElementById('sp-game-container').offsetWidth;
-        const trainWidth = train.offsetWidth || 48; // フォントサイズ3remの列車の幅(基本約48px)
+        const trainWidth = 100; // 画像の幅を100pxに固定して右端判定に使用
         
         // ゴールラインは 95% の位置。
         const goalDistX = containerWidth * 0.95; 
@@ -132,7 +132,7 @@ window.Labo2Game2 = (function() {
         train.style.transform = `translateX(${currentX}px)`;
         // 暗いトンネル内でも目立つようにトンネルの上に表示し、光らせる
         train.style.zIndex = "20"; 
-        train.style.textShadow = "0 0 15px rgba(255, 255, 255, 1)";
+        train.style.filter = "drop-shadow(0 0 10px rgba(255, 255, 255, 0.8))";
 
         const errorMs = Math.abs(elapsed - STATE.expectedDuration);
         STATE.errors.push(errorMs);
