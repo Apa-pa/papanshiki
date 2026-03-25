@@ -3,7 +3,7 @@
    ============================================ */
 'use strict';
 
-window.Labo2Game3 = (function() {
+window.Labo2Game3 = (function () {
     const STATE = {
         trialsTotal: 3,
         currentTrial: 0,
@@ -73,8 +73,8 @@ window.Labo2Game3 = (function() {
         ctx.beginPath();
         ctx.moveTo(cx - w, cy - size + h);
         ctx.lineTo(cx, cy);
-        ctx.lineTo(cx, cy + size); 
-        ctx.lineTo(cx - w, cy + h); 
+        ctx.lineTo(cx, cy + size);
+        ctx.lineTo(cx - w, cy + h);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
@@ -94,19 +94,19 @@ window.Labo2Game3 = (function() {
     function generateCubes() {
         const grid = [];
         let count = 0;
-        for (let x=0; x<3; x++) {
+        for (let x = 0; x < 3; x++) {
             grid[x] = [];
-            for (let y=0; y<3; y++) {
+            for (let y = 0; y < 3; y++) {
                 // 0〜3段
                 const h = Math.floor(Math.random() * 4);
                 grid[x][y] = h;
                 count += h;
             }
         }
-        
+
         // 5〜25個に収まるようにリトライ
         if (count < 5 || count > 20) {
-            return generateCubes(); 
+            return generateCubes();
         }
 
         return { grid, count };
@@ -118,7 +118,7 @@ window.Labo2Game3 = (function() {
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        ctx.strokeStyle = '#006064'; 
+        ctx.strokeStyle = '#006064';
         ctx.lineJoin = 'round';
         ctx.lineWidth = 1.0;
 
@@ -128,7 +128,7 @@ window.Labo2Game3 = (function() {
         const size = 30; // ブロックの辺サイズ
 
         // ペインターズアルゴリズム：x+yが大きい（奥）順に描画して手前を正しく重ねる
-        for (let xy = 4; xy >= 0; xy--) {
+        for (let xy = 0; xy <= 4; xy++) {
             for (let x = 0; x < 3; x++) {
                 const y = xy - x;
                 if (y < 0 || y > 2) continue;
@@ -159,10 +159,10 @@ window.Labo2Game3 = (function() {
         btn.style.display = "block";
         btn.style.transform = "translateY(0)";
         btn.style.boxShadow = "0 6px 0 #7b1fa2";
-        
+
         const gridConfig = generateCubes();
         STATE.actualCount = gridConfig.count;
-        
+
         slider.value = 10;
         updateSliderText();
 
@@ -181,13 +181,13 @@ window.Labo2Game3 = (function() {
 
         const btn = document.getElementById('spc-btn');
         btn.style.display = "none";
-        
+
         const inputArea = document.getElementById('spc-input-area');
         inputArea.style.pointerEvents = "none";
 
         const slider = document.getElementById('spc-slider');
         const userVal = parseInt(slider.value, 10);
-        
+
         const errorCount = Math.abs(userVal - STATE.actualCount);
         STATE.errors.push(errorCount);
 
