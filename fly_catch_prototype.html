@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>フライキャッチ（しさくばん）</title>
+    <style>
+        /* 基本スタイル・色縛り */
+        :root {
+            --bg-color: #e0f7fa;
+            --accent-color: #ff9800;
+            --accent-shadow: #e65100;
+            --text-color: #00838f;
+        }
+
+        body {
+            font-family: 'UD Digital Kyokasho-tai-R', 'Helvetica Neue', Arial, Meiryo, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* スワイプで画面がスクロールしないようにする */
+            touch-action: none; 
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        h1 {
+            color: var(--text-color);
+            font-size: 24px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        #message {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--accent-color);
+            min-height: 40px;
+            text-shadow: 2px 2px 0px white;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 4 / 3;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 15px 40px;
+            font-size: 22px;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 6px 0 var(--accent-shadow);
+            transition: all 0.1s;
+        }
+
+        .btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 var(--accent-shadow);
+        }
+
+        .btn:disabled {
+            background-color: #bdbdbd;
+            box-shadow: 0 6px 0 #9e9e9e;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* スライダーのスタイル */
+        .slider-wrapper {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+
+        input[type="range"] {
+            flex-grow: 1;
+            height: 20px;
+            border-radius: 10px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #b2ebf2;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 3px solid white;
+        }
+
+        .helper-text {
+            color: #555;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1><ruby>飛<rt>と</rt></ruby>んでくるボールをキャッチ！</h1>
+    <div id="message"></div>
+    
+    <div id="game-container">
+        <!-- 内部解像度は800x600で固定し、CSSでレスポンシブに縮小拡大する -->
+        <canvas id="canvas" width="800" height="600"></canvas>
+    </div>
+
+    <!-- 画面下部のスライダーでキャラクターを直接動かせる -->
+    <div class="slider-wrapper">
+        <span style="font-size:24px;">👈</span>
+        <input type="range" id="player-slider" min="0" max="100" value="50">
+        <span style="font-size:24px;">👉</span>
+    </div>
+
+    <button id="start-btn" class="btn">スタート</button>
+    <div class="helper-text">※ 画面をタッチ・スワイプしても動かせるよ</div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('start-btn');
+        const slider = document.getElementById('player-slider');
+        const messageDiv = document.getElementById('message');
+
+        // ==== ゲームのパラメータ設定 ====
+        const GROUND_Y = 500; // 地面の高さ（Y座標）
+        const GLOVE_RADIUS = 60; // キャッチできる判定の広さ（ピクセル）
+        let VISIBILITY_RATIO = 0.4; // 軌道の何％までボールが見えるか（0.4 = 40%で消える）
+
+        // ゲーム状態
+        let gameState = 'ready'; // ready, flying, result
+        let ball = { x: 0, y: 0, visible: true };
+        let trajectory = []; // 見えている間の軌道を描画するための配列
+        
+        // 物理計算用の変数
+        let startX = 0;
+        let targetX = 0;
+        let peakY = 0;
+        let startTime = 0;
+        let flightDuration = 2000;
+        let playerX = canvas.width / 2;
+        let animationId;
+
+        function init() {
+            bindEvents();
+            resetGame();
+            draw();
+        }
+
+        function bindEvents() {
+            startBtn.addEventListener('click', startGame);
+            
+            // スライダーでの操作
+            slider.addEventListener('input', (e) => {
+                setPlayerPositionFromPercentage(e.target.value);
+            });
+
+            // キャンバスの直接タッチ・ドラッグでの操作
+            const handleTouch = (e) => {
+                e.preventDefault(); // スクロール防止
+                let clientX = e.clientX;
+                if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                }
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width; // 描画サイズと実サイズの比率
+                let x = (clientX - rect.left) * scaleX;
+                
+                // 画面端の制限
+                x = Math.max(GLOVE_RADIUS, Math.min(canvas.width - GLOVE_RADIUS, x));
+                playerX = x;
+                
+                // スライダーの位置も連動させる
+                slider.value = ((playerX - GLOVE_RADIUS) / (canvas.width - GLOVE_RADIUS * 2)) * 100;
+                
+                if (gameState !== 'flying') {
+                    draw();
+                }
+            };
+
+            canvas.addEventListener('mousedown', (e) => handleTouch(e));
+            canvas.addEventListener('mousemove', (e) => {
+                if(e.buttons === 1) handleTouch(e); // ドラッグ中のみ
+            });
+            canvas.addEventListener('touchstart', handleTouch, {passive: false});
+            canvas.addEventListener('touchmove', handleTouch, {passive: false});
+        }
+
+        function setPlayerPositionFromPercentage(percent) {
+            playerX = (percent / 100) * (canvas.width - GLOVE_RADIUS * 2) + GLOVE_RADIUS;
+            if (gameState !== 'flying') {
+                draw();
+            }
+        }
+
+        function resetGame() {
+            messageDiv.textContent = 'よーく見てね！';
+            messageDiv.style.color = 'var(--text-color)';
+            playerX = canvas.width / 2;
+            slider.value = 50;
+            gameState = 'ready';
+            trajectory = [];
+        }
+
+        function startGame() {
+            if (gameState === 'flying') return;
+            
+            messageDiv.textContent = 'ボールがきえるぞ！';
+            startBtn.disabled = true;
+            
+            // 軌道のランダム生成
+            // 飛んでくる方向をランダムに設定（左から右、または右から左）
+            if (Math.random() > 0.5) {
+                startX = 50 + Math.random() * 100; // 左端の方から
+                targetX = 400 + Math.random() * 300; // 右側に落ちる
+            } else {
+                startX = canvas.width - (50 + Math.random() * 100); // 右端の方から
+                targetX = 100 + Math.random() * 300; // 左側に落ちる
+            }
+            
+            peakY = 50 + Math.random() * 150; // 放物線の高さ（小さいほど高く飛ぶ）
+            flightDuration = 1800 + Math.random() * 800; // 飛行時間 1.8秒〜2.6秒
+            VISIBILITY_RATIO = 0.35 + Math.random() * 0.15; // ボールが見える割合 (35%〜50%)
+            
+            gameState = 'flying';
+            trajectory = [];
+            startTime = performance.now();
+            
+            // 初期位置を描画用配列に
+            ball.x = startX;
+            ball.y = GROUND_Y;
+            trajectory.push({x: ball.x, y: ball.y});
+            
+            animationId = requestAnimationFrame(update);
+        }
+
+        function update(time) {
+            if (gameState !== 'flying') return;
+
+            const elapsed = time - startTime;
+            let t = elapsed / flightDuration; // 0.0 から 1.0 の進行度
+
+            if (t >= 1) {
+                t = 1;
+                finishFlight();
+            }
+
+            // X座標は等速直線運動
+            ball.x = startX + (targetX - startX) * t;
+            // Y座標は放物線（2次関数: 地面と最高点を通るように計算）
+            ball.y = GROUND_Y - 4 * (GROUND_Y - peakY) * t * (1 - t);
+
+            // ボールが「見える範囲内」かどうかの判定
+            ball.visible = t <= VISIBILITY_RATIO;
+            
+            // 見えている間は軌跡を記録する
+            if (ball.visible && t < 1) {
+                trajectory.push({x: ball.x, y: ball.y});
+            }
+
+            draw();
+
+            if (t < 1) {
+                animationId = requestAnimationFrame(update);
+            }
+        }
+
+        function finishFlight() {
+            gameState = 'result';
+            ball.visible = true; // 結果発表ではボールを再表示
+            ball.x = targetX;
+            ball.y = GROUND_Y;
+
+            // 当たり判定の計算（プレイヤーの中心とボールの中心のX座標のズレ）
+            const distance = Math.abs(playerX - ball.x);
+            
+            if (distance <= GLOVE_RADIUS) {
+                messageDiv.innerHTML = '✨ ナイスキャッチ！ ✨';
+                messageDiv.style.color = '#ff9800';
+            } else {
+                messageDiv.innerHTML = '💦 おしい！ 💦';
+                messageDiv.style.color = '#00bcd4';
+            }
+            
+            startBtn.disabled = false;
+            startBtn.textContent = 'もういちど';
+            
+            draw(distance); // 結果を描画
+        }
+
+        function draw(errorDistance = 0) {
+            // 背景クリア
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 空と地面の描画
+            ctx.fillStyle = '#e0f7fa'; // 空
+            ctx.fillRect(0, 0, canvas.width, GROUND_Y);
+            ctx.fillStyle = '#81c784'; // 地面
+            ctx.fillRect(0, GROUND_Y, canvas.width, canvas.height - GROUND_Y);
+
+            // === プレイヤー（グローブ）の描画 ===
+            // キャッチ範囲を薄いオレンジの円で視覚化（子ども向けに分かりやすく）
+            ctx.fillStyle = 'rgba(255, 152, 0, 0.2)';
+            ctx.beginPath();
+            ctx.arc(playerX, GROUND_Y, GLOVE_RADIUS, 0, Math.PI, true); // 半円
+            ctx.fill();
+
+            ctx.font = '80px Arial'; // キャラクタ（グローブ）サイズ
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText('🧤', playerX, GROUND_Y + 10);
+
+            // === 軌道の描画 ===
+            if (trajectory.length > 1) {
+                ctx.beginPath();
+                ctx.moveTo(trajectory[0].x, trajectory[0].y);
+                for (let i = 1; i < trajectory.length; i++) {
+                    ctx.lineTo(trajectory[i].x, trajectory[i].y);
+                }
+                ctx.strokeStyle = '#bdbdbd';
+                ctx.lineWidth = 4;
+                ctx.setLineDash([10, 10]); // 点線
+                ctx.stroke();
+                ctx.setLineDash([]); // リセット
+            }
+
+            // === 投げる機械（ピッチングマシン的なもの）の描画 ===
+            ctx.font = '50px Arial';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText('🤖', startX, GROUND_Y + 10);
+
+            // === ボールの描画 ===
+            ctx.textBaseline = 'middle';
+            ctx.font = '40px Arial';
+
+            if (gameState === 'flying') {
+                if (ball.visible) {
+                    ctx.fillText('⚾️', ball.x, ball.y);
+                } else {
+                    // 見えない時も「？マーク」などを出すか、完全に消すか。今回は完全に消す。
+                    // ctx.fillText('❓', ball.x, ball.y);
+                }
+            } else if (gameState === 'result') {
+                // ボールが地面に落ちた状態
+                ctx.fillText('⚾️', ball.x, ball.y);
+
+                // アナログ誤差評価の表示（中心からのズレを示す線）
+                ctx.beginPath();
+                ctx.moveTo(playerX, GROUND_Y - 20);
+                ctx.lineTo(ball.x, GROUND_Y - 20);
+                ctx.strokeStyle = errorDistance <= GLOVE_RADIUS ? '#4caf50' : '#f44336';
+                ctx.lineWidth = 5;
+                ctx.stroke();
+
+                // ズレの数値テキストを描画
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 24px "UD Digital Kyokasho-tai-R"';
+                ctx.fillText(`ズレ: ${Math.round(errorDistance)}`, (playerX + ball.x) / 2, GROUND_Y - 35);
+            }
+        }
+
+        // 起動時に初期化
+        window.onload = init;
+    </script>
+</body>
+</html>

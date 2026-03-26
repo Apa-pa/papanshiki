@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>バレーボール ラリーチャレンジ</title>
+    <!-- ranking.js を読み込む -->
+    <script src="ranking.js"></script>
+    <style>
+        /* 基本スタイル・色縛り */
+        :root {
+            --bg-color: #f3e5f5; 
+            --accent-color: #ff9800;
+            --accent-shadow: #e65100;
+            --text-color: #6a1b9a;
+            --court-color: #ffccbc;
+        }
+
+        body {
+            font-family: 'UD Digital Kyokasho-tai-R', 'Helvetica Neue', Arial, Meiryo, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            touch-action: none; 
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* オーバーレイのスタイル */
+        #rule-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #rule-overlay h2 {
+            color: var(--accent-color);
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0px #fff;
+        }
+        #rule-overlay p {
+            font-size: 20px;
+            line-height: 1.6;
+            max-width: 600px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        h1 {
+            color: var(--text-color);
+            font-size: 24px;
+            margin: 5px 0 10px 0;
+            text-align: center;
+        }
+
+        #message {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent-color);
+            min-height: 36px;
+            text-shadow: 2px 2px 0px white;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 4 / 3;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 30px;
+            font-size: 20px;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 6px 0 var(--accent-shadow);
+            transition: all 0.1s;
+        }
+
+        .btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 var(--accent-shadow);
+        }
+
+        .btn:disabled {
+            background-color: #bdbdbd;
+            box-shadow: 0 6px 0 #9e9e9e;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .slider-wrapper {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+
+        input[type="range"] {
+            flex-grow: 1;
+            height: 20px;
+            border-radius: 10px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #ce93d8;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 3px solid white;
+        }
+
+        .helper-text {
+            color: #555;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        #end-menu {
+            display: none;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- ルール説明オーバーレイ -->
+    <div id="rule-overlay">
+        <h2>消えるバレーボール！</h2>
+        <p>消える魔球をあやつるくまのピッピとバレーボールをしよう！<br>
+        ボールが落ちてくるのはどこか予想して落下地点に入ってね！<br>
+        何回ラリーができるかな？どんどん早くなるよ🏐</p>
+        <button id="rule-start-btn" class="btn" style="font-size:24px; padding:15px 50px;">あそぶ</button>
+    </div>
+
+    <h1><ruby>消<rt>き</rt></ruby>えるバレーボール！ラリーチャレンジ</h1>
+    <div id="message">ピッピとラリーを続けよう！</div>
+    
+    <div id="game-container">
+        <canvas id="canvas" width="800" height="600"></canvas>
+    </div>
+
+    <div class="slider-wrapper" id="slider-wrapper">
+        <span style="font-size:24px;">👈</span>
+        <input type="range" id="player-slider" min="0" max="100" value="50">
+        <span style="font-size:24px;">👉</span>
+    </div>
+
+    <div id="end-menu">
+        <button onclick="location.href='index.html'" class="btn" style="background:#4caf50; box-shadow:0 6px 0 #388e3c;">🏠 ホームにもどる</button>
+        <button onclick="location.reload()" class="btn">🔄 もう一回</button>
+    </div>
+
+    <div class="helper-text" id="helper-text">※ 画面の右半分をタッチ・スワイプしても動かせるよ</div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const ruleStartBtn = document.getElementById('rule-start-btn');
+        const slider = document.getElementById('player-slider');
+        const messageDiv = document.getElementById('message');
+        const endMenu = document.getElementById('end-menu');
+        const sliderWrapper = document.getElementById('slider-wrapper');
+        const helperText = document.getElementById('helper-text');
+
+        // ==== ゲームのパラメータ設定 ====
+        const GROUND_Y = 500; 
+        const NET_X = 400; 
+        const NET_HEIGHT = 200; 
+        const HIT_RADIUS = 70; 
+        
+        let DISAPPEAR_START = 0.45; 
+        let DISAPPEAR_END = 0.8;  
+
+        // ゲーム状態
+        let gameState = 'ready'; 
+        let currentTurn = 'player'; 
+        let ball = { x: 0, y: 0, visible: true, size: 40 };
+        let rallyCount = 0;
+        
+        // 物理計算用の変数
+        let startX = 0;
+        let targetX = 0;
+        let peakY = 0;
+        let startTime = 0;
+        let baseFlightDuration = 1800; 
+        let currentFlightDuration = 1800;
+        let animationId;
+
+        // エフェクト用
+        let effects = [];
+        let hasDisappearedThisFlight = false;
+
+        // SE（効果音）
+        const hitSe = new Audio('se/peta.mp3');
+        function playHitSound() {
+            hitSe.currentTime = 0;
+            hitSe.play().catch(e => console.log('SE play error:', e)); 
+        }
+
+        // キャラクター位置
+        let comX = 200;
+        const PLAYER_MIN_X = 450;
+        const PLAYER_MAX_X = 750;
+        let playerX = (PLAYER_MIN_X + PLAYER_MAX_X) / 2;
+
+        // 画像
+        const anchanImg = new Image();
+        anchanImg.src = 'an192.webp';
+        const pippiImg = new Image();
+        pippiImg.src = 'pippi_right.webp';
+
+        function init() {
+            bindEvents();
+            draw();
+            // オーバーレイの「あそぶ」ボタンで開始
+            ruleStartBtn.addEventListener('click', () => {
+                document.getElementById('rule-overlay').style.display = 'none';
+                startGame();
+            });
+        }
+
+        function bindEvents() {
+            slider.addEventListener('input', (e) => {
+                const percent = e.target.value / 100;
+                playerX = PLAYER_MIN_X + (PLAYER_MAX_X - PLAYER_MIN_X) * percent;
+                if (gameState !== 'playing') draw();
+            });
+
+            const handleTouch = (e) => {
+                e.preventDefault();
+                let clientX = e.clientX;
+                if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                }
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                let x = (clientX - rect.left) * scaleX;
+                
+                if (x >= NET_X) {
+                    playerX = Math.max(PLAYER_MIN_X, Math.min(PLAYER_MAX_X, x));
+                    slider.value = ((playerX - PLAYER_MIN_X) / (PLAYER_MAX_X - PLAYER_MIN_X)) * 100;
+                    if (gameState !== 'playing') draw();
+                }
+            };
+
+            canvas.addEventListener('mousedown', handleTouch);
+            canvas.addEventListener('mousemove', (e) => { if(e.buttons === 1) handleTouch(e); });
+            canvas.addEventListener('touchstart', handleTouch, {passive: false});
+            canvas.addEventListener('touchmove', handleTouch, {passive: false});
+        }
+
+        function startGame() {
+            if (gameState === 'playing') return;
+            
+            rallyCount = 0;
+            currentFlightDuration = baseFlightDuration;
+            gameState = 'playing';
+            messageDiv.innerHTML = 'ラリースタート！';
+            
+            startFlight(true); 
+        }
+
+        function startFlight(isComServe) {
+            startTime = performance.now();
+            hasDisappearedThisFlight = false; 
+            playHitSound(); 
+            
+            if (isComServe) {
+                currentTurn = 'player'; 
+                startX = comX;
+                targetX = PLAYER_MIN_X + Math.random() * (PLAYER_MAX_X - PLAYER_MIN_X);
+            } else {
+                currentTurn = 'com'; 
+                startX = playerX;
+                targetX = 50 + Math.random() * (NET_X - 100);
+                comX = targetX; 
+            }
+            
+            peakY = 50 + Math.random() * 100; 
+            
+            animationId = requestAnimationFrame(update);
+        }
+
+        function update(time) {
+            if (gameState !== 'playing') return;
+
+            const elapsed = time - startTime;
+            let t = elapsed / currentFlightDuration;
+
+            if (t >= 1) t = 1;
+
+            ball.x = startX + (targetX - startX) * t;
+            ball.y = GROUND_Y - 4 * (GROUND_Y - peakY) * t * (1 - t);
+
+            if (currentTurn === 'player') {
+                ball.visible = (t <= DISAPPEAR_START) || (t >= DISAPPEAR_END);
+                
+                if (t > DISAPPEAR_START && !hasDisappearedThisFlight) {
+                    hasDisappearedThisFlight = true;
+                    effects.push({ x: ball.x, y: ball.y, startTime: time, duration: 400 });
+                }
+            } else {
+                ball.visible = true;
+            }
+
+            draw();
+
+            if (t < 1) {
+                animationId = requestAnimationFrame(update);
+            } else {
+                judgeHit();
+            }
+        }
+
+        function judgeHit() {
+            if (currentTurn === 'player') {
+                const distance = Math.abs(playerX - ball.x);
+                if (distance <= HIT_RADIUS) {
+                    rallyCount++;
+                    messageDiv.innerHTML = `ラリー: ${rallyCount}回！`;
+                    messageDiv.style.color = 'var(--accent-color)';
+                    
+                    // 下限300msまで加速
+                    currentFlightDuration = Math.max(300, currentFlightDuration * 0.95);
+                    
+                    startFlight(false); 
+                } else {
+                    gameOver();
+                }
+            } else {
+                startFlight(true); 
+            }
+        }
+
+        function gameOver() {
+            gameState = 'gameover';
+            ball.visible = true; 
+            
+            messageDiv.innerHTML = `ゲームオーバー！ 記録: ${rallyCount}回ラリ―！`;
+            messageDiv.style.color = '#d32f2f'; 
+            
+            draw();
+
+            // ranking.jsのポイント獲得ダイアログを呼び出し
+            const earnedPoints = 10 + rallyCount;
+            sliderWrapper.style.display = 'none';
+            helperText.style.display = 'none';
+
+            setTimeout(() => {
+                if (typeof showPointGetDialog === 'function') {
+                    showPointGetDialog(earnedPoints, showEndMenu);
+                } else {
+                    showEndMenu(); // 存在しない場合のフォールバック
+                }
+            }, 1000);
+        }
+
+        function showEndMenu() {
+            endMenu.style.display = 'flex';
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#e0f7fa';
+            ctx.fillRect(0, 0, canvas.width, GROUND_Y);
+
+            ctx.font = '80px Arial';
+            ctx.textBaseline = 'bottom';
+            ctx.textAlign = 'center';
+            const trees = ['🌳', '🌲', '🌳', '🌲', '🌳', '🌲', '🌳', '🌲'];
+            for (let i = 0; i < trees.length; i++) {
+                ctx.fillText(trees[i], 50 + i * 100, GROUND_Y + 10);
+            }
+
+            ctx.font = '60px Arial';
+            ctx.fillText('☁️', 200, 150);
+            ctx.fillText('☁️', 600, 100);
+
+            ctx.fillStyle = '#aed581';
+            ctx.fillRect(0, GROUND_Y, canvas.width, canvas.height - GROUND_Y);
+            
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.beginPath();
+            ctx.moveTo(NET_X - 10, GROUND_Y);
+            ctx.lineTo(NET_X + 10, GROUND_Y);
+            ctx.lineTo(NET_X + 30, canvas.height);
+            ctx.lineTo(NET_X - 30, canvas.height);
+            ctx.fill();
+
+            ctx.fillStyle = '#424242'; 
+            ctx.fillRect(NET_X - 5, GROUND_Y - NET_HEIGHT, 10, NET_HEIGHT);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'; 
+            ctx.fillRect(NET_X - 2, GROUND_Y - NET_HEIGHT, 4, NET_HEIGHT - 20);
+
+            ctx.fillStyle = 'rgba(0,0,0,0.03)';
+            ctx.fillRect(0, GROUND_Y, NET_X, canvas.height - GROUND_Y);
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.font = '80px Arial';
+            ctx.fillStyle = '#000000'; 
+
+            if (pippiImg.complete && pippiImg.naturalWidth > 0) {
+                const targetWidth = 100;
+                const ratio = pippiImg.naturalHeight / pippiImg.naturalWidth;
+                const targetHeight = targetWidth * ratio;
+                ctx.drawImage(pippiImg, comX - targetWidth / 2, GROUND_Y - targetHeight + 10, targetWidth, targetHeight);
+            } else {
+                ctx.fillText('🐻', comX, GROUND_Y + 10);
+            }
+            
+            ctx.fillStyle = 'rgba(255, 152, 0, 0.2)';
+            ctx.beginPath();
+            ctx.arc(playerX, GROUND_Y, HIT_RADIUS, 0, Math.PI, true);
+            ctx.fill();
+
+            ctx.fillStyle = '#000000'; 
+            if (anchanImg.complete && anchanImg.naturalWidth > 0) {
+                const targetWidth = 100;
+                const ratio = anchanImg.naturalHeight / anchanImg.naturalWidth;
+                const targetHeight = targetWidth * ratio;
+                ctx.drawImage(anchanImg, playerX - targetWidth / 2, GROUND_Y - targetHeight + 10, targetWidth, targetHeight);
+            } else {
+                ctx.fillText('🦔', playerX, GROUND_Y + 10);
+            }
+
+            const now = performance.now();
+            for (let i = effects.length - 1; i >= 0; i--) {
+                const ef = effects[i];
+                const age = now - ef.startTime;
+                if (age > ef.duration) {
+                    effects.splice(i, 1); 
+                } else {
+                    const progress = age / ef.duration; 
+                    const alpha = 1 - progress; 
+                    
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+                    ctx.lineWidth = 6;
+                    ctx.beginPath();
+                    ctx.arc(ef.x, ef.y, 20 + progress * 60, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    ctx.fillStyle = `rgba(255, 215, 0, ${alpha})`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.font = `${30 + progress * 40}px Arial`;
+                    ctx.fillText('✨', ef.x, ef.y);
+                }
+            }
+
+            if (gameState === 'playing' || gameState === 'gameover') {
+                if (ball.visible) {
+                    ctx.font = `${ball.size}px Arial`;
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('🏐', ball.x, ball.y);
+                }
+            }
+
+            if (gameState === 'playing') {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.font = 'bold 36px "UD Digital Kyokasho-tai-R"';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(`ラリー数: ${rallyCount}`, 20, 20);
+                
+                let speedLevel = Math.floor((baseFlightDuration - currentFlightDuration) / 50) + 1;
+                ctx.fillStyle = '#ff9800';
+                ctx.fillText(`スピード: Lv${speedLevel}`, 20, 70);
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

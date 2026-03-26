@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>バレーボール ラリーチャレンジ</title>
+    <style>
+        /* 基本スタイル・色縛り */
+        :root {
+            --bg-color: #f3e5f5; /* 少し紫がかったパステル系 */
+            --accent-color: #ff9800;
+            --accent-shadow: #e65100;
+            --text-color: #6a1b9a;
+            --court-color: #ffccbc; /* 体育館の床っぽい色 */
+        }
+
+        body {
+            font-family: 'UD Digital Kyokasho-tai-R', 'Helvetica Neue', Arial, Meiryo, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            touch-action: none; /* スワイプでのスクロール防止 */
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        h1 {
+            color: var(--text-color);
+            font-size: 24px;
+            margin: 5px 0 10px 0;
+            text-align: center;
+        }
+
+        #message {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent-color);
+            min-height: 36px;
+            text-shadow: 2px 2px 0px white;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 4 / 3;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 30px;
+            font-size: 20px;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 6px 0 var(--accent-shadow);
+            transition: all 0.1s;
+        }
+
+        .btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 var(--accent-shadow);
+        }
+
+        .btn:disabled {
+            background-color: #bdbdbd;
+            box-shadow: 0 6px 0 #9e9e9e;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* スライダーのスタイル */
+        .slider-wrapper {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+
+        input[type="range"] {
+            flex-grow: 1;
+            height: 20px;
+            border-radius: 10px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #ce93d8;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 3px solid white;
+        }
+
+        .helper-text {
+            color: #555;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1><ruby>消<rt>き</rt></ruby>えるバレーボール！ラリーチャレンジ</h1>
+    <div id="message">ロボットとラリーを続けよう！</div>
+    
+    <div id="game-container">
+        <canvas id="canvas" width="800" height="600"></canvas>
+    </div>
+
+    <!-- プレイヤーは右半分（ネットの右側）のみ動ける想定 -->
+    <div class="slider-wrapper">
+        <span style="font-size:24px;">👈</span>
+        <input type="range" id="player-slider" min="0" max="100" value="50">
+        <span style="font-size:24px;">👉</span>
+    </div>
+
+    <button id="start-btn" class="btn">ゲームスタート</button>
+    <div class="helper-text">※ 画面の右半分をタッチ・スワイプしても動かせるよ</div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('start-btn');
+        const slider = document.getElementById('player-slider');
+        const messageDiv = document.getElementById('message');
+
+        // ==== ゲームのパラメータ設定 ====
+        const GROUND_Y = 500; // 床の高さ
+        const NET_X = 400; // ネットのX座標（中央）
+        const NET_HEIGHT = 200; // ネットの高さ
+        const HIT_RADIUS = 70; // レシーブできる判定の広さ
+        
+        let DISAPPEAR_START = 0.45; // 軌道の45%で消え始める
+        let DISAPPEAR_END = 0.8;  // 軌道の80%で再び表示される（落下地点間際には見える）
+
+        // ゲーム状態
+        let gameState = 'ready'; // ready, playing, gameover
+        let currentTurn = 'player'; // 'player' (ボールがプレイヤーへ向かっている), 'com' (COMへ向かっている)
+        let ball = { x: 0, y: 0, visible: true, size: 40 };
+        let rallyCount = 0;
+        
+        // 物理計算用の変数
+        let startX = 0;
+        let targetX = 0;
+        let peakY = 0;
+        let startTime = 0;
+        let baseFlightDuration = 1800; // 初期の飛行時間（徐々に短くなる）
+        let currentFlightDuration = 1800;
+        let animationId;
+
+        // ボールが消えるエフェクト用
+        let effects = [];
+        let hasDisappearedThisFlight = false;
+
+        // SE（効果音）の読み込みと再生用関数
+        const hitSe = new Audio('se/peta.mp3'); // パス修正: HTMLファイルと同じ階層にあるseフォルダを指定
+        function playHitSound() {
+            hitSe.currentTime = 0;
+            hitSe.play().catch(e => console.log('SE play error:', e)); // ブラウザの自動再生ブロック対策
+        }
+
+        // キャラクター位置
+        // COMは左半分(50〜350)、プレイヤーは右半分(450〜750)
+        let comX = 200;
+        const PLAYER_MIN_X = 450;
+        const PLAYER_MAX_X = 750;
+        let playerX = (PLAYER_MIN_X + PLAYER_MAX_X) / 2;
+
+        // キャラクター画像
+        const anchanImg = new Image();
+        anchanImg.src = 'an192.webp';
+        const pippiImg = new Image();
+        pippiImg.src = 'pippi_right.webp';
+
+        function init() {
+            bindEvents();
+            draw();
+        }
+
+        function bindEvents() {
+            startBtn.addEventListener('click', startGame);
+            
+            // スライダー操作（右半分の領域にマッピング）
+            slider.addEventListener('input', (e) => {
+                const percent = e.target.value / 100;
+                playerX = PLAYER_MIN_X + (PLAYER_MAX_X - PLAYER_MIN_X) * percent;
+                if (gameState !== 'playing') draw();
+            });
+
+            // キャンバス直接タッチ（右半分のみ反応するようにする）
+            const handleTouch = (e) => {
+                e.preventDefault();
+                let clientX = e.clientX;
+                if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                }
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                let x = (clientX - rect.left) * scaleX;
+                
+                // プレイヤの移動範囲を右半分に制限
+                if (x >= NET_X) {
+                    playerX = Math.max(PLAYER_MIN_X, Math.min(PLAYER_MAX_X, x));
+                    slider.value = ((playerX - PLAYER_MIN_X) / (PLAYER_MAX_X - PLAYER_MIN_X)) * 100;
+                    if (gameState !== 'playing') draw();
+                }
+            };
+
+            canvas.addEventListener('mousedown', handleTouch);
+            canvas.addEventListener('mousemove', (e) => { if(e.buttons === 1) handleTouch(e); });
+            canvas.addEventListener('touchstart', handleTouch, {passive: false});
+            canvas.addEventListener('touchmove', handleTouch, {passive: false});
+        }
+
+        function startGame() {
+            if (gameState === 'playing') return;
+            
+            rallyCount = 0;
+            currentFlightDuration = baseFlightDuration;
+            gameState = 'playing';
+            startBtn.disabled = true;
+            messageDiv.innerHTML = 'ラリースタート！';
+            
+            startFlight(true); // COMからのサーブで開始
+        }
+
+        function startFlight(isComServe) {
+            startTime = performance.now();
+            hasDisappearedThisFlight = false; // エフェクトフラグをリセット
+            playHitSound(); // サーブ・レシーブの「ペタッ」という音を鳴らす
+            
+            if (isComServe) {
+                // COM -> プレイヤーへの軌道
+                currentTurn = 'player'; // 次にレシーブするのはプレイヤー
+                startX = comX;
+                targetX = PLAYER_MIN_X + Math.random() * (PLAYER_MAX_X - PLAYER_MIN_X);
+            } else {
+                // プレイヤー -> COMへの軌道
+                currentTurn = 'com'; // 次にレシーブするのはCOM
+                startX = playerX;
+                targetX = 50 + Math.random() * (NET_X - 100);
+                comX = targetX; // COMは無限返球（落下地点に先回りする）
+            }
+            
+            peakY = 50 + Math.random() * 100; // ネットを越える放物線
+            
+            animationId = requestAnimationFrame(update);
+        }
+
+        function update(time) {
+            if (gameState !== 'playing') return;
+
+            const elapsed = time - startTime;
+            let t = elapsed / currentFlightDuration;
+
+            if (t >= 1) t = 1;
+
+            // X軸は等速、Y軸は放物線
+            ball.x = startX + (targetX - startX) * t;
+            ball.y = GROUND_Y - 4 * (GROUND_Y - peakY) * t * (1 - t);
+
+            // ボールの可視性判定（プレイヤーへ向かっている時のみ途中で消える）
+            if (currentTurn === 'player') {
+                // 可視性の基本判定
+                ball.visible = (t <= DISAPPEAR_START) || (t >= DISAPPEAR_END);
+                
+                // 消えた瞬間のポンッ！というエフェクト発動
+                if (t > DISAPPEAR_START && !hasDisappearedThisFlight) {
+                    hasDisappearedThisFlight = true;
+                    // 現在のボール座標にエフェクトを登録（持続時間400ms）
+                    effects.push({ x: ball.x, y: ball.y, startTime: time, duration: 400 });
+                }
+            } else {
+                // COMに向かって打ち返したボールはずっと見える（ご褒美としての爽快感）
+                ball.visible = true;
+            }
+
+            draw();
+
+            if (t < 1) {
+                animationId = requestAnimationFrame(update);
+            } else {
+                // 床に到達した時の判定
+                judgeHit();
+            }
+        }
+
+        function judgeHit() {
+            if (currentTurn === 'player') {
+                // プレイヤー側のレシーブ判定
+                const distance = Math.abs(playerX - ball.x);
+                if (distance <= HIT_RADIUS) {
+                    // レシーブ成功！
+                    rallyCount++;
+                    messageDiv.innerHTML = `ラリー: ${rallyCount}回！`;
+                    messageDiv.style.color = 'var(--accent-color)';
+                    
+                    // 徐々にボールの速度を上げる（飛行時間の下限を800msから300msまで引き下げ、上限Lvを21から31へ開放）
+                    currentFlightDuration = Math.max(300, currentFlightDuration * 0.95);
+                    
+                    // ちょっとしたヒットエフェクトの代わりにすぐCOMへ打ち返す
+                    startFlight(false); 
+                } else {
+                    // レシーブ失敗 -> ゲームオーバー
+                    gameOver();
+                }
+            } else {
+                // COM側（無限返球なので常に成功する）
+                setTimeout(() => {
+                    startFlight(true); // COMからプレイヤーへ
+                }, 100); // 打ち返す際の一瞬の間
+            }
+        }
+
+        function gameOver() {
+            gameState = 'gameover';
+            ball.visible = true; // ボールは表示状態にする
+            
+            messageDiv.innerHTML = `ゲームオーバー！ 記録: ${rallyCount}回ラリ―！`;
+            messageDiv.style.color = '#d32f2f'; // 赤色
+            
+            startBtn.disabled = false;
+            startBtn.textContent = 'もういちど';
+            draw();
+        }
+
+        function draw() {
+            // 背景
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 空
+            ctx.fillStyle = '#e0f7fa'; // 森に合うように明るい水色へ変更
+            ctx.fillRect(0, 0, canvas.width, GROUND_Y);
+
+            // 背景の森（飾り）
+            ctx.font = '80px Arial';
+            ctx.textBaseline = 'bottom';
+            ctx.textAlign = 'center';
+            const trees = ['🌳', '🌲', '🌳', '🌲', '🌳', '🌲', '🌳', '🌲'];
+            for (let i = 0; i < trees.length; i++) {
+                ctx.fillText(trees[i], 50 + i * 100, GROUND_Y + 10);
+            }
+
+            // 雲の描画（山は描画せず雲だけ残す）
+            ctx.font = '60px Arial';
+            ctx.fillText('☁️', 200, 150);
+            ctx.fillText('☁️', 600, 100);
+
+            // 床（芝生風に変更）
+            ctx.fillStyle = '#aed581';
+            ctx.fillRect(0, GROUND_Y, canvas.width, canvas.height - GROUND_Y);
+            
+            // センターライン（白線）
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.beginPath();
+            ctx.moveTo(NET_X - 10, GROUND_Y);
+            ctx.lineTo(NET_X + 10, GROUND_Y);
+            ctx.lineTo(NET_X + 30, canvas.height);
+            ctx.lineTo(NET_X - 30, canvas.height);
+            ctx.fill();
+
+            // ネットの描画
+            ctx.fillStyle = '#424242'; // ポール
+            ctx.fillRect(NET_X - 5, GROUND_Y - NET_HEIGHT, 10, NET_HEIGHT);
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'; // ネットの網部分
+            ctx.fillRect(NET_X - 2, GROUND_Y - NET_HEIGHT, 4, NET_HEIGHT - 20);
+
+            // COMエリア（左側）の背景色を僅かに暗くする
+            ctx.fillStyle = 'rgba(0,0,0,0.03)';
+            ctx.fillRect(0, GROUND_Y, NET_X, canvas.height - GROUND_Y);
+
+            // === キャラクターの描画 ===
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.font = '80px Arial';
+            ctx.fillStyle = '#000000'; // 念のため不透明度にリセット
+
+            // COM（くまのピッピ）
+            if (pippiImg.complete && pippiImg.naturalWidth > 0) {
+                // 画像本来の縦横比（アスペクト比）を保ちつつ、横幅90pxを基準に描画
+                const targetWidth = 100;
+                const ratio = pippiImg.naturalHeight / pippiImg.naturalWidth;
+                const targetHeight = targetWidth * ratio;
+                ctx.drawImage(pippiImg, comX - targetWidth / 2, GROUND_Y - targetHeight + 10, targetWidth, targetHeight);
+            } else {
+                ctx.fillText('🐻', comX, GROUND_Y + 10);
+            }
+            
+            // プレイヤー
+            // レシーブ範囲の可視化
+            ctx.fillStyle = 'rgba(255, 152, 0, 0.2)';
+            ctx.beginPath();
+            ctx.arc(playerX, GROUND_Y, HIT_RADIUS, 0, Math.PI, true);
+            ctx.fill();
+
+            // アンちゃん（ハリネズミ）の画像を描画
+            ctx.fillStyle = '#000000'; // リセット
+            if (anchanImg.complete && anchanImg.naturalWidth > 0) {
+                // 画像本来の縦横比（アスペクト比）を保ちつつ、横幅100pxを基準に描画
+                const targetWidth = 100;
+                const ratio = anchanImg.naturalHeight / anchanImg.naturalWidth;
+                const targetHeight = targetWidth * ratio;
+                ctx.drawImage(anchanImg, playerX - targetWidth / 2, GROUND_Y - targetHeight + 10, targetWidth, targetHeight);
+            } else {
+                // ロードに失敗した時などのフォールバック
+                ctx.fillText('🦔', playerX, GROUND_Y + 10);
+            }
+
+            // === エフェクトの描画 ===
+            const now = performance.now();
+            for (let i = effects.length - 1; i >= 0; i--) {
+                const ef = effects[i];
+                const age = now - ef.startTime;
+                if (age > ef.duration) {
+                    effects.splice(i, 1); // 寿命が来たら削除
+                } else {
+                    const progress = age / ef.duration; // 0.0 から 1.0 へ進行
+                    const alpha = 1 - progress; // だんだん薄くなる
+                    
+                    // 広がる白い波紋
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+                    ctx.lineWidth = 6;
+                    ctx.beginPath();
+                    ctx.arc(ef.x, ef.y, 20 + progress * 60, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // 広がるキラキラマーク
+                    ctx.fillStyle = `rgba(255, 215, 0, ${alpha})`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.font = `${30 + progress * 40}px Arial`;
+                    ctx.fillText('✨', ef.x, ef.y);
+                }
+            }
+
+            // === ボールの描画 ===
+            if (gameState === 'playing' || gameState === 'gameover') {
+                if (ball.visible) {
+                    ctx.font = `${ball.size}px Arial`;
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('🏐', ball.x, ball.y);
+                } else {
+                    // 見えない時は描画しない
+                }
+            }
+
+            // UIテキストオーバーレイ（画面内にもラリー数を出す場合）
+            if (gameState === 'playing') {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.font = 'bold 36px "UD Digital Kyokasho-tai-R"';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(`ラリー数: ${rallyCount}`, 20, 20);
+                
+                // 勢い（スピード）の表示
+                let speedLevel = Math.floor((baseFlightDuration - currentFlightDuration) / 50) + 1;
+                ctx.fillStyle = '#ff9800';
+                ctx.fillText(`スピード: Lv${speedLevel}`, 20, 70);
+            }
+        }
+
+        // 起動時に初期化
+        window.onload = init;
+    </script>
+</body>
+</html>
