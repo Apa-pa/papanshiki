@@ -29,18 +29,18 @@ const measurementState = {
     currentScene: 'title',   // 現在のシーン名
     currentGameIndex: 0,      // 現在のゲーム番号（0〜4）
     results: {                // 各ゲームの生結果
-        quantity:   null,
-        speed:      null,
-        space:      null,
-        length:     null,
-        color:      null,
+        quantity: null,
+        speed: null,
+        space: null,
+        length: null,
+        color: null,
     },
     scores: {                 // 正規化後の0〜100スコア
-        quantity:   0,
-        speed:      0,
-        space:      0,
-        length:     0,
-        color:      0,
+        quantity: 0,
+        speed: 0,
+        space: 0,
+        length: 0,
+        color: 0,
     }
 };
 
@@ -68,7 +68,7 @@ const GAME_SEQUENCE = [
         id: 'space',
         moduleKey: 'Labo2Game3',
         scene: 'game',
-        name: 'くるくるシルエット',
+        name: 'ブロックかぞえ',
         icon: '🧊',
         ability: 'くうかん・かたち',
         bannerClass: 'g3',
@@ -107,11 +107,11 @@ function changeScene(nextScene) {
 /* ---------- プログレスバー更新 ---------- */
 function updateProgressBar() {
     const total = GAME_SEQUENCE.length;
-    const idx   = measurementState.currentGameIndex;
+    const idx = measurementState.currentGameIndex;
     const scene = measurementState.currentScene;
 
     let progress = 0;
-    if (scene === 'title')    progress = 0;
+    if (scene === 'title') progress = 0;
     else if (scene === 'game') progress = ((idx) / total) * 100;
     else if (scene === 'result') progress = 100;
 
@@ -154,7 +154,7 @@ const App = {
         banner.querySelector('.game-banner-ability').textContent = info.ability;
     },
 
-    showFeedback(type) { 
+    showFeedback(type) {
         const overlay = document.getElementById('feedback-overlay');
         if (!overlay) return;
         overlay.className = `show ${type}`;
@@ -207,7 +207,7 @@ function startCountdown(callback) {
 
 /* ---------- ゲーム開始 ---------- */
 function startNextGame() {
-    const idx  = measurementState.currentGameIndex;
+    const idx = measurementState.currentGameIndex;
     const info = GAME_SEQUENCE[idx];
 
     startCountdown(() => {
@@ -239,7 +239,7 @@ function showResult() {
     }
 
     const totalScore = Object.values(measurementState.scores).reduce((a, b) => a + b, 0);
-    const pt = Math.round(totalScore / GAME_SEQUENCE.length) || 10; 
+    const pt = Math.round(totalScore / GAME_SEQUENCE.length) || 10;
 
     const scoreSnapshot = { ...measurementState.scores };
 
