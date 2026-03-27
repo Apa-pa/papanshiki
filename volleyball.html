@@ -338,11 +338,31 @@
             ball.y = GROUND_Y - 4 * (GROUND_Y - peakY) * t * (1 - t);
 
             if (currentTurn === 'player') {
-                ball.visible = (t <= DISAPPEAR_START) || (t >= DISAPPEAR_END);
-                
-                if (t > DISAPPEAR_START && !hasDisappearedThisFlight) {
-                    hasDisappearedThisFlight = true;
-                    effects.push({ x: ball.x, y: ball.y, startTime: time, duration: 400 });
+                let currentStart = DISAPPEAR_START;
+                let currentEnd = DISAPPEAR_END;
+                let shouldDisappear = true;
+
+                if (rallyCount < 5) {
+                    // 1〜5回目までは消えない
+                    shouldDisappear = false;
+                } else if (rallyCount < 9) {
+                    // 6〜9回目は徐々に消える時間が長くなる
+                    const progress = (rallyCount - 4) / 5;
+                    const mid = (DISAPPEAR_START + DISAPPEAR_END) / 2;
+                    const duration = (DISAPPEAR_END - DISAPPEAR_START) * progress;
+                    currentStart = mid - duration / 2;
+                    currentEnd = mid + duration / 2;
+                }
+
+                if (shouldDisappear) {
+                    ball.visible = (t <= currentStart) || (t >= currentEnd);
+                    
+                    if (t > currentStart && !hasDisappearedThisFlight) {
+                        hasDisappearedThisFlight = true;
+                        effects.push({ x: ball.x, y: ball.y, startTime: time, duration: 400 });
+                    }
+                } else {
+                    ball.visible = true;
                 }
             } else {
                 ball.visible = true;
@@ -365,8 +385,10 @@
                     messageDiv.innerHTML = `ラリー: ${rallyCount}回！`;
                     messageDiv.style.color = 'var(--accent-color)';
                     
-                    // 下限300msまで加速
-                    currentFlightDuration = Math.max(300, currentFlightDuration * 0.95);
+                    // 11回目（ラリー10回成功後）から下限300msまで加速
+                    if (rallyCount >= 10) {
+                        currentFlightDuration = Math.max(300, currentFlightDuration * 0.95);
+                    }
                     
                     startFlight(false); 
                 } else {
