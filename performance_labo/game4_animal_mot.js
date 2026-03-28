@@ -14,23 +14,21 @@ window.Game4 = (() => {
     const STAGES         = 3;
     const SHOW_DURATION  = 2200;  // ハイライト表示時間（ms）
     const MOVE_DURATION  = 5000;  // 移動時間（ms）
-    const AREA_W         = 290;
-    const AREA_H         = 200;
+    const AREA_W         = 340;
+    const AREA_H         = 240;
     const ANIMAL_SIZE    = 36;    // px
     const BASE_SPEED     = 1.8;   // 基本速度（px/frame）
     const SPEED_INC      = 0.4;   // ステージごとの加速
 
     /* ---------- キャラクターデータ ---------- */
-    const ANIMALS = [
+    // 4種類の動物を2匹ずつ（計8匹）配置し、見た目のみでの判別を困難にする
+    const BASE_ANIMALS = [
         { emoji: '🐿️', name: 'ヒー' },
         { emoji: '🦔', name: 'アン' },
         { emoji: '🐰', name: 'ウサギ' },
-        { emoji: '🦊', name: 'キツネ' },
-        { emoji: '🐹', name: 'ハムスター' },
-        { emoji: '🐻', name: 'クマ' },
-        { emoji: '🐼', name: 'パンダ' },
-        { emoji: '🦝', name: 'アライグマ' },
+        { emoji: '🦊', name: 'キツネ' }
     ];
+    const ANIMALS = [...BASE_ANIMALS, ...BASE_ANIMALS];
 
     /* ---------- 状態変数 ---------- */
     let stage        = 0;
@@ -143,11 +141,17 @@ window.Game4 = (() => {
             });
         }
 
-        // あたりをランダム選択
-        targets = new Set();
-        while (targets.size < NUM_TARGETS) {
-            targets.add(Math.floor(Math.random() * NUM_ANIMALS));
+        // あたり（ターゲット）をランダム選択：必ず3種類の異なる動物が選ばれるようにする
+        const selectedTypes = new Set();
+        while (selectedTypes.size < NUM_TARGETS) {
+            selectedTypes.add(Math.floor(Math.random() * 4)); // 4種類から3種を選ぶ
         }
+        
+        targets = new Set();
+        selectedTypes.forEach(typeIdx => {
+            // インデックスは 0~3 と 4~7 のペアになっているため、どちらかをランダムにターゲットにする
+            targets.add(Math.random() < 0.5 ? typeIdx : typeIdx + 4);
+        });
 
         updateStageDot(stage, 'current');
         setMsg(`おぼえて！あたりは ${NUM_TARGETS}ひき`, '#e3f2fd');
@@ -389,8 +393,8 @@ window.Game4 = (() => {
         }
         .mot-area {
             position: relative;
-            width: 290px;
-            height: 200px;
+            width: 340px;
+            height: 240px;
             background: linear-gradient(135deg, #e8f5e9 0%, #e3f2fd 100%);
             border-radius: 16px;
             overflow: hidden;
