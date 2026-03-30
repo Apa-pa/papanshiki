@@ -191,24 +191,68 @@
             }
         }
 
-        /* 下部アクションボタン（大きめ） */
-        .action-btn {
-            display: inline-block;
-            background: #fff;
-            color: #ff9800;
-            text-decoration: none;
-            padding: 5px 40px;
-            border-radius: 50px;
-            font-weight: bold;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 10px rgba(255, 152, 0, 0.3);
-            border: 3px solid #ff9800;
-            transition: transform 0.2s;
-            margin: 10px;
+        /* 下部メニュー：連結タイル型UI */
+        .bottom-menu-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            /* ボックス間の線 */
+            background: #88cdf6;
+            /* 境界線の色 */
+            border: 2px solid #88cdf6;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 15px auto 30px auto;
+            max-width: 800px;
+            box-shadow: 0 4px 12px rgba(136, 205, 246, 0.2);
         }
 
-        .action-btn:hover {
-            transform: scale(1.05);
+        .menu-btn-bottom {
+            background: #fff;
+            color: #6b4e3d;
+            text-decoration: none;
+            padding: 15px 5px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            gap: 6px;
+        }
+
+        .menu-btn-bottom:hover {
+            background: #f0f9ff;
+        }
+
+        .menu-btn-bottom:active {
+            background: #cce7ff;
+        }
+
+        .menu-btn-bottom .btn-emoji {
+            font-size: 32px;
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+
+        @media (max-width: 600px) {
+            .bottom-menu-container {
+                margin: 15px 5px 30px 5px;
+                border-radius: 12px;
+            }
+
+            .menu-btn-bottom {
+                font-size: 0.75rem;
+                padding: 10px 2px;
+                min-height: 65px;
+            }
+
+            .menu-btn-bottom .btn-emoji {
+                font-size: 28px;
+            }
         }
 
         /* コラム記事カード */
@@ -1077,12 +1121,20 @@
 
         </div>
 
-        <div style="text-align: center; margin-bottom: 30px;">
-            <a href="record.html" class="action-btn">🏆 きろくをみる</a>
-            <a href="backup.html" class="action-btn">💾 データのバックアップ</a>
-            <a href="dashboard.html" class="action-btn"
-                style="border-color: #88cdf6; color: #88cdf6; box-shadow: 0 4px 10px rgba(136, 205, 246, 0.3);">👪
-                おうちのかたへ（学習きろく）</a>
+        <div class="bottom-menu-container">
+            <a href="record.html" class="menu-btn-bottom">
+                <span class="btn-emoji">🏆</span>
+                <span>きろくをみる</span>
+            </a>
+            <a href="backup.html" class="menu-btn-bottom">
+                <span class="btn-emoji">💾</span>
+                <span>データの<br>バックアップ</span>
+            </a>
+            <a href="dashboard.html" class="menu-btn-bottom">
+                <span class="btn-emoji">👪</span>
+                <span style="line-height:1.2;">おうちのかたへ<br><span
+                        style="font-size:0.75em; font-weight:normal;">(ダッシュボード)</span></span>
+            </a>
         </div>
 
     </main>
