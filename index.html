@@ -363,6 +363,7 @@
     <header class="hero-header"></header>
 
     <div id="daily-mission-area"></div>
+    <div id="parent-picks-area"></div>
 
     <main>
         <div style="text-align: right; margin-top: -25px; margin-bottom: 5px;">
@@ -1314,6 +1315,9 @@
 
         if (typeof showDailyMissionWidget === 'function') {
             showDailyMissionWidget('daily-mission-area');
+        }
+        if (typeof showParentPicksWidget === 'function') {
+            showParentPicksWidget('parent-picks-area');
         }
     </script>
 

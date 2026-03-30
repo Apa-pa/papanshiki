@@ -71,7 +71,7 @@
         .user-select {
             appearance: none;
             -webkit-appearance: none;
-            background: #f5f5f5 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2388cdf6' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 15px center;
+            background: #f5f5f5 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2388cdf6' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/Svg%3E") no-repeat right 15px center;
             border: 2px solid #88cdf6;
             border-radius: 25px;
             padding: 10px 40px 10px 20px;
@@ -103,14 +103,6 @@
             padding: 20px;
             box-shadow: 0 8px 16px rgba(135, 206, 235, 0.2);
             border: 2px solid #e1f5fe;
-        }
-
-        .donguri-icon {
-            width: 18px;
-            height: 18px;
-            vertical-align: middle;
-            object-fit: contain;
-            margin-top: -3px;
         }
 
         .card h2 {
@@ -155,69 +147,164 @@
             width: 100%;
         }
 
-        /* 記録リスト */
-        .record-list {
-            margin-top: 20px;
+        /* ラボ成績カード */
+        .labo-score-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            margin: 10px 0;
         }
 
-        .record-item {
-            background: #fafafa;
+        .labo-score-item {
+            text-align: center;
+            background: #f9f9f9;
             border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 5px solid #ccc;
+            padding: 8px 4px;
         }
 
-        .record-name {
-            font-weight: bold;
-            font-size: 1rem;
-            color: #444;
-        }
-
-        .record-stats {
-            text-align: right;
-            font-size: 0.9rem;
-        }
-
-        .record-best {
-            color: #e91e63;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-
-        .record-goal {
+        .labo-score-label {
+            font-size: 0.65rem;
             color: #888;
+            line-height: 1.3;
+            min-height: 2.6em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .labo-score-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #5c6bc0;
+            margin-top: 4px;
+        }
+
+        .labo-total-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #5c6bc0, #ab47bc);
+            color: white;
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .labo-total-badge2 {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff9800, #f44336);
+            color: white;
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .labo-date {
             font-size: 0.8rem;
+            color: #aaa;
         }
 
-        .status-achieved {
-            border-left-color: #4CAF50;
+        .labo-link-btn {
+            display: inline-block;
+            background: #e8eaf6;
+            color: #5c6bc0;
+            border: none;
+            border-radius: 15px;
+            padding: 5px 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
         }
 
-        .status-close {
-            border-left-color: #ffeb3b;
-        }
-
-        .status-normal {
-            border-left-color: #e0e0e0;
-        }
-
-        .status-badge {
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-left: 5px;
-            vertical-align: middle;
+        .labo-link-btn:hover {
+            background: #c5cae9;
         }
 
         .empty-message {
             text-align: center;
-            color: #999;
-            padding: 20px;
-            font-style: italic;
+            color: #bbb;
+            padding: 15px;
+            font-size: 0.9rem;
+        }
+
+        /* 保護者設定カード */
+        .parent-setting-desc {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .pick-slot {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .pick-slot-label {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #6a1b9a;
+            min-width: 56px;
+        }
+
+        .pick-select {
+            appearance: none;
+            -webkit-appearance: none;
+            background: #f9f0ff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23ab47bc' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center;
+            border: 2px solid #ce93d8;
+            border-radius: 20px;
+            padding: 7px 32px 7px 12px;
+            font-size: 0.9rem;
+            color: #444;
+            cursor: pointer;
+            outline: none;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .pick-select:focus {
+            border-color: #ab47bc;
+        }
+
+        .save-picks-btn {
+            width: 100%;
+            background: #ab47bc;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px #7b1fa2;
+            transition: 0.2s;
+            margin-top: 4px;
+        }
+
+        .save-picks-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .save-picks-btn:hover {
+            background: #9c27b0;
+        }
+
+        .picks-result {
+            margin-top: 12px;
+            padding: 10px;
+            background: #f3e5f5;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: #6a1b9a;
+            display: none;
         }
     </style>
 </head>
@@ -240,6 +327,7 @@
 
         <div id="dashboardContent" style="display: none;">
 
+            <!-- カレンダー -->
             <div class="card" style="margin-bottom: 20px; text-align: center; border-color: #aed581;">
                 <h2 style="justify-content: center; color: #558b2f; border-bottom: none; margin-bottom: 5px;">📅
                     今月のカレンダー</h2>
@@ -251,6 +339,7 @@
                 </div>
             </div>
 
+            <!-- 資産 + レーダーチャート -->
             <div class="dashboard-grid">
                 <div class="card" style="border-color: #ffcc80;">
                     <h2>💰 資産サマリー</h2>
@@ -280,18 +369,52 @@
                     <div class="chart-container">
                         <canvas id="radarChart"></canvas>
                     </div>
-                    <p style="text-align: center; font-size: 0.8rem; color: #999; margin: 5px 0 0 0;">いままで遊んだゲームのクリア回数
+                    <p style="text-align: center; font-size: 0.8rem; color: #999; margin: 5px 0 0 0;">なんかいあそんだか（直近30日）
                     </p>
                 </div>
             </div>
 
-            <div class="card" style="border-color: #90caf9;">
-                <h2>🏆 目標とベストきろく</h2>
-                <div id="recordList" class="record-list">
-                    <!-- レコードリストがここに生成されます -->
+            <!-- パフォーマンスラボ成績 -->
+            <div class="dashboard-grid" style="margin-bottom: 20px;">
+                <!-- Labo1: スポーツ能力ラボ -->
+                <div class="card" style="border-color: #90caf9;">
+                    <h2>🔬 スポーツ能力ラボ</h2>
+                    <div id="labo1Content"></div>
+                    <a href="performance_labo/labo.html" class="labo-link-btn">▶ ラボに挑戦する</a>
+                </div>
+
+                <!-- Labo2: 感覚測定ラボ -->
+                <div class="card" style="border-color: #ffcc80;">
+                    <h2>🧪 感覚測定ラボ</h2>
+                    <div id="labo2Content"></div>
+                    <a href="performance_labo/labo2.html" class="labo-link-btn" style="background:#fff3e0; color:#e65100;">▶ ラボに挑戦する</a>
                 </div>
             </div>
 
+        </div>
+
+        <!-- 保護者設定カード（ユーザー選択に依存しない・常時表示） -->
+        <div class="card" style="border-color: #ce93d8; margin-bottom: 20px;">
+            <h2>👪 保護者設定：おすすめコンテンツ</h2>
+            <p class="parent-setting-desc">
+                こどもにがんばってほしいコンテンツを最大2つ選択できます。<br>
+                選択したコンテンツをプレイすると、<strong>1日1回 +150ポイント</strong>のボーナスが付与されます。<br>
+                ※ トップページのボーナス欄にも表示されます。
+            </p>
+            <div class="pick-slot">
+                <span class="pick-slot-label">1つめ</span>
+                <select id="pickSelect1" class="pick-select">
+                    <option value="">（なし）</option>
+                </select>
+            </div>
+            <div class="pick-slot">
+                <span class="pick-slot-label">2つめ</span>
+                <select id="pickSelect2" class="pick-select">
+                    <option value="">（なし）</option>
+                </select>
+            </div>
+            <button class="save-picks-btn" onclick="saveParentPickSettings()">💾 保存する</button>
+            <div id="picksResult" class="picks-result"></div>
         </div>
 
     </main>
@@ -301,8 +424,8 @@
         const GAME_CATEGORIES = {
             'math': ['make10', 'math_add_easy', 'math_add_hard', 'math_sub_easy', 'math_sub_hard', 'math_multi', 'math_div', 'rain_math', 'water', 'frac_add_easy', 'frac_add_hard', 'frac_sub_easy', 'frac_sub_hard', 'frac_multi', 'math_strike'],
             'lang': ['katakana', 'alphabet', 'romaji_hole', 'rain_vowel', 'rain_consonant', 'tsumitsumi', 'daily_english', 'eigo_nakama'],
-            'brain': ['touch25', 'eawase', 'rail'],
-            'other': ['clock_read', 'triangle_angle', 'shopping', 'enogu_creator']
+            'brain': ['touch25', 'eawase', 'rail', 'memory_route', 'attention_dual_task', 'shopping_mission_brain'],
+            'other': ['clock_read', 'triangle_angle', 'shopping', 'enogu_creator', 'eiyou_balance']
         };
 
         const CATEGORY_NAMES = {
@@ -312,12 +435,32 @@
             'other': 'くらし・アート等'
         };
 
+        // Labo1のスコア軸定義
+        const LABO1_AXES = [
+            { key: 'starflash', label: 'はっけん\nスピード' },
+            { key: 'ruler',     label: 'はんのう\nスピード' },
+            { key: 'stroop',    label: 'はんだん\nりょく' },
+            { key: 'animalMot', label: 'きおく・\nしゅうちゅう' },
+            { key: 'timing',    label: 'タイミング' },
+        ];
+
+        // Labo2のスコア軸定義
+        const LABO2_AXES = [
+            { key: 'quantity', label: '量の感覚' },
+            { key: 'speed',    label: 'スピード' },
+            { key: 'space',    label: '空間・形' },
+            { key: 'length',   label: '長さの感覚' },
+            { key: 'color',    label: '色彩感覚' },
+        ];
+
         let radarChartInstance = null;
 
         window.onload = function () {
             initUserSelector();
+            initParentPicksUI();
         };
 
+        // ユーザー選択セレクト初期化
         function initUserSelector() {
             const users = getUserNames();
             const select = document.getElementById('userSelect');
@@ -343,6 +486,7 @@
             }
         }
 
+        // ダッシュボード全体のレンダリング
         function renderDashboard() {
             const userName = document.getElementById('userSelect').value;
             if (!userName) {
@@ -356,9 +500,11 @@
             renderCalendar(userName);
             renderAssets(userName);
             renderChart(userName);
-            renderRecords(userName);
+            renderLabo1(userName);
+            renderLabo2(userName);
         }
 
+        // 今月のスタンプ表示
         function renderCalendar(userName) {
             const allStamps = getAllStamps();
             const userStamps = allStamps[userName] || {};
@@ -385,6 +531,7 @@
             document.getElementById('stampMessage').textContent = msg;
         }
 
+        // 資産サマリー表示
         function renderAssets(userName) {
             const pts = getUserPoints(userName);
             const dg = getUserDonguri(userName);
@@ -416,39 +563,29 @@
             document.getElementById('stockValueDg').textContent = `${stockValDg.toLocaleString()} 🌰`;
         }
 
-        function getPlayedCount(userName) {
-            // ポイント獲得履歴等から正確な回数を取るのは難しいため、
-            // 今回は便宜上、rewarded_goals などの履歴を元にするか、
-            // recordsに存在すれば 1 カウントとして大まかな傾向を出す。
-            // (より正確にするにはクリアごとにインクリメントする保存領域が必要ですが、
-            // 今回は既存の records カウントで代用します)
-
-            const records = getAllRecords()[userName] || {};
-            const goals = getAllGoals()[userName] || {};
-            const rewarded = JSON.parse(localStorage.getItem('papan_rewarded_goals_v1') || '{}')[userName] || {};
-
+        // 直近30日プレイログからカテゴリ別プレイ回数を集計
+        function getPlayLogCount(userName) {
+            const logs = (typeof getPlayLog === 'function') ? getPlayLog(userName) : [];
             let counts = { 'math': 0, 'lang': 0, 'brain': 0, 'other': 0 };
 
-            for (let gameId in records) {
+            logs.forEach(entry => {
+                const gameId = entry.gameId;
                 let category = 'other';
                 for (let cat in GAME_CATEGORIES) {
-                    if (GAME_CATEGORIES[cat].includes(gameId)) category = cat;
+                    if (GAME_CATEGORIES[cat].includes(gameId)) {
+                        category = cat;
+                        break;
+                    }
                 }
+                counts[category]++;
+            });
 
-                // 記録があればベース1
-                let score = 1;
-                // 目標を設定していれば+1
-                if (goals[gameId]) score += 1;
-                // 報酬をもらっていれば+1
-                if (rewarded[gameId]) score += 1;
-
-                counts[category] += score;
-            }
             return counts;
         }
 
+        // レーダーチャート描画
         function renderChart(userName) {
-            const counts = getPlayedCount(userName);
+            const counts = getPlayLogCount(userName);
             const labels = [];
             const data = [];
 
@@ -468,7 +605,7 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'プレイの深さ',
+                        label: 'プレイ回数（直近30日）',
                         data: data,
                         backgroundColor: 'rgba(136, 205, 246, 0.4)',
                         borderColor: 'rgba(136, 205, 246, 1)',
@@ -487,10 +624,10 @@
                             angleLines: { color: 'rgba(0,0,0,0.1)' },
                             grid: { color: 'rgba(0,0,0,0.1)' },
                             pointLabels: {
-                                font: { size: 12, family: "'Helvetica Neue', 'Hiragino Kaku Gothic ProN', sans-serif" },
+                                font: { size: 11, family: "'Helvetica Neue', 'Hiragino Kaku Gothic ProN', sans-serif" },
                                 color: '#666'
                             },
-                            ticks: { display: false } // 目盛り数値を非表示
+                            ticks: { display: false, stepSize: 1 }
                         }
                     },
                     plugins: {
@@ -500,65 +637,146 @@
             });
         }
 
-        function renderRecords(userName) {
-            const records = getAllRecords()[userName] || {};
-            const goals = getAllGoals()[userName] || {};
-            const listDiv = document.getElementById('recordList');
+        // Labo1（スポーツ能力ラボ）成績表示
+        function renderLabo1(userName) {
+            const container = document.getElementById('labo1Content');
+            const KEY = 'papan_labo_records_v1';
+            const all = JSON.parse(localStorage.getItem(KEY) || '{}');
+            const records = all[userName] || [];
 
-            listDiv.innerHTML = '';
+            if (records.length === 0) {
+                container.innerHTML = '<div class="empty-message">まだ測定記録がありません</div>';
+                return;
+            }
 
-            let hasRecord = false;
+            // 最新エントリ
+            const latest = records[records.length - 1];
+            const scores = latest.scores || {};
+            const total = latest.total || 0;
+            const date = latest.date || '';
 
-            for (let gameId in records) {
-                if (!GAME_LIST[gameId]) continue; // 未知のゲームはスキップ
+            // 過去最高スコア
+            const bestTotal = Math.max(...records.map(r => r.total || 0));
 
-                hasRecord = true;
-                const info = GAME_LIST[gameId];
-                const best = parseFloat(records[gameId]);
-                const goal = goals[gameId] !== undefined ? parseFloat(goals[gameId]) : null;
+            let html = `
+                <div style="display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+                    <span class="labo-total-badge">総合 ${total}点</span>
+                    <span style="font-size:0.8rem; color:#888;">最高: ${bestTotal}点</span>
+                    <span class="labo-date" style="margin-left:auto;">${date}（${records.length}回測定）</span>
+                </div>
+                <div class="labo-score-grid">
+            `;
 
-                let statusClass = 'status-normal';
-                let badgeHtml = '';
-
-                if (goal !== null) {
-                    let isAchieved = false;
-                    let isClose = false;
-
-                    if (info.type === 'time') {
-                        isAchieved = best <= goal;
-                        // 10%以内の惜しさ
-                        isClose = !isAchieved && best <= goal * 1.1;
-                    } else {
-                        isAchieved = best >= goal;
-                        isClose = !isAchieved && best >= goal * 0.9;
-                    }
-
-                    if (isAchieved) {
-                        statusClass = 'status-achieved';
-                        badgeHtml = '<span class="status-badge" style="background:#e8f5e9; color:#2e7d32;">達成済💮</span>';
-                    } else if (isClose) {
-                        statusClass = 'status-close';
-                        badgeHtml = '<span class="status-badge" style="background:#fffde7; color:#f57f17;">あとすこし!🔥</span>';
-                    }
-                } else {
-                    badgeHtml = '<span class="status-badge" style="background:#f5f5f5; color:#999;">目標未設定</span>';
-                }
-
-                const itemHtml = `
-                    <div class="record-item ${statusClass}">
-                        <div class="record-name">${info.name} ${badgeHtml}</div>
-                        <div class="record-stats">
-                            <div class="record-best">ベスト: ${best} ${info.unit}</div>
-                            <div class="record-goal">目標: ${goal !== null ? goal + ' ' + info.unit : 'なし'}</div>
-                        </div>
+            LABO1_AXES.forEach(axis => {
+                const score = scores[axis.key] !== undefined ? scores[axis.key] : '-';
+                const label = axis.label.replace('\n', '<br>');
+                html += `
+                    <div class="labo-score-item">
+                        <div class="labo-score-label">${label}</div>
+                        <div class="labo-score-value">${score}</div>
                     </div>
                 `;
-                listDiv.innerHTML += itemHtml;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Labo2（感覚測定ラボ）成績表示
+        function renderLabo2(userName) {
+            const container = document.getElementById('labo2Content');
+            const KEY = 'papan_labo2_records_v1';
+            const all = JSON.parse(localStorage.getItem(KEY) || '{}');
+            const records = all[userName] || [];
+
+            if (records.length === 0) {
+                container.innerHTML = '<div class="empty-message">まだ測定記録がありません</div>';
+                return;
             }
 
-            if (!hasRecord) {
-                listDiv.innerHTML = '<div class="empty-message">まだきろくがありません。<br>ゲームをあそんでみよう！</div>';
+            // 最新エントリ
+            const latest = records[records.length - 1];
+            const scores = latest.scores || {};
+            const total = latest.total || 0;
+            const date = latest.date || '';
+
+            // 過去最高スコア
+            const bestTotal = Math.max(...records.map(r => r.total || 0));
+
+            let html = `
+                <div style="display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+                    <span class="labo-total-badge2">総合 ${total}点</span>
+                    <span style="font-size:0.8rem; color:#888;">最高: ${bestTotal}点</span>
+                    <span class="labo-date" style="margin-left:auto;">${date}（${records.length}回測定）</span>
+                </div>
+                <div class="labo-score-grid">
+            `;
+
+            LABO2_AXES.forEach(axis => {
+                const score = scores[axis.key] !== undefined ? scores[axis.key] : '-';
+                html += `
+                    <div class="labo-score-item">
+                        <div class="labo-score-label">${axis.label}</div>
+                        <div class="labo-score-value" style="color:#e65100;">${score}</div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // 保護者設定UIの初期化
+        function initParentPicksUI() {
+            const select1 = document.getElementById('pickSelect1');
+            const select2 = document.getElementById('pickSelect2');
+
+            // GAME_LISTの全ゲームをオプションとして追加
+            for (const [id, info] of Object.entries(GAME_LIST)) {
+                const opt1 = document.createElement('option');
+                opt1.value = id;
+                opt1.textContent = info.name;
+                select1.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = id;
+                opt2.textContent = info.name;
+                select2.appendChild(opt2);
             }
+
+            // 現在の設定を反映
+            const current = (typeof getParentPicks === 'function') ? getParentPicks() : [];
+            if (current[0]) select1.value = current[0];
+            if (current[1]) select2.value = current[1];
+
+            // 現在の設定表示を更新
+            updatePicksResultDisplay(current);
+        }
+
+        // 保護者設定を保存する
+        function saveParentPickSettings() {
+            const id1 = document.getElementById('pickSelect1').value;
+            const id2 = document.getElementById('pickSelect2').value;
+
+            const picks = [];
+            if (id1) picks.push(id1);
+            if (id2 && id2 !== id1) picks.push(id2); // 重複を除外
+
+            if (typeof saveParentPicks === 'function') {
+                saveParentPicks(picks);
+            }
+
+            updatePicksResultDisplay(picks);
+
+            const resultDiv = document.getElementById('picksResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '✅ 保存しました！トップページのボーナス欄に反映されます。';
+            setTimeout(() => { resultDiv.style.display = 'none'; }, 3000);
+        }
+
+        // 現在の設定表示を更新する
+        function updatePicksResultDisplay(picks) {
+            // 特に何もしない（保存ボタン押下時のみメッセージ表示）
         }
 
     </script>

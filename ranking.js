@@ -61,6 +61,9 @@ const STAMP_KEY = 'papan_stamps_v3';
 const MARKET_KEY = 'papan_market_v1';
 const STOCK_KEY = 'papan_stocks_v1';
 const COLLECTION_KEY = 'papan_collection_v1';
+const PLAY_LOG_KEY = 'papan_play_log_v1';       // 直近30日のプレイ履歴
+const PARENT_PICKS_KEY = 'papan_parent_picks_v1'; // 保護者が選択したコンテンツ（全員共通）
+const PARENT_BONUS_KEY = 'papan_parent_bonus_v1'; // 保護者ボーナス受取済みフラグ
 
 // --- 共通ヘルパー関数 ---
 function getUserNames() {
@@ -255,7 +258,7 @@ function showDailyMissionWidget(elementId) {
             }
         </style>
         <div style="background:#fff3e0; padding:8px 5px; border-radius:8px; margin:5px auto; max-width:95%; overflow-x:auto; white-space:nowrap; -webkit-overflow-scrolling: touch; border:1px dashed #ffb74d;">
-            <div style="display:inline-flex; align-items:center;">
+            <div id="daily-mission-inner" style="display:inline-flex; align-items:center; flex-wrap:nowrap; white-space:nowrap;">
                 <span style="font-weight:bold; color:#bf360c; font-size:12px; margin-right:5px;">📅 きょうのボーナスコンテンツ(ひとつ+${BONUS_PT}):</span>
                 ${htmlList}
             </div>
@@ -725,7 +728,10 @@ function showSaveDialog(gameId, resultValue, customBasePoint, onComplete) {
             // 3. 目標達成ポイント判定
             const earnedPoints = checkAndAwardPoints(localName, gameId, resultValue);
 
-            // --- ★ここを追加: ミッションボーナス付与処理 ---
+            // 4. プレイログ保存（直近30日分）
+            if (typeof savePlayLog === 'function') savePlayLog(localName, gameId);
+
+            // --- ミッションボーナス付与処理 ---
             let missionBonus = 0;
             if (typeof checkMissionStatus === 'function') {
                 const status = checkMissionStatus(localName, gameId);
@@ -734,6 +740,12 @@ function showSaveDialog(gameId, resultValue, customBasePoint, onComplete) {
                     addPoints(localName, missionBonus); // ボーナス加算
                     setDailyMissionCompleted(localName, gameId); // 完了フラグ更新
                 }
+            }
+
+            // 5. 保護者指定ボーナス付与（日替わりと被った場合は今回スキップ）
+            let parentBonus = 0;
+            if (missionBonus === 0 && typeof checkAndAwardParentBonus === 'function') {
+                parentBonus = checkAndAwardParentBonus(localName, gameId);
             }
             // ----------------------------------------------
 
@@ -759,9 +771,14 @@ function showSaveDialog(gameId, resultValue, customBasePoint, onComplete) {
 
                 if (earnedPoints) msg += `\n🎁 目標クリア！さらに ${earnedPoints}ポイント！`;
 
-                // ★ボーナスメッセージ追加
+                // 日替わりミッションボーナス
                 if (missionBonus > 0) {
                     msg += `\n\n🎉 デイリーミッション達成！\n特別ボーナス +${missionBonus}ポイント！！`;
+                }
+
+                // 保護者指定ボーナス
+                if (parentBonus > 0) {
+                    msg += `\n\n👪 おうちのかたおすすめコンテンツ！\n特別ボーナス +${parentBonus}ポイント！！`;
                 }
 
                 if (sentToRanking) {
@@ -835,3 +852,142 @@ function addToCollection(userName, itemId) {
     return true; // 新しくゲットした！
 }
 // ▲▲▲ ここまで ▲▲▲
+
+
+// ============================================================
+// ★★★ プレイログ管理（直近30日） ★★★
+// ============================================================
+
+/**
+ * プレイログを保存する（直近30日分のみ保持）
+ * @param {string} userName - ユーザー名
+ * @param {string} gameId   - ゲームID
+ */
+function savePlayLog(userName, gameId) {
+    if (!userName || !gameId) return;
+    const all = JSON.parse(localStorage.getItem(PLAY_LOG_KEY) || '{}');
+    if (!all[userName]) all[userName] = [];
+
+    const today = getTodayString();
+    all[userName].push({ date: today, gameId });
+
+    // 30日前以降のログのみ保持
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+    const cutoffStr = cutoff.toISOString().slice(0, 10);
+    all[userName] = all[userName].filter(e => e.date >= cutoffStr);
+
+    localStorage.setItem(PLAY_LOG_KEY, JSON.stringify(all));
+}
+
+/**
+ * ユーザーの直近30日プレイログを取得する
+ * @param {string} userName
+ * @returns {Array<{date:string, gameId:string}>}
+ */
+function getPlayLog(userName) {
+    const all = JSON.parse(localStorage.getItem(PLAY_LOG_KEY) || '{}');
+    return all[userName] || [];
+}
+
+
+// ============================================================
+// ★★★ 保護者指定コンテンツ管理 ★★★
+// ============================================================
+
+const PARENT_BONUS_AMOUNT = 150; // 保護者指定コンテンツのボーナスポイント
+
+/**
+ * 保護者が選択したゲームIDリストを取得する（全員共通・最大2つ）
+ * @returns {string[]} ゲームIDの配列
+ */
+function getParentPicks() {
+    return JSON.parse(localStorage.getItem(PARENT_PICKS_KEY) || '[]');
+}
+
+/**
+ * 保護者が選択したゲームIDリストを保存する（全員共通）
+ * @param {string[]} ids - ゲームIDの配列（最大2つ）
+ */
+function saveParentPicks(ids) {
+    localStorage.setItem(PARENT_PICKS_KEY, JSON.stringify(ids.slice(0, 2)));
+}
+
+/**
+ * 保護者指定コンテンツのボーナスを付与する。
+ * 当日すでに付与済みの場合はスキップ。
+ * @param {string} userName
+ * @param {string} gameId
+ * @returns {number} 付与したポイント（0なら付与なし）
+ */
+function checkAndAwardParentBonus(userName, gameId) {
+    const picks = getParentPicks();
+    if (!picks.includes(gameId)) return 0; // 対象外
+
+    const today = getTodayString();
+    const bonusData = JSON.parse(localStorage.getItem(PARENT_BONUS_KEY) || '{}');
+    if (!bonusData[userName]) bonusData[userName] = {};
+
+    // 当日すでに受取済みならスキップ
+    if (bonusData[userName][gameId] === today) return 0;
+
+    // ボーナス付与
+    addPoints(userName, PARENT_BONUS_AMOUNT);
+    bonusData[userName][gameId] = today;
+    localStorage.setItem(PARENT_BONUS_KEY, JSON.stringify(bonusData));
+
+    return PARENT_BONUS_AMOUNT;
+}
+
+/**
+ * index.html 用：保護者指定コンテンツを日替わりボーナスと同じ行に追記する。
+ * showDailyMissionWidget 呼び出し後に実行すること。
+ * @param {string} elementId - 未使用（互換性のため残す）
+ */
+function showParentPicksWidget(elementId) {
+    const picks = getParentPicks();
+
+    // 既存の保護者ピックス追記があれば削除（重複防止）
+    const existing = document.getElementById('parent-picks-inline');
+    if (existing) existing.remove();
+
+    if (picks.length === 0) return;
+
+    // 日替わりボーナスの内側flex要素に追記する
+    const innerFlex = document.getElementById('daily-mission-inner');
+    if (innerFlex) {
+        const wrap = document.createElement('span');
+        wrap.id = 'parent-picks-inline';
+        let html = `<span style="color:#ddd; margin:0 6px; font-size:12px;">|</span>`
+            + `<span style="font-weight:bold; color:#6a1b9a; font-size:12px; margin-right:3px;">👪 おうちおすすめ(+${PARENT_BONUS_AMOUNT}):</span>`;
+
+        picks.forEach(id => {
+            const info = GAME_LIST[id];
+            const name = info ? info.name : id;
+            const url = info && info.url ? info.url : '#';
+            html += `<a href="${url}" class="parent-pick-chip" style="display:inline-block; background:white; color:#7b1fa2; padding:2px 8px; margin-left:5px; border-radius:10px; font-size:12px; border:1px solid #ce93d8; white-space:nowrap; text-decoration:none; box-shadow:0 1px 2px rgba(0,0,0,0.1);">${name}</a>`;
+        });
+        wrap.innerHTML = html;
+        innerFlex.appendChild(wrap);
+        return;
+    }
+
+    // フォールバック：daily-mission-inner が見つからない場合はスタンドアロン表示
+    const container = document.getElementById(elementId);
+    if (!container) return;
+    let htmlList = picks.map(id => {
+        const info = GAME_LIST[id];
+        const name = info ? info.name : id;
+        const url = info && info.url ? info.url : '#';
+        return `<a href="${url}" class="parent-pick-chip" style="display:inline-block; background:white; color:#7b1fa2; padding:2px 8px; margin-left:5px; border-radius:10px; font-size:12px; border:1px solid #ce93d8; white-space:nowrap; text-decoration:none; box-shadow:0 1px 2px rgba(0,0,0,0.1);">${name}</a>`;
+    }).join('');
+    container.innerHTML = `
+        <style>.parent-pick-chip{transition:transform 0.2s ease,box-shadow 0.2s ease;}.parent-pick-chip:hover{transform:scale(1.05) translateY(-1px);box-shadow:0 3px 6px rgba(0,0,0,0.15) !important;}</style>
+        <div style="background:#f3e5f5;padding:8px 5px;border-radius:8px;margin:5px auto;max-width:95%;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;border:1px dashed #ce93d8;">
+            <div style="display:inline-flex;align-items:center;">
+                <span style="font-weight:bold;color:#6a1b9a;font-size:12px;margin-right:5px;">👪 おうちおすすめ(+${PARENT_BONUS_AMOUNT}):</span>
+                ${htmlList}
+            </div>
+        </div>
+    `;
+}
