@@ -44,7 +44,7 @@ const REAL_MARKET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT11R_9
 // 新しい銘柄を追加
 const STOCK_MASTER = {
     'motor': { name: 'ぱぱん自動車', currency: 'point', initPrice: 500, volatility: 0.02, dividendRate: 0.01, bias: 0.002, desc: 'あんぜん運転で 人気の会社' },
-    'food': { name: 'どんぐり食品', currency: 'point', initPrice: 500, volatility: 0.05, dividendRate: 0.03, bias: 0.0, desc: '配当(はいとう)が 多いよ' },
+    'food': { name: 'どんぐり食品', currency: 'point', initPrice: 500, volatility: 0.05, dividendRate: 0.03, bias: 0.001, desc: '配当(はいとう)が 多いよ' },
     'tech': { name: 'ギャラクシーIT', currency: 'donguri', initPrice: 10, volatility: 0.20, dividendRate: 0.0, bias: 0.0, desc: 'あがったり さがったり' },
     // ▼ 追加分 ▼
     'nikkei': { name: 'ぱぱんの森平均株価', type: 'linked', linkage: 'NI225', currency: 'point', initPrice: 1000, volatility: 0.0, dividendRate: 0.005, divisor: 100, desc: 'ぱぱんの森の平均株価と連動するよ' },
@@ -392,8 +392,9 @@ async function updateMarketDay(todayStr, daysElapsed, preFetchedRealData = null)
     const eventRoll = Math.random();
     if (eventRoll < 0.1) { market.news = "【特報】新型エンジンが大発明！自動車株が急上昇！"; market.trend['motor'] = 0.1; }
     else if (eventRoll < 0.2) { market.news = "【悲報】どんぐりが不作... 食品株に影響か"; market.trend['food'] = -0.1; }
-    else if (eventRoll < 0.3) { market.news = "【IT】次世代ゲーム機が大コケ。IT株が暴落の危機"; market.trend['tech'] = -0.3; }
-    else if (eventRoll < 0.4) { market.news = "【IT】AIがすごい発明！IT株に買い注文殺到！"; market.trend['tech'] = 0.4; }
+    else if (eventRoll < 0.3) { market.news = "【朗報】どんぐりが大豊作！食品株に追い風！"; market.trend['food'] = 0.1; }
+    else if (eventRoll < 0.4) { market.news = "【IT】次世代ゲーム機が大コケ。IT株が暴落の危機"; market.trend['tech'] = -0.3; }
+    else if (eventRoll < 0.5) { market.news = "【IT】AIがすごい発明！IT株に買い注文殺到！"; market.trend['tech'] = 0.4; }
     else { market.news = "本日は穏やかな市場です。"; market.trend = { 'motor': 0, 'food': 0, 'tech': 0 }; }
 
     // リアル連動ニュースの上書き
@@ -828,7 +829,7 @@ function showPointGetDialog(amount, arg2 = null, arg3 = null) {
         selectUser: (name, pts) => {
             addPoints(name, pts);
             if (typeof toggleStamp === 'function') toggleStamp(name, getTodayString(), true);
-            
+
             // ★プレイログに保存（gameIdがある場合）
             if (gameId && typeof savePlayLog === 'function') {
                 savePlayLog(name, gameId);

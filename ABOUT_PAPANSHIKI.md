@@ -72,16 +72,17 @@
 - セーブダイアログに「ランキングに のせる？」欄が追加表示される
 - 公開名（6文字以内）を入力するとFirestoreに送信される
 
-### タイプC: 固定ポイント付与型（`showPointGetDialog(固定値)` 使用）
+### タイプC: 固定ポイント付与型（`showPointGetDialog(固定値, gameId)` 使用）
 - タイム/スコアの記録は行わない
-- クリアや1プレイ完了時に `showPointGetDialog(固定値)` を呼ぶ
+- クリアや1プレイ完了時に `showPointGetDialog(固定値, 'game_id')` を呼ぶ（※第2引数にゲームIDを必ず渡すこと。ダッシュボードの集計に必須）
 - ユーザーを選んで固定ポイントを受け取る
 - `GAME_LIST` への登録は不要
 
-### タイプD: 成績連動ポイント付与型（`showPointGetDialog(変動値)` 使用）
+### タイプD: 成績連動ポイント付与型（`showPointGetDialog(変動値, gameId)` 使用）
 - タイム/スコアの記録は行わない
 - 正答数や到達度に応じてポイントが変動する
-- 例: `science.html` → `score * 5` pt、`dungeon.html` → 到達階層に応じて 30/300/3000 pt
+- 例: `science.html` → `showPointGetDialog(score * 5, 'science')`
+- これも同じく第2引数にゲームIDを必ず渡すこと。ダッシュボードの集計に必須
 - `GAME_LIST` への登録は不要
 
 ---
@@ -369,8 +370,8 @@ e:\ぱぱん式\
      - ゲーム終了時に `showSaveDialog(gameId, resultValue)` を呼ぶ
      - タイプBの場合は `<script type="module" src="firebase-ranking.js"></script>` を追加
    - タイプC/Dの場合:
-     - ゲーム終了時に `showPointGetDialog(ポイント数)` を呼ぶ
-     - `GAME_LIST` への登録は不要
+     - ゲーム終了時に `showPointGetDialog(ポイント数, 'game_id')` を呼ぶ（ダッシュボードでプレイ回数を集計するため、必ず第2引数にゲームIDを指定すること）
+     - `GAME_LIST` への登録は不要ですが、`dashboard.html` の `GAME_CATEGORIES` にIDを追記してください。
    - `service-worker.js` の `urlsToCache` にファイルを追加
    - `index.html` にカードを追加
 
