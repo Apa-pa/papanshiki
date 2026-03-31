@@ -309,7 +309,7 @@ function getReward() {
 
     if (typeof showPointGetDialog === 'function') {
         // ranking.js の機能を使ってポイント付与ダイアログを表示
-        showPointGetDialog(50, () => {
+        showPointGetDialog(50, 'human_model', () => {
             rewardBtn.disabled = true;
             rewardBtn.innerText = "受取済み";
             rewardBtn.style.background = "#ccc";

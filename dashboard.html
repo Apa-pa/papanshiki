@@ -424,13 +424,15 @@
         const GAME_CATEGORIES = {
             'math': ['make10', 'math_add_easy', 'math_add_hard', 'math_sub_easy', 'math_sub_hard', 'math_multi', 'math_div', 'rain_math', 'water', 'frac_add_easy', 'frac_add_hard', 'frac_sub_easy', 'frac_sub_hard', 'frac_multi', 'math_strike', 'shousu_learn', 'bunsu_learn', 'warisan_learn', 'warizan_learn', 'wariai_learn'],
             'lang': ['katakana', 'alphabet', 'romaji_hole', 'rain_vowel', 'rain_consonant', 'tsumitsumi', 'daily_english', 'eigo_nakama', 'kanji_learn', 'presentation_learn', 'quest_stage1', 'quest_stage2', 'quest_stage3', 'quest_stage4'],
-            'brain': ['touch25', 'eawase', 'rail', 'memory_route', 'attention_dual_task', 'shopping_mission_brain', 'dokidoki_obstacle', 'logic_mine'],
-            'other': ['clock_read', 'triangle_angle', 'shopping', 'enogu_creator', 'eiyou_balance', 'job_learn']
+            'sci': ['science', 'human_model', 'star_puzzle', 'programming', 'burger_shop', 'addiction', 'unit_runner', 'logic_mine'],
+            'brain': ['touch25', 'eawase', 'rail', 'memory_route', 'attention_dual_task', 'shopping_mission_brain', 'dokidoki_obstacle', 'fingers_chess', 'volleyball'],
+            'other': ['clock_read', 'triangle_angle', 'shopping', 'enogu_creator', 'eiyou_balance', 'job_learn', 'rhythm', 'color_lab', 'pitch', 'leaf_stamp_workshop', 'music_class']
         };
 
         const CATEGORY_NAMES = {
             'math': 'さんすう・計算',
             'lang': 'こくご・ことば',
+            'sci': 'サイエンス',
             'brain': '脳トレ・パズル',
             'other': 'くらし・アート等'
         };
@@ -566,7 +568,10 @@
         // 直近30日プレイログからカテゴリ別プレイ回数を集計
         function getPlayLogCount(userName) {
             const logs = (typeof getPlayLog === 'function') ? getPlayLog(userName) : [];
-            let counts = { 'math': 0, 'lang': 0, 'brain': 0, 'other': 0 };
+            let counts = {};
+            for (let key in CATEGORY_NAMES) {
+                counts[key] = 0;
+            }
 
             logs.forEach(entry => {
                 const gameId = entry.gameId;
@@ -577,7 +582,9 @@
                         break;
                     }
                 }
-                counts[category]++;
+                if (counts[category] !== undefined) {
+                    counts[category]++;
+                }
             });
 
             return counts;
@@ -621,6 +628,7 @@
                     maintainAspectRatio: false,
                     scales: {
                         r: {
+                            min: 0,
                             angleLines: { color: 'rgba(0,0,0,0.1)' },
                             grid: { color: 'rgba(0,0,0,0.1)' },
                             pointLabels: {

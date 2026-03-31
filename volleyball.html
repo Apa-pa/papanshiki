@@ -415,7 +415,7 @@
 
             setTimeout(() => {
                 if (typeof showPointGetDialog === 'function') {
-                    showPointGetDialog(earnedPoints, showEndMenu);
+                    showPointGetDialog(earnedPoints, 'volleyball', showEndMenu);
                 } else {
                     showEndMenu(); // 存在しない場合のフォールバック
                 }

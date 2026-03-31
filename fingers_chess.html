@@ -667,7 +667,7 @@
                     };
 
                     if (typeof showPointGetDialog === 'function') {
-                        showPointGetDialog(pts, onEnd);
+                        showPointGetDialog(pts, 'fingers_chess', onEnd);
                     } else {
                         alert(win === 'p1' ? "あなたの勝ち！\n" + pts + "pt獲得！" : "CPUの勝ち！\n20pt獲得！");
                         onEnd();
