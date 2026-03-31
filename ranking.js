@@ -798,7 +798,22 @@ function showSaveDialog(gameId, resultValue, customBasePoint, onComplete) {
     };
 }
 
-function showPointGetDialog(amount, onComplete = null) {
+function showPointGetDialog(amount, arg2 = null, arg3 = null) {
+    let onComplete = null;
+    let gameId = null;
+
+    if (typeof arg2 === 'function') {
+        onComplete = arg2;
+    } else if (typeof arg2 === 'string') {
+        gameId = arg2;
+    }
+
+    if (typeof arg3 === 'function') {
+        onComplete = arg3;
+    } else if (typeof arg3 === 'string') {
+        gameId = arg3;
+    }
+
     const old = document.getElementById('ranking-overlay');
     if (old) old.remove();
     const users = getUserNames();
@@ -813,6 +828,12 @@ function showPointGetDialog(amount, onComplete = null) {
         selectUser: (name, pts) => {
             addPoints(name, pts);
             if (typeof toggleStamp === 'function') toggleStamp(name, getTodayString(), true);
+            
+            // ★プレイログに保存（gameIdがある場合）
+            if (gameId && typeof savePlayLog === 'function') {
+                savePlayLog(name, gameId);
+            }
+
             document.getElementById('ranking-overlay').remove();
             alert(`${name}さんに ${pts}ポイント！`);
             // ユーザー名を引数に渡してコールバックを呼ぶ
