@@ -49,7 +49,10 @@ const STOCK_MASTER = {
     // ▼ 追加分 ▼
     'nikkei': { name: 'ぱぱんの森平均株価', type: 'linked', linkage: 'NI225', currency: 'point', initPrice: 1000, volatility: 0.0, dividendRate: 0.005, divisor: 100, desc: 'ぱぱんの森の平均株価と連動するよ' },
     'sp500': { name: 'とおくの山SP500', type: 'linked', linkage: 'SP500', currency: 'point', initPrice: 100, volatility: 0.0, dividendRate: 0.005, divisor: 10, desc: 'とおくの山を代表する500社の株価と連動するよ' },
-    'wheat': { name: '小麦 (10kg)', type: 'linked', linkage: 'WHEAT', currency: 'point', initPrice: 200, volatility: 0.0, dividendRate: 0.005, divisor: 0.1, desc: 'パンや麺(めん)の材料になるよ' }
+    'wheat': { name: '小麦 (10kg)', type: 'linked', linkage: 'WHEAT', currency: 'point', initPrice: 200, volatility: 0.0, dividendRate: 0.005, divisor: 0.1, desc: 'パンや麺(めん)の材料になるよ' },
+    'gold': { name: '金', type: 'linked', linkage: 'GOLD', currency: 'point', initPrice: 10000, volatility: 0.0, dividendRate: 0.0, divisor: 1, desc: 'きらきら かがやく かたい おかね' },
+    'oil': { name: 'オイル', type: 'linked', linkage: 'WTI', currency: 'point', initPrice: 100, volatility: 0.0, dividendRate: 0.0, divisor: 1, desc: 'のりものや ストーブを うごかすよ' },
+    'nasdaq': { name: 'とおくの山NSD100', type: 'linked', linkage: 'NASDAQ100', currency: 'point', initPrice: 300, volatility: 0.0, dividendRate: 0.0, divisor: 50, desc: 'とおくの山の ハイテクな 会社たち' }
 };
 
 // --- 定数定義 ---
@@ -844,6 +847,17 @@ function showPointGetDialog(amount, arg2 = null, arg3 = null) {
 }
 
 // --- ガチャ・コレクション管理 ---
+
+const GACHA_ITEMS = [
+    { id: 'hi-an', name: 'ヒー＆アン', img: 'hi-an-192.webp', rarity: '★★★', description: 'エゾリスのヒーとハリネズミのアン。森でであっていっしょにくらしているよ。' },
+    { id: 'hi-an-s', name: '水彩ヒー＆アン', img: 'hi-an-suisai-192.webp', rarity: '★★★★★', description: 'ふんわりやさしい水彩タッチのヒーとアン。とってもレアだよ！' },
+    { id: 'pippi', name: 'くまのピッピ', img: 'pippi192.webp', rarity: '★★★', description: 'くまのピッピはやさしくて植物がだいすき。植物を育てたりしているんだ。' },
+    { id: 'an', name: 'ハリネズミのアン', img: 'an192.webp', rarity: '★★★★', description: 'ハリネズミのおんなのこアン。アンはヒーちゃんよりもおねえさん。ヒーのことがだいすきでヒーをまもっている。' },
+    { id: 'hi', name: 'エゾリスのヒー', img: 'hi-192.webp', rarity: '★★★★', description: 'エゾリスのおんなのこヒー。すこしこわがりなところがあるおちゃめさん。アンのことがだいすき。' },
+    { id: 'yuri', name: 'キツネのユーリ', img: 'yu-ri192.webp', rarity: '★★★★★', description: 'キツネのおんなのこユーリ。コウのおねえさん。めんどうみがいい。' },
+    { id: 'kou', name: 'キツネのコウ', img: 'kou192.webp', rarity: '★★★★★', description: 'キツネのおとこのこコウ。ユーリとはきょうだいでコウがおとうと。かっぱつでユーリといつもじゃれあっている。' },
+    { id: 'calm', name: 'しらかばのハート', img: 'heart256.webp', rarity: '★★★★★', description: 'しらかばの木のハート。みんながよろこぶえがおがだいすき。おだやかなもりをみまもっている。' }
+];
 
 // ユーザーの持っているコレクション（IDのリスト）を取得する
 function getCollection(userName) {

@@ -365,12 +365,52 @@
         .shaking {
             animation: shake 0.1s infinite;
         }
+
+        /* ▼ 右上ナビチップ ▼ */
+        .top-nav-chips {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .nav-chip {
+            background: #fff;
+            border: 1px solid #ddd;
+            color: #6b4e3d;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: inline-block;
+        }
+
+        .nav-chip:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            background: #fff8f0;
+        }
+
+        .nav-chip:active {
+            transform: translateY(1px);
+            box-shadow: none;
+        }
     </style>
 </head>
 
 <body>
 
     <div class="container">
+        <!-- 右上ナビリンク -->
+        <div class="top-nav-chips">
+            <a href="calendar.html" class="nav-chip">📅 まなびカレンダー</a>
+        </div>
+
         <h1>💊 ぱぱんガチャ</h1>
 
         <select id="user-select" onchange="updateStatus()" style="padding: 10px; font-size: 16px; margin-bottom: 10px;">
@@ -428,17 +468,6 @@
     </div>
 
     <script>
-        const gachaItems = [
-            { id: 'hi-an', name: 'ヒー＆アン', img: 'hi-an-192.webp', rarity: '★★★', description: 'エゾリスのヒーとハリネズミのアン。森でであっていっしょにくらしているよ。' },
-            { id: 'hi-an-s', name: '水彩ヒー＆アン', img: 'hi-an-suisai-192.webp', rarity: '★★★★★', description: 'ふんわりやさしい水彩タッチのヒーとアン。とってもレアだよ！' },
-            { id: 'pippi', name: 'くまのピッピ', img: 'pippi192.webp', rarity: '★★★', description: 'くまのピッピはやさしくて植物がだいすき。植物を育てたりしているんだ。' },
-            { id: 'an', name: 'ハリネズミのアン', img: 'an192.webp', rarity: '★★★★', description: 'ハリネズミのおんなのこアン。アンはヒーちゃんよりもおねえさん。ヒーのことがだいすきでヒーをまもっている。' },
-            { id: 'hi', name: 'エゾリスのヒー', img: 'hi-192.webp', rarity: '★★★★', description: 'エゾリスのおんなのこヒー。すこしこわがりなところがあるおちゃめさん。アンのことがだいすき。' },
-            { id: 'yuri', name: 'キツネのユーリ', img: 'yu-ri192.webp', rarity: '★★★★★', description: 'キツネのおんなのこユーリ。コウのおねえさん。めんどうみがいい。' },
-            { id: 'kou', name: 'キツネのコウ', img: 'kou192.webp', rarity: '★★★★★', description: 'キツネのおとこのこコウ。ユーリとはきょうだいでコウがおとうと。かっぱつでユーリといつもじゃれあっている。' },
-            { id: 'calm', name: 'しらかばのハート', img: 'heart256.webp', rarity: '★★★★★', description: 'しらかばの木のハート。みんながよろこぶえがおがだいすき。おだやかなもりをみまもっている。' }
-        ];
-
         const GACHA_COST = 50;
 
         window.onload = function () {
@@ -500,7 +529,7 @@
             machine.classList.add('shaking'); // ガタガタ揺らす
 
             // 抽選（ランダム）
-            const picked = gachaItems[Math.floor(Math.random() * gachaItems.length)];
+            const picked = GACHA_ITEMS[Math.floor(Math.random() * GACHA_ITEMS.length)];
 
             // 1.5秒後に結果表示
             setTimeout(() => {
@@ -560,7 +589,7 @@
             const myCollection = getCollection(userName);
             countSpan.innerText = myCollection.length;
 
-            gachaItems.forEach(item => {
+            GACHA_ITEMS.forEach(item => {
                 const hasIt = myCollection.includes(item.id);
 
                 const div = document.createElement('div');
@@ -578,7 +607,7 @@
 
         // 詳細表示
         function showDetail(itemId) {
-            const item = gachaItems.find(i => i.id === itemId);
+            const item = GACHA_ITEMS.find(i => i.id === itemId);
             if (!item) return;
 
             document.getElementById('det-img').src = item.img;

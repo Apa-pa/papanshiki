@@ -258,22 +258,7 @@
     <div id="stamp-modal" onclick="closeModal(event)">
         <div class="modal-content">
             <h3 style="margin:0; color:#555;">スタンプをえらんでね</h3>
-            <div class="stamp-list">
-                <button class="stamp-btn" onclick="selectStamp('hi-an-192.webp')">
-                    <img src="hi-an-192.webp" alt="自動スタンプ">
-                </button>
-                <button class="stamp-btn" onclick="selectStamp('hi-an-suisai-192.webp')">
-                    <img src="hi-an-suisai-192.webp" alt="スタンプ2">
-                </button>
-                <button class="stamp-btn" onclick="selectStamp('pippi192.webp')">
-                    <img src="pippi192.webp" alt="スタンプ3">
-                </button>
-                <button class="stamp-btn" onclick="selectStamp('an192.webp')">
-                    <img src="an192.webp" alt="スタンプ4">
-                </button>
-                <button class="stamp-btn" onclick="selectStamp('hi-192.webp')">
-                    <img src="hi-192.webp" alt="スタンプ5">
-                </button>
+            <div class="stamp-list" id="stamp-list-container">
             </div>
             <button class="delete-btn" onclick="selectStamp(null)">🗑️ スタンプを消す</button>
             <div style="margin-top:10px; font-size:12px; color:#aaa;">まわりを押すととじるよ</div>
@@ -365,6 +350,36 @@
             if (!userName) return;
 
             selectedDate = dateStr;
+            
+            // スタンプリストを生成
+            const stampListContainer = document.getElementById('stamp-list-container');
+            stampListContainer.innerHTML = '';
+            
+            // 基本スタンプ
+            const defaultStamps = ['hi-an-192.webp', 'hi-an-suisai-192.webp', 'pippi192.webp', 'an192.webp', 'hi-192.webp'];
+            
+            // ガチャのコレクションを取得
+            const myCollectionIds = getCollection(userName);
+            const myCollectionGachaStamps = typeof GACHA_ITEMS !== 'undefined' 
+                ? GACHA_ITEMS.filter(item => myCollectionIds.includes(item.id)).map(item => item.img)
+                : [];
+            
+            // 重複を除外して結合
+            const availableStamps = [...new Set([...defaultStamps, ...myCollectionGachaStamps])];
+            
+            availableStamps.forEach(imgSrc => {
+                const btn = document.createElement('button');
+                btn.className = 'stamp-btn';
+                btn.onclick = () => selectStamp(imgSrc);
+                
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.alt = 'スタンプ';
+                
+                btn.appendChild(img);
+                stampListContainer.appendChild(btn);
+            });
+
             document.getElementById('stamp-modal').style.display = 'flex';
         }
 
