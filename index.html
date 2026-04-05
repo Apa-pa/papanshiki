@@ -404,6 +404,7 @@
         .card.highlighted {
             position: relative;
         }
+
         .highlight-badge {
             position: absolute;
             top: -15px;
@@ -414,30 +415,34 @@
             font-size: 0.85rem;
             font-weight: bold;
             color: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
             z-index: 10;
             white-space: nowrap;
             background: linear-gradient(135deg, #ffb74d, #f57c00);
         }
-        
+
         .card.highlight-bonus {
             border-color: #ff9800 !important;
             box-shadow: 0 8px 16px rgba(255, 152, 0, 0.3) !important;
         }
+
         .card.highlight-bonus:hover {
             box-shadow: 0 12px 20px rgba(255, 152, 0, 0.4) !important;
         }
+
         .card.highlight-bonus .highlight-badge {
             background: linear-gradient(135deg, #ffb74d, #f57c00);
         }
-        
+
         .card.highlight-parent {
             border-color: #ab47bc !important;
             box-shadow: 0 8px 16px rgba(171, 71, 188, 0.3) !important;
         }
+
         .card.highlight-parent:hover {
             box-shadow: 0 12px 20px rgba(171, 71, 188, 0.4) !important;
         }
+
         .card.highlight-parent .highlight-badge {
             background: linear-gradient(135deg, #ce93d8, #ab47bc);
         }
@@ -446,12 +451,15 @@
             border-color: #f06292 !important;
             box-shadow: 0 8px 16px rgba(240, 98, 146, 0.3) !important;
         }
+
         .card.highlight-both:hover {
             box-shadow: 0 12px 20px rgba(240, 98, 146, 0.4) !important;
         }
+
         .card.highlight-both .highlight-badge {
             background: linear-gradient(135deg, #ff9800, #ab47bc);
         }
+
         /* ▲▲▲ ボーナス・おすすめハイライトここまで ▲▲▲ */
     </style>
 </head>
@@ -508,12 +516,12 @@
 
             <div class="menu-container">
                 <a href="record.html" class="menu-btn"><img src="image/kiroku_icon.webp" class="btn-icon" alt="">きろく</a>
-                <a href="calendar.html" class="menu-btn"><img src="image/calender_icon.webp" class="btn-icon"
-                        alt="">カレンダー</a>
                 <a href="gacha.html" class="menu-btn"><img src="image/gacha_icon.webp" class="btn-icon" alt="">ガチャ</a>
                 <a href="bank.html" class="menu-btn"><img src="image/bank_icon.webp" class="btn-icon" alt="">ぎんこう</a>
                 <a href="stock.html" class="menu-btn"><img src="image/stock_icon.webp" class="btn-icon" alt="">しょうけん</a>
                 <a href="room.html" class="menu-btn"><img src="image/myroom_icon.webp" class="btn-icon" alt="">ルーム</a>
+                <a href="ura/sheep_stable.html" class="menu-btn"><img src="image/sheep_icon.webp" class="btn-icon"
+                        alt="">ひつじ</a>
             </div>
 
             <!-- ▼ カテゴリフィルターチップ ▼ -->
@@ -1176,9 +1184,9 @@
         </div>
 
         <div class="bottom-menu-container">
-            <a href="record.html" class="menu-btn-bottom">
-                <span class="btn-emoji">🏆</span>
-                <span>きろくをみる</span>
+            <a href="calendar.html" class="menu-btn-bottom">
+                <span class="btn-emoji">📅</span>
+                <span>カレンダー</span>
             </a>
             <a href="backup.html" class="menu-btn-bottom">
                 <span class="btn-emoji">💾</span>
@@ -1444,15 +1452,15 @@
             cards.forEach(card => {
                 const href = card.getAttribute('href');
                 if (!href) return;
-                
+
                 let isBonus = bonusUrls.has(href);
                 let isParent = parentUrls.has(href);
-                
+
                 if (isBonus || isParent) {
                     card.classList.add('highlighted');
                     const badge = document.createElement('div');
                     badge.className = 'highlight-badge';
-                    
+
                     if (isBonus && isParent) {
                         card.classList.add('highlight-both');
                         badge.innerHTML = '🌟 ボーナス & おすすめ 👪';

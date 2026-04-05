@@ -286,6 +286,100 @@
             text-decoration: underline;
             font-size: 14px;
         }
+
+        /* ===================== */
+        /* 「あそびかた」モーダル */
+        /* ===================== */
+        .howto-btn {
+            display: inline-block;
+            background: #fff8e1;
+            color: #f57f17;
+            border: 2px solid #fbc02d;
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(251, 192, 45, 0.2);
+            transition: background 0.2s;
+            white-space: nowrap;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .howto-btn:hover {
+            background: #ffecb3;
+        }
+
+        #sheep-howto-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .sheep-howto-box {
+            background: #fff;
+            border-radius: 20px;
+            max-width: 480px;
+            width: 100%;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+            border: 4px solid #ffd700;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sheep-howto-box h2 {
+            color: #ff9800;
+            margin-top: 10px;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+        }
+
+        .sheep-howto-step-title {
+            font-weight: bold;
+            color: #554c46;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            border-bottom: 2px dashed #ffd700;
+            padding-bottom: 5px;
+        }
+
+        .sheep-howto-step-body {
+            text-align: left;
+            color: #554c46;
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            background: #fffde7;
+            padding: 15px 18px;
+            border-radius: 10px;
+        }
+
+        .sheep-howto-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            margin: 0 5px;
+            transition: background 0.3s;
+        }
+
+        .sheep-howto-dot.active {
+            background: #ffd700;
+        }
     </style>
 </head>
 
@@ -293,7 +387,12 @@
 
     <div class="header">
         <div id="user-display" style="font-weight:bold;">名前: ---</div>
-        <div class="balance-box"><img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり"> <span id="balance">0</span></div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <!-- 「あそびかた」ボタン -->
+            <button class="howto-btn" onclick="openSheepHowto()" id="sheep-howto-trigger">あそびかた</button>
+            <div class="balance-box"><img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり"> <span
+                    id="balance">0</span></div>
+        </div>
     </div>
 
     <div id="current-sheep-area" class="current-sheep-card">
@@ -304,7 +403,8 @@
             <p style="margin:0; font-size:11px; color:#ff9800; font-weight:bold;">🏆 契約中のアスリート</p>
             <input type="text" id="my-sheep-name" class="name-input" onchange="renameSheep()">
             <div id="remaining-races" class="contract-info">残り契約レース: -- 回</div>
-            <div id="record-info" class="contract-info" style="color:#4caf50;">📊 0戦 0勝 ｜ 累計賞金: 0 <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり"></div>
+            <div id="record-info" class="contract-info" style="color:#4caf50;">📊 0戦 0勝 ｜ 累計賞金: 0 <img
+                    src="../image/donguri.webp" class="donguri-icon" alt="どんぐり"></div>
 
             <img src="hitsuji_shomen.webp" class="sheep-main-img" id="my-sheep-img">
 
@@ -331,15 +431,19 @@
                 </div>
 
                 <div class="train-area">
-                    <button class="train-btn btn-speed" onclick="trainSheep('speed')">💨 スピード<br>(1<img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">)</button>
-                    <button class="train-btn btn-stamina" onclick="trainSheep('stamina')">🍖 スタミナ<br>(1<img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">)</button>
-                    <button class="train-btn btn-tenacity" onclick="trainSheep('tenacity')">🔥 根性<br>(1<img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">)</button>
+                    <button class="train-btn btn-speed" onclick="trainSheep('speed')">💨 スピード<br>(1<img
+                            src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">)</button>
+                    <button class="train-btn btn-stamina" onclick="trainSheep('stamina')">🍖 スタミナ<br>(1<img
+                            src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">)</button>
+                    <button class="train-btn btn-tenacity" onclick="trainSheep('tenacity')">🔥 根性<br>(1<img
+                            src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">)</button>
                 </div>
             </div>
 
             <button class="contract-btn"
                 style="background:#4caf50; box-shadow:0 4px #2e7d32; width:100%; margin-bottom:10px;"
-                onclick="startLocalRace()">🏁 ローカルレースに出る (5<img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり">)</button>
+                onclick="startLocalRace()">🏁 ローカルレースに出る (5<img src="../image/donguri.webp" class="donguri-icon"
+                    alt="どんぐり">)</button>
             <button class="contract-btn" style="background:#2196f3; box-shadow:0 4px #1565c0; width:100%;"
                 onclick="entryNationalRace()">全国レースに出走登録！</button>
             <p id="entry-status" style="font-size:12px; color:#e91e63; margin-top:10px; font-weight:bold;"></p>
@@ -354,7 +458,8 @@
         新しく契約を結ぶ（24レース契約）</h3>
     <div class="scout-list" id="scout-list"></div>
 
-    <a href="secret_home.html" class="back-link">カジノロビーに戻る</a>
+    <a href="../index.html" class="back-link">トップページにもどる</a>
+    <a href="secret_home.html" class="back-link">カジノロビーにいく</a>
 
     <div id="user-overlay" class="overlay">
         <h2 style="color:#ffd700;">だれが 厩舎(きゅうしゃ)をみる？</h2>
@@ -635,6 +740,145 @@
         window.addEventListener('load', () => {
             setTimeout(initNationalRaceSystem, 1000);
         });
+    </script>
+
+    <!-- ====================== -->
+    <!-- 「あそびかた」モーダル  -->
+    <!-- ====================== -->
+    <div id="sheep-howto-modal">
+        <div class="sheep-howto-box">
+            <!-- 閉じるボタン -->
+            <button onclick="closeSheepHowto()"
+                style="position:absolute; top:12px; right:14px; background:none; border:none; font-size:1.4rem; color:#999; cursor:pointer; line-height:1;">✖</button>
+
+            <h2>🐑 ひつじ<ruby>厩舎<rt>きゅうしゃ</rt></ruby>へようこそ！</h2>
+
+            <!-- Step 1 -->
+            <div id="sheep-howto-step-0" class="sheep-howto-step">
+                <div style="font-size:3rem; margin-bottom:12px;">🤝</div>
+                <p class="sheep-howto-step-title">① ひつじと<ruby>契約<rt>けいやく</rt></ruby>してレースへ！</p>
+                <div class="sheep-howto-step-body">
+                    ひつじと<ruby>契約<rt>けいやく</rt></ruby>してレースに<ruby>出走<rt>しゅっそう</rt></ruby>することができるよ！
+                    1<ruby>位<rt>い</rt></ruby>になるとたくさんのどんぐりがもらえるよ！
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div id="sheep-howto-step-1" class="sheep-howto-step" style="display:none;">
+                <div style="font-size:3rem; margin-bottom:12px;">🌰</div>
+                <p class="sheep-howto-step-title">② どんぐりを<ruby>銀行<rt>ぎんこう</rt></ruby>で<ruby>交換<rt>こうかん</rt></ruby>しよう</p>
+                <div class="sheep-howto-step-body">
+                    あそぶためにはどんぐりが<ruby>必要<rt>ひつよう</rt></ruby>だよ！
+                    ポイントを<ruby>貯<rt>た</rt></ruby>めたら<ruby>銀行<rt>ぎんこう</rt></ruby>でどんぐりに<ruby>交換<rt>こうかん</rt></ruby>しよう。
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div id="sheep-howto-step-2" class="sheep-howto-step" style="display:none;">
+                <div style="font-size:3rem; margin-bottom:12px;">💪</div>
+                <p class="sheep-howto-step-title">③ トレーニングでひつじを<ruby>強<rt>つよ</rt></ruby>くしよう！</p>
+                <div class="sheep-howto-step-body">
+                    <ruby>勝<rt>か</rt></ruby>つためには「スピード」「スタミナ」「<ruby>根性<rt>こんじょう</rt></ruby>」を
+                    トレーニングで<ruby>鍛<rt>きた</rt></ruby>えよう！
+                    どれを<ruby>伸<rt>の</rt></ruby>ばすかはキミしだい！
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div id="sheep-howto-step-3" class="sheep-howto-step" style="display:none;">
+                <div style="font-size:3rem; margin-bottom:12px;">🏷️</div>
+                <p class="sheep-howto-step-title">④ レースネームをつけて<ruby>全国<rt>ぜんこく</rt></ruby>レースへ！</p>
+                <div class="sheep-howto-step-body">
+                    <ruby>契約<rt>けいやく</rt></ruby>したひつじには<ruby>名前<rt>なまえ</rt></ruby>（レースネーム）がつけられるよ。
+                    <ruby>名前<rt>なまえ</rt></ruby>をつけたら<ruby>週<rt>しゅう</rt></ruby>に1<ruby>回<rt>かい</rt></ruby><ruby>開催<rt>かいさい</rt></ruby>される
+                    <ruby>全国<rt>ぜんこく</rt></ruby>レースに<ruby>出走<rt>しゅっそう</rt></ruby><ruby>登録<rt>とうろく</rt></ruby>してみよう！
+                </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div id="sheep-howto-step-4" class="sheep-howto-step" style="display:none;">
+                <div style="font-size:3rem; margin-bottom:12px;">🔄</div>
+                <p class="sheep-howto-step-title">⑤ 24<ruby>回<rt>かい</rt></ruby><ruby>出走<rt>しゅっそう</rt></ruby>したら<ruby>新<rt>あたら</rt></ruby>しい<ruby>契約<rt>けいやく</rt></ruby>へ！</p>
+                <div class="sheep-howto-step-body">
+                    ローカルレースに24<ruby>回<rt>かい</rt></ruby><ruby>出走<rt>しゅっそう</rt></ruby>したら<ruby>契約終了<rt>けいやくしゅうりょう</rt></ruby>！
+                    あたらしいひつじと<ruby>契約<rt>けいやく</rt></ruby>して、また<ruby>強<rt>つよ</rt></ruby>いアスリートを<ruby>育<rt>そだ</rt></ruby>てよう！
+                </div>
+            </div>
+
+            <!-- ドットインジケーター -->
+            <div style="margin-bottom:15px;" id="sheep-howto-dots">
+                <span class="sheep-howto-dot active"></span>
+                <span class="sheep-howto-dot"></span>
+                <span class="sheep-howto-dot"></span>
+                <span class="sheep-howto-dot"></span>
+                <span class="sheep-howto-dot"></span>
+            </div>
+
+            <!-- ボタンエリア -->
+            <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+                <button onclick="closeSheepHowto()"
+                    style="background:#fff; color:#ff9800; border:2px solid #ff9800; padding:10px 20px; border-radius:30px; font-size:1rem; font-weight:bold; cursor:pointer; transition:0.2s;"
+                    onmouseover="this.style.background='#fff3e0'" onmouseout="this.style.background='#fff'">
+                    すぐにはじめる！
+                </button>
+                <button id="sheep-howto-next-btn" onclick="nextSheepHowtoStep()"
+                    style="background:#ff9800; color:#fff; border:none; padding:12px 28px; border-radius:30px; font-size:1rem; font-weight:bold; cursor:pointer; box-shadow:0 4px 10px rgba(255,152,0,0.3); transition:transform 0.2s;"
+                    onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <ruby>次<rt>つぎ</rt></ruby>へ ➡
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ===================== */
+        /* あそびかたモーダル制御 */
+        /* ===================== */
+        const SHEEP_HOWTO_KEY = 'papan_sheep_howto_v1';
+        let sheepHowtoStep = 0;
+        const SHEEP_HOWTO_TOTAL = 5;
+
+        // 初回訪問時に自動表示
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!localStorage.getItem(SHEEP_HOWTO_KEY)) {
+                openSheepHowto();
+            }
+        });
+
+        function updateSheepHowtoView() {
+            // ステップ表示切替
+            for (let i = 0; i < SHEEP_HOWTO_TOTAL; i++) {
+                document.getElementById('sheep-howto-step-' + i).style.display =
+                    (i === sheepHowtoStep) ? 'block' : 'none';
+            }
+            // ドット更新
+            const dots = document.querySelectorAll('.sheep-howto-dot');
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === sheepHowtoStep);
+            });
+            // 最終ステップで「次へ」ボタンを非表示
+            const nextBtn = document.getElementById('sheep-howto-next-btn');
+            nextBtn.style.display = (sheepHowtoStep === SHEEP_HOWTO_TOTAL - 1) ? 'none' : 'inline-block';
+        }
+
+        function nextSheepHowtoStep() {
+            if (sheepHowtoStep < SHEEP_HOWTO_TOTAL - 1) {
+                sheepHowtoStep++;
+                updateSheepHowtoView();
+            }
+        }
+
+        function openSheepHowto() {
+            sheepHowtoStep = 0;
+            updateSheepHowtoView();
+            document.getElementById('sheep-howto-modal').style.display = 'flex';
+        }
+
+        function closeSheepHowto() {
+            // 初回表示済みフラグをセット
+            localStorage.setItem(SHEEP_HOWTO_KEY, 'true');
+            document.getElementById('sheep-howto-modal').style.display = 'none';
+        }
     </script>
 </body>
 

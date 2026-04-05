@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>けいさんパズル - ぱぱん式</title>
+    <meta name="description" content="タイルをならべて計算式を作る算数パズルゲーム。ドラッグ＆ドロップで数字と符号を組み合わせよう！">
+    <script src="ranking.js"></script>
+    <style>
+        /* ===== 基本スタイル ===== */
+        :root {
+            --accent: #ff9800;
+            --accent-dark: #e65100;
+            --correct-color: #4caf50;
+            --slot-empty-bg: #e8f5e9;
+            --slot-empty-bd: #a5d6a7;
+            --slot-filled-bg: #fff9c4;
+            --slot-filled-bd: #f9a825;
+            --tile-num-bg: #fff3e0;
+            --tile-num-bd: #fb8c00;
+            --tile-op-bg: #e3f2fd;
+            --tile-op-bd: #1e88e5;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", "Meiryo", Arial, sans-serif;
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 520px;
+            min-height: 100vh;
+            min-height: 100dvh;
+            background: rgba(255, 255, 255, 0.97);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ===== スタート画面 ===== */
+        #start-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px 40px;
+        }
+
+        .game-icon {
+            font-size: 4.5rem;
+            margin-bottom: 10px;
+        }
+
+        .game-title {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+
+        .game-subtitle {
+            font-size: 0.95rem;
+            color: #777;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .level-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .level-card {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            font-family: inherit;
+            text-align: left;
+            gap: 14px;
+            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.18);
+            transition: transform 0.1s, box-shadow 0.1s;
+            width: 100%;
+        }
+
+        .level-card:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18);
+        }
+
+        .level-card.lv1 {
+            background: linear-gradient(135deg, #66bb6a, #43a047);
+        }
+
+        .level-card.lv2 {
+            background: linear-gradient(135deg, #ffa726, #fb8c00);
+        }
+
+        .level-card.lv3 {
+            background: linear-gradient(135deg, #ef5350, #e53935);
+        }
+
+        .level-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .level-info {
+            flex: 1;
+        }
+
+        .level-name {
+            font-size: 1.15rem;
+            margin-bottom: 3px;
+        }
+
+        .level-desc {
+            font-size: 0.78rem;
+            opacity: 0.9;
+        }
+
+        .home-link {
+            display: inline-block;
+            margin-top: 25px;
+            color: #78909c;
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #78909c;
+        }
+
+        /* ===== HUD ===== */
+        #game-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 11px 16px;
+            background: linear-gradient(90deg, #42a5f5, #66bb6a);
+            color: white;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .hud-progress {
+            background: rgba(255, 255, 255, 0.25);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .hud-timer {
+            font-size: 1.35rem;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+        }
+
+        .hud-quit {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: bold;
+        }
+
+        /* ===== ターゲットエリア ===== */
+        .target-area {
+            background: linear-gradient(135deg, #fff9c4, #fff3e0);
+            padding: 18px 16px 14px;
+            text-align: center;
+            border-bottom: 3px solid #ffe082;
+            flex-shrink: 0;
+        }
+
+        .target-label {
+            font-size: 0.88rem;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .target-number {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: var(--accent-dark);
+            line-height: 1;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.08);
+        }
+
+        .target-hint {
+            font-size: 1rem;
+            color: #f57c00;
+            margin-top: 4px;
+        }
+
+        /* ===== 数式スロットエリア ===== */
+        .formula-area {
+            padding: 18px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: nowrap;
+            background: #f8f9fa;
+            border-bottom: 2px dashed #dee2e6;
+            flex-shrink: 0;
+            min-height: 105px;
+        }
+
+        .slot {
+            width: 62px;
+            height: 62px;
+            border-radius: 15px;
+            border: 3px dashed var(--slot-empty-bd);
+            background: var(--slot-empty-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s, transform 0.15s;
+            flex-shrink: 0;
+        }
+
+        .slot.operator-slot {
+            width: 50px;
+            height: 50px;
+            background: var(--tile-op-bg);
+            border-color: #90caf9;
+            font-size: 1.8rem;
+        }
+
+        .slot.filled {
+            background: var(--slot-filled-bg);
+            border-color: var(--slot-filled-bd);
+            border-style: solid;
+        }
+
+        .slot.drag-over {
+            transform: scale(1.12);
+            background: #c8e6c9;
+            border-color: var(--correct-color);
+            border-style: solid;
+        }
+
+        .slot.correct-flash {
+            background: #c8e6c9;
+            border-color: var(--correct-color);
+            border-style: solid;
+            animation: correctPulse 0.45s ease;
+        }
+
+        .slot.selected-slot {
+            box-shadow: 0 0 0 4px var(--accent);
+        }
+
+        .equals-sign {
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: #666;
+            flex-shrink: 0;
+        }
+
+        .result-display {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #aaa;
+            min-width: 40px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        @keyframes correctPulse {
+            0% {
+                transform: scale(1);
+            }
+
+            45% {
+                transform: scale(1.18);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* ===== タイルストックエリア ===== */
+        .stock-area {
+            flex: 1;
+            padding: 16px 14px;
+            background: white;
+            overflow-y: auto;
+        }
+
+        .stock-label {
+            font-size: 0.82rem;
+            color: #bbb;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .tiles-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            min-height: 80px;
+        }
+
+        .tile {
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: grab;
+            transition: transform 0.1s, box-shadow 0.1s;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+            touch-action: none;
+            flex-shrink: 0;
+        }
+
+        .tile.number-tile {
+            background: var(--tile-num-bg);
+            border: 2px solid var(--tile-num-bd);
+            color: var(--accent-dark);
+        }
+
+        .tile.operator-tile {
+            background: var(--tile-op-bg);
+            border: 2px solid var(--tile-op-bd);
+            color: #1565c0;
+            font-size: 1.85rem;
+        }
+
+        .tile.dragging {
+            opacity: 0.4;
+            transform: scale(0.92);
+        }
+
+        .tile.selected {
+            box-shadow: 0 0 0 4px var(--accent), 0 4px 0 rgba(0, 0, 0, 0.15);
+            transform: scale(1.1);
+        }
+
+        /* ===== ドラッグゴースト ===== */
+        #drag-ghost {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.88;
+            transform: translate(-50%, -50%) scale(1.2);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            width: 60px;
+            height: 60px;
+        }
+
+        .ghost-number {
+            background: var(--tile-num-bg);
+            border: 2px solid var(--tile-num-bd);
+            color: var(--accent-dark);
+        }
+
+        .ghost-operator {
+            background: var(--tile-op-bg);
+            border: 2px solid var(--tile-op-bd);
+            color: #1565c0;
+            font-size: 1.85rem;
+        }
+
+        /* ===== 正解オーバーレイ ===== */
+        #correct-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.93);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            animation: fadeInOverlay 0.3s ease;
+        }
+
+        @keyframes fadeInOverlay {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .correct-char {
+            width: 130px;
+            animation: bounceInChar 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes bounceInChar {
+            0% {
+                transform: scale(0.3) translateY(30px);
+                opacity: 0;
+            }
+
+            60% {
+                transform: scale(1.18) translateY(-5px);
+            }
+
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .correct-text {
+            font-size: 2.8rem;
+            font-weight: bold;
+            color: var(--correct-color);
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.08);
+            animation: popUpText 0.4s 0.18s both cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .correct-formula {
+            font-size: 1.35rem;
+            color: #555;
+            margin-top: 8px;
+            animation: popUpText 0.4s 0.28s both ease;
+        }
+
+        @keyframes popUpText {
+            from {
+                transform: scale(0.5) translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* 星エフェクト */
+        .stars-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            animation: starFly 1.3s ease-out forwards;
+        }
+
+        @keyframes starFly {
+            0% {
+                transform: translateY(0) scale(0);
+                opacity: 1;
+            }
+
+            70% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-220px) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        /* ===== 結果画面 ===== */
+        #result-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px 40px;
+        }
+
+        .result-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .result-time-box {
+            background: linear-gradient(135deg, #fce4ec, #fff3e0);
+            border-radius: 20px;
+            padding: 20px 50px;
+            margin: 12px 0 20px;
+            text-align: center;
+            border: 3px solid #f48fb1;
+        }
+
+        .result-time-label {
+            font-size: 0.88rem;
+            color: #999;
+        }
+
+        .result-time-value {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #e91e63;
+            line-height: 1.2;
+        }
+
+        .result-btn {
+            display: block;
+            width: 100%;
+            max-width: 320px;
+            padding: 16px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: inherit;
+            margin: 7px auto;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.18);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .result-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18);
+        }
+
+        .btn-reward {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+        }
+
+        .btn-retry {
+            background: linear-gradient(135deg, #66bb6a, #43a047);
+            color: white;
+        }
+
+        .btn-home {
+            background: linear-gradient(135deg, #78909c, #546e7a);
+            color: white;
+        }
+
+        /* ===== レスポンシブ調整 ===== */
+        @media (max-width: 380px) {
+            .slot {
+                width: 54px;
+                height: 54px;
+                font-size: 1.4rem;
+            }
+
+            .slot.operator-slot {
+                width: 44px;
+                height: 44px;
+            }
+
+            .tile {
+                width: 54px;
+                height: 54px;
+                font-size: 1.35rem;
+            }
+
+            .target-number {
+                font-size: 2.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="game-container">
+
+        <!-- ===== スタート画面 ===== -->
+        <div id="start-screen">
+            <div class="game-icon">🧩</div>
+            <div class="game-title">けいさん<br>パズル</div>
+            <div class="game-subtitle">タイルをならべて しきをつくろう！</div>
+
+            <div class="level-cards">
+                <button class="level-card lv1" onclick="startGame(1)" id="btn-lv1">
+                    <span class="level-icon">⭐</span>
+                    <div class="level-info">
+                        <div class="level-name">レベル１ やさしい</div>
+                        <div class="level-desc">すうじ２こ・きごう１こ（＋ と －）</div>
+                    </div>
+                </button>
+                <button class="level-card lv2" onclick="startGame(2)" id="btn-lv2">
+                    <span class="level-icon">⭐⭐</span>
+                    <div class="level-info">
+                        <div class="level-name">レベル２ ふつう</div>
+                        <div class="level-desc">すうじ３こ・きごう２こ（＋ と －）</div>
+                    </div>
+                </button>
+                <button class="level-card lv3" onclick="startGame(3)" id="btn-lv3">
+                    <span class="level-icon">⭐⭐⭐</span>
+                    <div class="level-info">
+                        <div class="level-name">レベル３ むずかしい</div>
+                        <div class="level-desc">すうじ３こ・きごう２こ（＋ － × ÷）</div>
+                    </div>
+                </button>
+            </div>
+
+            <a href="index.html" class="home-link">🏠 ホームへもどる</a>
+        </div>
+
+        <!-- ===== ゲーム画面 ===== -->
+        <div id="game-screen" class="hidden">
+
+            <!-- HUD -->
+            <div class="hud">
+                <span id="hud-progress" class="hud-progress">1 / 5 もん</span>
+                <span id="hud-timer" class="hud-timer">⏱ 00:00</span>
+                <button class="hud-quit" onclick="quitGame()">やめる</button>
+            </div>
+
+            <!-- ターゲット -->
+            <div class="target-area">
+                <div class="target-label">🎯 もくひょう</div>
+                <div class="target-number" id="target-display">10</div>
+                <div class="target-hint">にしてね！</div>
+            </div>
+
+            <!-- 数式スロット（JS で動的生成） -->
+            <div class="formula-area" id="formula-area"></div>
+
+            <!-- タイルストック -->
+            <div class="stock-area">
+                <div class="stock-label">↓ タイルをドラッグ（またはタップ）してはめよう！</div>
+                <div class="tiles-container" id="tiles-container"></div>
+            </div>
+
+            <!-- 正解オーバーレイ -->
+            <div id="correct-overlay" class="hidden">
+                <div class="stars-container" id="stars-container"></div>
+                <img src="hari-an.webp" class="correct-char" alt="アン">
+                <div class="correct-text">せいかい！ 🎉</div>
+                <div class="correct-formula" id="correct-formula-display"></div>
+            </div>
+
+        </div>
+
+        <!-- ===== 結果画面 ===== -->
+        <div id="result-screen" class="hidden">
+            <div style="font-size:4.5rem;">🏆</div>
+            <div class="result-title">ぜんもん クリア！</div>
+            <div class="result-time-box">
+                <div class="result-time-label">あなたの タイム</div>
+                <div class="result-time-value" id="result-time">00:00</div>
+            </div>
+            <button class="result-btn btn-reward" id="reward-btn" onclick="getReward()">
+                💾 きろくを ほぞんする
+            </button>
+            <button class="result-btn btn-retry" onclick="retryGame()">
+                🔄 もう いちど
+            </button>
+            <button class="result-btn btn-home" onclick="location.href='index.html'">
+                🏠 ホームへもどる
+            </button>
+        </div>
+
+        <!-- ドラッグゴースト -->
+        <div id="drag-ghost" class="hidden"></div>
+
+    </div>
+
+    <!-- ================================================================ -->
+    <script>
+        /*
+         * けいさんパズル - メインゲームロジック
+         * ゲームタイプ A（記録保存型）
+         * showSaveDialog(gameId, elapsedSeconds) を終了時に呼び出す
+         */
+
+        // --- 定数 ---
+        const TOTAL_QUESTIONS = 5;
+        const DUMMY_NUMBER_COUNT = 4; // ダミー数字タイル枚数
+        const DUMMY_OPERATOR_COUNT = 2; // ダミー符号タイル枚数
+        const OPERATORS_EASY = ['+', '-'];
+        const OPERATORS_ALL = ['+', '-', '×', '÷'];
+
+        // レベル別ゲームID（ranking.js の GAME_LIST に登録要）
+        const GAME_IDS = {
+            1: 'calc_puzzle_lv1',
+            2: 'calc_puzzle_lv2',
+            3: 'calc_puzzle_lv3'
+        };
+
+        // --- ゲーム状態変数 ---
+        let currentLevel = 1;
+        let currentQ = 0;
+        let startTime = 0;
+        let timerInterval = null;
+        let slots = [];       // [{type:'number'|'operator', tile:null|TileObj, el:HTMLElement}]
+        let stockTiles = [];       // 全タイルオブジェクト
+        let dragging = null;     // ドラッグ中タイル情報 {source,index,tile}
+        let selectedTile = null;     // タップ選択中タイル {source,index}
+        let currentProblem = null;
+        let finalElapsed = 0;
+
+        // ===================================================================
+        // ユーティリティ
+        // ===================================================================
+
+        /** min〜max の整数乱数 */
+        const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+        /** 配列をシャッフル（Fisher-Yates） */
+        function shuffleArray(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        /** 演算子を適用する（÷ は割り切れない場合 null） */
+        function applyOp(a, op, b) {
+            if (op === '+') return a + b;
+            if (op === '-') return a - b;
+            if (op === '×') return a * b;
+            if (op === '÷') {
+                if (b === 0 || a % b !== 0) return null; // ゼロ除算・割り切れない → 無効
+                return a / b;
+            }
+            return null;
+        }
+
+        /**
+         * 演算子優先順位を考慮した計算（× ÷ 先行）
+         * 以下の条件で null を返す:
+         *   - ゼロ除算
+         *   - 割り切れない除算
+         *   - 途中結果が負の数
+         *   - 最終結果が負の数
+         */
+        function evaluateFormula(nums, ops) {
+            let n = [...nums.map(Number)];
+            let o = [...ops];
+
+            // ステップ1: × と ÷ を左から処理
+            for (let i = 0; i < o.length;) {
+                if (o[i] === '×' || o[i] === '÷') {
+                    const res = applyOp(n[i], o[i], n[i + 1]);
+                    if (res === null || res < 0) return null; // 安全チェック
+                    n.splice(i, 2, res);
+                    o.splice(i, 1);
+                } else {
+                    i++;
+                }
+            }
+
+            // ステップ2: + と - を左から処理
+            let result = n[0];
+            for (let i = 0; i < o.length; i++) {
+                result = applyOp(result, o[i], n[i + 1]);
+                if (result === null) return null;
+                if (result < 0) return null; // 負の数は無効
+            }
+
+            return Number.isInteger(result) ? result : null;
+        }
+
+        // ===================================================================
+        // 問題自動生成
+        // ===================================================================
+
+        /** レベル1の問題生成: N1 OP N2 = target */
+        function generateLv1() {
+            let tries = 0;
+            while (tries++ < 300) {
+                const op = OPERATORS_EASY[Math.floor(Math.random() * 2)];
+                let n1, n2;
+                if (op === '+') {
+                    n1 = rand(1, 15);
+                    n2 = rand(1, 15);
+                } else {
+                    // 引き算: 結果 >= 1 を保証
+                    n1 = rand(2, 15);
+                    n2 = rand(1, n1 - 1);
+                }
+                const res = applyOp(n1, op, n2);
+                if (res !== null && res >= 1 && res <= 30) {
+                    return { numbers: [n1, n2], operators: [op], target: res };
+                }
+            }
+            return { numbers: [7, 3], operators: ['+'], target: 10 }; // フォールバック
+        }
+
+        /** レベル2・3の問題生成: N1 OP N2 OP N3 = target */
+        function generateLv23(level) {
+            const ops = level === 2 ? OPERATORS_EASY : OPERATORS_ALL;
+            let tries = 0;
+
+            while (tries++ < 600) {
+                const op1 = ops[Math.floor(Math.random() * ops.length)];
+                const op2 = ops[Math.floor(Math.random() * ops.length)];
+                let n1, n2, n3;
+
+                // op1 のオペランド生成（÷・× は割り切れる組み合わせに限定）
+                if (op1 === '÷') {
+                    n2 = rand(1, 9);
+                    n1 = n2 * rand(1, 9); // 必ず割り切れる
+                } else if (op1 === '×') {
+                    n1 = rand(1, 9);
+                    n2 = rand(1, 9);
+                } else {
+                    n1 = rand(1, 20);
+                    n2 = rand(1, 20);
+                }
+
+                // op2 のオペランド生成
+                if (op2 === '÷') {
+                    n3 = rand(1, 9);
+                } else if (op2 === '×') {
+                    n3 = rand(1, 9);
+                } else {
+                    n3 = rand(1, 20);
+                }
+
+                const res = evaluateFormula([n1, n2, n3], [op1, op2]);
+                if (res !== null && res >= 1 && res <= 99) {
+                    return { numbers: [n1, n2, n3], operators: [op1, op2], target: res };
+                }
+            }
+            // フォールバック
+            return { numbers: [2, 3, 5], operators: ['+', '+'], target: 10 };
+        }
+
+        function generateProblem(level) {
+            if (level === 1) return generateLv1();
+            return generateLv23(level);
+        }
+
+        // ===================================================================
+        // タイル生成
+        // ===================================================================
+
+        function createStockTiles(problem) {
+            const allOps = currentLevel === 3 ? OPERATORS_ALL : OPERATORS_EASY;
+            const tiles = [];
+
+            // --- 正解タイル（数字） ---
+            problem.numbers.forEach((n, i) => {
+                tiles.push({ id: `num_c${i}`, type: 'number', value: n, inSlot: false });
+            });
+
+            // --- 正解タイル（符号） ---
+            problem.operators.forEach((op, i) => {
+                tiles.push({ id: `op_c${i}`, type: 'operator', value: op, inSlot: false });
+            });
+
+            // --- ダミー数字タイル（4枚） ---
+            const usedNums = new Set(problem.numbers);
+            let dummyN = 0;
+            let dTries = 0;
+            while (dummyN < DUMMY_NUMBER_COUNT && dTries++ < 400) {
+                const base = problem.numbers[Math.floor(Math.random() * problem.numbers.length)];
+                const v = base + rand(-6, 10);
+                if (v >= 1 && v <= 30 && !usedNums.has(v)) {
+                    tiles.push({ id: `num_d${dummyN}`, type: 'number', value: v, inSlot: false });
+                    usedNums.add(v);
+                    dummyN++;
+                }
+            }
+            // それでも足りない場合は別の数で補填
+            while (dummyN < DUMMY_NUMBER_COUNT) {
+                const v = rand(1, 30);
+                if (!usedNums.has(v)) {
+                    tiles.push({ id: `num_dx${dummyN}`, type: 'number', value: v, inSlot: false });
+                    usedNums.add(v);
+                    dummyN++;
+                }
+            }
+
+            // --- ダミー符号タイル（2枚） ---
+            const usedOps = new Set(problem.operators);
+            const opPool = allOps.filter(op => !usedOps.has(op));
+            // プールが足りなければ全符号から取る
+            const fullPool = opPool.length >= 1 ? opPool : allOps;
+            for (let i = 0; i < DUMMY_OPERATOR_COUNT; i++) {
+                const op = fullPool[i % fullPool.length];
+                // 既に追加済みでないか確認（同じ符号は最大1枚まで）
+                const alreadyAdded = tiles.some(t => t.type === 'operator' && t.value === op);
+                if (!alreadyAdded || fullPool.length === 1) {
+                    tiles.push({ id: `op_d${i}`, type: 'operator', value: op, inSlot: false });
+                } else {
+                    // 代替として別の符号を追加
+                    const alt = allOps.find(o => o !== op && !tiles.some(t => t.type === 'operator' && t.value === o));
+                    if (alt) tiles.push({ id: `op_da${i}`, type: 'operator', value: alt, inSlot: false });
+                }
+            }
+
+            return shuffleArray(tiles);
+        }
+
+        // ===================================================================
+        // ゲームコントロール
+        // ===================================================================
+
+        function startGame(level) {
+            currentLevel = level;
+            currentQ = 0;
+            finalElapsed = 0;
+            startTime = Date.now();
+
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+
+            // タイマー開始
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 500);
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            currentQ++;
+            document.getElementById('hud-progress').textContent = `${currentQ} / ${TOTAL_QUESTIONS} もん`;
+            clearSelected();
+
+            currentProblem = generateProblem(currentLevel);
+
+            // ターゲット表示
+            document.getElementById('target-display').textContent = currentProblem.target;
+
+            // スロット構築
+            buildFormulaSlots(currentProblem);
+
+            // タイル生成・描画
+            stockTiles = createStockTiles(currentProblem);
+            renderStock();
+        }
+
+        function quitGame() {
+            if (!confirm('やめますか？')) return;
+            clearInterval(timerInterval);
+            timerInterval = null;
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+        }
+
+        function retryGame() {
+            document.getElementById('result-screen').classList.add('hidden');
+            // 報酬ボタンをリセット
+            const btn = document.getElementById('reward-btn');
+            btn.disabled = false;
+            btn.style.background = '';
+            startGame(currentLevel);
+        }
+
+        // ===================================================================
+        // スロット構築・描画
+        // ===================================================================
+
+        function buildFormulaSlots(problem) {
+            const area = document.getElementById('formula-area');
+            area.innerHTML = '';
+            slots = [];
+
+            const numCount = problem.numbers.length;   // 2 or 3
+            const opCount = problem.operators.length; // 1 or 2
+
+            // 数字スロットと符号スロットを交互に配置
+            for (let i = 0; i < numCount; i++) {
+                const numSlot = createSlotEl('number', slots.length);
+                area.appendChild(numSlot);
+                slots.push({ type: 'number', tile: null, el: numSlot });
+
+                if (i < opCount) {
+                    const opSlot = createSlotEl('operator', slots.length);
+                    area.appendChild(opSlot);
+                    slots.push({ type: 'operator', tile: null, el: opSlot });
+                }
+            }
+
+            // ＝ とリザルト表示
+            const eq = document.createElement('span');
+            eq.className = 'equals-sign';
+            eq.textContent = '＝';
+            area.appendChild(eq);
+
+            const res = document.createElement('span');
+            res.className = 'result-display';
+            res.id = 'formula-result';
+            res.textContent = '?';
+            area.appendChild(res);
+        }
+
+        function createSlotEl(type, index) {
+            const div = document.createElement('div');
+            div.className = type === 'operator' ? 'slot operator-slot' : 'slot';
+            div.dataset.slotIndex = index;
+
+            // PC: ドロップイベント
+            div.addEventListener('dragover', e => {
+                e.preventDefault();
+                div.classList.add('drag-over');
+            });
+            div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+            div.addEventListener('drop', e => {
+                e.preventDefault();
+                div.classList.remove('drag-over');
+                onDrop(index);
+            });
+
+            // クリック（タップ選択モード）
+            div.addEventListener('click', () => handleSlotClick(index));
+
+            return div;
+        }
+
+        function renderStock() {
+            const container = document.getElementById('tiles-container');
+            container.innerHTML = '';
+
+            stockTiles.forEach((tile, i) => {
+                if (tile.inSlot) return; // スロット使用中は非表示
+
+                const div = document.createElement('div');
+                div.className = `tile ${tile.type === 'number' ? 'number-tile' : 'operator-tile'}`;
+                div.textContent = tile.value;
+                div.dataset.tileIndex = i;
+                div.dataset.source = 'stock';
+
+                // PC ドラッグ
+                div.draggable = true;
+                div.addEventListener('dragstart', e => onDragStart(e, 'stock', i));
+                div.addEventListener('dragend', onDragEnd);
+
+                // タッチドラッグ
+                div.addEventListener('touchstart', e => onTouchStart(e, 'stock', i), { passive: false });
+                div.addEventListener('touchmove', onTouchMove, { passive: false });
+                div.addEventListener('touchend', onTouchEnd, { passive: false });
+
+                // クリック（タップ選択）
+                div.addEventListener('click', () => handleTileClick('stock', i));
+
+                container.appendChild(div);
+            });
+        }
+
+        function renderFormulaSlots() {
+            slots.forEach(slot => {
+                if (slot.tile) {
+                    slot.el.textContent = slot.tile.value;
+                    slot.el.classList.add('filled');
+                } else {
+                    slot.el.textContent = '';
+                    slot.el.classList.remove('filled');
+                }
+            });
+            updateResultDisplay();
+        }
+
+        function updateResultDisplay() {
+            const el = document.getElementById('formula-result');
+            if (!el) return;
+
+            const allFilled = slots.every(s => s.tile !== null);
+            if (!allFilled) {
+                el.textContent = '?';
+                el.style.color = '#aaa';
+                return;
+            }
+
+            const nums = slots.filter(s => s.type === 'number').map(s => Number(s.tile.value));
+            const ops = slots.filter(s => s.type === 'operator').map(s => s.tile.value);
+            const res = evaluateFormula(nums, ops);
+
+            if (res === null) {
+                el.textContent = '?';
+                el.style.color = '#e53935';
+            } else {
+                el.textContent = res;
+                el.style.color = res === currentProblem.target ? '#4caf50' : '#e53935';
+            }
+        }
+
+        // ===================================================================
+        // ドロップ共通処理
+        // ===================================================================
+
+        function onDrop(slotIndex) {
+            if (!dragging) return;
+
+            const slot = slots[slotIndex];
+            const dTile = dragging.tile;
+
+            // 型チェック（数字スロットに符号タイルは不可、逆も不可）
+            if (dTile.type === 'number' && slot.type === 'operator') return;
+            if (dTile.type === 'operator' && slot.type === 'number') return;
+
+            if (dragging.source === 'stock') {
+                // ストック → スロット
+                if (slot.tile) slot.tile.inSlot = false; // 既存タイルをストックへ戻す
+                stockTiles[dragging.index].inSlot = true;
+                slot.tile = stockTiles[dragging.index];
+
+            } else {
+                // スロット → スロット（入れ替え）
+                const fromSlot = slots[dragging.index];
+                const fromTile = fromSlot.tile;
+                const toTile = slot.tile;
+
+                // 入れ替え先のタイルの型チェック
+                if (toTile && toTile.type !== fromSlot.type) return;
+
+                fromSlot.tile = toTile || null;
+                slot.tile = fromTile;
+            }
+
+            dragging = null;
+            renderStock();
+            renderFormulaSlots();
+            checkAnswer();
+        }
+
+        // ===================================================================
+        // PC マウス ドラッグ＆ドロップ
+        // ===================================================================
+
+        function onDragStart(e, source, index) {
+            let tile;
+            if (source === 'stock') tile = stockTiles[index];
+            else tile = slots[index]?.tile;
+            if (!tile) { e.preventDefault(); return; }
+
+            dragging = { source, index, tile };
+            e.dataTransfer.effectAllowed = 'move';
+
+            setTimeout(() => {
+                if (e.target) e.target.classList.add('dragging');
+            }, 0);
+        }
+
+        function onDragEnd(e) {
+            dragging = null;
+            document.querySelectorAll('.tile.dragging').forEach(el => el.classList.remove('dragging'));
+            document.querySelectorAll('.slot.drag-over').forEach(el => el.classList.remove('drag-over'));
+        }
+
+        // ===================================================================
+        // タッチ ドラッグ＆ドロップ
+        // ===================================================================
+
+        let touchInfo = null;
+        let ghostEl = null;
+
+        function onTouchStart(e, source, index) {
+            e.preventDefault();
+            clearSelected();
+
+            const touch = e.touches[0];
+            let tile;
+            if (source === 'stock') tile = stockTiles[index];
+            else tile = slots[index]?.tile;
+            if (!tile) return;
+
+            touchInfo = { source, index, tile, moved: false };
+
+            // ゴースト生成
+            ghostEl = document.getElementById('drag-ghost');
+            ghostEl.className = `${tile.type === 'number' ? 'ghost-number' : 'ghost-operator'}`;
+            ghostEl.textContent = tile.value;
+            ghostEl.style.left = touch.clientX + 'px';
+            ghostEl.style.top = touch.clientY + 'px';
+            ghostEl.classList.remove('hidden');
+        }
+
+        function onTouchMove(e) {
+            if (!touchInfo) return;
+            e.preventDefault();
+
+            const touch = e.touches[0];
+            const dx = Math.abs(touch.clientX - (ghostEl ? parseFloat(ghostEl.style.left) : 0));
+            const dy = Math.abs(touch.clientY - (parseFloat(ghostEl?.style.top ?? '0')));
+            if (dx > 3 || dy > 3) touchInfo.moved = true;
+
+            if (ghostEl) {
+                ghostEl.style.left = touch.clientX + 'px';
+                ghostEl.style.top = touch.clientY + 'px';
+            }
+
+            // スロットのハイライト
+            document.querySelectorAll('.slot.drag-over').forEach(el => el.classList.remove('drag-over'));
+            const el = document.elementFromPoint(touch.clientX, touch.clientY);
+            const slotEl = el?.closest ? (el.classList.contains('slot') ? el : el.closest?.('.slot')) : null;
+            if (slotEl) slotEl.classList.add('drag-over');
+        }
+
+        function onTouchEnd(e) {
+            if (!touchInfo) return;
+
+            if (ghostEl) ghostEl.classList.add('hidden');
+            document.querySelectorAll('.slot.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+            if (touchInfo.moved) {
+                // ドラッグ終了: 指を離した位置のスロットを探す
+                const touch = e.changedTouches[0];
+                const el = document.elementFromPoint(touch.clientX, touch.clientY);
+                const slotEl = el?.closest ? (el.classList.contains('slot') ? el : el.closest?.('.slot')) : null;
+
+                if (slotEl && slotEl.dataset.slotIndex !== undefined) {
+                    dragging = touchInfo;
+                    onDrop(parseInt(slotEl.dataset.slotIndex));
+                }
+            }
+            // タップ（moved=false）の場合はクリックイベントに委ねる
+
+            touchInfo = null;
+            dragging = null;
+        }
+
+        // ===================================================================
+        // タップ（クリック）選択モード
+        // ===================================================================
+
+        function handleTileClick(source, index) {
+            // ドラッグ後のクリックは無視
+            if (touchInfo?.moved) return;
+
+            clearSelected();
+            selectedTile = { source, index };
+
+            // 選択ビジュアル
+            document.querySelectorAll('.tile').forEach(el => {
+                if (el.dataset.source === source && parseInt(el.dataset.tileIndex) === index) {
+                    el.classList.add('selected');
+                }
+            });
+        }
+
+        function handleSlotClick(slotIndex) {
+            const slot = slots[slotIndex];
+
+            if (selectedTile) {
+                // タイル選択中 → スロットへ配置を試みる
+                let tile;
+                if (selectedTile.source === 'stock') tile = stockTiles[selectedTile.index];
+                else tile = slots[selectedTile.index]?.tile;
+
+                if (!tile) { clearSelected(); return; }
+
+                // 型チェック
+                if (tile.type === 'number' && slot.type === 'operator') { clearSelected(); return; }
+                if (tile.type === 'operator' && slot.type === 'number') { clearSelected(); return; }
+
+                if (selectedTile.source === 'stock') {
+                    if (slot.tile) slot.tile.inSlot = false;
+                    stockTiles[selectedTile.index].inSlot = true;
+                    slot.tile = stockTiles[selectedTile.index];
+
+                } else {
+                    // スロット↔スロット 入れ替え
+                    const fromSlot = slots[selectedTile.index];
+                    const fromTile = fromSlot.tile;
+                    const toTile = slot.tile;
+                    if (toTile && toTile.type !== fromSlot.type) { clearSelected(); return; }
+                    fromSlot.tile = toTile || null;
+                    slot.tile = fromTile;
+                }
+
+                clearSelected();
+                renderStock();
+                renderFormulaSlots();
+                checkAnswer();
+
+            } else if (slot.tile) {
+                // スロット内タイルを選択（ストックへ戻す or 別スロットへ移動）
+                clearSelected();
+                selectedTile = { source: 'slot', index: slotIndex };
+                slot.el.classList.add('selected-slot');
+            }
+        }
+
+        function clearSelected() {
+            selectedTile = null;
+            document.querySelectorAll('.tile.selected').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('.slot.selected-slot').forEach(el => el.classList.remove('selected-slot'));
+        }
+
+        // ===================================================================
+        // 正解判定
+        // ===================================================================
+
+        function checkAnswer() {
+            const allFilled = slots.every(s => s.tile !== null);
+            if (!allFilled) return;
+
+            const nums = slots.filter(s => s.type === 'number').map(s => Number(s.tile.value));
+            const ops = slots.filter(s => s.type === 'operator').map(s => s.tile.value);
+            const res = evaluateFormula(nums, ops);
+
+            if (res === currentProblem.target) {
+                showCorrectEffect();
+            }
+        }
+
+        // ===================================================================
+        // 正解エフェクト
+        // ===================================================================
+
+        function showCorrectEffect() {
+            // 式の文字列を構築
+            const parts = [];
+            slots.forEach(s => parts.push(s.tile.value));
+            const formulaStr = parts.join(' ') + ' ＝ ' + currentProblem.target;
+            document.getElementById('correct-formula-display').textContent = formulaStr;
+
+            // スロットを光らせる
+            slots.forEach(s => s.el.classList.add('correct-flash'));
+
+            // 星を飛ばす
+            const starsContainer = document.getElementById('stars-container');
+            starsContainer.innerHTML = '';
+            const starEmojis = ['⭐', '🌟', '✨', '🎉', '💫', '🎊'];
+            for (let i = 0; i < 12; i++) {
+                const star = document.createElement('span');
+                star.className = 'star';
+                star.textContent = starEmojis[i % starEmojis.length];
+                star.style.left = rand(5, 92) + '%';
+                star.style.top = rand(35, 85) + '%';
+                star.style.animationDelay = (Math.random() * 0.6) + 's';
+                star.style.fontSize = rand(1, 28) / 10 + 'rem'; // 1.0〜2.8rem
+                starsContainer.appendChild(star);
+            }
+
+            // 正解オーバーレイ表示
+            const overlay = document.getElementById('correct-overlay');
+            overlay.classList.remove('hidden');
+
+            // 1.8秒後に次の問題 or 結果へ
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                starsContainer.innerHTML = '';
+                slots.forEach(s => s.el.classList.remove('correct-flash'));
+
+                if (currentQ >= TOTAL_QUESTIONS) {
+                    endGame();
+                } else {
+                    // タイルをすべてストックへ戻す
+                    stockTiles.forEach(t => { t.inSlot = false; });
+                    loadQuestion();
+                }
+            }, 1800);
+        }
+
+        // ===================================================================
+        // タイマー
+        // ===================================================================
+
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const min = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const sec = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById('hud-timer').textContent = `⏱ ${min}:${sec}`;
+        }
+
+        // ===================================================================
+        // ゲーム終了・結果
+        // ===================================================================
+
+        function endGame() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+
+            finalElapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+
+            const min = Math.floor(finalElapsed / 60).toString().padStart(2, '0');
+            const sec = Math.floor(finalElapsed % 60).toString().padStart(2, '0');
+
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('result-time').textContent = `${min}:${sec}`;
+        }
+
+        function getReward() {
+            const btn = document.getElementById('reward-btn');
+            btn.disabled = true;
+            btn.style.background = '#bdbdbd';
+            btn.style.boxShadow = 'none';
+
+            const gameId = GAME_IDS[currentLevel];
+
+            if (typeof showSaveDialog === 'function') {
+                showSaveDialog(gameId, finalElapsed);
+            } else {
+                alert(`きろくを ほぞんしました！ タイム: ${finalElapsed}びょう`);
+            }
+        }
+    </script>
+</body>
+
+</html>

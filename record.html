@@ -230,12 +230,53 @@
             color: #aaa;
             margin-top: 20px;
         }
+
+        /* ▼ 右上ナビチップ ▼ */
+        .top-nav-chips {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .nav-chip {
+            background: #fff;
+            border: 1px solid #ddd;
+            color: #6b4e3d;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: inline-block;
+        }
+
+        .nav-chip:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            background: #fff8f0;
+        }
+
+        .nav-chip:active {
+            transform: translateY(1px);
+            box-shadow: none;
+        }
     </style>
 </head>
 
 <body>
 
     <div class="container">
+        <!-- 右上ナビリンク -->
+        <div class="top-nav-chips">
+            <a href="calendar.html" class="nav-chip">📅 まなびカレンダー</a>
+            <a href="dashboard.html" class="nav-chip">📊 パパママとみるダッシュボード</a>
+        </div>
+
         <h1>🏆 がんばったきろく</h1>
 
         <div class="user-select-area">
