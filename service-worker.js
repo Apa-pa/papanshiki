@@ -1,5 +1,5 @@
 // キャッシュの名前（更新時にバージョンを変えると新しいキャッシュが作られます）
-var CACHE_NAME = 'papanshiki-v13';
+var CACHE_NAME = 'papanshiki-v14';
 var urlsToCache = [
   // === トップページ ===
   './',
@@ -123,6 +123,7 @@ var urlsToCache = [
   './logic_mine.html',
   './eigo_nakama.html',
   './fingers_chess.html',
+  './passcode.html',
 
   // === 生活・社会 ===
   './whattime.html',

@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>パスコードをあてよう！ | ぱぱん式</title>
+    <meta name="description" content="スマホのロック画面みたいにパスコードをおぼえてうちこもう！きおく力がためされるクイズゲームだよ。">
+    <script src="ranking.js"></script>
+    <style>
+        /* ===== フォント・リセット ===== */
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
+
+        :root {
+            --bg-top:    #1a1a2e;
+            --bg-bot:    #16213e;
+            --card-bg:   rgba(255,255,255,0.10);
+            --card-blur: blur(18px);
+            --accent:    #ff9800;
+            --accent2:   #ffcc02;
+            --green:     #4caf50;
+            --red:       #f44336;
+            --blue:      #2196f3;
+            --pastel1:   #e0f7fa;
+            --pastel2:   #f3e5f5;
+            --text-light:#ffffff;
+            --text-dark: #1a1a2e;
+            --radius-lg: 28px;
+            --radius-md: 18px;
+            --radius-sm: 12px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Outfit", "Helvetica Neue", Arial, "Meiryo", sans-serif;
+            background: linear-gradient(160deg, var(--bg-top) 0%, var(--bg-bot) 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+
+        /* ===== 画面切り替え ===== */
+        .screen { display: none; width: 100%; max-width: 420px; }
+        .screen.active { display: flex; flex-direction: column; align-items: center; }
+
+        /* ===== 共通カード ===== */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: var(--card-blur);
+            -webkit-backdrop-filter: var(--card-blur);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            padding: 24px 20px;
+            width: 100%;
+            text-align: center;
+            color: var(--text-light);
+        }
+
+        /* ===== キャラクター ===== */
+        .chara-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .chara-row img { width: 72px; height: 72px; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
+        .chara-row .speech {
+            background: white;
+            color: var(--text-dark);
+            border-radius: 14px 14px 14px 0;
+            padding: 8px 12px;
+            font-size: 13px;
+            max-width: 200px;
+            line-height: 1.5;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        /* ===== タイトル画面 ===== */
+        #title-screen h1 {
+            font-size: clamp(22px, 6vw, 30px);
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: var(--accent2);
+            text-shadow: 0 2px 12px rgba(255,200,0,0.4);
+            margin-bottom: 6px;
+        }
+        .lock-icon {
+            font-size: 64px;
+            animation: float 3s ease-in-out infinite;
+            display: block;
+            margin: 10px 0;
+        }
+        @keyframes float {
+            0%,100% { transform: translateY(0); }
+            50%      { transform: translateY(-10px); }
+        }
+        .rule-box {
+            background: rgba(255,255,255,0.08);
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            margin: 14px 0;
+            text-align: left;
+            font-size: 13px;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.88);
+        }
+        .rule-box li { margin-left: 18px; }
+
+        /* ===== 共通ボタン ===== */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 50px;
+            font-family: inherit;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            letter-spacing: 0.5px;
+        }
+        .btn:active { transform: translateY(3px); box-shadow: none !important; }
+        .btn-start {
+            background: linear-gradient(135deg, #ff9800, #ff6f00);
+            color: white;
+            box-shadow: 0 6px 0 #e65100;
+            margin-top: 10px;
+        }
+        .btn-skip {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-size: 14px;
+            padding: 10px;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+            margin-top: 8px;
+        }
+        .btn-enter {
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            color: white;
+            box-shadow: 0 5px 0 #1b5e20;
+            font-size: 20px;
+        }
+        .btn-enter:disabled {
+            background: rgba(255,255,255,0.18);
+            color: rgba(255,255,255,0.4);
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        .btn-retry {
+            background: linear-gradient(135deg, #2196f3, #1565c0);
+            color: white;
+            box-shadow: 0 5px 0 #0d47a1;
+        }
+        .btn-home {
+            background: rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.75);
+            font-size: 14px;
+            padding: 10px;
+            box-shadow: 0 3px 0 rgba(0,0,0,0.2);
+            margin-top: 8px;
+        }
+
+        /* ===== ステージ情報バー ===== */
+        .stage-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50px;
+            padding: 8px 16px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 12px;
+            width: 100%;
+        }
+        .stage-bar .heart { color: #f06292; font-size: 15px; }
+        .stage-bar .score { color: var(--accent2); font-weight: 700; }
+
+        /* ===== パスコード表示エリア ===== */
+        .passcode-display {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin: 14px 0;
+            flex-wrap: nowrap;
+        }
+        .digit-box {
+            width: 48px;
+            height: 58px;
+            background: rgba(255,255,255,0.12);
+            border: 2px solid rgba(255,255,255,0.25);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 900;
+            color: white;
+            position: relative;
+            transition: background 0.3s, border-color 0.3s, transform 0.15s;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .digit-box.selected {
+            border-color: var(--accent);
+            background: rgba(255,152,0,0.2);
+            transform: scale(1.08);
+        }
+        .digit-box.correct {
+            background: rgba(76,175,80,0.3);
+            border-color: #4caf50;
+        }
+        .digit-box.too-high {
+            background: rgba(244,67,54,0.25);
+            border-color: #f44336;
+        }
+        .digit-box.too-low {
+            background: rgba(33,150,243,0.25);
+            border-color: #2196f3;
+        }
+        .digit-box.hidden-digit {
+            background: rgba(255,204,2,0.15);
+            border-color: var(--accent2);
+        }
+        /* ヒントアイコン */
+        .digit-hint {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            font-weight: 900;
+            pointer-events: none;
+        }
+        .digit-hint.up   { color: #f44336; }
+        .digit-hint.down { color: #2196f3; }
+
+        /* カーソル点滅 */
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        .digit-box.selected::after {
+            content: '';
+            position: absolute;
+            bottom: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 10px;
+            background: var(--accent);
+            animation: blink 1s infinite;
+        }
+
+        /* ===== ヒント表示（記憶フェーズ） ===== */
+        .hint-label {
+            font-size: 13px;
+            color: var(--accent2);
+            background: rgba(255,204,2,0.15);
+            border-radius: 8px;
+            padding: 6px 12px;
+            margin: 6px 0;
+            min-height: 28px;
+            line-height: 1.5;
+        }
+
+        /* ===== カウントダウン ===== */
+        .countdown-ring {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            margin: 12px auto 0;
+        }
+        .countdown-ring svg { transform: rotate(-90deg); }
+        .countdown-ring circle.bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 5; }
+        .countdown-ring circle.prog {
+            fill: none;
+            stroke: var(--accent);
+            stroke-width: 5;
+            stroke-linecap: round;
+            stroke-dasharray: 163;
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1s linear;
+        }
+        .countdown-num {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%,-50%);
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--accent);
+        }
+
+        /* ===== テンキー ===== */
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 100%;
+            margin-top: 14px;
+        }
+        .numpad-btn {
+            padding: 0;
+            height: 62px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: var(--radius-md);
+            color: white;
+            font-family: inherit;
+            font-size: 26px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.35);
+            transition: transform 0.08s, box-shadow 0.08s, background 0.15s;
+        }
+        .numpad-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.22);
+        }
+        .numpad-btn.del {
+            background: rgba(244,67,54,0.25);
+            border-color: rgba(244,67,54,0.4);
+            font-size: 22px;
+        }
+        .numpad-btn.zero { grid-column: 2; }
+
+        /* ===== ヒントモーダル ===== */
+        .hint-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .hint-modal.open { display: flex; animation: fadeIn 0.2s; }
+        .hint-modal-inner {
+            background: #1e1e3a;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: var(--radius-lg);
+            padding: 24px 20px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+            color: white;
+        }
+        .hint-modal-inner h3 { font-size: 18px; margin-bottom: 12px; color: var(--accent2); }
+        .hint-modal-inner .hint-text {
+            font-size: 16px;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.9);
+        }
+        .hint-modal-close {
+            margin-top: 18px;
+            padding: 10px 24px;
+            background: var(--accent);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #e65100;
+        }
+        .hint-modal-close:active { transform: translateY(2px); box-shadow: none; }
+
+        /* ===== ヒントボタン（右上固定） ===== */
+        #hint-fab {
+            position: fixed;
+            top: 14px;
+            right: 14px;
+            z-index: 400;
+            background: rgba(255,204,2,0.9);
+            color: #1a1a2e;
+            border: none;
+            border-radius: 50px;
+            padding: 8px 14px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+            display: none;
+        }
+        #hint-fab:active { transform: translateY(2px); }
+
+        /* ===== フェードイン ===== */
+        @keyframes fadeIn { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
+        .fade-in { animation: fadeIn 0.35s ease forwards; }
+
+        /* ===== シェイクアニメーション ===== */
+        @keyframes shake {
+            0%,100%{transform:translateX(0)}
+            20%{transform:translateX(-8px)}
+            40%{transform:translateX(8px)}
+            60%{transform:translateX(-6px)}
+            80%{transform:translateX(6px)}
+        }
+        .shake { animation: shake 0.4s ease; }
+
+        /* ===== 正解パルス ===== */
+        @keyframes correct-pulse {
+            0%{transform:scale(1)} 40%{transform:scale(1.15)} 100%{transform:scale(1)}
+        }
+        .correct-pulse { animation: correct-pulse 0.35s ease; }
+
+        /* ===== 紙吹雪 ===== */
+        #confetti-canvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* ===== 結果画面 ===== */
+        #result-screen .big-emoji { font-size: 72px; margin: 10px 0; display: block; }
+        #result-screen h2 {
+            font-size: clamp(20px,5vw,26px);
+            font-weight: 900;
+            color: var(--accent2);
+            margin-bottom: 8px;
+        }
+        .score-display {
+            background: rgba(255,152,0,0.2);
+            border: 1px solid rgba(255,152,0,0.5);
+            border-radius: var(--radius-md);
+            padding: 14px 20px;
+            margin: 12px 0;
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--accent);
+        }
+        .score-breakdown {
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            margin-top: 4px;
+        }
+
+        /* ===== プログレスバー ===== */
+        .progress-bar-wrap {
+            width: 100%;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50px;
+            height: 8px;
+            margin-bottom: 14px;
+            overflow: hidden;
+        }
+        .progress-bar-inner {
+            height: 100%;
+            background: linear-gradient(90deg, #ff9800, #ffcc02);
+            border-radius: 50px;
+            transition: width 0.5s ease;
+        }
+
+        /* ===== フェーズラベル ===== */
+        .phase-label {
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 6px;
+        }
+
+        /* ===== 正解の数字表示（判定後） ===== */
+        .answer-row {
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            margin: 8px 0;
+        }
+        .answer-row span { color: white; font-weight: 700; }
+    </style>
+</head>
+<body>
+
+<!-- 紙吹雪用キャンバス -->
+<canvas id="confetti-canvas"></canvas>
+
+<!-- ヒントFABボタン -->
+<button id="hint-fab" onclick="openHintModal()">💡 ヒントをみる</button>
+
+<!-- ヒントモーダル -->
+<div id="hint-modal" class="hint-modal">
+    <div class="hint-modal-inner">
+        <h3>💡 ヒント</h3>
+        <div id="hint-modal-text" class="hint-text">—</div>
+        <button class="hint-modal-close" onclick="closeHintModal()">とじる</button>
+    </div>
+</div>
+
+<!-- ========== タイトル画面 ========== -->
+<div id="title-screen" class="screen active fade-in">
+    <div class="glass-card">
+        <div class="chara-row">
+            <img src="kou192.webp" alt="コウ">
+            <div class="speech">いっしょに<br>パスコードを<br>おぼえよう！</div>
+            <img src="yu-ri192.webp" alt="ユーリ">
+        </div>
+        <h1>🔐 パスコードを<br>あてよう！</h1>
+        <span class="lock-icon">🔒</span>
+        <div class="rule-box">
+            <ul>
+                <li>すうじのパスコードを <strong>よくおぼえて</strong>ね！</li>
+                <li><strong>？</strong> のところは じぶんで かんがえよう</li>
+                <li>まちがえても <strong>2かい</strong> やりなおせるよ</li>
+                <li><strong>いろとやじるし</strong> でヒントがわかるよ</li>
+                <li>ぜんぶで <strong>10もん</strong> チャレンジ！</li>
+            </ul>
+        </div>
+        <button class="btn btn-start" onclick="startGame()">
+            🎮 ゲームスタート
+        </button>
+        <a href="index.html" style="display:block;margin-top:14px;color:rgba(255,255,255,0.5);text-decoration:none;font-size:13px;">🏠 ホームにもどる</a>
+    </div>
+</div>
+
+<!-- ========== 記憶フェーズ画面 ========== -->
+<div id="memorize-screen" class="screen">
+    <div class="glass-card fade-in">
+        <div class="stage-bar">
+            <span id="mem-stage-label">だい 1 もん / 10</span>
+            <span class="score" id="mem-score-label">0 pt</span>
+        </div>
+        <div class="progress-bar-wrap">
+            <div class="progress-bar-inner" id="mem-progress-bar" style="width:10%"></div>
+        </div>
+        <div class="phase-label">📖 おぼえフェーズ</div>
+
+        <div class="chara-row" style="margin-bottom:6px;">
+            <img src="kou192.webp" alt="コウ" style="width:52px;height:52px;">
+            <div class="speech" id="mem-speech">パスコードを<br>おぼえてね！</div>
+        </div>
+
+        <!-- ヒントテキスト -->
+        <div class="hint-label" id="mem-hint-text">—</div>
+
+        <!-- パスコード表示 -->
+        <div class="passcode-display" id="mem-digits"></div>
+
+        <!-- カウントダウン -->
+        <div class="countdown-ring">
+            <svg width="60" height="60" viewBox="0 0 60 60">
+                <circle class="bg" cx="30" cy="30" r="26"/>
+                <circle class="prog" id="count-circle" cx="30" cy="30" r="26"/>
+            </svg>
+            <div class="countdown-num" id="count-num">5</div>
+        </div>
+
+        <button class="btn btn-skip" onclick="skipMemorize()">
+            ⚡ すぐにいれる（スキップ）
+        </button>
+    </div>
+</div>
+
+<!-- ========== 入力フェーズ画面 ========== -->
+<div id="input-screen" class="screen">
+    <div class="glass-card fade-in">
+        <div class="stage-bar">
+            <span id="inp-stage-label">だい 1 もん / 10</span>
+            <span class="heart" id="inp-hearts">❤️❤️❤️</span>
+            <span class="score" id="inp-score-label">0 pt</span>
+        </div>
+        <div class="progress-bar-wrap">
+            <div class="progress-bar-inner" id="inp-progress-bar" style="width:10%"></div>
+        </div>
+        <div class="phase-label">⌨️ にゅうりょくフェーズ</div>
+
+        <!-- パスコード入力表示 -->
+        <div class="passcode-display" id="inp-digits"></div>
+
+        <!-- テンキー -->
+        <div class="numpad" id="numpad">
+            <button class="numpad-btn" onclick="numpadPress(1)">1</button>
+            <button class="numpad-btn" onclick="numpadPress(2)">2</button>
+            <button class="numpad-btn" onclick="numpadPress(3)">3</button>
+            <button class="numpad-btn" onclick="numpadPress(4)">4</button>
+            <button class="numpad-btn" onclick="numpadPress(5)">5</button>
+            <button class="numpad-btn" onclick="numpadPress(6)">6</button>
+            <button class="numpad-btn" onclick="numpadPress(7)">7</button>
+            <button class="numpad-btn" onclick="numpadPress(8)">8</button>
+            <button class="numpad-btn" onclick="numpadPress(9)">9</button>
+            <button class="numpad-btn del" onclick="numpadDelete()">⌫</button>
+            <button class="numpad-btn zero" onclick="numpadPress(0)">0</button>
+        </div>
+
+        <button class="btn btn-enter" id="enter-btn" style="margin-top:14px;" onclick="submitAnswer()">
+            ✅ ENTER
+        </button>
+    </div>
+</div>
+
+<!-- ========== 結果画面（クリア/ゲームオーバー） ========== -->
+<div id="result-screen" class="screen">
+    <div class="glass-card fade-in">
+        <span class="big-emoji" id="result-emoji">🎉</span>
+        <h2 id="result-title">ぜんもん クリア！</h2>
+        <p id="result-msg" style="font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:12px;"></p>
+
+        <div class="score-display" id="result-score">0 ポイント</div>
+        <div class="score-breakdown" id="result-breakdown"></div>
+
+        <div class="chara-row" style="margin-top:14px;">
+            <img src="yu-ri192.webp" alt="ユーリ">
+            <div class="speech" id="result-speech">よくがんばったね！</div>
+        </div>
+
+        <button class="btn btn-start" id="result-save-btn" onclick="saveResult()" style="margin-top:14px;">
+            🏆 ポイントをうけとる
+        </button>
+        <button class="btn btn-retry" onclick="startGame()" style="margin-top:10px;">
+            🔄 もういちどあそぶ
+        </button>
+        <a href="index.html" style="display:block;margin-top:14px;color:rgba(255,255,255,0.5);text-decoration:none;font-size:13px;">🏠 ホームにもどる</a>
+    </div>
+</div>
+
+<script>
+/* =====================================================
+   ぱぱん式「パスコードをあてよう！」
+   ゲームタイプ: D（成績連動ポイント付与型）
+   showPointGetDialog(ポイント数, 'passcode') を使用
+   ===================================================== */
+
+// ===== ステージ定義 =====
+// { digits: 桁数, hidden: 隠す桁数 }
+const STAGE_CONFIG = [
+    { digits: 4, hidden: 0 }, // 第1問
+    { digits: 4, hidden: 1 }, // 第2問
+    { digits: 5, hidden: 0 }, // 第3問
+    { digits: 5, hidden: 1 }, // 第4問
+    { digits: 6, hidden: 0 }, // 第5問
+    { digits: 6, hidden: 0 }, // 第6問
+    { digits: 6, hidden: 1 }, // 第7問
+    { digits: 6, hidden: 1 }, // 第8問
+    { digits: 6, hidden: 2 }, // 第9問
+    { digits: 6, hidden: 2 }, // 第10問
+];
+
+// ===== 状態管理 =====
+let state = {
+    stageIndex: 0,      // 現在のステージインデックス（0〜9）
+    currentCode: [],    // 正解のパスコード（数字の配列）
+    hiddenIndices: [],  // 隠れている桁のインデックス
+    hintText: '',       // ヒントテキスト
+    inputDigits: [],    // ユーザーの入力（selectedポジション分）
+    selectedPos: 0,     // 現在選択中のカーソル位置
+    retryCount: 0,      // 現在問題の残りリトライ回数（0=3回全部使った）
+    solvedCount: 0,     // 正解した問題数
+    totalScore: 0,      // 累計スコア
+    isGameOver: false,  // ゲームオーバー済みか
+    isAllClear: false,  // 全クリ済みか
+    countdownTimer: null,
+    countdownSec: 5,
+    digitFeedback: [],  // 各桁のフィードバック状態 ('correct'|'too-high'|'too-low'|null)
+    isSubmitting: false, // 回答送信中フラグ（多重押し防止）
+};
+
+// ===== 画面切り替え =====
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById(id);
+    el.classList.add('active');
+    // フェードイン再適用
+    el.querySelector('.glass-card')?.classList.remove('fade-in');
+    void el.querySelector('.glass-card')?.offsetWidth;
+    el.querySelector('.glass-card')?.classList.add('fade-in');
+}
+
+// ===== ゲーム開始 =====
+function startGame() {
+    state.stageIndex  = 0;
+    state.solvedCount = 0;
+    state.totalScore  = 0;
+    state.isGameOver  = false;
+    state.isAllClear  = false;
+    loadStage();
+}
+
+// ===== ステージ読み込み =====
+function loadStage() {
+    const cfg = STAGE_CONFIG[state.stageIndex];
+    generateStage(cfg.digits, cfg.hidden);
+    showMemorizeScreen();
+}
+
+// ===== パスコード＆ヒント生成 =====
+function generateStage(digitCount, hiddenCount) {
+    // パスコードをランダム生成（先頭は1〜9）
+    const code = [];
+    code.push(Math.floor(Math.random() * 9) + 1);
+    for (let i = 1; i < digitCount; i++) {
+        code.push(Math.floor(Math.random() * 10));
+    }
+    state.currentCode = code;
+    state.retryCount  = 2; // 残りリトライ数（計3回入力可能）
+
+    // 隠す桁をランダムに選ぶ
+    const indices = [];
+    while (indices.length < hiddenCount) {
+        const idx = Math.floor(Math.random() * digitCount);
+        if (!indices.includes(idx)) indices.push(idx);
+    }
+    state.hiddenIndices = indices;
+
+    // ヒント生成
+    state.hintText = generateHint(code, indices);
+
+    // フィードバック初期化
+    state.digitFeedback = new Array(digitCount).fill(null);
+}
+
+// ===== ヒント生成ロジック =====
+function generateHint(code, hiddenIndices) {
+    if (hiddenIndices.length === 0) return '';
+
+    if (hiddenIndices.length === 1) {
+        const d = code[hiddenIndices[0]];
+        // ランダムで3種類のヒントを切り替え
+        const roll = Math.random();
+        if (roll < 0.34) {
+            // 偶数/奇数
+            return d % 2 === 0
+                ? 'かくされた すうじは　<strong>ぐうすう</strong> だよ！（0、2、4、6、8）'
+                : 'かくされた すうじは　<strong>きすう</strong> だよ！（1、3、5、7、9）';
+        } else if (roll < 0.67) {
+            // 5より大きいか小さいか
+            if (d > 5) return `かくされた すうじは　<strong>5より おおきい</strong> よ！`;
+            if (d < 5) return `かくされた すうじは　<strong>5より ちいさい</strong> よ！`;
+            return 'かくされた すうじは ちょうど <strong>5</strong> だよ！';
+        } else {
+            // 範囲ヒント
+            if (d <= 3) return `かくされた すうじは <strong>0〜3</strong> のどれかだよ！`;
+            if (d <= 6) return `かくされた すうじは <strong>4〜6</strong> のどれかだよ！`;
+            return `かくされた すうじは <strong>7〜9</strong> のどれかだよ！`;
+        }
+    }
+
+    if (hiddenIndices.length === 2) {
+        const d1 = code[hiddenIndices[0]];
+        const d2 = code[hiddenIndices[1]];
+        const sum = d1 + d2;
+        const roll = Math.random();
+        if (d1 === d2) {
+            return `かくされた 2つのすうじは <strong>おなじ</strong> だよ！`;
+        }
+        if (roll < 0.5) {
+            return `かくされた 2つのすうじを たすと <strong>${sum}</strong> になるよ！`;
+        } else {
+            const diff = Math.abs(d1 - d2);
+            return `かくされた 2つのすうじの <strong>ちがい</strong> は <strong>${diff}</strong> だよ！`;
+        }
+    }
+
+    return '';
+}
+
+// ===== 記憶フェーズ表示 =====
+function showMemorizeScreen() {
+    const cfg = STAGE_CONFIG[state.stageIndex];
+    updateStageUI('mem');
+    renderMemDigits();
+
+    // ヒント表示
+    const hintEl = document.getElementById('mem-hint-text');
+    if (state.hintText) {
+        hintEl.innerHTML = '💡 ' + state.hintText;
+        hintEl.style.display = 'block';
+    } else {
+        hintEl.innerHTML = '—';
+        hintEl.style.display = 'block';
+    }
+
+    // ヒントFAB非表示（記憶フェーズ中は不要）
+    document.getElementById('hint-fab').style.display = 'none';
+
+    showScreen('memorize-screen');
+    startCountdown();
+}
+
+// ===== 記憶フェーズのパスコード描画 =====
+function renderMemDigits() {
+    const container = document.getElementById('mem-digits');
+    container.innerHTML = '';
+    state.currentCode.forEach((digit, i) => {
+        const box = document.createElement('div');
+        box.className = 'digit-box';
+        if (state.hiddenIndices.includes(i)) {
+            box.classList.add('hidden-digit');
+            box.textContent = '？';
+        } else {
+            box.textContent = digit;
+        }
+        container.appendChild(box);
+    });
+}
+
+// ===== カウントダウン =====
+function startCountdown() {
+    clearInterval(state.countdownTimer);
+    state.countdownSec = 10;
+    updateCountdownUI(10);
+
+    state.countdownTimer = setInterval(() => {
+        state.countdownSec--;
+        updateCountdownUI(state.countdownSec);
+        if (state.countdownSec <= 0) {
+            clearInterval(state.countdownTimer);
+            goToInputPhase();
+        }
+    }, 1000);
+}
+
+function updateCountdownUI(sec) {
+    document.getElementById('count-num').textContent = sec;
+    const circ = document.getElementById('count-circle');
+    const total = 163; // 2πr ≈ 2×3.14×26
+    circ.style.strokeDashoffset = total - (total * sec / 10);
+}
+
+function skipMemorize() {
+    clearInterval(state.countdownTimer);
+    goToInputPhase();
+}
+
+// ===== 入力フェーズへ移行 =====
+function goToInputPhase() {
+    // 全桁をnullで初期化（全部記憶から入力してもらう）
+    state.inputDigits = new Array(state.currentCode.length).fill(null);
+    // カーソルを先頭に置く
+    state.selectedPos = 0;
+
+    // 答え送信中フラグをリセット
+    state.isSubmitting = false;
+
+    // フィードバックも初期化
+    state.digitFeedback = new Array(state.currentCode.length).fill(null);
+
+    updateStageUI('inp');
+    updateHeartUI();
+    renderInputDigits();
+
+    // ヒントFABを表示（hintTextがある場合）
+    const fab = document.getElementById('hint-fab');
+    fab.style.display = state.hintText ? 'block' : 'none';
+
+    showScreen('input-screen');
+    updateEnterBtn();
+}
+
+// ===== 入力フェーズのパスコード描画 =====
+function renderInputDigits() {
+    const container = document.getElementById('inp-digits');
+    container.innerHTML = '';
+
+    state.inputDigits.forEach((val, i) => {
+        const box = document.createElement('div');
+        box.className = 'digit-box';
+
+        // フィードバック状態の適用（正解は緑、大小は赤/青）
+        if (state.digitFeedback[i]) {
+            box.classList.add(state.digitFeedback[i]);
+        }
+
+        // カーソル（どの桁も選択可能）
+        if (i === state.selectedPos) {
+            box.classList.add('selected');
+        }
+
+        // 全桁タップで移動・編集可能
+        box.textContent = val !== null ? val : '';
+        box.style.cursor = 'pointer';
+        box.addEventListener('click', () => selectDigitPos(i));
+
+        // フィードバックアイコン（全桁に表示）
+        if (state.digitFeedback[i] === 'too-high') {
+            const hint = document.createElement('span');
+            hint.className = 'digit-hint up';
+            hint.textContent = '↑';
+            box.appendChild(hint);
+        } else if (state.digitFeedback[i] === 'too-low') {
+            const hint = document.createElement('span');
+            hint.className = 'digit-hint down';
+            hint.textContent = '↓';
+            box.appendChild(hint);
+        }
+
+        container.appendChild(box);
+    });
+}
+
+// ===== カーソル移動（全桁タップ可能） =====
+function selectDigitPos(i) {
+    state.selectedPos = i;
+    renderInputDigits();
+}
+
+// ===== テンキー入力 =====
+function numpadPress(num) {
+    state.inputDigits[state.selectedPos] = num;
+
+    // 次の桁へカーソルを自動移動（最後でなければ）
+    if (state.selectedPos < state.currentCode.length - 1) {
+        state.selectedPos++;
+    }
+
+    renderInputDigits();
+    updateEnterBtn();
+}
+
+// ===== テンキー削除 =====
+function numpadDelete() {
+    if (state.inputDigits[state.selectedPos] !== null) {
+        // 現在位置を空にする
+        state.inputDigits[state.selectedPos] = null;
+    } else if (state.selectedPos > 0) {
+        // すでに空なら1つ前に戻って削除
+        state.selectedPos--;
+        state.inputDigits[state.selectedPos] = null;
+    }
+    renderInputDigits();
+    updateEnterBtn();
+}
+
+// ===== ENTERボタン有効化 =====
+function updateEnterBtn() {
+    // 全桁入力済みかつ送信中でなければ有効
+    const allFilled = state.inputDigits.every(v => v !== null);
+    document.getElementById('enter-btn').disabled = !allFilled || state.isSubmitting;
+}
+
+// ===== 回答送信・正誤判定 =====
+function submitAnswer() {
+    // 多重押し防止
+    if (state.isSubmitting) return;
+    state.isSubmitting = true;
+    document.getElementById('enter-btn').disabled = true;
+
+    let allCorrect = true;
+    const newFeedback = [...state.digitFeedback];
+
+    state.currentCode.forEach((correct, i) => {
+        const input = state.inputDigits[i];
+        if (correct === input) {
+            newFeedback[i] = 'correct';
+        } else {
+            allCorrect = false;
+            // 全桁にヒント矢印を表示（input < correct → 正解はもっと大きい → ↑）
+            newFeedback[i] = input < correct ? 'too-high' : 'too-low';
+        }
+    });
+    state.digitFeedback = newFeedback;
+    renderInputDigits();
+
+    if (allCorrect) {
+        // ===== 正解！ =====
+        state.solvedCount++;
+        // パルスアニメーション
+        animateDevs('correct-pulse');
+        setTimeout(() => {
+            launchConfetti();
+            setTimeout(() => {
+                state.stageIndex++;
+                if (state.stageIndex >= STAGE_CONFIG.length) {
+                    // 全クリ
+                    state.isAllClear = true;
+                    showResultScreen(true);
+                } else {
+                    loadStage();
+                }
+            }, 1200);
+        }, 350);
+    } else {
+        // ===== 不正解 =====
+        shakeDigits();
+        if (state.retryCount > 0) {
+            state.retryCount--;
+            updateHeartUI();
+            // やり直し：フラグ解除＋最初の間違い桁にカーソルを移動してENTRE再有効化
+            setTimeout(() => {
+                // 最初の間違い桁（correct以外の桁）にカーソルを移す
+                const firstWrong = state.digitFeedback.findIndex(f => f && f !== 'correct');
+                if (firstWrong !== -1) state.selectedPos = firstWrong;
+                state.isSubmitting = false;
+                updateEnterBtn();
+                renderInputDigits();
+            }, 500);
+        } else {
+            // 3回目のミス → ゲームオーバー（isSubmittingはそのまま維持して操作不可に）
+            setTimeout(() => {
+                state.isGameOver = true;
+                showResultScreen(false);
+            }, 800);
+        }
+    }
+}
+
+// ===== シェイクアニメーション =====
+function shakeDigits() {
+    const disp = document.getElementById('inp-digits');
+    disp.classList.remove('shake');
+    void disp.offsetWidth;
+    disp.classList.add('shake');
+}
+
+// ===== パルスアニメーション =====
+function animateDevs(cls) {
+    document.querySelectorAll('#inp-digits .digit-box').forEach(box => {
+        box.classList.remove(cls);
+        void box.offsetWidth;
+        box.classList.add(cls);
+    });
+}
+
+// ===== ハートUI更新 =====
+function updateHeartUI() {
+    const hearts = ['❤️', '❤️', '❤️'];
+    const maxRetry = 2;
+    const remaining = state.retryCount;
+    let s = '';
+    for (let i = 0; i <= maxRetry; i++) {
+        s += i <= remaining ? '❤️' : '🖤';
+    }
+    document.getElementById('inp-hearts').textContent = s;
+}
+
+// ===== ステージ情報UI更新 =====
+function updateStageUI(prefix) {
+    const n = state.stageIndex + 1;
+    const total = STAGE_CONFIG.length;
+    const pct = (n / total) * 100;
+
+    document.getElementById(`${prefix}-stage-label`).textContent = `だい ${n} もん / ${total}`;
+    document.getElementById(`${prefix}-score-label`).textContent = `${state.totalScore} pt`;
+    document.getElementById(`${prefix}-progress-bar`).style.width = pct + '%';
+}
+
+// ===== ヒントモーダル =====
+function openHintModal() {
+    document.getElementById('hint-modal-text').innerHTML = state.hintText || 'ヒントはないよ！';
+    document.getElementById('hint-modal').classList.add('open');
+}
+function closeHintModal() {
+    document.getElementById('hint-modal').classList.remove('open');
+}
+
+// ===== 結果画面 =====
+function showResultScreen(isAllClear) {
+    document.getElementById('hint-fab').style.display = 'none';
+
+    // ===== ポイント受取ボタンを毎回リセット =====
+    const saveBtn = document.getElementById('result-save-btn');
+    if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '\uD83C\uDFC6 ポイントをうけとる';
+        saveBtn.style.background = '';
+        saveBtn.style.color = '';
+        saveBtn.style.cursor = '';
+        saveBtn.style.opacity = '';
+    }
+
+    // ポイント計算：基本20 + 正解1問につき5
+    const BASE_PT = 20;
+    const PER_CORRECT = 5;
+    state.totalScore = BASE_PT + state.solvedCount * PER_CORRECT;
+
+    if (isAllClear) {
+        document.getElementById('result-emoji').textContent  = '\uD83C\uDF8A';
+        document.getElementById('result-title').textContent  = 'ぜんもん クリア！ すごい！';
+        document.getElementById('result-msg').textContent    = 'ぜんぶ こたえられたね！ きおく力ばっちり！';
+        document.getElementById('result-speech').textContent = 'かんぺき！さすがだね！\uD83E\uDD8A';
+        launchConfetti();
+    } else {
+        document.getElementById('result-emoji').textContent  = '\uD83D\uDE35';
+        document.getElementById('result-title').textContent  = 'ゲームオーバー…';
+        document.getElementById('result-msg').textContent    = `${state.solvedCount}もん せいかい！ またちょうせんしてね！`;
+        document.getElementById('result-speech').textContent = 'つぎはきっとできるよ！\uD83D\uDCAA';
+    }
+
+    document.getElementById('result-score').textContent = `${state.totalScore} ポイント`;
+    document.getElementById('result-breakdown').innerHTML =
+        `（きほん ${BASE_PT}pt + せいかい ${state.solvedCount}もん \u00d7 ${PER_CORRECT}pt）`;
+
+    showScreen('result-screen');
+}
+
+// ===== ポイント保存 =====
+function saveResult() {
+    const btn = document.getElementById('result-save-btn');
+    // 二重受取防止（すでにグレーアウト済みなら何もしない）
+    if (btn && btn.disabled) return;
+
+    if (typeof showPointGetDialog === 'function') {
+        showPointGetDialog(state.totalScore, 'passcode');
+    } else {
+        alert(`${state.totalScore} ポイント かくとく！`);
+    }
+
+    // 受取済みの見た目に変更
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = '✅ もらいました！';
+        btn.style.background = 'rgba(255,255,255,0.12)';
+        btn.style.color = 'rgba(255,255,255,0.45)';
+        btn.style.cursor = 'default';
+        btn.style.opacity = '0.7';
+    }
+}
+
+// ===== 紙吹雪 =====
+function launchConfetti() {
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = ['#ff9800','#ffcc02','#4caf50','#2196f3','#e91e63','#9c27b0'];
+    const pieces = Array.from({ length: 120 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * -canvas.height * 0.5,
+        w: Math.random() * 10 + 6,
+        h: Math.random() * 6 + 4,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        rot: Math.random() * 360,
+        vx: (Math.random() - 0.5) * 3,
+        vy: Math.random() * 4 + 2,
+        vr: (Math.random() - 0.5) * 8,
+    }));
+
+    let frame = 0;
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach(p => {
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rot * Math.PI / 180);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            ctx.restore();
+            p.x  += p.vx;
+            p.y  += p.vy;
+            p.rot += p.vr;
+            p.vy += 0.08; // 重力
+        });
+        frame++;
+        if (frame < 180) requestAnimationFrame(draw);
+        else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    draw();
+}
+</script>
+</body>
+</html>
