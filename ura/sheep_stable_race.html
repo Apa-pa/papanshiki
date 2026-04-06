@@ -269,7 +269,21 @@
             }
 
             document.getElementById('race-rank-label').innerText = playerRank + " Class";
-            currentPrize = 15 + Math.floor(playerSheep.speed / 2);
+            
+            // ベースとなる賞金を計算
+            let basePrize = 15 + Math.floor(playerSheep.speed / 2);
+            let rankMultiplier = 1.0;
+
+            // ランクに応じて倍率を設定
+            if (playerRank === "Pro") {
+                rankMultiplier = 1.2;
+            } else if (playerRank === "Legend") {
+                rankMultiplier = 1.4;
+            }
+
+            // 最終的な賞金を算出（端数切り捨て）
+            currentPrize = Math.floor(basePrize * rankMultiplier);
+            
             document.getElementById('prize-val').innerText = currentPrize;
 
             setupRacers();
@@ -304,16 +318,16 @@
             // 2. クラス別のベース値をマイルドに設定
             let raceBaseLevel = 43;
             let comStaminaMin = 43;
-            let comTenacityMin = 30;
+            let comTenacityMin = 36;
 
             if (playerRank === "Pro") {
-                raceBaseLevel = 75;
-                comStaminaMin = 65;
-                comTenacityMin = 55;
+                raceBaseLevel = 70;
+                comStaminaMin = 60;
+                comTenacityMin = 60;
             } else if (playerRank === "Legend") {
-                raceBaseLevel = 100;
-                comStaminaMin = 75;
-                comTenacityMin = 55;
+                raceBaseLevel = 92;
+                comStaminaMin = 70;
+                comTenacityMin = 68;
             }
 
             const comNames = ["ウール1号", "もふもふ丸", "速攻メェー", "草食い大王", "シープスター"];
