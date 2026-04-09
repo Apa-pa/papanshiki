@@ -466,7 +466,8 @@ function distributeDividends(days) {
     for (let user in allStocks) {
         let totalP = 0, totalD = 0;
         for (let id in allStocks[user]) {
-            const count = allStocks[user][id];
+            let stockData = allStocks[user][id];
+            const count = (typeof stockData === 'object' && stockData !== null) ? stockData.count : stockData;
             if (count > 0) {
                 const info = STOCK_MASTER[id];
                 const div = Math.floor(market.prices[id] * count * info.dividendRate * days);
@@ -486,7 +487,25 @@ function distributeDividends(days) {
 // ユーザーの持っている株のリストを取得する
 function getUserStocks(userName) {
     const allStocks = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
-    return allStocks[userName] || {};
+    let stocks = allStocks[userName] || {};
+    let isMigrated = false;
+    const market = getMarketData();
+
+    // 旧データ（数値のみ）のマイグレーション
+    for (let id in stocks) {
+        if (typeof stocks[id] === 'number') {
+            const currentPrice = market.prices[id] || (STOCK_MASTER[id] ? STOCK_MASTER[id].initPrice : 0);
+            stocks[id] = { count: stocks[id], avgPrice: currentPrice };
+            isMigrated = true;
+        }
+    }
+
+    if (isMigrated) {
+        allStocks[userName] = stocks;
+        localStorage.setItem(STOCK_KEY, JSON.stringify(allStocks));
+    }
+
+    return stocks;
 }
 
 // 株を買う関数
@@ -509,7 +528,19 @@ function buyStock(userName, stockId, amount) {
         const allStocks = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
         if (!allStocks[userName]) allStocks[userName] = {};
 
-        allStocks[userName][stockId] = (allStocks[userName][stockId] || 0) + amount;
+        let currentData = allStocks[userName][stockId] || { count: 0, avgPrice: 0 };
+        // 旧データのマイグレーション
+        if (typeof currentData === 'number') {
+            currentData = { count: currentData, avgPrice: market.prices[stockId] };
+        }
+
+        const newCount = currentData.count + amount;
+        // 平均取得単価の計算: ( (現在の平均単価 × 保有数) + (今回の株価 × 購入数) ) / (保有数 + 購入数)
+        const currentTotal = currentData.avgPrice * currentData.count;
+        const newTotal = currentTotal + cost;
+        const newAvgPrice = Math.floor(newTotal / newCount);
+
+        allStocks[userName][stockId] = { count: newCount, avgPrice: newAvgPrice };
         localStorage.setItem(STOCK_KEY, JSON.stringify(allStocks));
         return true;
     }
@@ -519,12 +550,25 @@ function buyStock(userName, stockId, amount) {
 // 株を売る関数
 function sellStock(userName, stockId, amount) {
     const allStocks = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
-    const currentHoldings = allStocks[userName]?.[stockId] || 0;
+    let currentData = allStocks[userName]?.[stockId] || { count: 0, avgPrice: 0 };
+
+    // 旧データのマイグレーション
+    if (typeof currentData === 'number') {
+        const market = getMarketData();
+        currentData = { count: currentData, avgPrice: market.prices[stockId] };
+    }
+
+    const currentHoldings = currentData.count;
 
     // 持っている株が、売る数より多いかチェック
     if (currentHoldings >= amount) {
         // 株を減らす
-        allStocks[userName][stockId] = currentHoldings - amount;
+        const newCount = currentHoldings - amount;
+        // 0になったら平均単価は0にリセット
+        allStocks[userName][stockId] = { 
+            count: newCount, 
+            avgPrice: newCount === 0 ? 0 : currentData.avgPrice 
+        };
         localStorage.setItem(STOCK_KEY, JSON.stringify(allStocks));
 
         // お金を増やす
