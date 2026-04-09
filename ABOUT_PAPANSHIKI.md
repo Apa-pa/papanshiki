@@ -135,6 +135,7 @@
 | `rail.html` | つなげて！トロッコ | パズル | B (参加賞100pt) | 5〜12歳 |
 | `detective.html` | 名探偵ぱぱん | 推理パズル | C (30pt) | 6〜12歳 |
 | `fingers_chess.html` | フィンガーチェス | 戦略ゲーム | C (変動) | 6〜12歳 |
+| `passcode.html` | パスコードをあてよう！ | 記憶力 | D (成績連動) | 6〜12歳 |
 
 ### 🎵 おんがく・アート
 | ファイル | コンテンツ名 | 種別 | タイプ | 対象年齢 |
@@ -364,16 +365,18 @@ e:\ぱぱん式\
 1. **新しいゲームを追加する場合**:
    - **まずゲームタイプ（A/B/C/D）を決定する**（→ セクション3参照）
    - HTMLファイルを作成
-   - タイプA/Bの場合:
-     - `ranking.js` の `GAME_LIST` にゲームIDを追加
+   - **全タイプ共通の作業**:
+     - `dashboard.html` の `GAME_CATEGORIES` にゲームIDを追加する（ダッシュボードでのジャンル別プレイ回数集計のため）
+     - `service-worker.js` の `urlsToCache` にファイルを追加
+     - `index.html` にカードを追加してホーム画面から遷移できるようにする
+   - **タイプA/Bの場合の追加作業**:
+     - `ranking.js` の `GAME_LIST` にゲームIDを追加（※保護者ダッシュボードの「おすすめコンテンツ」選択肢にも自動反映されます）
      - `record.html` の `DEFAULT_GOALS` に初期目標値を追加
      - ゲーム終了時に `showSaveDialog(gameId, resultValue)` を呼ぶ
      - タイプBの場合は `<script type="module" src="firebase-ranking.js"></script>` を追加
-   - タイプC/Dの場合:
+   - **タイプC/Dの場合の追加作業**:
      - ゲーム終了時に `showPointGetDialog(ポイント数, 'game_id')` を呼ぶ（ダッシュボードでプレイ回数を集計するため、必ず第2引数にゲームIDを指定すること）
-     - `GAME_LIST` への登録は不要ですが、`dashboard.html` の `GAME_CATEGORIES` にIDを追記してください。
-   - `service-worker.js` の `urlsToCache` にファイルを追加
-   - `index.html` にカードを追加
+     - `GAME_LIST` への登録は必須ではありませんが、保護者ダッシュボードの「おすすめコンテンツ」で選べるようにしたい場合は `ranking.js` の `GAME_LIST` にも追加してください。
 
 2. **新しい株銘柄を追加する場合**:
    - `ranking.js` の `STOCK_MASTER` に定義を追加

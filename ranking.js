@@ -34,7 +34,8 @@ const GAME_LIST = {
     'math_strike': { name: '計算ビリヤード', type: 'score', unit: '点', url: 'math_strike.html' },
     'enogu_creator': { name: 'えのぐクリエーター', type: 'score', unit: '点', url: 'enogu_creator.html' },
     'eigo_nakama': { name: 'えいごDEなかまさがし', type: 'score', unit: '点', url: 'eigo_nakama.html' },
-    'eiyou_balance': { name: '栄養バランスゲーム', type: 'score', unit: '点', url: 'eiyou_balance.html' }
+    'eiyou_balance': { name: '栄養バランスゲーム', type: 'score', unit: '点', url: 'eiyou_balance.html' },
+    'passcode': { name: 'パスコードをあてよう！', type: 'score', unit: 'pt', url: 'passcode.html' }
 };
 
 // --- リアル株価連動設定 ---
