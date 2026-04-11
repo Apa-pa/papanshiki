@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>おしごと図鑑 | ぱぱん式</title>
-    <script src="ranking.js"></script>
+    <script src="../ranking.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -355,7 +355,10 @@
 
     <div class="container">
         <!-- 共通ヘッダー -->
-        <a href="javascript:void(0)" class="home-btn" id="top-btn" onclick="backToList()">← トップにもどる</a>
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+            <a href="javascript:void(0)" class="home-btn" id="top-btn" onclick="backToList()">← トップにもどる</a>
+            <a href="diagnosis.html" class="home-btn" style="color: #e65100; border-color: #ffb74d; background: #fff3e0; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">✨ おしごと<ruby>診断<rt>しんだん</rt></ruby></a>
+        </div>
         <h1 class="title">💼 おしごと<ruby>図鑑<rt>ずかん</rt></ruby></h1>
         <p class="subtitle" id="subtitle">いろんなお<ruby>仕事<rt>しごと</rt></ruby>を<ruby>学<rt>まな</rt></ruby>んでみよう！</p>
 
@@ -367,7 +370,7 @@
         <!-- 詳細画面 -->
         <div id="detail-screen">
             <button class="home-btn" onclick="backToList()" style="background: white;">← <ruby>一覧<rt>いちらん</rt>
-                    </ruby>にもどる</button>
+                </ruby>にもどる</button>
 
             <div class="detail-card">
                 <div class="detail-header pop-anim">
@@ -545,7 +548,7 @@
 
             // href を index.html に戻す（トップもどるボタン用）
             var topBtn = document.getElementById('top-btn');
-            topBtn.setAttribute('href', 'index.html');
+            topBtn.setAttribute('href', '../index.html');
             topBtn.onclick = null;
             topBtn.textContent = '← もどる';
 

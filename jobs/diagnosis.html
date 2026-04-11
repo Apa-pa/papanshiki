@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>おしごと診断 | ぱぱん式</title>
+    <script src="jobs_data.js"></script>
+    <script src="diagnosis.js"></script>
+    <style>
+        /* job_learn.htmlから主要なスタイルを流用しています */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "UD Digital Kyokasho-tai", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 50%, #fff3e0 100%);
+            /* 診断画面は少し暖かい色味に */
+            min-height: 100vh;
+            color: #333;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 15px 10px 40px;
+        }
+
+        .home-btn {
+            display: inline-block;
+            text-decoration: none;
+            color: #777;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            padding: 5px 12px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.5);
+            transition: 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .home-btn:hover {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .title {
+            text-align: center;
+            font-size: 26px;
+            color: #ef6c00;
+            margin: 5px 0 5px;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 25px;
+        }
+
+        .detail-card {
+            background: white;
+            border-radius: 24px;
+            padding: 25px 20px;
+            margin-top: 10px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            border: 3px solid #fff3e0;
+        }
+
+        /* 選択肢ボタンのスタイル */
+        .choice-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            margin: 12px 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            background: white;
+            border: 2px solid #ffcc80;
+            border-radius: 15px;
+            cursor: pointer;
+            text-align: left;
+            line-height: 1.4;
+            box-shadow: 0 4px 0 #ffcc80;
+            transition: all 0.2s;
+        }
+
+        .choice-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #ffcc80;
+        }
+
+        .get-points-btn {
+            background: #ff9800;
+            color: white;
+            border: none;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 15px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            display: inline-block;
+            text-decoration: none;
+            box-shadow: 0 4px 0 #e65100;
+            transition: all 0.2s;
+            width: 100%;
+            max-width: 300px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .get-points-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #e65100;
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .pop-anim {
+            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .question-area {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            gap: 15px;
+        }
+
+        .question-area.chara-right {
+            flex-direction: row-reverse;
+        }
+
+        .chara-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid #ffcc80;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .speech-bubble {
+            flex: 1;
+            background: #fff;
+            border: 3px solid #ffcc80;
+            border-radius: 20px;
+            padding: 15px;
+            font-size: 17px;
+            font-weight: bold;
+            color: #e65100;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            line-height: 1.4;
+        }
+
+        /* 吹き出しのしっぽ（左） */
+        .chara-left .speech-bubble::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -12px;
+            transform: translateY(-50%);
+            border-width: 10px 14px 10px 0;
+            border-style: solid;
+            border-color: transparent #ffcc80 transparent transparent;
+        }
+        .chara-left .speech-bubble::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -8px;
+            transform: translateY(-50%);
+            border-width: 8px 11px 8px 0;
+            border-style: solid;
+            border-color: transparent #fff transparent transparent;
+        }
+
+        /* 吹き出しのしっぽ（右） */
+        .chara-right .speech-bubble::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -12px;
+            transform: translateY(-50%);
+            border-width: 10px 0 10px 14px;
+            border-style: solid;
+            border-color: transparent transparent transparent #ffcc80;
+        }
+        .chara-right .speech-bubble::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -8px;
+            transform: translateY(-50%);
+            border-width: 8px 0 8px 11px;
+            border-style: solid;
+            border-color: transparent transparent transparent #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="../index.html" class="home-btn">← トップにもどる</a>
+        <h1 class="title">✨ おしごと<ruby>診断<rt>しんだん</rt></ruby></h1>
+        <p class="subtitle" id="subtitle">きみにピッタリの「<ruby>世界<rt>せかい</rt></ruby>」をみつけよう！</p>
+
+        <div id="diagnosis-content" class="detail-card pop-anim">
+        </div>
+    </div>
+</body>
+
+</html>
