@@ -35,7 +35,7 @@ const GAME_LIST = {
     'enogu_creator': { name: 'えのぐクリエーター', type: 'score', unit: '点', url: 'enogu_creator.html' },
     'eigo_nakama': { name: 'えいごDEなかまさがし', type: 'score', unit: '点', url: 'eigo_nakama.html' },
     'eiyou_balance': { name: '栄養バランスゲーム', type: 'score', unit: '点', url: 'eiyou_balance.html' },
-    'passcode': { name: 'パスコードをあてよう！', type: 'score', unit: 'pt', url: 'passcode.html' }
+    'passcode': { name: 'パスコードをあてよう！', type: 'score', unit: '点', url: 'passcode.html' }
 };
 
 // --- リアル株価連動設定 ---
@@ -566,9 +566,9 @@ function sellStock(userName, stockId, amount) {
         // 株を減らす
         const newCount = currentHoldings - amount;
         // 0になったら平均単価は0にリセット
-        allStocks[userName][stockId] = { 
-            count: newCount, 
-            avgPrice: newCount === 0 ? 0 : currentData.avgPrice 
+        allStocks[userName][stockId] = {
+            count: newCount,
+            avgPrice: newCount === 0 ? 0 : currentData.avgPrice
         };
         localStorage.setItem(STOCK_KEY, JSON.stringify(allStocks));
 
