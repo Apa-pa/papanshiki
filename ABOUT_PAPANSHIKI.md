@@ -44,10 +44,18 @@
 | `papan_stamps_v3` | まなびカレンダーのスタンプ |
 | `papan_market_v1` | 株式市場データ（価格・ニュース等） |
 | `papan_stocks_v1` | 各ユーザーの株保有データ |
-| `papan_collection_v1` | ガチャコレクション |
+| `papan_real_market_prev_v1` | 株の実データ（前回値保持用） |
+| `papan_collection_v1` | ガチャコレクション（ずかん） |
 | `papan_rewarded_goals_v1` | 目標達成報酬の履歴 |
 | `papan_daily_mission_v1` | 日替わりミッションの達成状況 |
-| `papan_avatar_v1` | アバター・マイルーム設定 |
+| `papan_avatar_v1` | アバター・マイルームの設定と所持品 |
+| `papan_my_sheep_v3` | ひつじ牧場の飼育データ |
+| `papan_play_log_v1` | 直近30日のプレイ履歴（分析用） |
+| `papan_parent_picks_v1` | 保護者が推薦するおすすめコンテンツ設定 |
+| `papan_parent_bonus_v1` | おすすめコンテンツのボーナス受取履歴 |
+| `papan_exchange_rate_history` | 銀行の為替レート推移データ |
+| `papan_labo_records_v1` | スポーツ能力ラボの測定記録 |
+| `papan_labo2_records_v1` | 感覚測定ラボの測定記録 |
 
 ### ホスティング・PWA
 - **GitHub Pages** でホスティング（CNAMEファイルでカスタムドメイン設定）

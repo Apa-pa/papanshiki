@@ -162,7 +162,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // 保存対象のキーリスト (全13種)
+        // 保存対象のキーリスト (全19種)
         const TARGET_KEYS = [
             'papan_records_v1',           // スコア
             'papan_goals_v1',             // 目標
@@ -176,7 +176,13 @@
             'papan_real_market_prev_v1',  // 株:実データ(前回値)
             'papan_avatar_v1',            // アバター
             'papan_daily_mission_v1',     // デイリーミッション
-            'papan_my_sheep_v3'           // 羊牧場データ
+            'papan_my_sheep_v3',          // 羊牧場データ
+            'papan_play_log_v1',          // プレイ履歴
+            'papan_parent_picks_v1',      // おすすめコンテンツ設定
+            'papan_parent_bonus_v1',      // おすすめボーナス受取履歴
+            'papan_exchange_rate_history', // 銀行のレート履歴
+            'papan_labo_records_v1',      // スポーツ能力ラボ成績
+            'papan_labo2_records_v1'       // 感覚測定ラボ成績
         ];
 
         // ステータス表示
