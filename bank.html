@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,8 @@
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
-            background-color: #e8f5e9; /* 銀行っぽい落ち着いた緑 */
+            background-color: #e8f5e9;
+            /* 銀行っぽい落ち着いた緑 */
             text-align: center;
             padding: 20px;
             margin: 0;
@@ -22,10 +24,14 @@
             background: white;
             padding: 20px;
             border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
 
-        h1 { margin: 0 0 10px 0; color: #2e7d32; font-size: 24px; }
+        h1 {
+            margin: 0 0 10px 0;
+            color: #2e7d32;
+            font-size: 24px;
+        }
 
         /* 説明ボックス */
         .desc-box {
@@ -41,10 +47,12 @@
             cursor: pointer;
             transition: 0.2s;
         }
+
         .desc-box:active {
             background: #fff59d;
             transform: translateY(2px);
         }
+
         .desc-header {
             font-weight: bold;
             color: #f57f17;
@@ -52,6 +60,7 @@
             justify-content: space-between;
             align-items: center;
         }
+
         .desc-content {
             display: none;
             margin-top: 10px;
@@ -59,7 +68,16 @@
             border-top: 1px dashed #f9a825;
             animation: fadeIn 0.3s ease;
         }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
 
         /* レート表示ボード */
         .rate-board {
@@ -70,27 +88,47 @@
             font-family: monospace;
             font-size: 20px;
             margin-bottom: 20px;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
             border: 4px solid #555;
             position: relative;
         }
-        .rate-val { color: #ffff00; font-weight: bold; font-size: 28px; }
+
+        .rate-val {
+            color: #ffff00;
+            font-weight: bold;
+            font-size: 28px;
+        }
 
         /* ▼▼▼ 修正：隠しボタンを見つけやすく調整 ▼▼▼ */
         .secret-key {
             position: absolute;
-            bottom: 0;      /* 端に寄せる */
-            right: 0;       /* 端に寄せる */
-            font-size: 24px; /* アイコンを少し大きく */
+            bottom: 0;
+            /* 端に寄せる */
+            right: 0;
+            /* 端に寄せる */
+            font-size: 24px;
+            /* アイコンを少し大きく */
             text-decoration: none;
-            opacity: 0.5;   /* 最初から少し見えやすく(0.3->0.5) */
+            opacity: 0.5;
+            /* 最初から少し見えやすく(0.3->0.5) */
             cursor: pointer;
-            padding: 20px;  /* 重要：タップ判定を広げる（透明な余白を作る） */
+            padding: 20px;
+            /* 重要：タップ判定を広げる（透明な余白を作る） */
             transition: opacity 0.3s, transform 0.1s;
-            -webkit-tap-highlight-color: transparent; /* タップ時の青枠を消す */
+            -webkit-tap-highlight-color: transparent;
+            /* タップ時の青枠を消す */
         }
-        .secret-key:hover { opacity: 1; }
-        .secret-key:active { transform: scale(1.2); opacity: 1; } /* 押した感触を出す */
+
+        .secret-key:hover {
+            opacity: 1;
+        }
+
+        .secret-key:active {
+            transform: scale(1.2);
+            opacity: 1;
+        }
+
+        /* 押した感触を出す */
         /* ▲▲▲ ここまで ▲▲▲ */
 
         /* 財布エリア */
@@ -103,9 +141,22 @@
             margin-bottom: 20px;
             border: 2px solid #c5e1a5;
         }
-        .wallet-item { flex: 1; }
-        .w-label { font-size: 12px; color: #558b2f; font-weight: bold; }
-        .w-val { font-size: 22px; font-weight: bold; color: #33691e; }
+
+        .wallet-item {
+            flex: 1;
+        }
+
+        .w-label {
+            font-size: 12px;
+            color: #558b2f;
+            font-weight: bold;
+        }
+
+        .w-val {
+            font-size: 22px;
+            font-weight: bold;
+            color: #33691e;
+        }
 
         /* タブ切り替え */
         .tab-area {
@@ -113,6 +164,7 @@
             gap: 10px;
             margin-bottom: 10px;
         }
+
         .tab-btn {
             flex: 1;
             padding: 12px;
@@ -124,14 +176,19 @@
             cursor: pointer;
             transition: 0.2s;
         }
+
         .tab-btn.active {
             background: #fff;
             color: #2e7d32;
             border-top: 3px solid #2e7d32;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
         }
-        .tab-buy.active { color: #e65100; border-color: #e65100; } 
-        
+
+        .tab-buy.active {
+            color: #e65100;
+            border-color: #e65100;
+        }
+
         /* 取引フォーム */
         .trade-box {
             background: white;
@@ -140,7 +197,11 @@
             padding: 20px;
             margin-top: -10px;
         }
-        .trade-box.buy-mode { border-color: #ffe0b2; background: #fff3e0; }
+
+        .trade-box.buy-mode {
+            border-color: #ffe0b2;
+            background: #fff3e0;
+        }
 
         .input-group {
             display: flex;
@@ -149,8 +210,13 @@
             gap: 10px;
             margin-bottom: 15px;
         }
-        .input-label { font-weight: bold; width: 60px; text-align: right; }
-        
+
+        .input-label {
+            font-weight: bold;
+            width: 60px;
+            text-align: right;
+        }
+
         input[type="number"] {
             width: 100px;
             padding: 10px;
@@ -159,7 +225,11 @@
             border-radius: 8px;
             text-align: right;
         }
-        input:focus { outline: none; border-color: #4caf50; }
+
+        input:focus {
+            outline: none;
+            border-color: #4caf50;
+        }
 
         .trade-btn {
             width: 100%;
@@ -170,14 +240,33 @@
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 4px rgba(0,0,0,0.2);
+            box-shadow: 0 4px rgba(0, 0, 0, 0.2);
         }
-        .btn-buy { background: #e65100; }
-        .btn-sell { background: #2e7d32; }
-        .trade-btn:active { transform: translateY(2px); box-shadow: none; }
-        .trade-btn:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
 
-        .note { font-size: 12px; color: #777; margin-top: 10px; }
+        .btn-buy {
+            background: #e65100;
+        }
+
+        .btn-sell {
+            background: #2e7d32;
+        }
+
+        .trade-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .trade-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .note {
+            font-size: 12px;
+            color: #777;
+            margin-top: 10px;
+        }
 
         /* リンクボタン */
         .link-area {
@@ -187,6 +276,7 @@
             gap: 20px;
             align-items: center;
         }
+
         .btn-link {
             text-decoration: none;
             padding: 10px 20px;
@@ -196,12 +286,14 @@
             transition: 0.2s;
             display: inline-block;
         }
+
         .to-stock {
             background: #fff;
             color: #1565c0;
             border: 2px solid #1565c0;
             box-shadow: 0 2px 5px rgba(21, 101, 192, 0.2);
         }
+
         .to-home {
             color: #2e7d32;
             text-decoration: underline;
@@ -215,265 +307,555 @@
             object-fit: contain;
             margin-top: -4px;
         }
+
         .input-label .donguri-icon {
             width: 24px;
             height: 24px;
         }
 
+        /* チャートボタンとモーダル */
+        .nav-chip {
+            background: #fff;
+            border: 1px solid #ddd;
+            color: #6b4e3d;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: inline-block;
+            font-family: "UD Digital Kyokasho-tai-R", sans-serif;
+        }
+
+        .nav-chip:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            background: #fff8f0;
+        }
+
+        .nav-chip:active {
+            transform: translateY(1px);
+            box-shadow: none;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #2e7d32;
+        }
+
+        .close-btn {
+            background: #e0e0e0;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .close-btn:active {
+            background: #bdbdbd;
+        }
+
+        .chart-canvas {
+            width: 100%;
+            background: #f1f8e9;
+            border-radius: 10px;
+            border: 2px solid #c5e1a5;
+        }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h1>🏦 ぱぱん銀行</h1>
+    <div class="container">
+        <h1>🏦 ぱぱん銀行</h1>
 
-    <div class="desc-box" onclick="toggleDesc()">
-        <div class="desc-header">
-            <span>ℹ️ ここは ポイントと 「どんぐり」 を こうかんする 銀行（ぎんこう）です。</span>
-            <span id="desc-arrow">▼</span>
-        </div>
-        
-        <div id="desc-content" class="desc-content">
-            <br>
-            どんぐりの おねだん（レート）は、毎日 かわります。<br>
-            安（やす）いときに 買って、高（たか）いときに 売（う）ると、ポイントが ふえるかも！？<br>
-            ぎゃくに 減（へ）っちゃうことも あるから 気をつけてね。<br>
-            <span style="font-size:12px; color:#795548;">（これは 本物の 「ドルと円」 の動きと おなじだよ。 パパや ママに きいてみよう）</span>
-            <br><br>
-            ……あ！ そういえば。<br>
-            この銀行の どこかに <span style="font-weight:bold; color:#e65100;">「秘密（ひみつ）の部屋（へや）」</span> への カギが おちているみたいだよ。<br>
-            さがしてみてね。
-        </div>
-    </div>
-    
-    <select id="user-select" onchange="updateWallet()" style="padding: 10px; font-size: 16px; margin-bottom: 20px;">
-        <option value="">(なまえをえらんでね)</option>
-    </select>
+        <div class="desc-box" onclick="toggleDesc()">
+            <div class="desc-header">
+                <span>ℹ️ ここは ポイントと 「どんぐり」 を こうかんする <ruby>銀行<rt>ぎんこう</rt></ruby>です。</span>
+                <span id="desc-arrow">▼</span>
+            </div>
 
-    <div class="rate-board">
-        <div>げんざいのレート</div>
-        <div>1 <img src="image/donguri.webp" class="donguri-icon" alt="どんぐり"> = <span id="rate-display" class="rate-val">---</span> pt</div>
-        
-        <a href="ura/secret_home.html" class="secret-key">🗝️</a>
-    </div>
-
-    <div class="wallet-area">
-        <div class="wallet-item">
-            <div class="w-label">もってるポイント</div>
-            <div class="w-val"><span id="my-points">0</span> pt</div>
-        </div>
-        <div style="border-right: 2px solid #c5e1a5;"></div>
-        <div class="wallet-item">
-            <div class="w-label">もってるどんぐり</div>
-            <div class="w-val"><img src="image/donguri.webp" class="donguri-icon" alt="どんぐり"> <span id="my-donguri">0</span></div>
-        </div>
-    </div>
-
-    <div class="tab-area">
-        <button id="tab-buy" class="tab-btn tab-buy active" onclick="setMode('buy')">どんぐりを 買う</button>
-        <button id="tab-sell" class="tab-btn" onclick="setMode('sell')">どんぐりを 売る</button>
-    </div>
-
-    <div id="trade-box" class="trade-box buy-mode">
-        <div id="mode-desc" style="margin-bottom:15px; font-weight:bold; color:#e65100;">
-            ポイントを使って、どんぐりを買います
+            <div id="desc-content" class="desc-content">
+                <br>
+                どんぐりの おねだん（レート）は、<ruby>毎日<rt>まいにち</rt></ruby> かわります。<br>
+                <ruby>安<rt>やす</rt></ruby>いときに <ruby>買<rt>か</rt></ruby>って、<ruby>高<rt>たか</rt></ruby>いときに <ruby>売<rt>う</rt></ruby>ると、ポイントが ふえるかも！？<br>
+                ぎゃくに <ruby>減<rt>へ</rt></ruby>っちゃうことも あるから <ruby>気<rt>き</rt></ruby>をつけてね。<br>
+                <span style="font-size:12px; color:#795548;">（これは <ruby>本物<rt>ほんもの</rt></ruby>の 「ドルと<ruby>円<rt>えん</rt></ruby>」 の<ruby>動<rt>うご</rt></ruby>きと おなじだよ。 パパや ママに きいてみよう）</span>
+                <br><br>
+                ……あ！ そういえば。<br>
+                この<ruby>銀行<rt>ぎんこう</rt></ruby>の どこかに <span style="font-weight:bold; color:#e65100;">「<ruby>秘密<rt>ひみつ</rt></ruby>の<ruby>部屋<rt>へや</rt></ruby>」</span> への カギが おちているみたいだよ。<br>
+                さがしてみてね。
+            </div>
         </div>
 
-        <div class="input-group">
-            <span class="input-label"><img src="image/donguri.webp" class="donguri-icon" alt="どんぐり"></span>
-            <input type="number" id="input-donguri" placeholder="0" oninput="calcFromDonguri()">
-            <span style="font-size:14px;">こ</span>
+        <select id="user-select" onchange="updateWallet()" style="padding: 10px; font-size: 16px; margin-bottom: 20px;">
+            <option value="">(なまえをえらんでね)</option>
+        </select>
+
+        <div class="rate-board">
+            <div>げんざいのレート</div>
+            <div>1 <img src="image/donguri.webp" class="donguri-icon" alt="どんぐり"> = <span id="rate-display"
+                    class="rate-val">---</span> pt</div>
+
+            <div style="position: absolute; bottom: 15px; right: 55px;">
+                <button class="nav-chip" onclick="showChartModal()">📈 チャート</button>
+            </div>
+            <a href="ura/secret_home.html" class="secret-key">🗝️</a>
         </div>
 
-        <div style="font-size:20px; font-weight:bold; margin: 5px;">⇅</div>
-
-        <div class="input-group">
-            <span class="input-label">pt</span>
-            <input type="number" id="input-point" placeholder="0" oninput="calcFromPoint()">
-            <span style="font-size:14px;">pt</span>
+        <div class="wallet-area">
+            <div class="wallet-item">
+                <div class="w-label">もってるポイント</div>
+                <div class="w-val"><span id="my-points">0</span> pt</div>
+            </div>
+            <div style="border-right: 2px solid #c5e1a5;"></div>
+            <div class="wallet-item">
+                <div class="w-label">もってるどんぐり</div>
+                <div class="w-val"><img src="image/donguri.webp" class="donguri-icon" alt="どんぐり"> <span
+                        id="my-donguri">0</span></div>
+            </div>
         </div>
 
-        <button id="action-btn" class="trade-btn btn-buy" onclick="executeTrade()" disabled>
-            こうかんする
-        </button>
-        <p class="note">※手数料なし（スプレッドなし）</p>
+        <div class="tab-area">
+            <button id="tab-buy" class="tab-btn tab-buy active" onclick="setMode('buy')">どんぐりを 買う</button>
+            <button id="tab-sell" class="tab-btn" onclick="setMode('sell')">どんぐりを 売る</button>
+        </div>
+
+        <div id="trade-box" class="trade-box buy-mode">
+            <div id="mode-desc" style="margin-bottom:15px; font-weight:bold; color:#e65100;">
+                ポイントを使って、どんぐりを買います
+            </div>
+
+            <div class="input-group">
+                <span class="input-label"><img src="image/donguri.webp" class="donguri-icon" alt="どんぐり"></span>
+                <input type="number" id="input-donguri" placeholder="0" oninput="calcFromDonguri()">
+                <span style="font-size:14px;">こ</span>
+            </div>
+
+            <div style="font-size:20px; font-weight:bold; margin: 5px;">⇅</div>
+
+            <div class="input-group">
+                <span class="input-label">pt</span>
+                <input type="number" id="input-point" placeholder="0" oninput="calcFromPoint()">
+                <span style="font-size:14px;">pt</span>
+            </div>
+
+            <button id="action-btn" class="trade-btn btn-buy" onclick="executeTrade()" disabled>
+                こうかんする
+            </button>
+            <p class="note">※手数料なし（スプレッドなし）</p>
+        </div>
+
+        <div class="link-area">
+            <a href="index.html" class="btn-link to-home">🏠 ホームへもどる</a>
+            <a href="stock.html" class="btn-link to-stock">📈 ぱぱん証券へいく</a>
+        </div>
     </div>
 
-    <div class="link-area">
-        <a href="index.html" class="btn-link to-home">🏠 ホームへもどる</a>
-        <a href="stock.html" class="btn-link to-stock">📈 ぱぱん証券へいく</a>
+    <!-- チャート用モーダル -->
+    <div id="chart-modal" class="modal-overlay" style="display: none;" onclick="closeChartModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>📈 30日間のレート</h2>
+                <button class="close-btn" onclick="closeChartModal()">✖</button>
+            </div>
+            <canvas id="rate-chart" class="chart-canvas" width="300" height="200"></canvas>
+        </div>
     </div>
-    </div>
 
-<script>
-    let currentRate = 150; 
-    let currentMode = 'buy'; 
+    <script>
+        let currentRate = 150;
+        let currentMode = 'buy';
 
-    window.onload = function() {
-        const users = getUserNames();
-        const select = document.getElementById('user-select');
-        users.forEach(u => {
-            const opt = document.createElement('option');
-            opt.value = u;
-            opt.innerText = u;
-            select.appendChild(opt);
-        });
+        window.onload = function () {
+            const users = getUserNames();
+            const select = document.getElementById('user-select');
+            users.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u;
+                opt.innerText = u;
+                select.appendChild(opt);
+            });
 
-        fetchRate();
-    };
+            fetchRate();
+        };
 
-    function toggleDesc() {
-        const content = document.getElementById('desc-content');
-        const arrow = document.getElementById('desc-arrow');
-        if (content.style.display === 'block') {
-            content.style.display = 'none';
-            arrow.innerText = '▼';
-        } else {
-            content.style.display = 'block';
-            arrow.innerText = '▲';
-        }
-    }
-
-    async function fetchRate() {
-        const display = document.getElementById('rate-display');
-        try {
-            const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-            const data = await res.json();
-            const rawRate = data.rates.JPY;
-            currentRate = Math.round(rawRate);
-            display.innerText = currentRate;
-            calcFromDonguri();
-        } catch (e) {
-            console.error("Rate fetch failed", e);
-            display.innerText = currentRate + "(仮)";
-            alert("通信エラー：レートがとれませんでした。仮のレート(150)をつかいます。");
-        }
-    }
-
-    function updateWallet() {
-        const userName = document.getElementById('user-select').value;
-        if (!userName) {
-            document.getElementById('my-points').innerText = 0;
-            document.getElementById('my-donguri').innerText = 0;
-            document.getElementById('action-btn').disabled = true;
-            return;
-        }
-        const pts = getUserPoints(userName);
-        const don = getUserDonguri(userName);
-        document.getElementById('my-points').innerText = pts;
-        document.getElementById('my-donguri').innerText = don;
-        validateTrade();
-    }
-
-    function setMode(mode) {
-        currentMode = mode;
-        const box = document.getElementById('trade-box');
-        const desc = document.getElementById('mode-desc');
-        const btn = document.getElementById('action-btn');
-        const tabBuy = document.getElementById('tab-buy');
-        const tabSell = document.getElementById('tab-sell');
-
-        if (mode === 'buy') {
-            box.className = 'trade-box buy-mode';
-            desc.innerText = "ポイントを使って、どんぐりを買います";
-            desc.style.color = "#e65100";
-            btn.className = "trade-btn btn-buy";
-            btn.innerText = "どんぐりを 買う";
-            tabBuy.classList.add('active');
-            tabSell.classList.remove('active');
-        } else {
-            box.className = 'trade-box';
-            desc.innerText = "どんぐりを売って、ポイントに戻します";
-            desc.style.color = "#2e7d32";
-            btn.className = "trade-btn btn-sell";
-            btn.innerText = "どんぐりを 売る";
-            tabBuy.classList.remove('active');
-            tabSell.classList.add('active');
-        }
-        validateTrade();
-    }
-
-    function calcFromDonguri() {
-        const dVal = document.getElementById('input-donguri').value;
-        const pInput = document.getElementById('input-point');
-        if (dVal === '') {
-            pInput.value = '';
-        } else {
-            pInput.value = Math.floor(dVal * currentRate);
-        }
-        validateTrade();
-    }
-
-    function calcFromPoint() {
-        const pVal = document.getElementById('input-point').value;
-        const dInput = document.getElementById('input-donguri').value;
-        if (pVal === '') {
-            dInput.value = '';
-        } else {
-            dInput.value = Math.floor(pVal / currentRate);
-        }
-        validateTrade();
-    }
-
-    function validateTrade() {
-        const userName = document.getElementById('user-select').value;
-        const btn = document.getElementById('action-btn');
-        
-        if (!userName) {
-            btn.disabled = true;
-            return;
-        }
-
-        const dVal = parseInt(document.getElementById('input-donguri').value);
-        const pVal = parseInt(document.getElementById('input-point').value);
-
-        if (isNaN(dVal) || dVal <= 0 || isNaN(pVal) || pVal <= 0) {
-            btn.disabled = true;
-            return;
-        }
-
-        const currentPts = getUserPoints(userName);
-        const currentDon = getUserDonguri(userName);
-
-        if (currentMode === 'buy') {
-            if (currentPts >= pVal) {
-                btn.disabled = false;
-                btn.innerText = `どんぐりを 買う (${pVal}pt)`;
+        function toggleDesc() {
+            const content = document.getElementById('desc-content');
+            const arrow = document.getElementById('desc-arrow');
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+                arrow.innerText = '▼';
             } else {
-                btn.disabled = true;
-                btn.innerText = "ポイントが足りないよ";
-            }
-        } else {
-            if (currentDon >= dVal) {
-                btn.disabled = false;
-                btn.innerText = `どんぐりを 売る (+${pVal}pt)`;
-            } else {
-                btn.disabled = true;
-                btn.innerText = "どんぐりが足りないよ";
+                content.style.display = 'block';
+                arrow.innerText = '▲';
             }
         }
-    }
 
-    function executeTrade() {
-        const userName = document.getElementById('user-select').value;
-        const dVal = parseInt(document.getElementById('input-donguri').value);
-        const pVal = parseInt(document.getElementById('input-point').value);
-
-        if (currentMode === 'buy') {
-            spendPoints(userName, pVal);
-            addDonguri(userName, dVal);
-            alert(`【とりひき成功】\n🌰 ${dVal}こ を買いました！\n(-${pVal} ポイント)`);
-        } else {
-            spendDonguri(userName, dVal);
-            addPoints(userName, pVal);
-            alert(`【とりひき成功】\n🌰 ${dVal}こ を売りました！\n(+${pVal} ポイント)`);
+        async function fetchRate() {
+            const display = document.getElementById('rate-display');
+            try {
+                const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+                const data = await res.json();
+                const rawRate = data.rates.JPY;
+                currentRate = Math.round(rawRate);
+                display.innerText = currentRate;
+                saveDailyRate(currentRate);
+                calcFromDonguri();
+            } catch (e) {
+                console.error("Rate fetch failed", e);
+                display.innerText = currentRate + "(仮)";
+                alert("通信エラー：レートがとれませんでした。仮のレート(150)をつかいます。");
+            }
         }
-        updateWallet();
-        document.getElementById('input-donguri').value = '';
-        document.getElementById('input-point').value = '';
-        validateTrade();
-    }
-</script>
+
+        function updateWallet() {
+            const userName = document.getElementById('user-select').value;
+            if (!userName) {
+                document.getElementById('my-points').innerText = 0;
+                document.getElementById('my-donguri').innerText = 0;
+                document.getElementById('action-btn').disabled = true;
+                return;
+            }
+            const pts = getUserPoints(userName);
+            const don = getUserDonguri(userName);
+            document.getElementById('my-points').innerText = pts;
+            document.getElementById('my-donguri').innerText = don;
+            validateTrade();
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            const box = document.getElementById('trade-box');
+            const desc = document.getElementById('mode-desc');
+            const btn = document.getElementById('action-btn');
+            const tabBuy = document.getElementById('tab-buy');
+            const tabSell = document.getElementById('tab-sell');
+
+            if (mode === 'buy') {
+                box.className = 'trade-box buy-mode';
+                desc.innerText = "ポイントを使って、どんぐりを買います";
+                desc.style.color = "#e65100";
+                btn.className = "trade-btn btn-buy";
+                btn.innerText = "どんぐりを 買う";
+                tabBuy.classList.add('active');
+                tabSell.classList.remove('active');
+            } else {
+                box.className = 'trade-box';
+                desc.innerText = "どんぐりを売って、ポイントに戻します";
+                desc.style.color = "#2e7d32";
+                btn.className = "trade-btn btn-sell";
+                btn.innerText = "どんぐりを 売る";
+                tabBuy.classList.remove('active');
+                tabSell.classList.add('active');
+            }
+            validateTrade();
+        }
+
+        function calcFromDonguri() {
+            const dVal = document.getElementById('input-donguri').value;
+            const pInput = document.getElementById('input-point');
+            if (dVal === '') {
+                pInput.value = '';
+            } else {
+                pInput.value = Math.floor(dVal * currentRate);
+            }
+            validateTrade();
+        }
+
+        function calcFromPoint() {
+            const pVal = document.getElementById('input-point').value;
+            const dInput = document.getElementById('input-donguri').value;
+            if (pVal === '') {
+                dInput.value = '';
+            } else {
+                dInput.value = Math.floor(pVal / currentRate);
+            }
+            validateTrade();
+        }
+
+        function validateTrade() {
+            const userName = document.getElementById('user-select').value;
+            const btn = document.getElementById('action-btn');
+
+            if (!userName) {
+                btn.disabled = true;
+                return;
+            }
+
+            const dVal = parseInt(document.getElementById('input-donguri').value);
+            const pVal = parseInt(document.getElementById('input-point').value);
+
+            if (isNaN(dVal) || dVal <= 0 || isNaN(pVal) || pVal <= 0) {
+                btn.disabled = true;
+                return;
+            }
+
+            const currentPts = getUserPoints(userName);
+            const currentDon = getUserDonguri(userName);
+
+            if (currentMode === 'buy') {
+                if (currentPts >= pVal) {
+                    btn.disabled = false;
+                    btn.innerText = `どんぐりを 買う (${pVal}pt)`;
+                } else {
+                    btn.disabled = true;
+                    btn.innerText = "ポイントが足りないよ";
+                }
+            } else {
+                if (currentDon >= dVal) {
+                    btn.disabled = false;
+                    btn.innerText = `どんぐりを 売る (+${pVal}pt)`;
+                } else {
+                    btn.disabled = true;
+                    btn.innerText = "どんぐりが足りないよ";
+                }
+            }
+        }
+
+        function executeTrade() {
+            const userName = document.getElementById('user-select').value;
+            const dVal = parseInt(document.getElementById('input-donguri').value);
+            const pVal = parseInt(document.getElementById('input-point').value);
+
+            if (currentMode === 'buy') {
+                spendPoints(userName, pVal);
+                addDonguri(userName, dVal);
+                alert(`【とりひき成功】\n🌰 ${dVal}こ を買いました！\n(-${pVal} ポイント)`);
+            } else {
+                spendDonguri(userName, dVal);
+                addPoints(userName, pVal);
+                alert(`【とりひき成功】\n🌰 ${dVal}こ を売りました！\n(+${pVal} ポイント)`);
+            }
+            updateWallet();
+            document.getElementById('input-donguri').value = '';
+            document.getElementById('input-point').value = '';
+            validateTrade();
+        }
+
+        // --- チャート機能 ---
+        function saveDailyRate(rate) {
+            const HISTORY_KEY = 'papan_exchange_rate_history';
+            let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+
+            const today = new Date();
+            const dateStr = `${today.getFullYear()}-${('0' + (today.getMonth() + 1)).slice(-2)}-${('0' + today.getDate()).slice(-2)}`;
+
+            const todayEntry = history.find(entry => entry.date === dateStr);
+            if (todayEntry) {
+                todayEntry.rate = rate; // 重複する場合は最新で上書き
+            } else {
+                history.push({ date: dateStr, rate: rate });
+            }
+
+            if (history.length > 30) history = history.slice(history.length - 30);
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        }
+
+        function getChartData() {
+            const HISTORY_KEY = 'papan_exchange_rate_history';
+            let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            if (history.length === 0) return [];
+
+            const today = new Date();
+            let chartData = [];
+            const baseRate = history[0].rate; // 初回データ（バックフィル用）
+
+            // 29日前から今日までの30日分を作成
+            for (let i = 29; i >= 0; i--) {
+                let targetDate = new Date(today);
+                targetDate.setDate(today.getDate() - i);
+                const dateStr = `${targetDate.getFullYear()}-${('0' + (targetDate.getMonth() + 1)).slice(-2)}-${('0' + targetDate.getDate()).slice(-2)}`;
+
+                let found = history.find(entry => entry.date === dateStr);
+                if (found) {
+                    chartData.push({ date: dateStr, rate: found.rate });
+                } else {
+                    // データがない日は、最後に見つかったレートを引き継ぐ（初回は真っ直ぐになる）
+                    let dummyRate = baseRate;
+                    if (chartData.length > 0) dummyRate = chartData[chartData.length - 1].rate;
+                    chartData.push({ date: dateStr, rate: dummyRate });
+                }
+            }
+            return chartData;
+        }
+
+        function showChartModal() {
+            document.getElementById('chart-modal').style.display = 'flex';
+            drawChart();
+        }
+
+        function closeChartModal(e) {
+            if (e && e.target !== document.getElementById('chart-modal')) return;
+            document.getElementById('chart-modal').style.display = 'none';
+        }
+
+        function drawChart() {
+            const canvas = document.getElementById('rate-chart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const data = getChartData();
+            if (data.length === 0) return;
+
+            // レティナ対応: 描画解像度を2倍にしてCanvasの表示サイズに合わせる
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * 2;
+            canvas.height = rect.height * 2;
+            ctx.scale(2, 2);
+
+            const width = rect.width;
+            const height = rect.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            let min = Math.min(...data.map(d => d.rate));
+            let max = Math.max(...data.map(d => d.rate));
+
+            if (max === min) {
+                max += 5;
+                min -= 5;
+            } else {
+                const padding = (max - min) * 0.2;
+                max = max + padding;
+                min = min - padding;
+            }
+
+            const paddingX = 35;
+            const paddingYBottom = 20;
+            const paddingYTop = 15;
+
+            const chartWidth = width - paddingX - 10;
+            const chartHeight = height - paddingYBottom - paddingYTop;
+
+            const getX = (index) => paddingX + (index / (data.length - 1)) * chartWidth;
+            const getY = (val) => paddingYTop + chartHeight - ((val - min) / (max - min)) * chartHeight;
+
+            // グリッドとY軸ラベル
+            ctx.beginPath();
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                let y = paddingYTop + (chartHeight * i) / 4;
+                ctx.moveTo(paddingX, y);
+                ctx.lineTo(width - 10, y);
+
+                ctx.fillStyle = '#777';
+                ctx.font = '10px "UD Digital Kyokasho-tai-R", sans-serif';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                let val = max - ((max - min) * i) / 4;
+                ctx.fillText(Math.round(val), paddingX - 5, y);
+            }
+            ctx.stroke();
+
+            // グラフの線
+            ctx.beginPath();
+            ctx.strokeStyle = '#4caf50';
+            ctx.lineWidth = 3;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+
+            data.forEach((d, i) => {
+                const x = getX(i);
+                const y = getY(d.rate);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // エリアの塗りつぶし
+            ctx.lineTo(getX(data.length - 1), paddingYTop + chartHeight);
+            ctx.lineTo(getX(0), paddingYTop + chartHeight);
+            ctx.closePath();
+            const grad = ctx.createLinearGradient(0, paddingYTop, 0, paddingYTop + chartHeight);
+            grad.addColorStop(0, 'rgba(76, 175, 80, 0.4)');
+            grad.addColorStop(1, 'rgba(76, 175, 80, 0.05)');
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            // データポイントの丸
+            ctx.fillStyle = '#fff';
+            ctx.strokeStyle = '#388e3c';
+            ctx.lineWidth = 2;
+            data.forEach((d, i) => {
+                const x = getX(i);
+                const y = getY(d.rate);
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            });
+
+            // X軸ラベル（最初、中間、最後）
+            ctx.fillStyle = '#777';
+            ctx.font = '10px "UD Digital Kyokasho-tai-R", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+
+            const labelIndices = [0, Math.floor((data.length - 1) / 2), data.length - 1];
+            labelIndices.forEach(i => {
+                const x = getX(i);
+                const y = paddingYTop + chartHeight + 8;
+                const dStr = data[i].date.substring(5).replace('-', '/');
+                ctx.fillText(dStr, x, y);
+            });
+        }
+    </script>
 
 </body>
+
 </html>

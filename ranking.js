@@ -396,9 +396,11 @@ async function updateMarketDay(todayStr, daysElapsed, preFetchedRealData = null)
     const eventRoll = Math.random();
     if (eventRoll < 0.1) { market.news = "【特報】新型エンジンが大発明！自動車株が急上昇！"; market.trend['motor'] = 0.1; }
     else if (eventRoll < 0.2) { market.news = "【悲報】どんぐりが不作... 食品株に影響か"; market.trend['food'] = -0.1; }
-    else if (eventRoll < 0.3) { market.news = "【朗報】どんぐりが大豊作！食品株に追い風！"; market.trend['food'] = 0.1; }
+    else if (eventRoll < 0.3) { market.news = "【朗報】どんぐりによる健康効果が発表され、食品株に追い風！"; market.trend['food'] = 0.1; }
     else if (eventRoll < 0.4) { market.news = "【IT】次世代ゲーム機が大コケ。IT株が暴落の危機"; market.trend['tech'] = -0.3; }
     else if (eventRoll < 0.5) { market.news = "【IT】AIがすごい発明！IT株に買い注文殺到！"; market.trend['tech'] = 0.4; }
+    else if (eventRoll < 0.6) { market.news = "【自動車】補助金の減少が決定し、需要の先細りが懸念される"; market.trend['motor'] = -0.09; }
+    else if (eventRoll < 0.7) { market.news = "【利上げ】金利上昇によりディフェンシブ銘柄に買いが集まる"; market.trend['food'] = 0.05; }
     else { market.news = "本日は穏やかな市場です。"; market.trend = { 'motor': 0, 'food': 0, 'tech': 0 }; }
 
     // リアル連動ニュースの上書き
