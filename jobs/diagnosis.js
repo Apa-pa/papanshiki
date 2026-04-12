@@ -148,13 +148,50 @@ function showResult() {
     const result = WORLD_INFO[maxTag];
     document.getElementById('subtitle').innerHTML = '<ruby>診断<rt>しんだん</rt></ruby>おわり！おめでとう！';
 
+    // 診断結果に合う職業を jobs_data.js の CATEGORIES から取得
+    let recommendedJobs = [];
+    if (typeof CATEGORIES !== 'undefined') {
+        for (const category of CATEGORIES) {
+            for (const job of category.jobs) {
+                if (job.world === maxTag) {
+                    recommendedJobs.push(job);
+                }
+            }
+        }
+    }
+
+    // ランダムにシャッフルして最大6個まで表示する
+    recommendedJobs = recommendedJobs.sort(() => Math.random() - 0.5).slice(0, 6);
+
+    let jobsHtml = '';
+    if (recommendedJobs.length > 0) {
+        jobsHtml = `
+            <div style="margin-top: 20px; margin-bottom: 25px; padding: 15px; background: #fff; border: 3px dashed #ffcc80; border-radius: 15px;">
+                <p style="color: #ef6c00; font-weight: bold; font-size: 16px; margin-bottom: 12px; text-align: center;">💡 こんなお<ruby>仕事<rt>しごと</rt></ruby>がおすすめ！</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+        `;
+        recommendedJobs.forEach(job => {
+            jobsHtml += `
+                <div style="background: #fff8e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; font-weight: bold; color: #555; border: 1px solid #ffe0b2; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    ${job.icon} ${job.name}
+                </div>
+            `;
+        });
+        jobsHtml += `
+                </div>
+            </div>
+        `;
+    }
+
     // 結果の表示と、図鑑へのリンクボタン
     container.innerHTML = `
         <div style="text-align: center;">
             <div style="font-size: 80px; margin-bottom: 10px;">${result.icon}</div>
             <h2 style="color: #ef6c00; margin: 15px 0; font-size: 24px;">${result.name}</h2>
-            <p style="font-size: 15px; line-height: 1.6; color: #444; margin-bottom: 30px; background: #fff8e1; padding: 15px; border-radius: 12px;">${result.desc}</p>
+            <p style="font-size: 15px; line-height: 1.6; color: #444; margin-bottom: 10px; background: #fff8e1; padding: 15px; border-radius: 12px;">${result.desc}</p>
             
+            ${jobsHtml}
+
             <a href="job_learn.html" class="get-points-btn"><ruby>図鑑<rt>ずかん</rt></ruby>でお<ruby>仕事<rt>しごと</rt></ruby>を<ruby>探<rt>さが</rt></ruby>す！</a>
         </div>
     `;
