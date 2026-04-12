@@ -14,6 +14,11 @@
             background-color: #e0e0e0;
             font-family: "UD Digital Kyokasho-tai-R", "Zen Kaku Gothic New", sans-serif;
             touch-action: none;
+            /* 連続タップや慣性スクロールによる画面ずれを防止 */
+            overflow: hidden;
+            overscroll-behavior: none;
+            position: fixed;
+            width: 100%;
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -380,6 +385,10 @@
         document.addEventListener('touchmove', function (e) {
             e.preventDefault();
         }, { passive: false });
+        // touchstartでもデフォルト動作を抑制（連続タップによるズームや画面ずれを防止）
+        document.addEventListener('touchstart', function (e) {
+            e.preventDefault();
+        }, { passive: false });
 
         let pointerStartX = 0;
         let pointerStartY = 0;
@@ -643,6 +652,11 @@
                 grid[gy][gx] = new Block(p.category, p.label);
             }
             activePiece = null;
+
+            // ロック時にソフトドロップ状態を必ずリセット
+            // （下スワイプ中にブロックが固定された際、次のブロックに引き継がれるのを防ぐ）
+            isSoftDropping = false;
+            softDropTimer = 0;
 
             if (gameOverCheck) {
                 forceGameOver();
