@@ -247,6 +247,10 @@ function showResult() {
         showPointGetDialog(pt, (selectedUserName) => {
             if (selectedUserName) {
                 saveLaboRecord(selectedUserName, scoreSnapshot);
+                // ミッション達成記録（ラボ2をクリア）
+                if (typeof addMissionStock === 'function') {
+                    addMissionStock(selectedUserName, 'labo2');
+                }
             }
         });
     }

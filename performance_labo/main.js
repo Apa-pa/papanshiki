@@ -276,6 +276,10 @@ function showResult() {
             // ユーザー選択後に記録を保存
             if (selectedUserName) {
                 saveLaboRecord(selectedUserName, scoreSnapshot);
+                // ミッション達成記録（ラボをクリア）
+                if (typeof addMissionStock === 'function') {
+                    addMissionStock(selectedUserName, 'labo');
+                }
             }
         });
     }

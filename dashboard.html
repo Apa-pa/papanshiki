@@ -8,6 +8,7 @@
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text x=%2250%%22 y=%2250%%22 style=%22dominant-baseline:central;text-anchor:middle;font-size:90px;%22>👪</text></svg>">
     <script src="ranking.js"></script>
+    <script src="sugoroku/mission.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -488,6 +489,9 @@
             }
         }
 
+        // ミッション記録済みユーザー名（セッション内1回のみ）
+        let _missionDashboardUser = null;
+
         // ダッシュボード全体のレンダリング
         function renderDashboard() {
             const userName = document.getElementById('userSelect').value;
@@ -498,6 +502,14 @@
 
             localStorage.setItem('papan_dashboard_last_user', userName);
             document.getElementById('dashboardContent').style.display = 'block';
+
+            // ユーザーが変わった（または初回選択）のときのみミッション記録
+            if (userName !== _missionDashboardUser) {
+                _missionDashboardUser = userName;
+                if (typeof addMissionStock === 'function') {
+                    addMissionStock(userName, 'open_dashboard');
+                }
+            }
 
             renderCalendar(userName);
             renderAssets(userName);

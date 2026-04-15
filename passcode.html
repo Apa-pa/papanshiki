@@ -6,6 +6,7 @@
     <title>パスコードをあてよう！ | ぱぱん式</title>
     <meta name="description" content="スマホのロック画面みたいにパスコードをおぼえてうちこもう！きおく力がためされるクイズゲームだよ。">
     <script src="ranking.js"></script>
+    <script src="sugoroku/mission.js"></script>
     <style>
         /* ===== フォント・リセット ===== */
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
@@ -1099,7 +1100,12 @@ function saveResult() {
     if (btn && btn.disabled) return;
 
     if (typeof showPointGetDialog === 'function') {
-        showPointGetDialog(state.totalScore, 'passcode');
+        showPointGetDialog(state.totalScore, 'passcode', (selectedUserName) => {
+            // ミッション達成記録
+            if (selectedUserName && typeof addMissionStock === 'function') {
+                addMissionStock(selectedUserName, 'passcode');
+            }
+        });
     } else {
         alert(`${state.totalScore} ポイント かくとく！`);
     }

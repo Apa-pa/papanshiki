@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ぱぱん証券</title>
     <script src="ranking.js"></script>
+    <script src="sugoroku/mission.js"></script>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
@@ -1013,6 +1014,10 @@
             if (success) {
                 closeTradeModal();
                 updateUI();
+                // ミッション達成記録（株の売買）
+                if (typeof addMissionStock === 'function') {
+                    addMissionStock(userName, 'stock_trade');
+                }
                 // 少し遅延させてからアラート表示
                 setTimeout(() => {
                     alert(`${currentModalType === 'buy' ? 'かいました！' : 'うりました！'}`);

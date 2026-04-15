@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>つなげて！トロッコ</title>
     <script src="ranking.js"></script>
+    <script src="sugoroku/mission.js"></script>
     <script type="module" src="firebase-ranking.js"></script>
     <style>
         /* ▼▼▼ CSS：画面固定とゲームのスタイル ▼▼▼ */
@@ -282,7 +283,12 @@
 
         function saveScoreToRanking() {
             if (typeof showSaveDialog === 'function') {
-                showSaveDialog('rail', finalTime);
+                showSaveDialog('rail', finalTime, undefined, (selectedUserName) => {
+                    // ミッション達成記録
+                    if (selectedUserName && typeof addMissionStock === 'function') {
+                        addMissionStock(selectedUserName, 'rail');
+                    }
+                });
             } else {
                 alert('ranking.js が読み込まれていません');
             }

@@ -34,8 +34,7 @@ const GAME_LIST = {
     'math_strike': { name: '計算ビリヤード', type: 'score', unit: '点', url: 'math_strike.html' },
     'enogu_creator': { name: 'えのぐクリエーター', type: 'score', unit: '点', url: 'enogu_creator.html' },
     'eigo_nakama': { name: 'えいごDEなかまさがし', type: 'score', unit: '点', url: 'eigo_nakama.html' },
-    'eiyou_balance': { name: '栄養バランスゲーム', type: 'score', unit: '点', url: 'eiyou_balance.html' },
-    'passcode': { name: 'パスコードをあてよう！', type: 'score', unit: '点', url: 'passcode.html' }
+    'eiyou_balance': { name: '栄養バランスゲーム', type: 'score', unit: '点', url: 'eiyou_balance.html' }
 };
 
 // --- リアル株価連動設定 ---
@@ -813,7 +812,7 @@ function showSaveDialog(gameId, resultValue, customBasePoint, onComplete) {
             }
 
             document.getElementById('ranking-overlay').remove();
-            if (typeof Ranking.onComplete === 'function') Ranking.onComplete();
+            if (typeof Ranking.onComplete === 'function') Ranking.onComplete(localName);
 
             // メッセージ生成
             setTimeout(() => {

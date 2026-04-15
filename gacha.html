@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ぱぱんガチャ</title>
     <script src="ranking.js"></script>
+    <script src="sugoroku/mission.js"></script>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
@@ -523,6 +524,11 @@
             }
 
             updateStatus(); // 表示更新
+
+            // ミッション達成記録（ガチャをまわした）
+            if (typeof addMissionStock === 'function') {
+                addMissionStock(userName, 'gacha');
+            }
 
             // 演出開始
             const machine = document.getElementById('machine-body');

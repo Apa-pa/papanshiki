@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ミッションすごろく | ぱぱん式</title>
+    <meta name="description" content="ミッションをクリアしてストックをためよう！すごろくをすすめてどんぐりをゲット！">
+    <!-- 共通スクリプト（先に読み込む） -->
+    <script src="../ranking.js"></script>
+    <!-- ミッション管理スクリプト（ranking.js より後に読み込む） -->
+    <script src="mission.js"></script>
+    <!-- スタイル -->
+    <link rel="stylesheet" href="sugoroku.css">
+</head>
+
+<body>
+
+    <!-- 背景 -->
+    <div id="bg"></div>
+
+    <!-- ================================================================
+         ユーザー選択オーバーレイ（ページ読み込み時に全画面表示）
+         ================================================================ -->
+    <div id="user-select-overlay">
+        <div class="user-select-box">
+            <h2>🌿 ミッションすごろく</h2>
+            <p>だれがあそぶか えらんでね！</p>
+            <div class="user-btn-grid" id="user-btn-grid">
+                <!-- sugoroku.js が動的に生成 -->
+            </div>
+            <a href="../index.html" style="font-size:0.8rem; color:#8d6e63; text-decoration:underline;">
+                🏠 ホームへもどる
+            </a>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         メインゲーム画面
+         ================================================================ -->
+    <div id="game-screen">
+
+        <!-- ヘッダーバー -->
+        <div id="header-bar">
+            <span id="header-title">🌿 ミッションすごろく</span>
+            <div id="header-user-info">
+                <span id="header-username">👤 ---</span>
+                <span id="header-stock">🌰 ストック：0かい</span>
+            </div>
+            <button id="change-user-btn">👥 かえる</button>
+        </div>
+
+        <!-- すごろくボードエリア -->
+        <div id="board-area">
+            <!-- ミッションリスト表示ボタン -->
+            <button id="mission-list-btn">📋 こんしゅうのミッション</button>
+
+            <!-- マス間の動線（SVG点線・JSから描画） -->
+            <svg id="path-svg"
+                 viewBox="0 0 100 100"
+                 preserveAspectRatio="none"
+                 style="position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:5;">
+            </svg>
+
+            <!-- すごろくボード（マスはJSで生成） -->
+            <div id="sugoroku-board"></div>
+
+            <!-- コマ（キャラクター） -->
+            <div id="koma">
+                <img src="../an192.webp" alt="コマ（アン）">
+            </div>
+        </div>
+
+
+        <!-- フッターボタンエリア -->
+        <div id="footer-area">
+            <button id="advance-btn" disabled>1ます すすむ</button>
+            <p id="advance-hint">だれがあそぶか えらんでね</p>
+            <a href="../index.html" id="home-link">🏠 ホームへもどる</a>
+        </div>
+
+    </div>
+
+    <!-- ================================================================
+         サイコロ演出ポップアップ
+         ================================================================ -->
+    <div id="dice-popup" class="popup-overlay hidden">
+        <div class="popup-box">
+            <h2 id="dice-popup-title">🎲 サイコロをふるよ！</h2>
+            <div class="dice-wrap">
+                <div id="sugoroku-dice" class="dice" data-val="1">
+                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                </div>
+            </div>
+            <p id="dice-wait-text" style="color:#795548; font-size:1rem;">ドキドキ……</p>
+            <button id="roll-dice-btn" class="popup-btn green" style="margin-top: 10px;">サイコロをふる</button>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         報酬ポップアップ
+         ================================================================ -->
+    <div id="reward-popup" class="popup-overlay hidden">
+        <div class="popup-box">
+            <h2>🎊 ごほうび！</h2>
+            <div class="reward-icon">🎲 <span id="reward-dice-result">⚄ (5)</span></div>
+            <div class="reward-amount" id="reward-amount">🌰 × 2</div>
+            <p class="reward-msg" id="reward-msg">どんぐりをゲット！</p>
+            <button class="popup-btn" id="reward-close-btn">やったー！</button>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         ゴールポップアップ
+         ================================================================ -->
+    <div id="goal-popup" class="popup-overlay hidden">
+        <div class="popup-box">
+            <div class="goal-anim">🏆</div>
+            <h2>ゴール おめでとう！！</h2>
+            <p>
+                10マス ぜんぶ すすんだよ！<br>
+                とくべつな ごほうびサイコロを ふってみよう！
+            </p>
+            <button class="popup-btn green" id="goal-next-btn">
+                🎲 ごほうびサイコロへ
+            </button>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         ミッションリストポップアップ
+         ================================================================ -->
+    <div id="mission-popup" class="popup-overlay hidden">
+        <div class="popup-box" style="max-height:80dvh; overflow-y:auto;">
+            <h2>📋 こんしゅうのミッション</h2>
+            <p id="mission-progress" style="color:#2e7d32; font-weight:bold; margin:0 0 12px;"></p>
+            <div id="mission-items">
+                <!-- sugoroku.js が動的に生成 -->
+            </div>
+            <button class="popup-btn" id="mission-popup-close" style="margin-top:14px;">とじる</button>
+        </div>
+    </div>
+
+    <!-- ゲームロジック（最後に読み込む） -->
+    <script src="sugoroku.js"></script>
+
+</body>
+
+</html>

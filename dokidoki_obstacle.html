@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ドキドキ障害物</title>
     <script src="ranking.js"></script>
+    <script src="sugoroku/mission.js"></script>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", sans-serif;
@@ -823,7 +824,12 @@
             if (restartBtn) restartBtn.style.display = 'block';
 
             if (typeof showPointGetDialog === 'function') {
-                showPointGetDialog(50, 'dokidoki_obstacle');
+                showPointGetDialog(50, 'dokidoki_obstacle', (selectedUserName) => {
+                    // ミッション達成記録
+                    if (selectedUserName && typeof addMissionStock === 'function') {
+                        addMissionStock(selectedUserName, 'dokidoki_obstacle');
+                    }
+                });
             } else {
                 alert("50ポイント獲得！（ローカル確認用）");
             }

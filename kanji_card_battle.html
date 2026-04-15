@@ -7,6 +7,7 @@
     <title>漢字カードバトル | ぱぱん式</title>
     <meta name="description" content="漢字の画数や意味でカードを出しあってバトル！1〜6年生の漢字カードで勝負しよう。">
     <script src="ranking.js"></script>
+    <script src="sugoroku/mission.js"></script>
     <!-- 全学年の漢字データを静的に読み込む -->
     <script src="kanji/grade1.js"></script>
     <script src="kanji/grade2.js"></script>
@@ -1200,9 +1201,13 @@
         document.getElementById('point-btn').disabled = true;
         document.getElementById('point-btn').textContent = '🎁　もらったよ！';
         
-        showPointGetDialog(point, 'kanji_card_battle', () => {
-             // ポイントをもらったらリセットするためにリロード
-             window.location.reload();
+        showPointGetDialog(point, 'kanji_card_battle', (selectedUserName) => {
+            // ミッション達成を記録
+            if (selectedUserName && typeof addMissionStock === 'function') {
+                addMissionStock(selectedUserName, 'kanji_card_battle');
+            }
+            // ポイントをもらったらリセットするためにリロード
+            window.location.reload();
         });
     }
 

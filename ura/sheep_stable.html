@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ひつじ厩舎・トレーニング</title>
     <script src="../ranking.js"></script>
+    <script src="../sugoroku/mission.js"></script>
     <script type="module" src="../firebase-ranking.js"></script>
     <style>
         body {
@@ -505,6 +506,10 @@
             currentUserName = name;
             document.getElementById('user-overlay').style.display = 'none';
             document.getElementById('user-display').innerText = "オーナー: " + name;
+            // ミッション達成記録（ひつじ厩舎をひらく）
+            if (typeof addMissionStock === 'function') {
+                addMissionStock(name, 'sheep_stable');
+            }
             updateUI();
         }
 

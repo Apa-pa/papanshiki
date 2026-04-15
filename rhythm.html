@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>アンのリズム教室</title>
     <script src="ranking.js"></script>
+    <script src="sugoroku/mission.js"></script>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
@@ -272,8 +273,7 @@
             <div style="font-size: 80px;">💮</div>
             <h1 style="color:#e65100;">たいへん<br>よくできました！</h1>
             <p>リズム感 バッチリだね！</p>
-            <button class="btn"
-                onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; if(typeof showPointGetDialog==='function'){showPointGetDialog(30, 'rhythm')}else{alert('ranking.jsを更新してね')}">
+            <button id="rhythm-point-btn" class="btn" onclick="getRhythmPoint(this)">
                 🎁 ポイントをもらう
             </button>
             <button class="start-btn" onclick="startGame()">さいしょから</button>
@@ -551,6 +551,23 @@
         function gameClear() {
             const screen = document.getElementById('clear-screen');
             screen.style.display = "flex";
+        }
+
+        // ポイント受け取り（リズムクリア）
+        function getRhythmPoint(btn) {
+            btn.disabled = true;
+            btn.innerText = 'もらいました';
+            btn.style.background = '#ccc';
+            if (typeof showPointGetDialog === 'function') {
+                showPointGetDialog(30, 'rhythm', (selectedUserName) => {
+                    // ミッション達成記録
+                    if (selectedUserName && typeof addMissionStock === 'function') {
+                        addMissionStock(selectedUserName, 'rhythm');
+                    }
+                });
+            } else {
+                alert('ranking.jsを更新してね');
+            }
         }
 
         function wait(ms) {

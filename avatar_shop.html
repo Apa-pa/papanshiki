@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>アバターショップ</title>
     <script src="ranking.js"></script>
+    <script src="sugoroku/mission.js"></script>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
@@ -246,6 +247,9 @@
 
 
         // --- 3. ショップ画面の表示 ---
+        // ミッション記録済みユーザー名（セッション内1回のみ）
+        let _missionVisitedUser = null;
+
         function loadShop() {
             const userName = document.getElementById('user-select').value;
             const shopContent = document.getElementById('shop-content');
@@ -255,6 +259,14 @@
                 return;
             }
             shopContent.style.display = 'block';
+
+            // ユーザーが変わった（または初回選択）のときのみミッション記録
+            if (userName !== _missionVisitedUser) {
+                _missionVisitedUser = userName;
+                if (typeof addMissionStock === 'function') {
+                    addMissionStock(userName, 'visit_avatar_shop');
+                }
+            }
 
             const currentPoints = getUserPoints(userName);
             document.getElementById('current-points').innerText = currentPoints;

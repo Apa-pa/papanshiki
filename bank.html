@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ぱぱん銀行</title>
     <script src="ranking.js"></script>
+    <script src="sugoroku/mission.js"></script>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
@@ -720,11 +721,15 @@
             if (currentMode === 'buy') {
                 spendPoints(userName, pVal);
                 addDonguri(userName, dVal);
-                alert(`【とりひき成功】\n🌰 ${dVal}こ を買いました！\n(-${pVal} ポイント)`);
+                // ミッション達成記録（どんぐりとポイントを交換）
+                if (typeof addMissionStock === 'function') addMissionStock(userName, 'bank_exchange');
+                alert(`【とりひき成功】\n🌿 ${dVal}こ を買いました！\n(-${pVal} ポイント)`);
             } else {
                 spendDonguri(userName, dVal);
                 addPoints(userName, pVal);
-                alert(`【とりひき成功】\n🌰 ${dVal}こ を売りました！\n(+${pVal} ポイント)`);
+                // ミッション達成記録（どんぐりとポイントを交換）
+                if (typeof addMissionStock === 'function') addMissionStock(userName, 'bank_exchange');
+                alert(`【とりひき成功】\n🌿 ${dVal}こ を売りました！\n(+${pVal} ポイント)`);
             }
             updateWallet();
             document.getElementById('input-donguri').value = '';

@@ -7,6 +7,7 @@
     <title>計算ビリヤード - ぱぱん式</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <script src="ranking.js"></script>
+    <script src="sugoroku/mission.js"></script>
     <script type="module" src="firebase-ranking.js"></script>
     <style>
         body {
@@ -751,7 +752,12 @@
                 if (typeof showSaveDialog === 'function') {
                     // 獲得ポイント = スコアの10分の1（切り捨て、最低1）
                     const earnedPoint = Math.max(1, Math.floor(score / 10));
-                    showSaveDialog('math_strike', score, earnedPoint);
+                    showSaveDialog('math_strike', score, earnedPoint, (selectedUserName) => {
+                        // ミッション達成記録
+                        if (selectedUserName && typeof addMissionStock === 'function') {
+                            addMissionStock(selectedUserName, 'math_strike');
+                        }
+                    });
                 }
             }
         </script>
