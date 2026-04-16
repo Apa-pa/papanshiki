@@ -283,15 +283,46 @@ async function advanceOne() {
     setCurrentPosition(newPos);
     updateHeaderUI();
 
-    // ⑤ ゴール判定
-    if (newPos >= 10) {
-        await showGoalSequence();
-    } else {
-        await showDiceSequence(newPos);
-    }
+    // ⑤ ゴール・各マスのイベント判定
+    await handleSquareEvent(newPos);
 
     isAnimating = false;
     updateAdvanceBtn();
+}
+
+async function handleSquareEvent(pos) {
+    if (pos >= 10) {
+        await showGoalSequence();
+    } else if (pos === 5) {
+        await showAutoAdvanceEvent(pos, 'コロポックルの道案内で１マスすすむ！');
+    } else if ([1, 3, 7, 8].includes(pos)) {
+        await showDiceSequence(pos);
+    }
+}
+
+async function showAutoAdvanceEvent(currentPos, msg) {
+    const popup = document.getElementById('event-popup');
+    document.getElementById('event-msg').textContent = msg;
+    popup.classList.remove('hidden');
+
+    await new Promise(resolve => {
+        document.getElementById('event-close-btn').onclick = () => {
+            popup.classList.add('hidden');
+            resolve();
+        };
+    });
+
+    // 1マス自動で進む (stock消費なし)
+    const nextPos = Math.min(currentPos + 1, 10);
+    placeKomaAt(nextPos, true);
+    await wait(1400);
+    document.getElementById('koma').classList.remove('walking');
+
+    setCurrentPosition(nextPos);
+    updateHeaderUI();
+
+    // 進んだ先で再度イベント判定
+    await handleSquareEvent(nextPos);
 }
 
 // ===============================================
