@@ -214,6 +214,7 @@
         let level = 1;
         let gameStartTime = 0;
         let finalTime = 0;
+        let isScoreSaved = false;
 
         let grid = [];
         let train = { x: 0, y: 0, dir: 1, progress: 0, speed: 0.005 };
@@ -282,11 +283,31 @@
         }
 
         function saveScoreToRanking() {
+            if (isScoreSaved) {
+                alert('すでに おわっているよ！');
+                return;
+            }
+
             if (typeof showSaveDialog === 'function') {
                 showSaveDialog('rail', finalTime, undefined, (selectedUserName) => {
-                    // ミッション達成記録
-                    if (selectedUserName && typeof addMissionStock === 'function') {
-                        addMissionStock(selectedUserName, 'rail');
+                    if (selectedUserName) {
+                        isScoreSaved = true;
+
+                        // ミッション達成記録
+                        if (typeof addMissionStock === 'function') {
+                            addMissionStock(selectedUserName, 'rail');
+                        }
+
+                        // ボタンの見た目も変える
+                        const btnItems = document.querySelectorAll('#all-clear-screen .btn');
+                        btnItems.forEach(btn => {
+                            if (btn.getAttribute('onclick') === 'saveScoreToRanking()') {
+                                btn.style.backgroundColor = '#9e9e9e';
+                                btn.style.boxShadow = 'none';
+                                btn.style.transform = 'translateY(4px)';
+                                btn.textContent = '✔️ きろくずみ';
+                            }
+                        });
                     }
                 });
             } else {
