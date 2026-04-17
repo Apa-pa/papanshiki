@@ -216,7 +216,7 @@ function updateAdvanceBtn() {
     if (pos >= 10) {
         btn.disabled = true;
         btn.textContent = '🏆 ゴールおめでとう！';
-        hint.textContent = 'もういちどまわるには ゴール演出のあとに スタートへもどります';
+        hint.textContent = 'つぎのしゅうになるまで ゴールでまっててね！';
     } else if (stock <= 0) {
         btn.disabled = true;
         btn.textContent = '1ます すすむ';
@@ -432,11 +432,7 @@ async function showGoalSequence() {
 
     await showRewardPopup(diceResult, reward, true);
 
-    // ゴール後リセット（スタートに戻る）
-    setCurrentPosition(0);
-    placeKomaAt(0, true);
-    await wait(1400);
-    document.getElementById('koma').classList.remove('walking');
+    // ゴール後は次の週までそのまま待機する仕様に変更
 }
 
 // 報酬ポップアップ

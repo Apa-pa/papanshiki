@@ -67,10 +67,10 @@ const GRADE2_KANJI = [
     { kanji: "声", readings: ["こえ", "セイ"], meaning: "こえ、おと", strokes: 7, example: "大きな 声 でよむ", hint: "士 の した に いろいろ", example_reading: ["こえ"] },
 
     // --- 家族・人 ---
-    { kanji: "父", readings: ["ちち", "フ"], meaning: "おとうさん", strokes: 4, example: "父 とあそぶ", hint: "ハ と メ", example_reading: ["ちち"] },
-    { kanji: "母", readings: ["はは", "ボ"], meaning: "おかあさん", strokes: 5, example: "母 のりょうり", hint: "しかく の なかに てん ２つ", example_reading: ["はは"] },
+    { kanji: "父", readings: ["ちち", "フ"], meaning: "おとうさん", strokes: 4, example: "父 とははとあそぶ", hint: "ハ と メ", example_reading: ["ちち"] },
+    { kanji: "母", readings: ["はは", "ボ"], meaning: "おかあさん", strokes: 5, example: "ちちと母 がはなす", hint: "しかく の なかに てん ２つ", example_reading: ["はは"] },
     { kanji: "兄", readings: ["あに", "ケイ"], meaning: "おにいさん", strokes: 5, example: "兄 とサッカー", hint: "口 の した に 儿", example_reading: ["あに"] },
-    { kanji: "弟", readings: ["おとうと", "テイ"], meaning: "おとうと", strokes: 7, example: "弟 がいる", hint: "弓 に いろいろ", example_reading: ["おとうと"] },
+    { kanji: "弟", readings: ["おとうと", "テイ"], meaning: "おとうと", strokes: 7, example: "ちいさな弟と野球", hint: "弓 に いろいろ", example_reading: ["おとうと"] },
     { kanji: "姉", readings: ["あね", "シ"], meaning: "おねえさん", strokes: 8, example: "姉 にきく", hint: "おんなへん に 市", example_reading: ["あね"] },
     { kanji: "妹", readings: ["いもうと", "マイ"], meaning: "いもうと", strokes: 8, example: "妹 とあそぶ", hint: "おんなへん に 未", example_reading: ["いもうと"] },
     { kanji: "親", readings: ["おや", "シン"], meaning: "おやこ", strokes: 16, example: "親 にそうだん", hint: "立 と 木 と 見", example_reading: ["おや"] },
@@ -78,16 +78,16 @@ const GRADE2_KANJI = [
 
     // --- 動物 ---
     { kanji: "馬", readings: ["うま", "バ"], meaning: "おおきな どうぶつ", strokes: 10, example: "馬 にのる", hint: "うま の かたち", example_reading: ["うま"] },
-    { kanji: "牛", readings: ["うし", "ギュウ"], meaning: "ミルクをくれる どうぶつ", strokes: 4, example: "牛 をそだてる", hint: "ノ と 二 と たてぼう", example_reading: ["うし"] },
-    { kanji: "魚", readings: ["さかな", "ギョ"], meaning: "みずの なかの いきもの", strokes: 11, example: "魚 をつる", hint: "⺈ と 田 と 灬", example_reading: ["さかな"] },
-    { kanji: "鳥", readings: ["とり", "チョウ"], meaning: "そらをとぶ いきもの", strokes: 11, example: "鳥 がなく", hint: "とり の かたち", example_reading: ["とり"] },
+    { kanji: "牛", readings: ["うし", "ギュウ"], meaning: "ミルクをくれる どうぶつ", strokes: 4, example: "牛 のミルク", hint: "ノ と 二 と たてぼう", example_reading: ["うし"] },
+    { kanji: "魚", readings: ["さかな", "ギョ"], meaning: "みずの なかの いきもの", strokes: 11, example: "川で魚 をつる", hint: "⺈ と 田 と 灬", example_reading: ["さかな"] },
+    { kanji: "鳥", readings: ["とり", "チョウ"], meaning: "そらをとぶ いきもの", strokes: 11, example: "すきな鳥はカラス ", hint: "とり の かたち", example_reading: ["とり"] },
     { kanji: "羽", readings: ["はね", "ウ"], meaning: "とりの つばさ", strokes: 6, example: "羽 をひろげる", hint: "はね が ２まい", example_reading: ["はね"] },
 
     // --- 食べ物 ---
     { kanji: "米", readings: ["こめ", "ベイ"], meaning: "おこめ", strokes: 6, example: "米 をたく", hint: "八 と 十 と 八", example_reading: ["こめ"] },
     { kanji: "麦", readings: ["むぎ", "バク"], meaning: "パンのざいりょう", strokes: 7, example: "麦 ばたけ", hint: "十 か ら 夕 と 夊", example_reading: ["むぎ"] },
     { kanji: "茶", readings: ["チャ", "サ"], meaning: "おちゃ", strokes: 9, example: "お茶 をのむ", hint: "くさかんむり に 余", example_reading: ["ちゃ"] },
-    { kanji: "肉", readings: ["ニク"], meaning: "おにく", strokes: 6, example: "肉 をやく", hint: "冂 の なかに 人 ２つ", example_reading: ["にく"] },
+    { kanji: "肉", readings: ["ニク"], meaning: "おにく", strokes: 6, example: "お肉 をやく", hint: "冂 の なかに 人 ２つ", example_reading: ["にく"] },
     { kanji: "食", readings: ["た(べる)", "ショク"], meaning: "たべること", strokes: 9, example: "食べる のがすき", hint: "ひとやね に 良", example_reading: ["た"] },
 
     // --- 学校・勉強 ---
@@ -100,7 +100,7 @@ const GRADE2_KANJI = [
     { kanji: "語", readings: ["かた(る)", "ゴ"], meaning: "ことば", strokes: 14, example: "国語 がすき", hint: "ごんべん に 吾", example_reading: ["ご"] },
     { kanji: "答", readings: ["こた(える)", "トウ"], meaning: "こたえる", strokes: 12, example: "答え をいう", hint: "たけかんむり に 合", example_reading: ["こた"] },
     { kanji: "算", readings: ["サン"], meaning: "かぞえる、けいさん", strokes: 14, example: "算数 がとくい", hint: "たけかんむり に 目 と 廾", example_reading: ["さん"] },
-    { kanji: "画", readings: ["ガ", "カク"], meaning: "え、かく", strokes: 8, example: "絵 を 画く", hint: "一 と 田 と 凵", example_reading: ["か"] },
+    { kanji: "画", readings: ["ガ", "カク"], meaning: "え、かく", strokes: 8, example: "絵画をみる", hint: "一 と 田 と 凵", example_reading: ["が"] },
     { kanji: "歌", readings: ["うた", "カ"], meaning: "うた", strokes: 14, example: "歌 をうたう", hint: "可 と 欠 が ２つ", example_reading: ["うた"] },
     { kanji: "図", readings: ["ズ", "ト"], meaning: "ず、ちず", strokes: 7, example: "地図 をみる", hint: "くにがまえ の なかに いろいろ", example_reading: ["ず"] },
     { kanji: "工", readings: ["コウ", "ク"], meaning: "つくること", strokes: 3, example: "工作 をする", hint: "カタカナ の エ", example_reading: ["こう"] },
@@ -162,7 +162,7 @@ const GRADE2_KANJI = [
     { kanji: "台", readings: ["ダイ", "タイ"], meaning: "だい、うてな", strokes: 5, example: "台 のうえ", hint: "ム と 口", example_reading: ["だい"] },
 
     // --- 線・形 ---
-    { kanji: "線", readings: ["セン"], meaning: "せん、ライン", strokes: 15, example: "線 をひく", hint: "いとへん に 泉", example_reading: ["せん"] },
+    { kanji: "線", readings: ["セン"], meaning: "せん、ライン", strokes: 15, example: "まっすぐな線", hint: "いとへん に 泉", example_reading: ["せん"] },
     { kanji: "形", readings: ["かたち", "ケイ"], meaning: "かたち", strokes: 7, example: "四角い 形", hint: "开 と 彡", example_reading: ["かたち"] },
     { kanji: "角", readings: ["かど", "カク"], meaning: "かど、つの", strokes: 7, example: "四角 のはこ", hint: "つの のかたち", example_reading: ["かく"] },
     { kanji: "点", readings: ["テン"], meaning: "てん、ポイント", strokes: 9, example: "百点 をとる", hint: "占 と 灬", example_reading: ["てん"] },
@@ -179,10 +179,10 @@ const GRADE2_KANJI = [
     { kanji: "何", readings: ["なに", "カ"], meaning: "なに", strokes: 7, example: "何 がすき？", hint: "にんべん に 可", example_reading: ["なに"] },
     { kanji: "才", readings: ["サイ"], meaning: "さいのう、とし", strokes: 3, example: "七才 になった", hint: "十 と ノ", example_reading: ["さい"] },
     { kanji: "番", readings: ["バン"], meaning: "ばんごう", strokes: 12, example: "一番 になる", hint: "釆 と 田", example_reading: ["ばん"] },
-    { kanji: "頭", readings: ["あたま", "トウ"], meaning: "あたま", strokes: 16, example: "頭 がいい", hint: "豆 と 頁", example_reading: ["あたま"] },
+    { kanji: "頭", readings: ["あたま", "トウ"], meaning: "あたま", strokes: 16, example: "頭 がいい友だち", hint: "豆 と 頁", example_reading: ["あたま"] },
     { kanji: "思", readings: ["おも(う)", "シ"], meaning: "おもう", strokes: 9, example: "そう 思う", hint: "田 と 心", example_reading: ["おも"] },
-    { kanji: "色", readings: ["いろ", "ショク"], meaning: "いろ", strokes: 6, example: "何色 がすき？", hint: "⺈ と 巴", example_reading: ["いろ"] },
-    { kanji: "紙", readings: ["かみ", "シ"], meaning: "かみ", strokes: 10, example: "紙 にかく", hint: "いとへん に 氏", example_reading: ["かみ"] },
+    { kanji: "色", readings: ["いろ", "ショク"], meaning: "いろ", strokes: 6, example: "どんな色 がすき？", hint: "⺈ と 巴", example_reading: ["いろ"] },
+    { kanji: "紙", readings: ["かみ", "シ"], meaning: "かみ", strokes: 10, example: "おり紙 であそぶ", hint: "いとへん に 氏", example_reading: ["がみ"] },
     { kanji: "絵", readings: ["え", "カイ"], meaning: "え、ピクチャー", strokes: 12, example: "絵 をかく", hint: "いとへん に 会", example_reading: ["え"] },
     { kanji: "市", readings: ["いち", "シ"], meaning: "まち、いちば", strokes: 5, example: "市場 にいく", hint: "なべぶた に 巾", example_reading: ["いち"] },
     { kanji: "会", readings: ["あ(う)", "カイ"], meaning: "あう", strokes: 6, example: "友だち に 会う", hint: "ひとやね に 云", example_reading: ["あ"] },
@@ -190,5 +190,5 @@ const GRADE2_KANJI = [
     { kanji: "元", readings: ["もと", "ゲン"], meaning: "もと、はじめ", strokes: 4, example: "元気 ですか", hint: "二 と 儿", example_reading: ["げん"] },
     { kanji: "晴", readings: ["は(れる)", "セイ"], meaning: "おてんきがよい", strokes: 12, example: "今日は 晴れだ", hint: "日 と 青", example_reading: ["は"] },
     { kanji: "聞", readings: ["き(く)", "ブン"], meaning: "みみできく", strokes: 14, example: "音楽を 聞く", hint: "門 の なかに 耳", example_reading: ["き"] },
-    { kanji: "鳴", readings: ["な(く)", "メイ"], meaning: "とりなどが こえをだす", strokes: 14, example: "鳥が 鳴く", hint: "口 と 鳥", example_reading: ["な"] },
+    { kanji: "鳴", readings: ["な(く)", "メイ"], meaning: "とりなどが こえをだす", strokes: 14, example: "ことりが 鳴く", hint: "口 と 鳥", example_reading: ["な"] },
 ];
