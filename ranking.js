@@ -402,6 +402,26 @@ async function updateMarketDay(todayStr, daysElapsed, preFetchedRealData = null)
     else if (eventRoll < 0.7) { market.news = "【利上げ】金利上昇によりディフェンシブ銘柄に買いが集まる"; market.trend['food'] = 0.05; }
     else { market.news = "本日は穏やかな市場です。"; market.trend = { 'motor': 0, 'food': 0, 'tech': 0 }; }
 
+    // ▼ 暴落時の救済（強制反発）ロジック ▼
+    // 個別ニュースが割り当てられたかを判定 (ランダムニュースの指定を常に優先するため)
+    const isMotorNews = (eventRoll < 0.1) || (eventRoll >= 0.5 && eventRoll < 0.6);
+    const isFoodNews = (eventRoll >= 0.1 && eventRoll < 0.3) || (eventRoll >= 0.6 && eventRoll < 0.7);
+    const isTechNews = (eventRoll >= 0.3 && eventRoll < 0.5);
+
+    // 自動車: initPriceの25% (125) 以下の場合、個別ニュースがなければ無条件で上昇トレンドへ
+    if (!isMotorNews && market.prices['motor'] <= STOCK_MASTER['motor'].initPrice * 0.25) {
+        market.trend['motor'] = 0.1;
+    }
+    // 食品: initPriceの20% (100) 以下の場合
+    if (!isFoodNews && market.prices['food'] <= STOCK_MASTER['food'].initPrice * 0.20) {
+        market.trend['food'] = 0.1;
+    }
+    // IT: initPriceの15% (1.5) 以下の場合
+    if (!isTechNews && market.prices['tech'] <= STOCK_MASTER['tech'].initPrice * 0.15) {
+        market.trend['tech'] = 0.2; // ボラティリティ分を考慮し強めに設定
+    }
+    // ▲ 救済ロジック ここまで ▲
+
     // リアル連動ニュースの上書き
     if (realData) {
         // もしリアルデータが取れていれば、ニュースもそれっぽくする
