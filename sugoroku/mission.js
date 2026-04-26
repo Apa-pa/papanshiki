@@ -18,11 +18,13 @@ const MISSION_POOL = [
     { id: 'visit_avatar_shop',  name: 'アバターショップへ',           type: 'visit',  emoji: '👗' },
     { id: 'visit_room_shop',    name: 'インテリアショップへ',         type: 'visit',  emoji: '🛋️' },
     { id: 'open_dashboard',    name: 'ダッシュボードをひらこう',     type: 'visit',  emoji: '📊' },
+    { id: 'visit_record',       name: 'きろくをかくにんしよう',       type: 'visit',  emoji: '🏆' },
     // アクション系ミッション
     { id: 'gacha',              name: 'ガチャをまわそう',             type: 'action', emoji: '💊' },
     { id: 'bank_exchange',      name: 'どんぐりとポイントをこうかん', type: 'action', emoji: '🏦' },
     { id: 'stock_trade',        name: 'かぶのばいばいをしよう',       type: 'action', emoji: '📈' },
     { id: 'sheep_stable',       name: 'ひつじぼくじょうをひらこう',   type: 'visit',  emoji: '🐑' },
+    { id: 'auto_set_goals',     name: 'もくひょうをおまかせせってい', type: 'action', emoji: '🤖' },
 ];
 
 // ================================================================

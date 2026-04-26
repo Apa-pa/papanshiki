@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>がんばったきろく</title>
     <script src="ranking.js"></script>
+    <script src="sugoroku/mission.js"></script>
     <style>
         body {
             font-family: "UD Digital Kyokasho-tai-R", sans-serif;
@@ -391,6 +392,8 @@
             }
         };
 
+        let _missionRecordUser = null;
+
         function showRecords() {
             const userName = document.getElementById('user-select').value;
             const display = document.getElementById('record-display');
@@ -400,6 +403,14 @@
             if (!userName) {
                 display.style.display = 'none';
                 return;
+            }
+
+            // ミッション達成記録（ユーザーが変わったとき、または初回）
+            if (userName !== _missionRecordUser) {
+                _missionRecordUser = userName;
+                if (typeof addMissionStock === 'function') {
+                    addMissionStock(userName, 'visit_record');
+                }
             }
 
             display.style.display = 'block';
@@ -535,6 +546,12 @@
 
             if (isChanged) {
                 showRecords();
+                
+                // アクション系ミッション達成記録（おまかせ設定）
+                if (typeof addMissionStock === 'function') {
+                    addMissionStock(userName, 'auto_set_goals');
+                }
+                
                 alert("目標を設定しました！\nがんばって記録更新を目指してね！");
             } else {
                 alert("変更が必要な目標はありませんでした。\n今の目標に向かってがんばろう！");
