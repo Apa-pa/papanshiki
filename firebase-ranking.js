@@ -241,7 +241,15 @@ window.checkAndRunNationalRace = async function () {
             // スコア計算式にボーナスを追加
             e.totalScore = (e.speed * 1.2) + (e.stamina * 0.8) + (e.tenacity * 1.0) + luck + experienceBonus;
 
-            if (leagues[e.rank]) leagues[e.rank].push(e);
+            // ランク名の大文字小文字ブレを吸収して安全に振り分ける
+            const normalizedRank = (e.rank || "").toLowerCase();
+            let rankKey = Object.keys(leagues).find(k => k.toLowerCase() === normalizedRank);
+            
+            if (rankKey) {
+                leagues[rankKey].push(e);
+            } else {
+                console.warn("Unknown rank ignored:", e.rank);
+            }
         });
 
         // 4. 各ランクの上位3名を決定
