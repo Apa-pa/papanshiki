@@ -56,6 +56,10 @@
 | `papan_exchange_rate_history` | 銀行の為替レート推移データ |
 | `papan_labo_records_v1` | スポーツ能力ラボの測定記録 |
 | `papan_labo2_records_v1` | 感覚測定ラボの測定記録 |
+| `sugoroku_weekly_v1` | ミッションすごろくの週替わりミッションと達成状況 |
+| `missionStock` | ミッション達成で得たすごろく用ストック数 |
+| `currentPosition` | ミッションすごろくのユーザー別コマ位置 |
+| `papan_dashboard_last_user` | ダッシュボードで最後に選択したユーザー |
 
 ### ホスティング・PWA
 - **GitHub Pages** でホスティング（CNAMEファイルでカスタムドメイン設定）
@@ -144,6 +148,7 @@
 | `detective.html` | 名探偵ぱぱん | 推理パズル | C (30pt) | 6〜12歳 |
 | `fingers_chess.html` | フィンガーチェス | 戦略ゲーム | C (変動) | 6〜12歳 |
 | `passcode.html` | パスコードをあてよう！ | 記憶力 | D (成績連動) | 6〜12歳 |
+| `ura/sheep_stable.html` | ひつじ牧場 | 育成・戦略ゲーム | ― | 7〜12歳 |
 
 ### 🎵 おんがく・アート
 | ファイル | コンテンツ名 | 種別 | タイプ | 対象年齢 |
@@ -184,10 +189,12 @@
 ### 🔒 裏ページ（`ura/` ディレクトリ）
 銀行の「秘密のカギ」から入れる隠しコンテンツ（ギャンブル的要素を含む教育コンテンツ）。
 
+※ `ura/sheep_stable.html`（ひつじ牧場）だけは現在、トップページの「ひつじ」メニューから入れる表コンテンツとして扱う。ギャンブルではなく、ひつじの育成・契約・トレーニング・レース参加を通じて、戦略やコスト配分を考える知育ゲーム。
+
 | ファイル | コンテンツ名 | 概要 |
 |---|---|---|
 | `ura/secret_home.html` | ひみつのへや | 裏ページのトップ |
-| `ura/sheep_stable.html` | ひつじ牧場 | ひつじの育成・レース（Firebase連携） |
+| `ura/sheep_stable.html` | ひつじ牧場 | 表コンテンツ扱いの育成・戦略ゲーム（Firebase連携） |
 | `ura/sheep_race.html` | ひつじレース | レース実行画面 |
 | `ura/sheep_stable_race.html` | 牧場内レース | ローカルレース |
 | `ura/chinchiro.html` | チンチロリン | サイコロ賭けゲーム |
@@ -220,53 +227,77 @@
 | `nikkei` | ぱぱんの森平均株価 | ポイント | 日経225連動 |
 | `sp500` | とおくの山SP500 | ポイント | S&P500連動 |
 | `wheat` | 小麦 (10kg) | ポイント | 商品先物連動 |
+| `gold` | 金（ゴールド） | ポイント | 金価格連動 |
+| `oil` | オイル | ポイント | WTI原油連動 |
+| `nasdaq` | とおくの山NSD100 | ポイント | NASDAQ100連動 |
 
 - 日次で価格変動（ランダム＋トレンド＋バイアス）
 - 連動銘柄は Google Sheets 経由でリアルデータ取得
 - 配当金が日次で自動支払い
+- `motor` / `food` / `tech` はローカル乱数・バイアス型、`nikkei` / `sp500` / `wheat` / `gold` / `oil` / `nasdaq` は `linkage` と `divisor` を持つリアルデータ連動型
+- `tech` のみ通貨がどんぐり。その他の銘柄はポイント建て
 
 ### 5.4 日替わりミッション
 - 毎日3つのゲームがボーナス対象として自動選出
 - Xorshiftアルゴリズム（日付シード）で全ユーザーに同じミッションが提示される
 - 達成すると追加で150ptボーナス
 
-### 5.5 記録・目標管理
+### 5.5 ミッションすごろく
+- 入口は `sugoroku/sugoroku.html`。トップページから「ミッションすごろく」ボタンで遷移する
+- `sugoroku/mission.js` が週替わりミッションの選出・達成管理を担当し、`ranking.js` より後に読み込む（`SeededRandom` を共用するため）
+- `MISSION_POOL` から週ごとに10個のミッションを選出する。週IDは日曜日の日付（`YYYY-MM-DD`）を使い、シード付き乱数で全ユーザー共通の内容になる
+- 週が変わると `sugoroku_weekly_v1` を更新し、`missionStock` と `currentPosition` をリセットする
+- ミッション達成時は `addMissionStock(userName, missionId)` を呼ぶ。今週の対象ミッションかつ未達成の場合だけ、対象ユーザーの `missionStock` が1増える
+- すごろく本体では `missionStock` を1消費して1マス進む。位置は `currentPosition` にユーザー別で保存される
+- 途中マスではサイコロ報酬でどんぐりを付与し、ゴール時はゴール用サイコロ報酬を付与する。ゴール後は翌週リセットまで待機する
+- 現在のミッション種別は `game` / `visit` / `action`。達成判定は各ページ側から `addMissionStock()` を呼ぶ方式
+- 主な達成呼び出し元: `gacha.html`（ガチャ）、`bank.html`（交換）、`stock.html`（株売買）、`record.html`（記録確認・目標おまかせ）、`dashboard.html`（ダッシュボード表示）、`avatar_shop.html`、`room_shop.html`、`ura/sheep_stable.html`、`rail.html`、`rhythm.html`、`math_strike.html`、`dokidoki_obstacle.html`、`passcode.html`、`kanji_card_battle.html`、`performance_labo/main.js`、`performance_labo/main2.js`
+
+### 5.6 記録・目標管理
 - 各ゲームのベスト記録を `localStorage` に保存
 - `record.html` で一覧表示・目標設定・達成判定
 - 「おまかせ設定」: 達成済みの目標を自動で1%上方修正
 - ゲームのタイプ: `time`（タイム型：少ないほど良い）、`score`（スコア型：多いほど良い）
 
-### 5.6 まなびカレンダー（スタンプ機能）
+### 5.7 まなびカレンダー（スタンプ機能）
 - `calendar.html` で月間のスタンプを表示
 - ゲーム参加時に自動でスタンプが付く
 - スタンプ画像: `hi-an-192.webp`（ヒー＆アン）
 
-### 5.7 ガチャ・コレクション
+### 5.8 ガチャ・コレクション
 - **コスト**: 50pt/回
 - **アイテム一覧**: ヒー＆アン、水彩ヒー＆アン（★5レア）、くまのピッピ、ハリネズミのアン、エゾリスのヒー
 - 図鑑機能で収集状況を確認
 
-### 5.8 マイルーム・アバター
+### 5.9 マイルーム・アバター
 - アバターショップ（`avatar_shop.html`）でキャラクター画像を購入
 - インテリアショップ（`room_shop.html`）で壁紙・家具・勲章を購入
 - `room.html` で自分の部屋を飾り、Firebase経由でネットに公開可能
 - 他のユーザーの部屋を訪問できる（`room_list.html`）
 
-### 5.9 全国ランキング
+### 5.10 全国ランキング
 - `firebase-ranking.js` の `uploadToWorldRanking()` で Firestore にスコアを送信
 - セーブダイアログで公開名（6文字以内）を入力すると全国ランキングに登録
 - 未入力の場合はローカルのみ（非公開）
 - `open_record.html` でランキングを閲覧
 
-### 5.10 全国ひつじレース
+### 5.11 全国ひつじレース
 - 毎週土曜16時に開催
 - Firebase経由でエントリー・結果表示
 - `checkAndRunNationalRace()` でクライアントサイド計算
 
-### 5.11 セーブダイアログ
+### 5.12 セーブダイアログ
 - `showSaveDialog(gameId, resultValue)`: 全ゲーム共通の記録保存UI
 - ユーザー選択 → 記録保存 → ポイント加算 → ミッション判定 → ランキング送信（任意）
-- `showPointGetDialog(amount)`: ポイント付与のみのダイアログ
+- `showPointGetDialog(amount, gameId)`: ポイント付与のみのダイアログ。第2引数に `gameId` を渡すと `papan_play_log_v1` にプレイ履歴が残る
+
+### 5.13 保護者ダッシュボード・プレイ履歴
+- `ranking.js` の `savePlayLog(userName, gameId)` が直近30日分のプレイ履歴を `papan_play_log_v1` に保存する
+- `showSaveDialog()` は記録保存時に自動で `savePlayLog()` を呼ぶ
+- `showPointGetDialog(amount, gameId)` は `gameId` が渡された場合だけ `savePlayLog()` を呼ぶ。固定ポイント型・成績連動型では第2引数の指定が重要
+- `dashboard.html` は `getPlayLog(userName)` で直近30日のログを取得し、`GAME_CATEGORIES` に基づいて「さんすう・計算」「こくご・ことば」「サイエンス」「脳トレ・パズル」「くらし・アート等」に分類してレーダーチャート表示する
+- `dashboard.html` ではポイント、どんぐり、株評価額（ポイント建て/どんぐり建て）も表示する。株評価額は `getUserStocks()` と `getMarketData()`、`STOCK_MASTER` を参照する
+- ユーザー選択は `papan_dashboard_last_user` に保存され、再訪時に復元される
 
 ---
 
@@ -306,8 +337,9 @@ e:\ぱぱん式\
 ├── se/                 # 効果音・音階MP3ファイル
 ├── css/                # CSS（human_model.css のみ）
 ├── js/                 # JS（human_model.js のみ）
+├── sugoroku/           # ミッションすごろく（週替わりミッション、ボード、報酬）
 ├── blog/               # コラム記事（article001〜003）
-└── ura/                # 裏ページ（ひつじ牧場、チンチロリン等）
+└── ura/                # 裏ページ群（sheep_stable.htmlのみ表コンテンツ扱い）
 ```
 
 ---
@@ -388,11 +420,23 @@ e:\ぱぱん式\
 
 2. **新しい株銘柄を追加する場合**:
    - `ranking.js` の `STOCK_MASTER` に定義を追加
+   - リアルデータ連動銘柄の場合は `type: 'linked'`、`linkage`、`divisor` を設定し、Google Sheets CSV 側の項目名と対応させる
    - `getMarketData()` に自動マイグレーションが組み込まれているため、既存ユーザーも対応可
 
-3. **画像を追加する場合**:
+3. **ミッションすごろくのミッションを追加する場合**:
+   - `sugoroku/mission.js` の `MISSION_POOL` に `id`、`name`、`type`、`emoji` を追加する
+   - 実際に達成したタイミングのページで `addMissionStock(userName, 'mission_id')` を呼ぶ
+   - `mission.js` は `ranking.js` の `SeededRandom` に依存するため、読み込み順は `ranking.js` → `sugoroku/mission.js` にする
+   - 週替わりの対象に選ばれた未達成ミッションだけストックが増える。対象外または達成済みの場合は何もしない
+
+4. **ダッシュボードのプレイ履歴集計に対応する場合**:
+   - `showPointGetDialog()` を使うゲームは、必ず第2引数に `gameId` を渡す
+   - 新しい `gameId` は `dashboard.html` の `GAME_CATEGORIES` に追加する
+   - 記録保存型は `showSaveDialog()` が自動でプレイログを保存する
+
+5. **画像を追加する場合**:
    - WebP形式で配置
    - `service-worker.js` のキャッシュリストに追加
 
-4. **Service Workerのキャッシュ更新**:
+6. **Service Workerのキャッシュ更新**:
    - `CACHE_NAME` のバージョン番号を変更すると、次回アクセス時に新キャッシュが作成される

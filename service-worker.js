@@ -1,5 +1,5 @@
 // キャッシュの名前（更新時にバージョンを変えると新しいキャッシュが作られます）
-var CACHE_NAME = 'papanshiki-v17';
+var CACHE_NAME = 'papanshiki-v18';
 var urlsToCache = [
   // === トップページ ===
   './',
@@ -185,6 +185,18 @@ var urlsToCache = [
   './performance_labo/game4_animal_mot.js',
   './performance_labo/game5_timing.js',
   './performance_labo/result.js',
+
+  // === がくしゅうラボ ===
+  './learning_labo/labo.html',
+  './learning_labo/style.css',
+  './learning_labo/categories.js',
+  './learning_labo/main.js',
+  './learning_labo/tests/math_addition.js',
+  './learning_labo/tests/math_subtraction.js',
+  './learning_labo/tests/math_multiplication.js',
+  './learning_labo/tests/japanese_kana.js',
+  './learning_labo/tests/japanese_words.js',
+  './learning_labo/tests/japanese_kanji_grade1.js',
 
   // === JS・CSS ===
   './ranking.js',

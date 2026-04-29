@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="../icon-32.png">
+    <title>がくしゅうラボ | ぱぱん式</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="../ranking.js"></script>
+</head>
+
+<body>
+    <header class="app-header">
+        <a class="home-link" href="../index.html">← トップ</a>
+        <div>
+            <p class="eyebrow">ぱぱん式</p>
+            <h1>がくしゅうラボ</h1>
+        </div>
+    </header>
+
+    <main class="app-shell">
+        <section class="panel user-panel" id="user-panel">
+            <div class="panel-heading">
+                <p class="eyebrow">STEP 1</p>
+                <h2>だれのテスト？</h2>
+            </div>
+            <div id="user-list" class="user-list"></div>
+            <form id="new-user-form" class="new-user-form">
+                <input id="new-user-name" type="text" maxlength="12" placeholder="あたらしい なまえ">
+                <button type="submit">とうろく</button>
+            </form>
+        </section>
+
+        <section class="panel hidden" id="subject-panel">
+            <div class="panel-heading">
+                <p class="eyebrow">STEP 2</p>
+                <h2><span id="selected-user-label"></span>さんのかもく</h2>
+            </div>
+            <div id="subject-list" class="subject-list"></div>
+        </section>
+
+        <section class="panel hidden" id="category-panel">
+            <div class="panel-heading">
+                <button class="text-button" id="back-to-subjects" type="button">← かもくへ</button>
+                <p class="eyebrow">STEP 3</p>
+                <h2 id="category-title">カテゴリをえらぶ</h2>
+            </div>
+            <div id="category-list" class="category-list"></div>
+        </section>
+
+        <section class="panel test-panel hidden" id="test-panel">
+            <div class="test-topbar">
+                <button class="text-button" id="quit-test" type="button">← やめる</button>
+                <div class="progress-copy"><span id="question-number">1</span> / 20</div>
+            </div>
+            <div class="progress-track">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+            <div class="test-status">
+                <span id="test-category-name"></span>
+                <span>せいかい <strong id="correct-count">0</strong></span>
+            </div>
+            <div class="question-box">
+                <p id="question-prompt"></p>
+            </div>
+            <div id="choices" class="choices"></div>
+        </section>
+
+        <section class="panel result-panel hidden" id="result-panel">
+            <div class="panel-heading">
+                <p class="eyebrow">RESULT</p>
+                <h2>テストけっか</h2>
+            </div>
+            <div id="result-content"></div>
+            <div class="result-actions">
+                <button id="save-result" class="primary-button" type="button">ほぞんしてポイントGET</button>
+                <button id="back-to-categories" class="secondary-button" type="button">カテゴリへもどる</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="categories.js"></script>
+    <script src="tests/math_addition.js"></script>
+    <script src="tests/math_subtraction.js"></script>
+    <script src="tests/math_multiplication.js"></script>
+    <script src="tests/japanese_kana.js"></script>
+    <script src="tests/japanese_words.js"></script>
+    <script src="tests/japanese_kanji_grade1.js"></script>
+    <script src="main.js"></script>
+</body>
+
+</html>
