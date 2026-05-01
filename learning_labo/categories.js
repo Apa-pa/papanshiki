@@ -73,6 +73,23 @@
                     gameId: "learning_labo_japanese_kanji_grade1"
                 }
             ]
+        },
+        {
+            id: "english",
+            name: "えいご",
+            icon: "🔤",
+            className: "english",
+            description: "アルファベットやえいごのことばの力をはかるよ。",
+            categories: [
+                {
+                    id: "english_alphabet",
+                    name: "アルファベット",
+                    levelLabel: "もじ",
+                    questionCount: 20,
+                    targetSeconds: 8,
+                    gameId: "learning_labo_english_alphabet"
+                }
+            ]
         }
     ];
 })();

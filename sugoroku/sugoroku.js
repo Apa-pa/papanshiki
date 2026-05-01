@@ -481,10 +481,25 @@ function showMissionList() {
     missions.forEach(m => {
         const div = document.createElement('div');
         div.className = `mission-item ${m.done ? 'done' : 'todo'}`;
+
+        // URLがある未達成ミッションはカード全体をクリッカブルにする
+        if (m.url && !m.done) {
+            div.classList.add('has-link');
+            div.addEventListener('click', () => {
+                window.open(m.url, '_blank', 'noopener');
+            });
+        }
+
+        const rightMark = m.done
+            ? `<span class="mission-done-mark">✅</span>`
+            : m.url
+                ? `<span class="go-badge">GO →</span>`
+                : `<span class="mission-done-mark"></span>`;
+
         div.innerHTML = `
             <span class="mission-emoji">${m.emoji}</span>
-            <span>${m.name}</span>
-            <span class="mission-done-mark">${m.done ? '✅' : ''}</span>
+            <span class="mission-name">${m.name}</span>
+            ${rightMark}
         `;
         list.appendChild(div);
     });

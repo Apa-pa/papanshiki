@@ -546,6 +546,68 @@ body {
     flex-shrink: 0;
 }
 
+/* ミッション名テキスト */
+.mission-name {
+    flex: 1;
+    line-height: 1.3;
+}
+
+/* URLありの未達成ミッションカード（木のボード風） */
+.mission-item.has-link {
+    cursor: pointer;
+    background: linear-gradient(135deg, #f5ead6, #e8d5b7);
+    border: 2px solid #b8956a;
+    box-shadow: 0 3px 0 #8d6e63;
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 左端のアクセントライン（木の節・濃いブラウン） */
+.mission-item.has-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background: linear-gradient(to bottom, #8d6e63, #5d4037);
+    border-radius: 12px 0 0 12px;
+}
+
+.mission-item.has-link:hover {
+    background: linear-gradient(135deg, #faf0e0, #eddfc4);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 0 #8d6e63;
+}
+
+.mission-item.has-link:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #8d6e63;
+}
+
+/* GOバッジ（森・深みのある緑） */
+.go-badge {
+    margin-left: auto;
+    flex-shrink: 0;
+    background: linear-gradient(to bottom, #5d8a5e, #3b6b3c);
+    color: #f5f0e8;
+    font-size: 0.78rem;
+    font-weight: bold;
+    font-family: inherit;
+    padding: 4px 10px;
+    border-radius: 20px;
+    box-shadow: 0 3px 0 #2a4d2b;
+    white-space: nowrap;
+    letter-spacing: 0.05em;
+    animation: goBadgePop 2.2s ease-in-out infinite;
+}
+
+@keyframes goBadgePop {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.06); }
+}
+
 /* ===============================================
    共通ボタン（ポップアップ内）
    =============================================== */

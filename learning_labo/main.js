@@ -17,6 +17,8 @@
         numericInput: "",
         matchSelection: [],
         matchMistakes: 0,
+        sequenceProgress: 0,
+        sequenceMistakes: 0,
         answerLocked: false
     };
 
@@ -228,6 +230,8 @@
         state.numericInput = "";
         state.matchSelection = [];
         state.matchMistakes = 0;
+        state.sequenceProgress = 0;
+        state.sequenceMistakes = 0;
         state.answerLocked = false;
         $("question-number").textContent = currentNumber;
         $("correct-count").textContent = state.correctCount;
@@ -235,6 +239,8 @@
         $("question-prompt").innerHTML = question.promptHtml || escapeHtml(question.prompt);
         if (Array.isArray(question.matchItems) && question.matchItems.length > 0) {
             renderMatchButtons(question);
+        } else if (Array.isArray(question.sequenceItems) && question.sequenceItems.length > 0) {
+            renderSequenceButtons(question);
         } else if (Array.isArray(question.choices) && question.choices.length > 0) {
             renderChoices(question);
         } else {
@@ -309,6 +315,41 @@
         }, 320);
     }
 
+    function renderSequenceButtons(question) {
+        $("choices").className = question.sequenceClass || "kana-match";
+        $("choices").innerHTML = shuffle(question.sequenceItems).map((item) => `
+            <button class="kana-match-button" type="button" data-sequence-index="${item.index}">${escapeHtml(item.label)}</button>
+        `).join("");
+        $("choices").querySelectorAll(".kana-match-button").forEach((button) => {
+            button.addEventListener("click", () => handleSequenceButton(button));
+        });
+    }
+
+    function handleSequenceButton(button) {
+        if (state.answerLocked || button.classList.contains("correct")) return;
+
+        const question = state.questions[state.currentIndex];
+        const targetIndex = state.sequenceProgress;
+        const clickedIndex = parseInt(button.dataset.sequenceIndex, 10);
+
+        if (clickedIndex === targetIndex) {
+            button.classList.add("correct");
+            button.disabled = true;
+            state.sequenceProgress += 1;
+
+            if (state.sequenceProgress === question.sequenceItems.length) {
+                const selectedButtons = Array.from($("choices").querySelectorAll(".kana-match-button"));
+                answerQuestion(state.sequenceMistakes === 0 ? String(question.answer) : "__wrong_sequence__", selectedButtons);
+            }
+        } else {
+            state.sequenceMistakes += 1;
+            button.classList.add("wrong");
+            setTimeout(() => {
+                button.classList.remove("wrong");
+            }, 320);
+        }
+    }
+
     function renderNumberKeypad() {
         $("choices").className = "number-answer";
         $("choices").innerHTML = `
@@ -362,7 +403,7 @@
         state.answerTimes.push(elapsed);
         if (isCorrect) state.correctCount += 1;
 
-        if (Array.isArray(question.matchItems) && question.matchItems.length > 0) {
+        if ((Array.isArray(question.matchItems) && question.matchItems.length > 0) || (Array.isArray(question.sequenceItems) && question.sequenceItems.length > 0)) {
             $("choices").querySelectorAll(".kana-match-button").forEach((matchButton) => {
                 matchButton.disabled = true;
                 matchButton.classList.add("correct");

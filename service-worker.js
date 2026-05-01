@@ -1,5 +1,5 @@
 // キャッシュの名前（更新時にバージョンを変えると新しいキャッシュが作られます）
-var CACHE_NAME = 'papanshiki-v18';
+var CACHE_NAME = 'papanshiki-v19';
 var urlsToCache = [
   // === トップページ ===
   './',
@@ -197,6 +197,7 @@ var urlsToCache = [
   './learning_labo/tests/japanese_kana.js',
   './learning_labo/tests/japanese_words.js',
   './learning_labo/tests/japanese_kanji_grade1.js',
+  './learning_labo/tests/english_alphabet.js',
 
   // === JS・CSS ===
   './ranking.js',

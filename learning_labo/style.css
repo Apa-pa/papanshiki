@@ -41,7 +41,25 @@ input {
     padding: 18px 16px 8px;
 }
 
-.home-link,
+
+.home-link {
+    position: fixed;
+    top: 14px;
+    right: 16px;
+    z-index: 100;
+    color: #7a5a33;
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 12px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.8rem;
+    box-shadow: 0 4px 12px rgba(128, 98, 67, 0.22), 0 3px 0 #e8cfb7;
+    backdrop-filter: blur(6px);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
 .text-button {
     color: #7a5a33;
     background: #fff;
@@ -209,6 +227,10 @@ h2 {
 
 .subject-card.japanese {
     border-color: #ffd7c8;
+}
+
+.subject-card.english {
+    border-color: #e1bee7;
 }
 
 .subject-icon {

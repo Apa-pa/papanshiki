@@ -6,25 +6,25 @@
 // ================================================================
 const MISSION_POOL = [
     // ゲームクリア系ミッション
-    { id: 'labo',               name: 'スポーツのうりょくラボ',       type: 'game',   emoji: '🏃' },
-    { id: 'labo2',              name: 'かんかくのラボ',               type: 'game',   emoji: '🧠' },
-    { id: 'kanji_card_battle',  name: 'かんじカードバトル',           type: 'game',   emoji: '🃏' },
-    { id: 'math_strike',        name: 'けいさんビリヤード',           type: 'game',   emoji: '🎱' },
-    { id: 'passcode',           name: 'パスコードをあてよう！',       type: 'game',   emoji: '🔐' },
-    { id: 'rail',               name: 'つなげて！トロッコ',           type: 'game',   emoji: '🚂' },
-    { id: 'rhythm',             name: 'アンのリズムきょうしつ',       type: 'game',   emoji: '🎵' },
-    { id: 'dokidoki_obstacle',  name: 'ドキドキしょうがいぶつレース', type: 'game',   emoji: '🏅' },
+    { id: 'labo',               name: 'スポーツのうりょくラボ',       type: 'game',   emoji: '🏃', url: '../learning_labo/labo.html' },
+    { id: 'labo2',              name: 'かんかくのラボ',               type: 'game',   emoji: '🧠', url: '../learning_labo/labo.html' },
+    { id: 'kanji_card_battle',  name: 'かんじカードバトル',           type: 'game',   emoji: '🃏', url: '../kanji_card_battle.html' },
+    { id: 'math_strike',        name: 'けいさんビリヤード',           type: 'game',   emoji: '🎱', url: '../math_strike.html' },
+    { id: 'passcode',           name: 'パスコードをあてよう！',       type: 'game',   emoji: '🔐', url: '../passcode.html' },
+    { id: 'rail',               name: 'つなげて！トロッコ',           type: 'game',   emoji: '🚂', url: '../rail.html' },
+    { id: 'rhythm',             name: 'アンのリズムきょうしつ',       type: 'game',   emoji: '🎵', url: '../rhythm.html' },
+    { id: 'dokidoki_obstacle',  name: 'ドキドキしょうがいぶつレース', type: 'game',   emoji: '🏅', url: '../dokidoki_obstacle.html' },
     // ページ訪問系ミッション
-    { id: 'visit_avatar_shop',  name: 'アバターショップへ',           type: 'visit',  emoji: '👗' },
-    { id: 'visit_room_shop',    name: 'インテリアショップへ',         type: 'visit',  emoji: '🛋️' },
-    { id: 'open_dashboard',    name: 'ダッシュボードをひらこう',     type: 'visit',  emoji: '📊' },
-    { id: 'visit_record',       name: 'きろくをかくにんしよう',       type: 'visit',  emoji: '🏆' },
+    { id: 'visit_avatar_shop',  name: 'アバターショップへ',           type: 'visit',  emoji: '👗', url: '../avatar_shop.html' },
+    { id: 'visit_room_shop',    name: 'インテリアショップへ',         type: 'visit',  emoji: '🛋️', url: '../room_shop.html' },
+    { id: 'open_dashboard',     name: 'ダッシュボードをひらこう',     type: 'visit',  emoji: '📊', url: '../dashboard.html' },
+    { id: 'visit_record',       name: 'きろくをかくにんしよう',       type: 'visit',  emoji: '🏆', url: '../record.html' },
     // アクション系ミッション
-    { id: 'gacha',              name: 'ガチャをまわそう',             type: 'action', emoji: '💊' },
-    { id: 'bank_exchange',      name: 'どんぐりとポイントをこうかん', type: 'action', emoji: '🏦' },
-    { id: 'stock_trade',        name: 'かぶのばいばいをしよう',       type: 'action', emoji: '📈' },
-    { id: 'sheep_stable',       name: 'ひつじぼくじょうをひらこう',   type: 'visit',  emoji: '🐑' },
-    { id: 'auto_set_goals',     name: 'もくひょうをおまかせせってい', type: 'action', emoji: '🤖' },
+    { id: 'gacha',              name: 'ガチャをまわそう',             type: 'action', emoji: '💊', url: '../gacha.html' },
+    { id: 'bank_exchange',      name: 'どんぐりとポイントをこうかん', type: 'action', emoji: '🏦', url: '../bank.html' },
+    { id: 'stock_trade',        name: 'かぶのばいばいをしよう',       type: 'action', emoji: '📈', url: '../stock.html' },
+    { id: 'sheep_stable',       name: 'ひつじぼくじょうをひらこう',   type: 'visit',  emoji: '🐑', url: '../ura/sheep_stable.html' },
+    { id: 'auto_set_goals',     name: 'もくひょうをおまかせせってい', type: 'action', emoji: '🤖', url: '../record.html' },
 ];
 
 // ================================================================
