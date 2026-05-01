@@ -12,7 +12,7 @@
                     name: "たしざん",
                     levelLabel: "きほん",
                     questionCount: 20,
-                    targetSeconds: 5,
+                    targetSeconds: 7,
                     gameId: "learning_labo_math_addition"
                 },
                 {
@@ -20,7 +20,7 @@
                     name: "ひきざん",
                     levelLabel: "きほん",
                     questionCount: 20,
-                    targetSeconds: 6,
+                    targetSeconds: 8,
                     gameId: "learning_labo_math_subtraction"
                 },
                 {
@@ -28,8 +28,16 @@
                     name: "かけざん",
                     levelLabel: "九九",
                     questionCount: 20,
-                    targetSeconds: 7,
+                    targetSeconds: 8,
                     gameId: "learning_labo_math_multiplication"
+                },
+                {
+                    id: "math_division",
+                    name: "わりざん",
+                    levelLabel: "きほん",
+                    questionCount: 20,
+                    targetSeconds: 10,
+                    gameId: "learning_labo_math_division"
                 }
             ]
         },

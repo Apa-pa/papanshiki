@@ -13,7 +13,11 @@
         questionStartedAt: 0,
         answerTimes: [],
         result: null,
-        saved: false
+        saved: false,
+        numericInput: "",
+        matchSelection: [],
+        matchMistakes: 0,
+        answerLocked: false
     };
 
     const $ = (id) => document.getElementById(id);
@@ -221,40 +225,192 @@
     function renderQuestion() {
         const question = state.questions[state.currentIndex];
         const currentNumber = state.currentIndex + 1;
+        state.numericInput = "";
+        state.matchSelection = [];
+        state.matchMistakes = 0;
+        state.answerLocked = false;
         $("question-number").textContent = currentNumber;
         $("correct-count").textContent = state.correctCount;
         $("progress-bar").style.width = `${((currentNumber - 1) / state.questions.length) * 100}%`;
         $("question-prompt").innerHTML = question.promptHtml || escapeHtml(question.prompt);
+        if (Array.isArray(question.matchItems) && question.matchItems.length > 0) {
+            renderMatchButtons(question);
+        } else if (Array.isArray(question.choices) && question.choices.length > 0) {
+            renderChoices(question);
+        } else {
+            renderNumberKeypad();
+        }
+        state.questionStartedAt = Date.now();
+    }
+
+    function renderChoices(question) {
+        $("choices").className = "choices";
         $("choices").innerHTML = shuffle(question.choices).map((choice) => `
             <button class="choice-button" type="button" data-choice="${escapeHtml(getChoiceValue(choice))}">${getChoiceLabel(choice)}</button>
         `).join("");
-        state.questionStartedAt = Date.now();
-
         $("choices").querySelectorAll(".choice-button").forEach((button) => {
-            button.addEventListener("click", () => answerQuestion(button));
+            button.addEventListener("click", () => answerQuestion(button.dataset.choice, button));
         });
     }
 
-    function answerQuestion(button) {
+    function renderMatchButtons(question) {
+        $("choices").className = question.matchClass || "kana-match";
+        $("choices").innerHTML = shuffle(question.matchItems).map((item) => `
+            <button class="kana-match-button" type="button" data-match-value="${escapeHtml(item.value)}" data-match-answer="${escapeHtml(item.answerKey)}">${escapeHtml(item.label)}</button>
+        `).join("");
+        $("choices").querySelectorAll(".kana-match-button").forEach((button) => {
+            button.addEventListener("click", () => handleMatchButton(button));
+        });
+    }
+
+    function handleMatchButton(button) {
+        if (state.answerLocked) return;
+        if (button.classList.contains("matched")) return;
+        if (button.classList.contains("selected")) {
+            button.classList.remove("selected");
+            state.matchSelection = state.matchSelection.filter((item) => item !== button);
+            return;
+        }
+        if (state.matchSelection.length >= 2) return;
+        button.classList.add("selected");
+        state.matchSelection.push(button);
+        if (state.matchSelection.length === 2) {
+            checkMatchPair();
+        }
+    }
+
+    function checkMatchPair() {
+        const selectedButtons = [...state.matchSelection];
+        const [first, second] = selectedButtons;
+        state.matchSelection = [];
+
+        if (first.dataset.matchAnswer === second.dataset.matchAnswer) {
+            selectedButtons.forEach((button) => {
+                button.classList.remove("selected");
+                button.classList.add("matched", "correct");
+                button.disabled = true;
+            });
+            const question = state.questions[state.currentIndex];
+            const matchedCount = $("choices").querySelectorAll(".kana-match-button.matched").length;
+            if (matchedCount === question.matchItems.length) {
+                answerQuestion(state.matchMistakes === 0 ? String(question.answer) : "__wrong_match__", selectedButtons);
+            }
+            return;
+        }
+
+        state.matchMistakes += 1;
+        selectedButtons.forEach((button) => {
+            button.classList.add("wrong");
+        });
+        setTimeout(() => {
+            selectedButtons.forEach((button) => {
+                button.classList.remove("selected", "wrong");
+            });
+        }, 320);
+    }
+
+    function renderNumberKeypad() {
+        $("choices").className = "number-answer";
+        $("choices").innerHTML = `
+            <div class="number-display" aria-live="polite">
+                <span id="number-input-display" class="number-input-display">こたえをいれてね</span>
+            </div>
+            <div class="keypad" aria-label="数字入力">
+                ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => `
+                    <button class="keypad-button" type="button" data-key="${number}">${number}</button>
+                `).join("")}
+                <button class="keypad-button keypad-clear" type="button" data-action="backspace">けす</button>
+                <button class="keypad-button" type="button" data-key="0">0</button>
+                <button class="keypad-button keypad-submit" type="button" data-action="submit">こたえる</button>
+            </div>
+        `;
+        $("choices").querySelectorAll(".keypad-button").forEach((button) => {
+            button.addEventListener("click", () => handleKeypad(button));
+        });
+    }
+
+    function updateNumberDisplay() {
+        $("number-input-display").textContent = state.numericInput || "こたえをいれてね";
+    }
+
+    function handleKeypad(button) {
+        if (state.answerLocked) return;
+        if (button.dataset.key) {
+            if (state.numericInput.length >= 3) return;
+            if (state.numericInput === "0") state.numericInput = "";
+            state.numericInput += button.dataset.key;
+            updateNumberDisplay();
+            return;
+        }
+        if (button.dataset.action === "backspace") {
+            state.numericInput = state.numericInput.slice(0, -1);
+            updateNumberDisplay();
+            return;
+        }
+        if (button.dataset.action === "submit" && state.numericInput) {
+            answerQuestion(state.numericInput, button);
+        }
+    }
+
+    function answerQuestion(selected, sourceButton) {
+        if (state.answerLocked) return;
+        state.answerLocked = true;
         const question = state.questions[state.currentIndex];
-        const selected = button.dataset.choice;
         const elapsed = (Date.now() - state.questionStartedAt) / 1000;
         const isCorrect = selected === String(question.answer);
 
         state.answerTimes.push(elapsed);
         if (isCorrect) state.correctCount += 1;
 
-        $("choices").querySelectorAll(".choice-button").forEach((choiceButton) => {
-            choiceButton.disabled = true;
-            if (choiceButton.dataset.choice === String(question.answer)) choiceButton.classList.add("correct");
-        });
-        if (!isCorrect) button.classList.add("wrong");
+        if (Array.isArray(question.matchItems) && question.matchItems.length > 0) {
+            $("choices").querySelectorAll(".kana-match-button").forEach((matchButton) => {
+                matchButton.disabled = true;
+                matchButton.classList.add("correct");
+            });
+            if (!isCorrect) {
+                (Array.isArray(sourceButton) ? sourceButton : [sourceButton]).forEach((button) => {
+                    if (button) button.classList.add("wrong");
+                });
+            }
+        } else if (Array.isArray(question.choices) && question.choices.length > 0) {
+            $("choices").querySelectorAll(".choice-button").forEach((choiceButton) => {
+                choiceButton.disabled = true;
+                if (choiceButton.dataset.choice === String(question.answer)) choiceButton.classList.add("correct");
+            });
+            if (!isCorrect) sourceButton.classList.add("wrong");
+        } else {
+            $("choices").querySelectorAll(".keypad-button").forEach((keypadButton) => {
+                keypadButton.disabled = true;
+            });
+            $("number-input-display").textContent = isCorrect ? "せいかい！" : `こたえは ${question.answer}`;
+            $("number-input-display").classList.add(isCorrect ? "correct" : "wrong");
+            sourceButton.classList.add(isCorrect ? "correct" : "wrong");
+        }
 
         setTimeout(() => {
             state.currentIndex += 1;
             if (state.currentIndex >= state.questions.length) finishTest();
             else renderQuestion();
         }, 420);
+    }
+
+    function handleKeyboard(event) {
+        const question = state.questions[state.currentIndex];
+        if (panels.test.classList.contains("hidden") || !question || question.choices || question.matchItems || state.answerLocked) return;
+        if (/^[0-9]$/.test(event.key)) {
+            event.preventDefault();
+            if (state.numericInput.length >= 3) return;
+            if (state.numericInput === "0") state.numericInput = "";
+            state.numericInput += event.key;
+            updateNumberDisplay();
+        } else if (event.key === "Backspace") {
+            event.preventDefault();
+            state.numericInput = state.numericInput.slice(0, -1);
+            updateNumberDisplay();
+        } else if (event.key === "Enter" && state.numericInput) {
+            event.preventDefault();
+            answerQuestion(state.numericInput, $("choices").querySelector("[data-action='submit']"));
+        }
     }
 
     function calculateMastery(correctCount, totalQuestions, averageSeconds, targetSeconds) {
@@ -348,6 +504,7 @@
         $("quit-test").addEventListener("click", quitTest);
         $("save-result").addEventListener("click", saveResult);
         $("back-to-categories").addEventListener("click", backToCategories);
+        document.addEventListener("keydown", handleKeyboard);
         renderUsers();
     }
 
