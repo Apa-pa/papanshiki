@@ -38,6 +38,14 @@
                     questionCount: 20,
                     targetSeconds: 10,
                     gameId: "learning_labo_math_division"
+                },
+                {
+                    id: "math_clock",
+                    name: "とけい",
+                    levelLabel: "じこく",
+                    questionCount: 20,
+                    targetSeconds: 11,
+                    gameId: "learning_labo_math_clock"
                 }
             ]
         },
@@ -71,6 +79,14 @@
                     questionCount: 20,
                     targetSeconds: 9,
                     gameId: "learning_labo_japanese_kanji_grade1"
+                },
+                {
+                    id: "japanese_kanji_grade2",
+                    name: "かんじ 2年生",
+                    levelLabel: "かんじ",
+                    questionCount: 20,
+                    targetSeconds: 9,
+                    gameId: "learning_labo_japanese_kanji_grade2"
                 }
             ]
         },

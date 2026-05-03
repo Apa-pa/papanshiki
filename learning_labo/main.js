@@ -15,6 +15,7 @@
         result: null,
         saved: false,
         numericInput: "",
+        clockInput: { hour: "", minute: "", activePart: "hour" },
         matchSelection: [],
         matchMistakes: 0,
         sequenceProgress: 0,
@@ -81,6 +82,36 @@
 
     function getChoiceLabel(choice) {
         return typeof choice === "object" ? choice.labelHtml : escapeHtml(choice);
+    }
+
+    function isClockQuestion(question) {
+        return question && question.inputMode === "clock";
+    }
+
+    function formatClockMinute(minuteText) {
+        return String(minuteText).padStart(2, "0");
+    }
+
+    function buildClockAnswerValue(hour, minute) {
+        return `${Number(hour)}:${formatClockMinute(minute)}`;
+    }
+
+    function getCorrectAnswerValue(question) {
+        if (isClockQuestion(question)) {
+            return buildClockAnswerValue(question.answerHour, question.answerMinute);
+        }
+        return String(question.answer);
+    }
+
+    function formatCorrectAnswerLabel(question) {
+        if (isClockQuestion(question)) {
+            return `${Number(question.answerHour)}時${formatClockMinute(question.answerMinute)}分`;
+        }
+        return String(question.answer);
+    }
+
+    function isAnswerCorrect(question, selected) {
+        return selected === getCorrectAnswerValue(question);
     }
 
     function shuffle(items) {
@@ -228,6 +259,7 @@
         const question = state.questions[state.currentIndex];
         const currentNumber = state.currentIndex + 1;
         state.numericInput = "";
+        state.clockInput = { hour: "", minute: "", activePart: "hour" };
         state.matchSelection = [];
         state.matchMistakes = 0;
         state.sequenceProgress = 0;
@@ -243,6 +275,8 @@
             renderSequenceButtons(question);
         } else if (Array.isArray(question.choices) && question.choices.length > 0) {
             renderChoices(question);
+        } else if (isClockQuestion(question)) {
+            renderClockKeypad();
         } else {
             renderNumberKeypad();
         }
@@ -370,8 +404,70 @@
         });
     }
 
+    function renderClockKeypad() {
+        $("choices").className = "number-answer";
+        $("choices").innerHTML = `
+            <div class="number-display clock-display" aria-live="polite">
+                <div class="clock-answer-fields">
+                    <button class="clock-field is-active" id="clock-hour-field" type="button" data-clock-part="hour">
+                        <span class="clock-value" id="clock-hour-display">--</span>
+                        <ruby>時<rt>じ</rt></ruby>
+                    </button>
+                    <button class="clock-field" id="clock-minute-field" type="button" data-clock-part="minute">
+                        <span class="clock-value" id="clock-minute-display">--</span>
+                        <ruby>分<rt>ふん</rt></ruby>
+                    </button>
+                </div>
+                <div class="clock-help" id="clock-help">「時」と「分」を入れてね</div>
+            </div>
+            <div class="keypad" aria-label="時こく入力">
+                ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => `
+                    <button class="keypad-button" type="button" data-key="${number}">${number}</button>
+                `).join("")}
+                <button class="keypad-button keypad-clear" type="button" data-action="backspace">けす</button>
+                <button class="keypad-button" type="button" data-key="0">0</button>
+                <button class="keypad-button keypad-submit" type="button" data-action="submit">こたえる</button>
+            </div>
+        `;
+
+        $("choices").querySelectorAll("[data-clock-part]").forEach((button) => {
+            button.addEventListener("click", () => {
+                state.clockInput.activePart = button.dataset.clockPart;
+                updateClockDisplay();
+            });
+        });
+        $("choices").querySelectorAll(".keypad-button").forEach((button) => {
+            button.addEventListener("click", () => handleClockKeypad(button));
+        });
+        updateClockDisplay();
+    }
+
     function updateNumberDisplay() {
         $("number-input-display").textContent = state.numericInput || "こたえをいれてね";
+    }
+
+    function updateClockDisplay() {
+        const hourDisplay = $("clock-hour-display");
+        const minuteDisplay = $("clock-minute-display");
+        const help = $("clock-help");
+        const hourField = $("clock-hour-field");
+        const minuteField = $("clock-minute-field");
+
+        if (!hourDisplay || !minuteDisplay || !help || !hourField || !minuteField) return;
+
+        const { hour, minute, activePart } = state.clockInput;
+        hourDisplay.textContent = hour || "--";
+        minuteDisplay.textContent = minute ? formatClockMinute(minute) : "--";
+        hourField.classList.toggle("is-active", activePart === "hour");
+        minuteField.classList.toggle("is-active", activePart === "minute");
+
+        if (!hour) {
+            help.textContent = "「時」を入れてね";
+        } else if (!minute) {
+            help.textContent = "つぎに「分」を入れてね";
+        } else {
+            help.textContent = `${Number(hour)}時${formatClockMinute(minute)}分であっているかな？`;
+        }
     }
 
     function handleKeypad(button) {
@@ -393,12 +489,77 @@
         }
     }
 
+    function handleClockKeypad(button) {
+        if (state.answerLocked) return;
+        const { activePart } = state.clockInput;
+        if (button.dataset.key) {
+            appendClockDigit(button.dataset.key);
+            updateClockDisplay();
+            return;
+        }
+        if (button.dataset.action === "backspace") {
+            const currentValue = state.clockInput[activePart];
+            if (currentValue) {
+                state.clockInput[activePart] = currentValue.slice(0, -1);
+            } else if (activePart === "minute") {
+                state.clockInput.activePart = "hour";
+                state.clockInput.hour = state.clockInput.hour.slice(0, -1);
+            }
+            updateClockDisplay();
+            return;
+        }
+        if (button.dataset.action === "submit") {
+            submitClockAnswer(button);
+        }
+    }
+
+    function appendClockDigit(digit) {
+        const { activePart } = state.clockInput;
+        const currentValue = state.clockInput[activePart];
+        if (currentValue.length >= 2) return;
+
+        state.clockInput[activePart] += digit;
+
+        if (activePart === "hour") {
+            const firstDigit = state.clockInput.hour[0];
+            if (state.clockInput.hour.length >= 2 || /^[2-9]$/.test(firstDigit)) {
+                state.clockInput.activePart = "minute";
+            }
+        }
+    }
+
+    function submitClockAnswer(sourceButton) {
+        const { hour, minute } = state.clockInput;
+        const help = $("clock-help");
+        if (!hour || !minute) {
+            if (help) help.textContent = "「時」と「分」の両方を入れてね";
+            return;
+        }
+
+        const hourNumber = Number(hour);
+        const minuteNumber = Number(minute);
+        if (!Number.isInteger(hourNumber) || hourNumber < 1 || hourNumber > 12) {
+            if (help) help.textContent = "「時」は1から12で入れてね";
+            state.clockInput.activePart = "hour";
+            updateClockDisplay();
+            return;
+        }
+        if (!Number.isInteger(minuteNumber) || minuteNumber < 0 || minuteNumber > 59) {
+            if (help) help.textContent = "「分」は0から59で入れてね";
+            state.clockInput.activePart = "minute";
+            updateClockDisplay();
+            return;
+        }
+
+        answerQuestion(buildClockAnswerValue(hourNumber, minuteNumber), sourceButton);
+    }
+
     function answerQuestion(selected, sourceButton) {
         if (state.answerLocked) return;
         state.answerLocked = true;
         const question = state.questions[state.currentIndex];
         const elapsed = (Date.now() - state.questionStartedAt) / 1000;
-        const isCorrect = selected === String(question.answer);
+        const isCorrect = isAnswerCorrect(question, selected);
 
         state.answerTimes.push(elapsed);
         if (isCorrect) state.correctCount += 1;
@@ -423,8 +584,16 @@
             $("choices").querySelectorAll(".keypad-button").forEach((keypadButton) => {
                 keypadButton.disabled = true;
             });
-            $("number-input-display").textContent = isCorrect ? "せいかい！" : `こたえは ${question.answer}`;
-            $("number-input-display").classList.add(isCorrect ? "correct" : "wrong");
+            if (isClockQuestion(question)) {
+                $("choices").querySelectorAll(".clock-field").forEach((clockField) => {
+                    clockField.disabled = true;
+                });
+                $("clock-help").textContent = isCorrect ? "せいかい！" : `こたえは ${formatCorrectAnswerLabel(question)}`;
+                $("clock-help").classList.add(isCorrect ? "correct" : "wrong");
+            } else {
+                $("number-input-display").textContent = isCorrect ? "せいかい！" : `こたえは ${formatCorrectAnswerLabel(question)}`;
+                $("number-input-display").classList.add(isCorrect ? "correct" : "wrong");
+            }
             sourceButton.classList.add(isCorrect ? "correct" : "wrong");
         }
 
@@ -437,7 +606,32 @@
 
     function handleKeyboard(event) {
         const question = state.questions[state.currentIndex];
-        if (panels.test.classList.contains("hidden") || !question || question.choices || question.matchItems || state.answerLocked) return;
+        if (panels.test.classList.contains("hidden") || !question || question.choices || question.matchItems || question.sequenceItems || state.answerLocked) return;
+        if (isClockQuestion(question)) {
+            if (/^[0-9]$/.test(event.key)) {
+                event.preventDefault();
+                appendClockDigit(event.key);
+                updateClockDisplay();
+            } else if (event.key === "Backspace") {
+                event.preventDefault();
+                const activePart = state.clockInput.activePart;
+                if (state.clockInput[activePart]) {
+                    state.clockInput[activePart] = state.clockInput[activePart].slice(0, -1);
+                } else if (activePart === "minute") {
+                    state.clockInput.activePart = "hour";
+                    state.clockInput.hour = state.clockInput.hour.slice(0, -1);
+                }
+                updateClockDisplay();
+            } else if (event.key === "Enter") {
+                event.preventDefault();
+                submitClockAnswer($("choices").querySelector("[data-action='submit']"));
+            } else if (event.key === "Tab") {
+                event.preventDefault();
+                state.clockInput.activePart = state.clockInput.activePart === "hour" ? "minute" : "hour";
+                updateClockDisplay();
+            }
+            return;
+        }
         if (/^[0-9]$/.test(event.key)) {
             event.preventDefault();
             if (state.numericInput.length >= 3) return;
