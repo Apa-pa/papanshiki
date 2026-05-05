@@ -4,7 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>がんばったきろく</title>
+    <meta name="description" content="ぱぱん式で遊んだ学習ゲームの記録や目標を確認できるページです。がんばった成果を見ながら次の目標に挑戦できます。">
+    <link rel="canonical" href="https://papan-shiki.com/record.html">
+    <meta property="og:title" content="がんばったきろく | ぱぱん式">
+    <meta property="og:description" content="学習ゲームの記録や目標を確認できるページです。がんばった成果を見ながら次の目標に挑戦できます。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://papan-shiki.com/record.html">
+    <meta property="og:image" content="https://papan-shiki.com/header02.webp">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="がんばったきろく | ぱぱん式">
+    <meta name="twitter:description" content="学習ゲームの記録や目標を確認できるページです。がんばった成果を見ながら次の目標に挑戦できます。">
+    <meta name="twitter:image" content="https://papan-shiki.com/header02.webp">
+    <title>がんばったきろく | ぱぱん式</title>
     <script src="ranking.js"></script>
     <script src="sugoroku/mission.js"></script>
     <style>
@@ -116,6 +127,30 @@
         .game-name {
             font-weight: bold;
             font-size: 16px;
+        }
+
+        .game-link {
+            color: inherit;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .game-link:hover {
+            text-decoration: underline;
+            color: #0288d1;
+        }
+
+        .play-badge {
+            display: inline-block;
+            font-size: 11px;
+            color: #0288d1;
+            background: #e1f5fe;
+            border: 1px solid #81d4fa;
+            border-radius: 999px;
+            padding: 2px 8px;
+            white-space: nowrap;
         }
 
         td.score {
@@ -459,8 +494,11 @@
                 }
 
                 const inputId = `goal-${gameId}`;
+                const gameLinkHtml = info.url
+                    ? `<a href="${info.url}" class="game-link" title="${info.name}であそぶ">${info.name}<span class="play-badge">▶ あそぶ</span></a>`
+                    : info.name;
                 tr.innerHTML = `
-                    <td class="game-name">${info.name}</td>
+                    <td class="game-name">${gameLinkHtml}</td>
                     <td class="score">${scoreHtml}</td> <td style="text-align:center;">
                         <div style="display:flex; align-items:center; justify-content:center; gap:5px;">
                             <input type="number" id="${inputId}" class="goal-input" 

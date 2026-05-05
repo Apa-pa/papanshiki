@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>おしごとクイズ | ぱぱん式</title>
+    <script src="../ranking.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "UD Digital Kyokasho-tai", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 50%, #fffde7 100%);
+            min-height: 100vh;
+            color: #4e342e;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 15px 10px 40px;
+        }
+
+        .top-links {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .home-btn {
+            display: inline-block;
+            text-decoration: none;
+            color: #777;
+            font-size: 14px;
+            border: 1px solid #d7ccc8;
+            padding: 7px 14px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.72);
+        }
+
+        .accent-link {
+            color: #ef6c00;
+            border-color: #ffcc80;
+            background: #fff3e0;
+            font-weight: bold;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 28px;
+            color: #ef6c00;
+            margin: 8px 0 6px;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.9);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #6d4c41;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 28px;
+            padding: 22px 18px 26px;
+            box-shadow: 0 12px 30px rgba(141, 110, 99, 0.14);
+            border: 3px solid #ffe0b2;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .hero-icon {
+            font-size: 72px;
+            text-align: center;
+            margin: 10px 0 14px;
+        }
+
+        .lead-box,
+        .score-box,
+        .result-box,
+        .answer-box {
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .lead-box {
+            background: linear-gradient(135deg, #fff3e0, #fff8e1);
+            border: 2px dashed #ffb74d;
+            line-height: 1.8;
+            font-size: 17px;
+        }
+
+        .score-box {
+            background: #fffde7;
+            border: 2px solid #ffe082;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 16px;
+            font-weight: bold;
+            color: #6d4c41;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 14px;
+            background: #f3e5ab;
+            border-radius: 999px;
+            overflow: hidden;
+            margin: 14px 0 18px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ffb300, #ff7043);
+            border-radius: 999px;
+            transition: width 0.25s ease;
+        }
+
+        .question-label {
+            display: inline-block;
+            background: #ffb74d;
+            color: white;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 999px;
+            padding: 5px 12px;
+            margin-bottom: 12px;
+        }
+
+        .question-text {
+            font-size: 28px;
+            font-weight: bold;
+            line-height: 1.5;
+            color: #5d4037;
+            margin-bottom: 18px;
+        }
+
+        .choice-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .choice-btn,
+        .main-btn,
+        .sub-btn,
+        .point-btn {
+            font-family: inherit;
+            border: none;
+            cursor: pointer;
+        }
+
+        .choice-btn {
+            width: 100%;
+            text-align: left;
+            padding: 16px 18px;
+            border-radius: 18px;
+            background: white;
+            border: 2px solid #ffcc80;
+            box-shadow: 0 4px 0 #ffb74d;
+            font-size: 18px;
+            font-weight: bold;
+            color: #5d4037;
+        }
+
+        .choice-btn:active,
+        .main-btn:active,
+        .sub-btn:active,
+        .point-btn:active {
+            transform: translateY(2px);
+        }
+
+        .feedback {
+            min-height: 96px;
+            border-radius: 20px;
+            padding: 16px;
+            display: none;
+            line-height: 1.7;
+        }
+
+        .feedback.show {
+            display: block;
+            position: fixed;
+            left: 50%;
+            top: 62%;
+            transform: translate(-50%, -50%);
+            width: min(560px, calc(100vw - 24px));
+            z-index: 1000;
+            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
+        }
+
+        .feedback.correct {
+            background: #e8f5e9;
+            border: 2px solid #81c784;
+        }
+
+        .feedback.wrong {
+            background: #fff3e0;
+            border: 2px solid #ffb74d;
+        }
+
+        .feedback-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .feedback-text {
+            font-size: 17px;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .feedback-actions {
+            margin-top: 12px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .feedback-actions .main-btn {
+            min-width: 160px;
+        }
+
+        .main-btn,
+        .sub-btn,
+        .point-btn {
+            border-radius: 999px;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 14px 24px;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.18);
+        }
+
+        .main-btn {
+            background: #ff9800;
+            color: white;
+            box-shadow: 0 4px 0 #ef6c00;
+        }
+
+        .sub-btn {
+            background: #fff;
+            color: #8d6e63;
+            border: 2px solid #d7ccc8;
+            box-shadow: 0 4px 0 #bcaaa4;
+        }
+
+        .point-btn {
+            width: 100%;
+            background: #43a047;
+            color: white;
+            box-shadow: 0 4px 0 #2e7d32;
+            margin-top: 14px;
+        }
+
+        .point-btn:disabled {
+            background: #bdbdbd;
+            box-shadow: 0 4px 0 #9e9e9e;
+            cursor: default;
+        }
+
+        .result-box {
+            background: linear-gradient(135deg, #fff8e1, #fff3e0);
+            border: 2px solid #ffcc80;
+            text-align: center;
+        }
+
+        .result-emoji {
+            font-size: 72px;
+            margin-bottom: 10px;
+        }
+
+        .result-title {
+            font-size: 30px;
+            font-weight: bold;
+            color: #e65100;
+            margin-bottom: 8px;
+        }
+
+        .result-score {
+            font-size: 22px;
+            font-weight: bold;
+            color: #6d4c41;
+            line-height: 1.7;
+        }
+
+        .answer-box {
+            background: white;
+            border: 2px solid #ffe0b2;
+        }
+
+        .answer-title {
+            font-size: 17px;
+            font-weight: bold;
+            color: #ef6c00;
+            margin-bottom: 10px;
+        }
+
+        .answer-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .answer-item {
+            background: #fffaf3;
+            border-radius: 14px;
+            padding: 12px 14px;
+            line-height: 1.6;
+            border-left: 6px solid #ffcc80;
+        }
+
+        .answer-item.correct {
+            border-left-color: #66bb6a;
+        }
+
+        .answer-item.wrong {
+            border-left-color: #ef5350;
+        }
+
+        @media (max-width: 520px) {
+            .container {
+                width: 100%;
+                padding: 12px 8px 32px;
+            }
+
+            .card {
+                padding: 18px 14px 22px;
+                border-radius: 22px;
+            }
+
+            .question-text {
+                font-size: 23px;
+            }
+
+            .choice-btn {
+                font-size: 17px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="top-links">
+            <a href="../index.html" class="home-btn">← トップにもどる</a>
+            <a href="job_learn.html" class="home-btn accent-link">💼 おしごと図鑑へ</a>
+        </div>
+
+        <h1 class="title">💡 お<ruby>仕事<rt>しごと</rt></ruby>クイズ</h1>
+
+        <div class="card">
+            <section id="start-screen" class="screen active">
+                <div class="hero-icon">🧑‍🍳👮🧑‍🏫🚒</div>
+                <div class="lead-box">
+                    お<ruby>仕事<rt>しごと</rt></ruby>の <ruby>内容<rt>ないよう</rt></ruby>を みて、ぴったりの お<ruby>仕事<rt>しごと</rt></ruby>を えらぼう。<br>
+                    1<ruby>問<rt>もん</rt></ruby> <ruby>正解<rt>せいかい</rt></ruby>で <strong>5ポイント</strong>。<br>
+                    10<ruby>問<rt>もん</rt></ruby> おわると、まとめて ポイントが もらえるよ。
+                </div>
+                <div class="score-box">
+                    <div><ruby>出題<rt>しゅつだい</rt></ruby>: 10<ruby>問<rt>もん</rt></ruby></div>
+                    <div>ポイント: 1<ruby>問<rt>もん</rt></ruby> 5pt</div>
+                </div>
+                <div class="button-row">
+                    <button class="main-btn" onclick="startQuiz()">スタート！</button>
+                    <a href="diagnosis.html" class="sub-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">お<ruby>仕事<rt>しごと</rt></ruby><ruby>診断<rt>しんだん</rt></ruby></a>
+                </div>
+            </section>
+
+            <section id="quiz-screen" class="screen">
+                <div class="score-box">
+                    <div id="progress-text">1 / 10 もんめ</div>
+                    <div id="score-text">いま 0pt</div>
+                </div>
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+
+                <div class="question-label">4つから えらぼう</div>
+                <div id="question-text" class="question-text"></div>
+                <div id="choice-list" class="choice-list"></div>
+
+                <div id="feedback" class="feedback">
+                    <div id="feedback-title" class="feedback-title"></div>
+                    <div id="feedback-text" class="feedback-text"></div>
+                    <div class="feedback-actions">
+                        <button id="next-btn" class="main-btn" onclick="nextQuestion()" style="display:none;">つぎへ</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="result-screen" class="screen">
+                <div class="result-box">
+                    <div id="result-emoji" class="result-emoji">🎉</div>
+                    <div id="result-title" class="result-title">クイズ<ruby>終了<rt>しゅうりょう</rt></ruby>！</div>
+                    <div id="result-score" class="result-score"></div>
+                </div>
+
+                <div class="answer-box">
+                    <div class="answer-title">10<ruby>問<rt>もん</rt></ruby>の <ruby>結果<rt>けっか</rt></ruby></div>
+                    <div id="answer-list" class="answer-list"></div>
+                </div>
+
+                <button id="point-btn" class="point-btn" onclick="claimPoints()">🎁 0ポイントをもらう</button>
+
+                <div class="button-row">
+                    <button class="main-btn" onclick="startQuiz()">もう<ruby>一度<rt>いちど</rt></ruby> あそぶ</button>
+                    <a href="../index.html" class="sub-btn" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">トップへ</a>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        const QUESTION_POOL = [
+            { prompt: 'びょういんで びょうきや けがを なおす', correct: 'いしゃ', choices: ['いしゃ', 'だいく', 'ようちえんの せんせい', 'パイロット'] },
+            { prompt: 'むしばを なおしたり はを みる', correct: 'しかい', choices: ['しかい', 'けいさつかん', 'うんてんしゅ', 'かしゅ'] },
+            { prompt: 'びょういんで かんじゃさんの おせわを する', correct: 'かんごし', choices: ['かんごし', 'しょうぼうし', 'コック', 'はなやさん'] },
+            { prompt: 'ほいくえんで こどもたちと すごす', correct: 'ほいくし', choices: ['ほいくし', 'パンやさん', 'うちゅうひこうし', 'さかなやさん'] },
+            { prompt: 'がっこうで べんきょうを おしえる', correct: 'せんせい', choices: ['せんせい', 'のうか', 'けいさつかん', 'びようし'] },
+            { prompt: 'まちの あんぜんを まもり どろぼうを つかまえる', correct: 'けいさつかん', choices: ['けいさつかん', 'ケーキやさん', 'えんげきやくしゃ', 'せんいん'] },
+            { prompt: 'ひを けしたり ひとを たすける', correct: 'しょうぼうし', choices: ['しょうぼうし', 'えかき', 'プログラマー', 'としょかんし'] },
+            { prompt: 'おいしい パンを やく', correct: 'パンやさん', choices: ['パンやさん', 'しかい', 'サッカーせんしゅ', 'だいく'] },
+            { prompt: 'レストランで りょうりを つくる', correct: 'コック', choices: ['コック', 'いしゃ', 'ゆうびんやさん', 'ほいくし'] },
+            { prompt: 'かみのけを きったり きれいに する', correct: 'びようし', choices: ['びようし', 'しょうぼうし', 'でんしゃの うんてんし', 'かんごし'] },
+            { prompt: 'いえや たてものを つくる', correct: 'だいく', choices: ['だいく', 'かしゅ', 'せんせい', 'のうか'] },
+            { prompt: 'でんしゃを うんてんして おきゃくさんを はこぶ', correct: 'でんしゃの うんてんし', choices: ['でんしゃの うんてんし', 'はなやさん', 'けいさつかん', 'りょうし'] },
+            { prompt: 'ひこうきを うごかして そらを とぶ', correct: 'パイロット', choices: ['パイロット', 'コック', 'たくはいドライバー', 'ようちえんの せんせい'] },
+            { prompt: 'てがみや にもつを とどける', correct: 'ゆうびんやさん', choices: ['ゆうびんやさん', 'いしゃ', 'だいく', 'かしゅ'] },
+            { prompt: 'やさいや くだものを そだてる', correct: 'のうか', choices: ['のうか', 'かんごし', 'せんいん', 'プログラマー'] },
+            { prompt: 'うみで さかなを とる', correct: 'りょうし', choices: ['りょうし', 'としょかんし', 'せんせい', 'パンやさん'] },
+            { prompt: 'みせや イベントに かざる はなを まとめる', correct: 'はなやさん', choices: ['はなやさん', 'しょうぼうし', 'しかい', 'うちゅうひこうし'] },
+            { prompt: 'ほんを かしたり としょかんを まもる', correct: 'としょかんし', choices: ['としょかんし', 'でんしゃの うんてんし', 'コック', 'だいく'] },
+            { prompt: 'パソコンで アプリや ゲームを つくる', correct: 'プログラマー', choices: ['プログラマー', 'ゆうびんやさん', 'りょうし', 'びようし'] },
+            { prompt: 'ロケットに のって うちゅうで しごとを する', correct: 'うちゅうひこうし', choices: ['うちゅうひこうし', 'ほいくし', 'けいさつかん', 'パンやさん'] },
+            { prompt: 'うたを うたって みんなを たのしませる', correct: 'かしゅ', choices: ['かしゅ', 'のうか', 'しょうぼうし', 'しかい'] },
+            { prompt: 'おきゃくさんの にもつを トラックで はこぶ', correct: 'たくはいドライバー', choices: ['たくはいドライバー', 'せんせい', 'いしゃ', 'はなやさん'] },
+            { prompt: 'ふねに のって うみの たびを ささえる', correct: 'せんいん', choices: ['せんいん', 'びようし', 'プログラマー', 'コック'] },
+            { prompt: 'ようちえんで あそびや せいかつを おしえる', correct: 'ようちえんの せんせい', choices: ['ようちえんの せんせい', 'けいさつかん', 'りょうし', 'かんごし'] }
+        ];
+
+        const JOB_LABELS = {
+            'いしゃ': '<ruby>医者<rt>いしゃ</rt></ruby>（ドクター）',
+            'しかい': '<ruby>歯科医<rt>しかい</rt></ruby>（はいしゃさん）',
+            'かんごし': '<ruby>看護師<rt>かんごし</rt></ruby>（ナース）',
+            'ほいくし': '<ruby>保育士<rt>ほいくし</rt></ruby>',
+            'せんせい': '<ruby>先生<rt>せんせい</rt></ruby>',
+            'けいさつかん': '<ruby>警察官<rt>けいさつかん</rt></ruby>（ポリス）',
+            'しょうぼうし': '<ruby>消防士<rt>しょうぼうし</rt></ruby>',
+            'パンやさん': 'パン<ruby>屋<rt>や</rt></ruby>さん（ベーカー）',
+            'コック': 'コック（シェフ）',
+            'びようし': '<ruby>美容師<rt>びようし</rt></ruby>（ヘアスタイリスト）',
+            'だいく': '<ruby>大工<rt>だいく</rt></ruby>',
+            'でんしゃの うんてんし': '<ruby>電車<rt>でんしゃ</rt></ruby>の <ruby>運転士<rt>うんてんし</rt></ruby>',
+            'パイロット': 'パイロット',
+            'ゆうびんやさん': '<ruby>郵便屋<rt>ゆうびんや</rt></ruby>さん',
+            'のうか': '<ruby>農家<rt>のうか</rt></ruby>',
+            'りょうし': '<ruby>漁師<rt>りょうし</rt></ruby>',
+            'はなやさん': '<ruby>花屋<rt>はなや</rt></ruby>さん（フローリスト）',
+            'としょかんし': '<ruby>図書館司書<rt>としょかんししょ</rt></ruby>',
+            'プログラマー': 'プログラマー',
+            'うちゅうひこうし': '<ruby>宇宙飛行士<rt>うちゅうひこうし</rt></ruby>（アストロノート）',
+            'かしゅ': '<ruby>歌手<rt>かしゅ</rt></ruby>（シンガー）',
+            'たくはいドライバー': '<ruby>宅配<rt>たくはい</rt></ruby>ドライバー',
+            'せんいん': '<ruby>船員<rt>せんいん</rt></ruby>',
+            'ようちえんの せんせい': '<ruby>幼稚園<rt>ようちえん</rt></ruby>の <ruby>先生<rt>せんせい</rt></ruby>'
+        };
+
+        const QUESTIONS_PER_GAME = 10;
+        const POINTS_PER_CORRECT = 5;
+        const GAME_ID = 'job_quiz';
+
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let correctCount = 0;
+        let answers = [];
+        let earnedPoints = 0;
+        let pointsClaimed = false;
+        let isAnswered = false;
+
+        function getJobLabel(jobName) {
+            return JOB_LABELS[jobName] || jobName;
+        }
+
+        function shuffleArray(items) {
+            const copied = items.slice();
+            for (let i = copied.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const temp = copied[i];
+                copied[i] = copied[j];
+                copied[j] = temp;
+            }
+            return copied;
+        }
+
+        function changeScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(function (screen) {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startQuiz() {
+            currentQuestions = shuffleArray(QUESTION_POOL).slice(0, QUESTIONS_PER_GAME).map(function (question) {
+                return {
+                    prompt: question.prompt,
+                    correct: question.correct,
+                    choices: shuffleArray(question.choices)
+                };
+            });
+            currentQuestionIndex = 0;
+            correctCount = 0;
+            answers = [];
+            earnedPoints = 0;
+            pointsClaimed = false;
+            changeScreen('quiz-screen');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const question = currentQuestions[currentQuestionIndex];
+            const progressNumber = currentQuestionIndex + 1;
+            const progressRate = (currentQuestionIndex / QUESTIONS_PER_GAME) * 100;
+
+            isAnswered = false;
+            document.getElementById('progress-text').innerHTML = progressNumber + ' / ' + QUESTIONS_PER_GAME + ' <ruby>問目<rt>もんめ</rt></ruby>';
+            document.getElementById('score-text').textContent = 'いま ' + (correctCount * POINTS_PER_CORRECT) + 'pt';
+            document.getElementById('progress-fill').style.width = progressRate + '%';
+            document.getElementById('question-text').innerHTML = '「' + question.prompt + '」<br>を する お<ruby>仕事<rt>しごと</rt></ruby>は？';
+
+            const choiceList = document.getElementById('choice-list');
+            choiceList.innerHTML = '';
+            question.choices.forEach(function (choice) {
+                const button = document.createElement('button');
+                button.className = 'choice-btn';
+                button.innerHTML = getJobLabel(choice);
+                button.dataset.jobValue = choice;
+                button.onclick = function () {
+                    answerQuestion(choice);
+                };
+                choiceList.appendChild(button);
+            });
+
+            const feedback = document.getElementById('feedback');
+            feedback.className = 'feedback';
+            document.getElementById('feedback-title').innerHTML = '';
+            document.getElementById('feedback-text').innerHTML = '';
+            document.getElementById('next-btn').style.display = 'none';
+        }
+
+        function answerQuestion(selectedChoice) {
+            if (isAnswered) {
+                return;
+            }
+            isAnswered = true;
+
+            const question = currentQuestions[currentQuestionIndex];
+            const isCorrect = selectedChoice === question.correct;
+            if (isCorrect) {
+                correctCount += 1;
+            }
+
+            answers.push({
+                prompt: question.prompt,
+                selected: selectedChoice,
+                correct: question.correct,
+                isCorrect: isCorrect
+            });
+
+            const feedback = document.getElementById('feedback');
+            const title = isCorrect ? '<ruby>正解<rt>せいかい</rt></ruby>！' : 'おしい！';
+            const text = isCorrect
+                ? '「' + getJobLabel(question.correct) + '」で <ruby>正解<rt>せいかい</rt></ruby>！ 5ポイントぶん たまったよ。'
+                : '<ruby>正解<rt>せいかい</rt></ruby>は「' + getJobLabel(question.correct) + '」だよ。つぎの <ruby>問題<rt>もんだい</rt></ruby>も がんばろう！';
+
+            feedback.className = 'feedback show ' + (isCorrect ? 'correct' : 'wrong');
+            document.getElementById('feedback-title').innerHTML = title;
+            document.getElementById('feedback-text').innerHTML = text;
+
+            document.querySelectorAll('.choice-btn').forEach(function (button) {
+                button.disabled = true;
+                if (button.dataset.jobValue === question.correct) {
+                    button.style.background = '#e8f5e9';
+                    button.style.borderColor = '#66bb6a';
+                    button.style.boxShadow = '0 4px 0 #43a047';
+                } else if (button.dataset.jobValue === selectedChoice && !isCorrect) {
+                    button.style.background = '#ffebee';
+                    button.style.borderColor = '#ef5350';
+                    button.style.boxShadow = '0 4px 0 #e57373';
+                } else {
+                    button.style.opacity = '0.75';
+                }
+            });
+
+            document.getElementById('score-text').textContent = 'いま ' + (correctCount * POINTS_PER_CORRECT) + 'pt';
+            document.getElementById('next-btn').style.display = 'inline-block';
+            document.getElementById('next-btn').innerHTML = currentQuestionIndex === QUESTIONS_PER_GAME - 1 ? '<ruby>結果<rt>けっか</rt></ruby>を みる' : 'つぎへ';
+        }
+
+        function nextQuestion() {
+            if (!isAnswered) {
+                return;
+            }
+
+            currentQuestionIndex += 1;
+            if (currentQuestionIndex >= QUESTIONS_PER_GAME) {
+                showResult();
+                return;
+            }
+
+            renderQuestion();
+        }
+
+        function showResult() {
+            earnedPoints = correctCount * POINTS_PER_CORRECT;
+            changeScreen('result-screen');
+            document.getElementById('progress-fill').style.width = '100%';
+
+            const resultEmoji = correctCount === QUESTIONS_PER_GAME ? '🏆' : (correctCount >= 7 ? '🎉' : (correctCount >= 4 ? '😊' : '🌱'));
+            const resultTitle = correctCount === QUESTIONS_PER_GAME ? 'ぜん<ruby>問正解<rt>もんせいかい</rt></ruby>！' : 'クイズ<ruby>終了<rt>しゅうりょう</rt></ruby>！';
+            document.getElementById('result-emoji').textContent = resultEmoji;
+            document.getElementById('result-title').innerHTML = resultTitle;
+            document.getElementById('result-score').innerHTML = '10<ruby>問中<rt>もんちゅう</rt></ruby> <strong>' + correctCount + '<ruby>問<rt>もん</rt></ruby></strong> <ruby>正解<rt>せいかい</rt></ruby>！<br><strong>' + earnedPoints + 'ポイント</strong> ゲットできるよ。';
+
+            const answerList = document.getElementById('answer-list');
+            answerList.innerHTML = '';
+            answers.forEach(function (answer, index) {
+                const item = document.createElement('div');
+                item.className = 'answer-item ' + (answer.isCorrect ? 'correct' : 'wrong');
+                item.innerHTML = (index + 1) + '. 「' + answer.prompt + '」<br><ruby>答<rt>こた</rt></ruby>え: ' + getJobLabel(answer.selected) + ' / <ruby>正解<rt>せいかい</rt></ruby>: ' + getJobLabel(answer.correct);
+                answerList.appendChild(item);
+            });
+
+            const pointButton = document.getElementById('point-btn');
+            pointButton.disabled = earnedPoints === 0;
+            pointButton.textContent = earnedPoints === 0 ? '0ポイントでした' : '🎁 ' + earnedPoints + 'ポイントをもらう';
+            pointButton.style.background = earnedPoints === 0 ? '#bdbdbd' : '#43a047';
+            pointButton.style.boxShadow = earnedPoints === 0 ? '0 4px 0 #9e9e9e' : '0 4px 0 #2e7d32';
+        }
+
+        function claimPoints() {
+            if (pointsClaimed || earnedPoints <= 0) {
+                return;
+            }
+            pointsClaimed = true;
+
+            const pointButton = document.getElementById('point-btn');
+            pointButton.disabled = true;
+            pointButton.textContent = 'もらいました！';
+            pointButton.style.background = '#bdbdbd';
+            pointButton.style.boxShadow = '0 4px 0 #9e9e9e';
+
+            if (typeof showPointGetDialog === 'function') {
+                showPointGetDialog(earnedPoints, GAME_ID);
+            } else {
+                alert(earnedPoints + 'ポイント もらったよ！');
+            }
+        }
+    </script>
+</body>
+
+</html>

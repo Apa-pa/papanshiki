@@ -5,17 +5,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="icon-32.png">
-    <meta property="og:title" content="ぱぱん式　まなびポータル">
-    <meta property="og:description" content="ダウンロード不要ブラウザで好きなだけ学べる学習ポータルサイトです">
+    <meta name="description" content="ぱぱん式の学習コンテンツ一覧ページ。算数、ことば、英語、理科、脳トレ、お金の学びを年齢やカテゴリから探せます。">
+    <link rel="canonical" href="https://papan-shiki.com/index2.html">
+    <meta property="og:title" content="ぱぱん式 まなびポータル コンテンツ一覧">
+    <meta property="og:description" content="算数、ことば、英語、理科、脳トレ、お金の学びを年齢やカテゴリから探せるコンテンツ一覧ページです。">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://papan-shiki.com/">
-    <meta property="og:image" content="https://papan-shiki.com/header2.png">
+    <meta property="og:url" content="https://papan-shiki.com/index2.html">
+    <meta property="og:image" content="https://papan-shiki.com/header01.webp">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ぱぱん式 まなびポータル コンテンツ一覧">
+    <meta name="twitter:description" content="算数、ことば、英語、理科、脳トレ、お金の学びを年齢やカテゴリから探せるコンテンツ一覧ページです。">
+    <meta name="twitter:image" content="https://papan-shiki.com/header01.webp">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>ぱぱん式</title>
+    <title>ぱぱん式 コンテンツ一覧 | 子ども向け無料学習ポータル</title>
     <script src="ranking.js"></script>
     <style>
+        :root {
+            --bg-cream: #fffaf1;
+            --ink: #554c46;
+            --muted: #7a6d65;
+            --accent: #ff9f5a;
+            --accent-deep: #f07a2b;
+            --card-shadow: 0 18px 40px rgba(111, 143, 176, 0.14);
+        }
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
         body {
             font-family: "UD Digital Kyokasho-tai-R", 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
             background-color: #f0f9ff;
@@ -277,71 +303,196 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 16px;
             margin-bottom: 30px;
         }
 
         .card {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            text-align: center;
-            box-shadow: 0 8px 16px rgba(135, 206, 235, 0.2);
-            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(251, 248, 240, 0.98) 100%);
+            border-radius: 24px;
+            padding: 16px 16px 18px;
+            text-align: left;
+            box-shadow: 0 12px 22px rgba(126, 151, 126, 0.14);
+            transition: transform 0.28s, box-shadow 0.28s, border-color 0.28s;
             text-decoration: none;
             color: inherit;
-            border: 3px solid #e6f7ff;
+            border: 1px solid rgba(152, 181, 133, 0.26);
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             height: 100%;
             box-sizing: border-box;
         }
 
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at top right, rgba(255, 216, 157, 0.25), transparent 28%),
+                radial-gradient(circle at bottom left, rgba(187, 219, 177, 0.28), transparent 26%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 42%);
+            pointer-events: none;
+        }
+
+        .card::after {
+            content: "▶";
+            position: absolute;
+            right: 12px;
+            bottom: 12px;
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            display: grid;
+            place-items: center;
+            background: rgba(255, 252, 246, 0.94);
+            color: #d68a4b;
+            font-size: 0.72rem;
+            box-shadow: 0 6px 12px rgba(126, 151, 126, 0.12);
+        }
+
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 20px rgba(135, 206, 235, 0.3);
-            border-color: #b3e0ff;
+            transform: translateY(-5px) rotate(-0.3deg);
+            box-shadow: 0 18px 28px rgba(126, 151, 126, 0.2);
+            border-color: rgba(201, 151, 89, 0.42);
         }
 
         .icon {
-            font-size: 50px;
-            margin-bottom: 15px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+            width: 58px;
+            height: 58px;
+            margin: 10px 0 12px;
+            border-radius: 18px;
+            display: grid;
+            place-items: center;
+            font-size: 1.7rem;
+            background: linear-gradient(145deg, #fffefc 0%, #f6eddc 100%);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 8px 14px rgba(171, 154, 116, 0.14);
+            text-shadow: none;
         }
 
         .card h3 {
-            margin: 10px 0;
-            color: #ffad60;
-            font-size: 1.1rem;
+            position: relative;
+            z-index: 1;
+            margin: 0 0 8px;
+            color: #5b4538;
+            font-size: 0.98rem;
+            line-height: 1.42;
+            padding-right: 22px;
         }
 
         .card p {
-            color: #7a7a7a;
-            font-size: 0.9rem;
-            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+            color: #6f655c;
+            font-size: 0.79rem;
+            line-height: 1.62;
             margin: 0;
         }
 
         /* ラベル */
         .label {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            width: fit-content;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            margin-bottom: 0;
             font-weight: bold;
+            letter-spacing: 0.03em;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
         }
 
         .label-quiz {
-            background-color: #fff3e0;
-            color: #ff9800;
+            background: linear-gradient(135deg, #f6edd8 0%, #efdfb4 100%);
+            color: #9c6a2b;
         }
 
         .label-print {
-            background-color: #e3f2fd;
-            color: #2196f3;
+            background: linear-gradient(135deg, #e8f2ea 0%, #d7eadb 100%);
+            color: #4c7d59;
+        }
+
+        .title-math+.grid .card {
+            background: linear-gradient(180deg, #ffffff 0%, #f4fbfb 100%);
+        }
+
+        .title-math+.grid .card .icon {
+            background: linear-gradient(145deg, #ffffff 0%, #dff3f0 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 8px 14px rgba(120, 184, 174, 0.16);
+        }
+
+        .title-jp+.grid .card {
+            background: linear-gradient(180deg, #ffffff 0%, #fcf5ef 100%);
+        }
+
+        .title-jp+.grid .card .icon {
+            background: linear-gradient(145deg, #ffffff 0%, #f4e0d4 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 8px 14px rgba(194, 139, 106, 0.14);
+        }
+
+        .title-brain+.grid .card {
+            background: linear-gradient(180deg, #ffffff 0%, #f6faf0 100%);
+        }
+
+        .title-brain+.grid .card .icon {
+            background: linear-gradient(145deg, #ffffff 0%, #e5f0d7 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 8px 14px rgba(146, 173, 111, 0.16);
+        }
+
+        .title-art+.grid .card {
+            background: linear-gradient(180deg, #ffffff 0%, #fbf1f3 100%);
+        }
+
+        .title-art+.grid .card .icon {
+            background: linear-gradient(145deg, #ffffff 0%, #f3dbe1 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 8px 14px rgba(194, 123, 146, 0.14);
+        }
+
+        .title-money+.grid .card {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbef 100%);
+        }
+
+        .title-money+.grid .card .icon {
+            background: linear-gradient(145deg, #ffffff 0%, #e7f0d4 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 8px 14px rgba(132, 171, 101, 0.15);
+        }
+
+        .title-science+.grid .card {
+            background: linear-gradient(180deg, #ffffff 0%, #f3f8f5 100%);
+        }
+
+        .title-science+.grid .card .icon {
+            background: linear-gradient(145deg, #ffffff 0%, #dcecdf 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 8px 14px rgba(118, 160, 131, 0.14);
+        }
+
+        @media (max-width: 600px) {
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+
+            .card {
+                padding: 15px 15px 17px;
+                border-radius: 22px;
+            }
+
+            .icon {
+                width: 54px;
+                height: 54px;
+                font-size: 1.6rem;
+            }
         }
 
         .category-icon {
@@ -349,26 +500,482 @@
             height: 40px;
             object-fit: contain;
         }
+
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(255, 221, 181, 0.7), transparent 28%),
+                radial-gradient(circle at top right, rgba(164, 227, 215, 0.55), transparent 24%),
+                linear-gradient(180deg, #f6fbff 0%, #fffaf1 52%, #f4fbff 100%);
+            color: var(--ink);
+        }
+
+        .hero-header {
+            position: relative;
+            overflow: hidden;
+            min-height: 520px;
+            padding-top: 0;
+            border-radius: 0 0 36px 36px;
+            box-shadow: inset 0 -40px 90px rgba(255, 255, 255, 0.25);
+        }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(115deg, rgba(255, 250, 241, 0.96) 0%, rgba(255, 250, 241, 0.88) 38%, rgba(255, 250, 241, 0.45) 70%, rgba(255, 250, 241, 0.16) 100%);
+        }
+
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 54px 20px 42px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.9fr);
+            gap: 24px;
+            align-items: end;
+        }
+
+        .hero-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            width: fit-content;
+            padding: 8px 16px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.82);
+            color: var(--accent-deep);
+            font-size: 0.82rem;
+            font-weight: bold;
+            letter-spacing: 0.08em;
+            box-shadow: 0 10px 20px rgba(255, 159, 90, 0.12);
+        }
+
+        .hero-title {
+            margin: 0;
+            font-size: clamp(2rem, 5vw, 4rem);
+            line-height: 1.08;
+            color: #5b4538;
+        }
+
+        .hero-lead {
+            margin: 0;
+            max-width: 34em;
+            font-size: 1rem;
+            line-height: 1.8;
+            color: var(--muted);
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .hero-btn {
+            appearance: none;
+            border: none;
+            cursor: pointer;
+            font: inherit;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-radius: 999px;
+            padding: 14px 22px;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .hero-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .hero-btn-primary {
+            color: white;
+            background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+            box-shadow: 0 16px 28px rgba(240, 122, 43, 0.28);
+        }
+
+        .hero-btn-secondary {
+            color: #6d5447;
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(255, 173, 96, 0.45);
+            box-shadow: 0 10px 20px rgba(113, 143, 171, 0.12);
+        }
+
+        .hero-highlights {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .highlight-card {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 24px;
+            padding: 18px 18px 16px;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(6px);
+        }
+
+        .highlight-card strong {
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 6px;
+            color: #5f4a3f;
+            font-size: 1rem;
+        }
+
+        .highlight-card p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .highlight-icon {
+            font-size: 1.7rem;
+        }
+
+        .page-main {
+            max-width: 1120px;
+            margin: -48px auto 0;
+            padding: 0 20px 40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .daily-mission-wrap {
+            margin-bottom: 20px;
+        }
+
+        .intro-shell,
+        .filter-shell {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(8px);
+        }
+
+        .intro-shell {
+            padding: 26px;
+            margin-bottom: 20px;
+        }
+
+        .intro-head {
+            margin-bottom: 20px;
+        }
+
+        .intro-title {
+            margin: 0;
+            font-size: clamp(1.5rem, 3vw, 2.2rem);
+            color: #5b4538;
+        }
+
+        .intro-copy {
+            margin: 8px 0 0;
+            color: var(--muted);
+            line-height: 1.8;
+            max-width: 42em;
+        }
+
+        .age-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .age-pill {
+            appearance: none;
+            border: 1px solid rgba(255, 173, 96, 0.35);
+            background: linear-gradient(180deg, #fffdf8 0%, #fff4e6 100%);
+            color: #7a5a46;
+            border-radius: 999px;
+            padding: 10px 16px;
+            font: inherit;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(255, 181, 120, 0.12);
+        }
+
+        .spotlight-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .spotlight-card {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            border-radius: 24px;
+            padding: 18px;
+            min-height: 180px;
+            box-shadow: 0 16px 26px rgba(105, 140, 178, 0.14);
+        }
+
+        .spotlight-card strong {
+            display: block;
+            margin-top: 10px;
+            font-size: 1.05rem;
+            color: #5d4638;
+        }
+
+        .spotlight-card p {
+            margin: 8px 0 0;
+            color: #715f57;
+            line-height: 1.65;
+            font-size: 0.9rem;
+        }
+
+        .micro-label {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.72);
+            color: #775540;
+        }
+
+        .spotlight-mission { background: linear-gradient(135deg, #fff0d9 0%, #fff9ee 100%); }
+        .spotlight-labo { background: linear-gradient(135deg, #eaf7ff 0%, #f8fcff 100%); }
+        .spotlight-sugoroku { background: linear-gradient(135deg, #eef8e6 0%, #fffdf2 100%); }
+        .spotlight-parent { background: linear-gradient(135deg, #fff0f6 0%, #fffafc 100%); }
+
+        .filter-shell {
+            padding: 22px;
+            margin-bottom: 10px;
+        }
+
+        .filter-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .filter-copy {
+            text-align: left;
+        }
+
+        .filter-copy h2 {
+            margin: 0;
+            color: #5b4538;
+            font-size: 1.3rem;
+        }
+
+        .filter-copy p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 0.92rem;
+        }
+
+        .help-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff8e1;
+            color: #f57f17;
+            border: 2px solid #fbc02d;
+            font-size: 0.85rem;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #fbc02d;
+            transition: all 0.1s;
+            white-space: nowrap;
+        }
+
+        .quick-actions-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 18px 0 2px;
+        }
+
+        .quick-link {
+            flex: 1 1 180px;
+            text-decoration: none;
+            color: inherit;
+            background: linear-gradient(180deg, #ffffff 0%, #fffaf4 100%);
+            border: 1px solid rgba(255, 173, 96, 0.24);
+            border-radius: 20px;
+            padding: 16px 18px;
+            box-shadow: 0 10px 18px rgba(114, 144, 176, 0.1);
+        }
+
+        .quick-link strong {
+            display: block;
+            margin-top: 8px;
+            color: #5d4638;
+        }
+
+        .quick-link span {
+            display: block;
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+
+        @media (min-width: 1578px) {
+            .hero-header {
+                height: auto;
+                min-height: 620px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .hero-inner,
+            .spotlight-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-highlights {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero-header {
+                min-height: auto;
+                border-radius: 0 0 28px 28px;
+            }
+
+            .hero-inner {
+                padding: 28px 16px 32px;
+            }
+
+            .page-main {
+                margin-top: -28px;
+                padding: 0 12px 28px;
+            }
+
+            .intro-shell,
+            .filter-shell {
+                border-radius: 24px;
+                padding: 18px;
+            }
+
+            .hero-highlights,
+            .spotlight-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
 <body>
 
-    <header class="hero-header"></header>
-
-    <div id="daily-mission-area"></div>
-
-    <main>
-        <div style="text-align: right; margin-top: -25px; margin-bottom: 5px;">
-            <button onclick="openHowtoModal()"
-                style="display: inline-block; background: #fff8e1; color: #f57f17; border: 2px solid #fbc02d; font-size: 0.85rem; padding: 4px 12px; border-radius: 10px; font-weight: bold; cursor: pointer; box-shadow: 0 3px 0 #fbc02d; transition: all 0.1s; white-space: nowrap;"
-                onmouseover="this.style.background='#ffecb3'" onmouseout="this.style.background='#fff8e1'"
-                onmousedown="this.style.transform='translateY(2px)'; this.style.boxShadow='none'"
-                onmouseup="this.style.transform='translateY(0)'; this.style.boxShadow='0 3px 0 #fbc02d'"
-                onmouseleave="this.style.transform='translateY(0)'; this.style.boxShadow='0 3px 0 #fbc02d'">
-                あそびかた</button>
+    <header class="hero-header">
+        <div class="hero-overlay"></div>
+        <div class="hero-inner">
+            <div class="hero-copy">
+                <div class="eyebrow">PROTOTYPE TOP / INDEX2</div>
+                <h1 class="hero-title">まようより、<br>すぐにあそべる<br>まなびポータルへ。</h1>
+                <p class="hero-lead">最初の一画面で「年齢に合う入口」「今日のおすすめ」「回遊の行き先」が見えるトップの試作版です。やさしい雰囲気は残しつつ、スマホで選びやすい形を目指します。</p>
+                <div class="hero-actions">
+                    <button class="hero-btn hero-btn-primary" onclick="scrollToDiscover()">🎯 いまのおすすめをみる</button>
+                    <button class="hero-btn hero-btn-secondary" onclick="setAgeFilter('5')">🧒 5さいから さがす</button>
+                    <button class="hero-btn hero-btn-secondary" onclick="setAgeFilter('8')">📚 8さいから さがす</button>
+                </div>
+            </div>
+            <div class="hero-highlights">
+                <div class="highlight-card">
+                    <div class="highlight-icon">🌟</div>
+                    <strong>はじめてでも入りやすい</strong>
+                    <p>年齢・おすすめ・教科から、最初の1本をすぐ見つけられる入口を上にまとめます。</p>
+                </div>
+                <div class="highlight-card">
+                    <div class="highlight-icon">🧭</div>
+                    <strong>つぎの行き先が見える</strong>
+                    <p>学び、ラボ、すごろく、きろくが一つながりに見える回遊導線を強めます。</p>
+                </div>
+                <div class="highlight-card">
+                    <div class="highlight-icon">📱</div>
+                    <strong>スマホで見やすい</strong>
+                    <p>最初に絞ってからカードを見る流れに変えて、縦の長さを軽くします。</p>
+                </div>
+                <div class="highlight-card">
+                    <div class="highlight-icon">🧪</div>
+                    <strong>本番前にここで検証</strong>
+                    <p>`index.html` へ移す前に、見た目と導線の両方をこのページで試せるようにします。</p>
+                </div>
+            </div>
         </div>
-        <div class="filter-container">
+    </header>
+
+    <main class="page-main">
+        <h1 class="visually-hidden">ぱぱん式 コンテンツ一覧</h1>
+        <div id="daily-mission-area" class="daily-mission-wrap"></div>
+
+        <section class="intro-shell" id="discover-area">
+            <div class="intro-head">
+                <div>
+                    <h2 class="intro-title">きょうの入口を、ここからえらぼう</h2>
+                    <p class="intro-copy">年齢でさがす、いま目立たせたい導線に行く、ラボやすごろくへ回る。トップの最初の一画面でやりたいことを見つけやすくする実験です。</p>
+                </div>
+            </div>
+            <div class="age-pills">
+                <button class="age-pill" onclick="setAgeFilter('3,4')">3-4さい におすすめ</button>
+                <button class="age-pill" onclick="setAgeFilter('5')">5さい からはじめる</button>
+                <button class="age-pill" onclick="setAgeFilter('6')">6さい の人気をみる</button>
+                <button class="age-pill" onclick="setAgeFilter('8')">8さい からの学び</button>
+                <button class="age-pill" onclick="setAgeFilter('10')">10さい いじょう</button>
+                <button class="age-pill" onclick="clearAllFilters()">ぜんぶ みる</button>
+            </div>
+            <div class="spotlight-grid">
+                <a href="sugoroku/sugoroku.html" class="spotlight-card spotlight-sugoroku">
+                    <span class="micro-label">まいにちコツコツ</span>
+                    <strong>ミッションすごろく</strong>
+                    <p>学んだぶんだけすすめる週替わりボード。トップから「今日やること」へつなぐ看板役にします。</p>
+                </a>
+                <a href="learning_labo/labo.html" class="spotlight-card spotlight-labo">
+                    <span class="micro-label">まとめて学ぶ</span>
+                    <strong>がくしゅうスターラボ</strong>
+                    <p>かもくとカテゴリをえらんで小テスト。トップから学習導線に入る新しい起点として相性が良いです。</p>
+                </a>
+                <a href="performance_labo/labo.html" class="spotlight-card spotlight-mission">
+                    <span class="micro-label">体験して回る</span>
+                    <strong>パフォーマンスラボ</strong>
+                    <p>5つのミニゲームで能力をチェック。いつもの学習カードと違うリズムの入口として置きます。</p>
+                </a>
+                <a href="dashboard.html" class="spotlight-card spotlight-parent">
+                    <span class="micro-label">おうちのかたへ</span>
+                    <strong>学習ダッシュボード</strong>
+                    <p>見守り・おすすめ設定・ラボ結果確認へ。保護者導線を埋もれさせないため、上段でも見せます。</p>
+                </a>
+            </div>
+        </section>
+
+        <section class="filter-shell">
+            <div class="filter-head">
+                <div class="filter-copy">
+                    <h2>さがして、えらんで、すぐあそぶ</h2>
+                    <p>年齢・タイプ・キーワードでしぼりながら、教科ごとのカードを見ていけます。</p>
+                </div>
+                <button class="help-btn" onclick="openHowtoModal()"
+                    onmousedown="this.style.transform='translateY(2px)'; this.style.boxShadow='none'"
+                    onmouseup="this.style.transform='translateY(0)'; this.style.boxShadow='0 3px 0 #fbc02d'"
+                    onmouseleave="this.style.transform='translateY(0)'; this.style.boxShadow='0 3px 0 #fbc02d'">
+                    🌟 あそびかた</button>
+            </div>
+            <div class="filter-container">
             <div class="filter-row">
                 <div class="filter-group">
                     <span class="filter-icon">📋</span>
@@ -423,6 +1030,29 @@
                 <button class="category-chip chip-science" onclick="filterByCategory('title-science', this)">かがく</button>
             </div>
         </div>
+        <div class="quick-actions-row">
+            <a href="calendar.html" class="quick-link">
+                <div>📅</div>
+                <strong>まなびカレンダー</strong>
+                <span>きょうのがんばりを見返したいときの入口。</span>
+            </a>
+            <a href="record.html" class="quick-link">
+                <div>🏆</div>
+                <strong>がんばったきろく</strong>
+                <span>目標を見てから次のゲームへ飛べる流れを意識します。</span>
+            </a>
+            <a href="room.html" class="quick-link">
+                <div>🏠</div>
+                <strong>マイルーム</strong>
+                <span>学びのあとに寄りたくなるごほうび導線です。</span>
+            </a>
+            <a href="blog/index.html" class="quick-link">
+                <div>📝</div>
+                <strong>コラム</strong>
+                <span>保護者向けの読みものや考え方への入口です。</span>
+            </a>
+        </div>
+        </section>
 
         <style>
             /* カテゴリフィルターチップのスタイル */
@@ -579,7 +1209,7 @@
 
         </div>
 
-        <h2 class="section-title title-jp"><img src="image/language_icon.webp" class="category-icon" alt=""> こくご・ことば</h2>
+        <h2 class="section-title title-jp"><img src="image/Language_icon.webp" class="category-icon" alt=""> こくご・ことば</h2>
         <div class="grid">
             <a href="kanji_learn.html" class="card" data-age="6,7,8,9,10">
                 <span class="label label-quiz">がくしゅう</span>
@@ -881,11 +1511,18 @@
                 <p>パパやママでもしらない？株やコモディティ投資をおぼえて大人をビックリさせよう</p>
             </a>
 
-            <a href="job_learn.html" class="card" data-age="5,6,7,8,9,10,11,12">
+            <a href="jobs/job_learn.html" class="card" data-age="5,6,7,8,9,10,11,12">
                 <span class="label label-quiz">がくしゅう</span>
                 <div class="icon">💼</div>
                 <h3>おしごと図鑑</h3>
                 <p>いろんな職業（ジョブ）について学んでみよう！</p>
+            </a>
+
+            <a href="jobs/job_quiz.html" class="card" data-age="5,6,7,8,9,10,11,12">
+                <span class="label label-quiz">クイズ</span>
+                <div class="icon">💡</div>
+                <h3>おしごとクイズ</h3>
+                <p>「〜〜をするしごとは？」の 4たくクイズに ちょうせんしよう！</p>
             </a>
 
             <a href="communication/hub.html" class="card" data-age="7,8,9,10,11,12">
@@ -1134,6 +1771,28 @@
         noResultsEl.className = 'no-results';
         noResultsEl.textContent = '😢 みつかりませんでした';
         document.querySelector('main').appendChild(noResultsEl);
+
+        function scrollToDiscover() {
+            document.getElementById('discover-area')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function setAgeFilter(value) {
+            document.getElementById('age-filter').value = value;
+            document.getElementById('type-filter').value = 'all';
+            document.getElementById('keyword-search').value = '';
+            document.querySelectorAll('.category-chip').forEach(btn => btn.classList.remove('active'));
+            applyFilters();
+            scrollToDiscover();
+        }
+
+        function clearAllFilters() {
+            document.getElementById('age-filter').value = 'all';
+            document.getElementById('type-filter').value = 'all';
+            document.getElementById('keyword-search').value = '';
+            document.querySelectorAll('.category-chip').forEach(btn => btn.classList.remove('active'));
+            applyFilters();
+            scrollToDiscover();
+        }
 
         // 統合フィルター関数（年齢 × タイプ × キーワードのAND絞り込み）
         function applyFilters() {

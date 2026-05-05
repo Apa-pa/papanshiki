@@ -1,12 +1,18 @@
 // キャッシュの名前（更新時にバージョンを変えると新しいキャッシュが作られます）
-var CACHE_NAME = 'papanshiki-v19';
+var CACHE_NAME = 'papanshiki-v20';
 var urlsToCache = [
   // === トップページ ===
   './',
   './index.html',
+  './index2.html',
   './manifest.json',
+  './header01.webp',
+  './header02.webp',
 
   // === アイコン・小画像 ===
+  './icon-32.png',
+  './icon-192.png',
+  './icon-512.png',
   './icon-192.webp',
   './icon-512.webp',
   './player.webp',
@@ -25,11 +31,20 @@ var urlsToCache = [
   './image/stock_icon.webp',
   './image/myroom_icon.webp',
   './image/donguri.webp',
+  './image/math_icon.webp',
+  './image/Language_icon.webp',
+  './image/labo_icon.webp',
+  './image/puzzle_icon.webp',
+  './image/art_icon.webp',
+  './image/money_icon.webp',
+  './image/science_icon.webp',
+  './image/sheep_icon.webp',
 
   // === 算数・数学系 ===
   './unit_runner.html',
   './math_strike.html',
   './sansuu.html',
+  './sansuu_bunsu.html',
   './math.html',
   './math2.html',
   './math100.html',
@@ -77,8 +92,6 @@ var urlsToCache = [
   './shousu_learn.html',
   './warizan_learn.html',
   './wariai_learn.html',
-  './presentation_learn.html',
-  './job_learn.html',
 
   // === 英語系 ===
   './alphabet.html',
@@ -86,6 +99,7 @@ var urlsToCache = [
   './english_talk1.html',
   './english_talk.html',
   './english_talk2.html',
+  './english_talk3.html',
   './daily_english.html',
   './romaji_quiz.html',
   './print_romaji.html',
@@ -126,6 +140,9 @@ var urlsToCache = [
   './eigo_nakama.html',
   './fingers_chess.html',
   './passcode.html',
+  './dokidoki_obstacle.html',
+  './calc_puzzle.html',
+  './matchstick.html',
 
   // === 生活・社会 ===
   './whattime.html',
@@ -153,12 +170,26 @@ var urlsToCache = [
   './room_list.html',
   './room_shop.html',
   './avatar_shop.html',
+  './jobs/diagnosis.html',
+  './jobs/job_learn.html',
+  './jobs/job_quiz.html',
+  './communication/hub.html',
+  './communication/presentation_learn.html',
+  './communication/quest_stage1.html',
+  './communication/quest_stage2.html',
+  './communication/quest_stage3.html',
+  './communication/quest_stage4.html',
 
   // === ブログ ===
   './blog/index.html',
   './blog/article001.html',
   './blog/article002.html',
   './blog/article003.html',
+  './blog/article004.html',
+  './blog/article005.html',
+  './blog/article006.html',
+  './blog/article007.html',
+  './blog/article008.html',
   './blog/header_h200.webp',
 
   // === 裏ページ ===
@@ -185,6 +216,17 @@ var urlsToCache = [
   './performance_labo/game4_animal_mot.js',
   './performance_labo/game5_timing.js',
   './performance_labo/result.js',
+  './performance_labo/results.html',
+  './performance_labo/labo2.html',
+  './performance_labo/labo2_game1_quantity.js',
+  './performance_labo/labo2_game2_speed.js',
+  './performance_labo/labo2_game3_space.js',
+  './performance_labo/labo2_game4_length.js',
+  './performance_labo/labo2_game5_color.js',
+  './performance_labo/result2.js',
+  './performance_labo/main2.js',
+  './performance_labo/results2.html',
+  './performance_labo/train.webp',
 
   // === がくしゅうラボ ===
   './learning_labo/labo.html',
@@ -194,9 +236,12 @@ var urlsToCache = [
   './learning_labo/tests/math_addition.js',
   './learning_labo/tests/math_subtraction.js',
   './learning_labo/tests/math_multiplication.js',
+  './learning_labo/tests/math_division.js',
+  './learning_labo/tests/math_clock.js',
   './learning_labo/tests/japanese_kana.js',
   './learning_labo/tests/japanese_words.js',
   './learning_labo/tests/japanese_kanji_grade1.js',
+  './learning_labo/tests/japanese_kanji_grade2.js',
   './learning_labo/tests/english_alphabet.js',
 
   // === JS・CSS ===
@@ -204,6 +249,8 @@ var urlsToCache = [
   './firebase-ranking.js',
   './css/human_model.css',
   './js/human_model.js',
+  './jobs/jobs_data.js',
+  './jobs/diagnosis.js',
 
   // === ミッションすごろく ===
   './sugoroku/sugoroku.html',
@@ -211,6 +258,11 @@ var urlsToCache = [
   './sugoroku/sugoroku.js',
   './sugoroku/mission.js',
   './sugoroku/background.webp',
+  './sugoroku/masu_ajisai.webp',
+  './sugoroku/masu_fuki.webp',
+  './sugoroku/masu_himawari.webp',
+  './sugoroku/masu_kirikabu.webp',
+  './sugoroku/masu_sakura.webp',
 
 
   // === 音声ファイル ===

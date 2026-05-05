@@ -232,13 +232,18 @@
             <div id="result-icon" style="font-size: 80px; margin: 10px;"></div>
             <div id="result-message"></div>
 
+            <div style="background:#fff8e1; padding:10px; border-radius:10px; margin:10px auto;">
+                <p style="margin:5px; font-size:14px; color:#777;">あなたの こたえ</p>
+                <div id="user-sequence" style="font-size:24px;"></div>
+            </div>
+
             <div style="background:#f5f5f5; padding:10px; border-radius:10px; margin:10px auto;">
                 <p style="margin:5px; font-size:14px; color:#777;">せいかい</p>
                 <div id="correct-sequence" style="font-size:24px;"></div>
             </div>
 
             <button id="get-point-btn"
-                onclick="this.disabled=true; this.innerText='もらいました'; this.style.background='#ccc'; showPointGetDialog(20)"
+                onclick="claimPoints()"
                 style="padding:10px 20px; font-size:16px; background:#4CAF50; color:white; border:none; border-radius:30px; font-weight:bold; cursor:pointer; margin-top:10px; box-shadow: 0 4px #2e7d32;">
                 🎁 20ポイントをもらう
             </button>
@@ -257,6 +262,7 @@
         let sequence = [];
         let userAnswers = [];
         let targetCount = 3;
+        let earnedPoints = 20;
 
         function changeScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -267,6 +273,7 @@
         function prepareGame() {
             // ポイントボタンのリセット
             const pointBtn = document.getElementById('get-point-btn');
+            earnedPoints = 20;
             if (pointBtn) {
                 pointBtn.disabled = false;
                 pointBtn.innerText = '🎁 20ポイントをもらう';
@@ -373,6 +380,14 @@
             renderSlots();
         }
 
+        function claimPoints() {
+            const pointBtn = document.getElementById('get-point-btn');
+            pointBtn.disabled = true;
+            pointBtn.innerText = 'もらいました';
+            pointBtn.style.background = '#ccc';
+            showPointGetDialog(earnedPoints);
+        }
+
         // 答え合わせ
         function checkAnswer() {
             // まだ全部埋まってない場合
@@ -388,19 +403,26 @@
 
             const msg = document.getElementById('result-message');
             const icon = document.getElementById('result-icon');
+            const userSeq = document.getElementById('user-sequence');
             const correctSeq = document.getElementById('correct-sequence');
+            const pointBtn = document.getElementById('get-point-btn');
 
+            userSeq.textContent = userAnswers.join(' → ');
             correctSeq.textContent = sequence.join(' → ');
 
             if (isCorrect) {
+                earnedPoints = 20;
                 icon.textContent = "💮";
                 msg.textContent = "すごい！ だいせいかい！";
                 msg.className = "success";
             } else {
+                earnedPoints = 10;
                 icon.textContent = "😢";
                 msg.textContent = "おしい...！";
                 msg.className = "fail";
             }
+
+            pointBtn.innerText = `🎁 ${earnedPoints}ポイントをもらう`;
         }
     </script>
 

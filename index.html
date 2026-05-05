@@ -5,17 +5,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="icon-32.png">
-    <meta property="og:title" content="ぱぱん式　まなびポータル">
-    <meta property="og:description" content="ダウンロード不要ブラウザで好きなだけ学べる学習ポータルサイトです">
+    <meta name="description" content="3歳から12歳向けの無料学習ポータル。算数、ことば、英語、理科、脳トレ、お金の学びをブラウザだけで楽しく続けられます。">
+    <link rel="canonical" href="https://papan-shiki.com/">
+    <meta property="og:title" content="ぱぱん式 まなびポータル">
+    <meta property="og:description" content="3歳から12歳向けの無料学習ポータル。ブラウザだけで、算数・ことば・英語・理科を楽しく学べます。">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://papan-shiki.com/">
-    <meta property="og:image" content="https://papan-shiki.com/header2.png">
+    <meta property="og:image" content="https://papan-shiki.com/header02.webp">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ぱぱん式 まなびポータル">
+    <meta name="twitter:description" content="3歳から12歳向けの無料学習ポータル。ブラウザだけで、算数・ことば・英語・理科を楽しく学べます。">
+    <meta name="twitter:image" content="https://papan-shiki.com/header02.webp">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>ぱぱん式</title>
+    <title>ぱぱん式 まなびポータル | 無料で学べる子ども向け学習サイト</title>
     <script src="ranking.js"></script>
     <style>
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
         body {
             font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
             background-color: #f0f9ff;
@@ -472,6 +490,7 @@
     <div id="parent-picks-area"></div>
 
     <main>
+        <h1 class="visually-hidden">ぱぱん式 まなびポータル</h1>
         <div
             style="text-align: right; margin-top: -25px; margin-bottom: 5px; display: flex; justify-content: flex-end; gap: 10px;">
             <button onclick="location.href='sugoroku/sugoroku.html'"
@@ -1070,6 +1089,13 @@
                 <div class="icon">💼</div>
                 <h3>おしごと図鑑</h3>
                 <p>いろんな職業（ジョブ）について学んでみよう！</p>
+            </a>
+
+            <a href="jobs/job_quiz.html" class="card" data-age="5,6,7,8,9,10,11,12">
+                <span class="label label-quiz">クイズ</span>
+                <div class="icon">💡</div>
+                <h3>おしごとクイズ</h3>
+                <p>「〜〜をするしごとは？」の 4たくクイズに ちょうせんしよう！</p>
             </a>
 
             <a href="jobs/diagnosis.html" class="card" data-age="5,6,7,8,9,10,11,12">
