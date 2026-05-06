@@ -46,6 +46,14 @@
                     questionCount: 20,
                     targetSeconds: 11,
                     gameId: "learning_labo_math_clock"
+                },
+                {
+                    id: "math_hissan",
+                    name: "ひっさん",
+                    levelLabel: "たてけいさん",
+                    questionCount: 20,
+                    targetSeconds: 13,
+                    gameId: "learning_labo_math_hissan"
                 }
             ]
         },
@@ -87,6 +95,14 @@
                     questionCount: 20,
                     targetSeconds: 9,
                     gameId: "learning_labo_japanese_kanji_grade2"
+                },
+                {
+                    id: "japanese_reading",
+                    name: "読解",
+                    levelLabel: "ぶんしょう",
+                    questionCount: 20,
+                    targetSeconds: 15,
+                    gameId: "learning_labo_japanese_reading"
                 }
             ]
         },
