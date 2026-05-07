@@ -277,11 +277,26 @@
             border-style: solid;
         }
 
+        .slot.fixed-slot {
+            background: #dcedc8;
+            border-color: #7cb342;
+            border-style: solid;
+            color: #33691e;
+            cursor: default;
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.45);
+        }
+
         .slot.drag-over {
             transform: scale(1.12);
             background: #c8e6c9;
             border-color: var(--correct-color);
             border-style: solid;
+        }
+
+        .slot.fixed-slot.drag-over {
+            transform: none;
+            background: #dcedc8;
+            border-color: #7cb342;
         }
 
         .slot.correct-flash {
@@ -541,7 +556,7 @@
             text-align: center;
         }
 
-        .result-time-box {
+        .result-reward-box {
             background: linear-gradient(135deg, #fce4ec, #fff3e0);
             border-radius: 20px;
             padding: 20px 50px;
@@ -550,12 +565,12 @@
             border: 3px solid #f48fb1;
         }
 
-        .result-time-label {
+        .result-reward-label {
             font-size: 0.88rem;
             color: #999;
         }
 
-        .result-time-value {
+        .result-reward-value {
             font-size: 3.5rem;
             font-weight: bold;
             color: #e91e63;
@@ -700,12 +715,12 @@
         <div id="result-screen" class="hidden">
             <div style="font-size:4.5rem;">🏆</div>
             <div class="result-title">ぜんもん クリア！</div>
-            <div class="result-time-box">
-                <div class="result-time-label">あなたの タイム</div>
-                <div class="result-time-value" id="result-time">00:00</div>
+            <div class="result-reward-box">
+                <div class="result-reward-label">もらえる ポイント</div>
+                <div class="result-reward-value" id="result-points">30pt</div>
             </div>
             <button class="result-btn btn-reward" id="reward-btn" onclick="getReward()">
-                💾 きろくを ほぞんする
+                🎁 ポイントを もらう
             </button>
             <button class="result-btn btn-retry" onclick="retryGame()">
                 🔄 もう いちど
@@ -724,8 +739,8 @@
     <script>
         /*
          * けいさんパズル - メインゲームロジック
-         * ゲームタイプ A（記録保存型）
-         * showSaveDialog(gameId, elapsedSeconds) を終了時に呼び出す
+         * ゲームタイプ B（ポイント獲得型）
+         * showPointGetDialog(points, gameId) を終了時に呼び出す
          */
 
         // --- 定数 ---
@@ -734,13 +749,9 @@
         const DUMMY_OPERATOR_COUNT = 2; // ダミー符号タイル枚数
         const OPERATORS_EASY = ['+', '-'];
         const OPERATORS_ALL = ['+', '-', '×', '÷'];
-
-        // レベル別ゲームID（ranking.js の GAME_LIST に登録要）
-        const GAME_IDS = {
-            1: 'calc_puzzle_lv1',
-            2: 'calc_puzzle_lv2',
-            3: 'calc_puzzle_lv3'
-        };
+        const PREFILLED_SLOTS_BY_LEVEL = { 1: 1, 2: 2, 3: 2 };
+        const REWARD_POINTS_BY_LEVEL = { 1: 30, 2: 50, 3: 80 };
+        const POINT_REWARD_GAME_ID = 'calc_puzzle';
 
         // --- ゲーム状態変数 ---
         let currentLevel = 1;
@@ -818,6 +829,57 @@
             return Number.isInteger(result) ? result : null;
         }
 
+        function buildAnswerEntries(problem) {
+            const entries = [];
+            for (let i = 0; i < problem.numbers.length; i++) {
+                entries.push({ type: 'number', value: problem.numbers[i] });
+                if (i < problem.operators.length) {
+                    entries.push({ type: 'operator', value: problem.operators[i] });
+                }
+            }
+            return entries;
+        }
+
+        function choosePrefilledSlotIndices(problem, level) {
+            const answerEntries = buildAnswerEntries(problem);
+            const totalSlots = answerEntries.length;
+            const revealCount = Math.min(PREFILLED_SLOTS_BY_LEVEL[level] ?? 1, Math.max(1, totalSlots - 1));
+            const numberIndices = [];
+            const operatorIndices = [];
+            const picked = [];
+
+            answerEntries.forEach((entry, index) => {
+                if (entry.type === 'number') numberIndices.push(index);
+                else operatorIndices.push(index);
+            });
+
+            if (revealCount >= 1 && numberIndices.length > 0) {
+                picked.push(numberIndices[rand(0, numberIndices.length - 1)]);
+            }
+
+            if (revealCount >= 2 && operatorIndices.length > 0) {
+                const opIndex = operatorIndices[rand(0, operatorIndices.length - 1)];
+                if (!picked.includes(opIndex)) picked.push(opIndex);
+            }
+
+            const rest = shuffleArray(
+                Array.from({ length: totalSlots }, (_, index) => index).filter(index => !picked.includes(index))
+            );
+
+            while (picked.length < revealCount && rest.length > 0) {
+                picked.push(rest.pop());
+            }
+
+            return picked.sort((a, b) => a - b);
+        }
+
+        function attachPrefilledSlots(problem, level) {
+            return {
+                ...problem,
+                prefilledSlotIndices: choosePrefilledSlotIndices(problem, level)
+            };
+        }
+
         // ===================================================================
         // 問題自動生成
         // ===================================================================
@@ -885,8 +947,8 @@
         }
 
         function generateProblem(level) {
-            if (level === 1) return generateLv1();
-            return generateLv23(level);
+            const baseProblem = level === 1 ? generateLv1() : generateLv23(level);
+            return attachPrefilledSlots(baseProblem, level);
         }
 
         // ===================================================================
@@ -896,14 +958,17 @@
         function createStockTiles(problem) {
             const allOps = currentLevel === 3 ? OPERATORS_ALL : OPERATORS_EASY;
             const tiles = [];
+            const prefilledSet = new Set(problem.prefilledSlotIndices || []);
 
             // --- 正解タイル（数字） ---
             problem.numbers.forEach((n, i) => {
+                if (prefilledSet.has(i * 2)) return;
                 tiles.push({ id: `num_c${i}`, type: 'number', value: n, inSlot: false });
             });
 
             // --- 正解タイル（符号） ---
             problem.operators.forEach((op, i) => {
+                if (prefilledSet.has(i * 2 + 1)) return;
                 tiles.push({ id: `op_c${i}`, type: 'operator', value: op, inSlot: false });
             });
 
@@ -984,6 +1049,7 @@
 
             // スロット構築
             buildFormulaSlots(currentProblem);
+            renderFormulaSlots();
 
             // タイル生成・描画
             stockTiles = createStockTiles(currentProblem);
@@ -1000,10 +1066,11 @@
 
         function retryGame() {
             document.getElementById('result-screen').classList.add('hidden');
-            // 報酬ボタンをリセット
             const btn = document.getElementById('reward-btn');
             btn.disabled = false;
+            btn.textContent = '🎁 ポイントを もらう';
             btn.style.background = '';
+            btn.style.boxShadow = '';
             startGame(currentLevel);
         }
 
@@ -1015,22 +1082,20 @@
             const area = document.getElementById('formula-area');
             area.innerHTML = '';
             slots = [];
+            const answerEntries = buildAnswerEntries(problem);
+            const prefilledSet = new Set(problem.prefilledSlotIndices || []);
 
-            const numCount = problem.numbers.length;   // 2 or 3
-            const opCount = problem.operators.length; // 1 or 2
-
-            // 数字スロットと符号スロットを交互に配置
-            for (let i = 0; i < numCount; i++) {
-                const numSlot = createSlotEl('number', slots.length);
-                area.appendChild(numSlot);
-                slots.push({ type: 'number', tile: null, el: numSlot });
-
-                if (i < opCount) {
-                    const opSlot = createSlotEl('operator', slots.length);
-                    area.appendChild(opSlot);
-                    slots.push({ type: 'operator', tile: null, el: opSlot });
-                }
-            }
+            answerEntries.forEach((entry, index) => {
+                const slotEl = createSlotEl(entry.type, index);
+                const isFixed = prefilledSet.has(index);
+                area.appendChild(slotEl);
+                slots.push({
+                    type: entry.type,
+                    tile: isFixed ? { id: `fixed_${index}`, type: entry.type, value: entry.value, inSlot: true, fixed: true } : null,
+                    el: slotEl,
+                    fixed: isFixed
+                });
+            });
 
             // ＝ とリザルト表示
             const eq = document.createElement('span');
@@ -1052,6 +1117,7 @@
 
             // PC: ドロップイベント
             div.addEventListener('dragover', e => {
+                if (slots[index]?.fixed) return;
                 e.preventDefault();
                 div.classList.add('drag-over');
             });
@@ -1103,9 +1169,11 @@
                 if (slot.tile) {
                     slot.el.textContent = slot.tile.value;
                     slot.el.classList.add('filled');
+                    slot.el.classList.toggle('fixed-slot', !!slot.fixed);
                 } else {
                     slot.el.textContent = '';
                     slot.el.classList.remove('filled');
+                    slot.el.classList.remove('fixed-slot');
                 }
             });
             updateResultDisplay();
@@ -1144,6 +1212,8 @@
 
             const slot = slots[slotIndex];
             const dTile = dragging.tile;
+            if (!slot || slot.fixed) return;
+            if (dragging.source === 'slot' && slots[dragging.index]?.fixed) return;
 
             // 型チェック（数字スロットに符号タイルは不可、逆も不可）
             if (dTile.type === 'number' && slot.type === 'operator') return;
@@ -1181,7 +1251,10 @@
         function onDragStart(e, source, index) {
             let tile;
             if (source === 'stock') tile = stockTiles[index];
-            else tile = slots[index]?.tile;
+            else {
+                if (slots[index]?.fixed) { e.preventDefault(); return; }
+                tile = slots[index]?.tile;
+            }
             if (!tile) { e.preventDefault(); return; }
 
             dragging = { source, index, tile };
@@ -1212,7 +1285,10 @@
             const touch = e.touches[0];
             let tile;
             if (source === 'stock') tile = stockTiles[index];
-            else tile = slots[index]?.tile;
+            else {
+                if (slots[index]?.fixed) return;
+                tile = slots[index]?.tile;
+            }
             if (!tile) return;
 
             touchInfo = { source, index, tile, moved: false };
@@ -1291,12 +1367,19 @@
 
         function handleSlotClick(slotIndex) {
             const slot = slots[slotIndex];
+            if (!slot || slot.fixed) {
+                clearSelected();
+                return;
+            }
 
             if (selectedTile) {
                 // タイル選択中 → スロットへ配置を試みる
                 let tile;
                 if (selectedTile.source === 'stock') tile = stockTiles[selectedTile.index];
-                else tile = slots[selectedTile.index]?.tile;
+                else {
+                    if (slots[selectedTile.index]?.fixed) { clearSelected(); return; }
+                    tile = slots[selectedTile.index]?.tile;
+                }
 
                 if (!tile) { clearSelected(); return; }
 
@@ -1424,13 +1507,11 @@
             timerInterval = null;
 
             finalElapsed = ((Date.now() - startTime) / 1000).toFixed(2);
-
-            const min = Math.floor(finalElapsed / 60).toString().padStart(2, '0');
-            const sec = Math.floor(finalElapsed % 60).toString().padStart(2, '0');
+            const rewardPoints = REWARD_POINTS_BY_LEVEL[currentLevel] || 30;
 
             document.getElementById('game-screen').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
-            document.getElementById('result-time').textContent = `${min}:${sec}`;
+            document.getElementById('result-points').textContent = `${rewardPoints}pt`;
         }
 
         function getReward() {
@@ -1438,13 +1519,14 @@
             btn.disabled = true;
             btn.style.background = '#bdbdbd';
             btn.style.boxShadow = 'none';
+            btn.textContent = 'もらいました';
 
-            const gameId = GAME_IDS[currentLevel];
+            const rewardPoints = REWARD_POINTS_BY_LEVEL[currentLevel] || 30;
 
-            if (typeof showSaveDialog === 'function') {
-                showSaveDialog(gameId, finalElapsed);
+            if (typeof showPointGetDialog === 'function') {
+                showPointGetDialog(rewardPoints, POINT_REWARD_GAME_ID);
             } else {
-                alert(`きろくを ほぞんしました！ タイム: ${finalElapsed}びょう`);
+                alert(`${rewardPoints}ポイント もらったよ！`);
             }
         }
     </script>

@@ -120,6 +120,14 @@
                     questionCount: 20,
                     targetSeconds: 8,
                     gameId: "learning_labo_english_alphabet"
+                },
+                {
+                    id: "english_words_basic",
+                    name: "えいごのことば①",
+                    levelLabel: "たんご",
+                    questionCount: 20,
+                    targetSeconds: 9,
+                    gameId: "learning_labo_english_words_basic"
                 }
             ]
         }
