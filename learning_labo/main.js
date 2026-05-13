@@ -711,6 +711,7 @@
         saveRecords(records);
 
         if (typeof addPoints === "function") addPoints(state.userName, state.result.mastery);
+        if (typeof addMissionStock === "function") addMissionStock(state.userName, "learning_labo_play");
         if (typeof savePlayLog === "function") savePlayLog(state.userName, state.category.gameId);
         if (typeof toggleStamp === "function" && typeof getTodayString === "function") {
             toggleStamp(state.userName, getTodayString(), true);

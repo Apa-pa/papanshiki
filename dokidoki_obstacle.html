@@ -179,6 +179,8 @@
                 <button class="start-btn" onclick="startGame(1)" style="margin: 5px;">🟢 レベル 1</button>
                 <button class="start-btn" onclick="startGame(2)"
                     style="margin: 5px; background: #f44336; box-shadow: 0 5px #c62828;">🔴 レベル 2</button>
+                <button class="start-btn" onclick="startGame(3)"
+                    style="margin: 5px; background: #7e57c2; box-shadow: 0 5px #5e35b1;">🟣 レベル 3</button>
             </div>
 
             <br><a href="index.html" class="back-btn">🏠 もどる</a>
@@ -545,6 +547,114 @@
                 // 中継からゴールへの細道を塞ぐ明滅×3
                 stageData.blinkingObstacles.push({ x: 290, y: 190, w: 80, h: 40, activeTime: 1.0, inactiveTime: 1.5, timer: 0, isActive: false });
                 stageData.blinkingObstacles.push({ x: 290, y: 130, w: 80, h: 40, activeTime: 1.0, inactiveTime: 1.5, timer: 1.0, isActive: false });
+            } else if (stage === 11) {
+                // レベル3-1：本線の横にある退避スペース入門
+                stageData.start = { x: 200, y: 540, w: 60, h: 60 };
+                stageData.goal = { x: 200, y: 60, w: 60, h: 60 };
+                stageData.paths = [
+                    { x: 170, y: 30, w: 60, h: 540 },
+                    { x: 230, y: 441, w: 82, h: 48 },
+                    { x: 230, y: 201, w: 82, h: 48 }
+                ];
+                stageData.obstacles.push({ type: 'slider', x: 190, y: 465, w: 80, h: 72, baseX: 190, baseY: 465, moveRange: 20, speed: 2.0, angle: Math.PI / 2, isVertical: false });
+                stageData.obstacles.push({ type: 'slider', x: 190, y: 225, w: 80, h: 72, baseX: 190, baseY: 225, moveRange: 20, speed: 2.2, angle: -Math.PI / 2, isVertical: false });
+            } else if (stage === 12) {
+                // レベル3-2：左右に退避しながら進む
+                stageData.start = { x: 200, y: 540, w: 60, h: 60 };
+                stageData.goal = { x: 200, y: 60, w: 60, h: 60 };
+                stageData.paths = [
+                    { x: 170, y: 30, w: 60, h: 540 },
+                    { x: 88, y: 441, w: 82, h: 48 },
+                    { x: 230, y: 301, w: 82, h: 48 },
+                    { x: 88, y: 161, w: 82, h: 48 }
+                ];
+                stageData.obstacles.push({ type: 'slider', x: 210, y: 465, w: 80, h: 72, baseX: 210, baseY: 465, moveRange: 20, speed: 2.6, angle: -Math.PI / 2, isVertical: false });
+                stageData.obstacles.push({ type: 'slider', x: 190, y: 325, w: 80, h: 72, baseX: 190, baseY: 325, moveRange: 20, speed: 2.8, angle: Math.PI / 2, isVertical: false });
+                stageData.obstacles.push({ type: 'slider', x: 210, y: 185, w: 80, h: 72, baseX: 210, baseY: 185, moveRange: 20, speed: 3.0, angle: -Math.PI / 2, isVertical: false });
+            } else if (stage === 13) {
+                // レベル3-3：回転棒の横にある退避帯
+                stageData.start = { x: 80, y: 540, w: 60, h: 60 };
+                stageData.goal = { x: 320, y: 60, w: 60, h: 60 };
+                stageData.paths = [
+                    { x: 50, y: 510, w: 60, h: 60 },
+                    { x: 50, y: 510, w: 220, h: 60 },
+                    { x: 210, y: 370, w: 60, h: 140 },
+                    { x: 110, y: 370, w: 100, h: 60 },
+                    { x: 110, y: 230, w: 60, h: 140 },
+                    { x: 110, y: 230, w: 220, h: 60 },
+                    { x: 300, y: 30, w: 60, h: 200 },
+                    { x: 270, y: 438, w: 82, h: 48 },
+                    { x: 28, y: 298, w: 82, h: 48 },
+                    { x: 170, y: 158, w: 82, h: 48 }
+                ];
+                stageData.obstacles.push({ type: 'rotator', cx: 240, cy: 480, length: 172, angle: 0, speed: -2.85 });
+                stageData.obstacles.push({ type: 'slider', x: 150, y: 340, w: 80, h: 72, baseX: 150, baseY: 340, moveRange: 20, speed: 2.5, angle: Math.PI / 2, isVertical: false });
+                stageData.obstacles.push({ type: 'rotator', cx: 210, cy: 200, length: 172, angle: Math.PI / 2, speed: -3.0 });
+            } else if (stage === 14) {
+                // レベル3-4：観覧車型の移動床と退避帯
+                stageData.start = { x: 80, y: 540, w: 60, h: 60 };
+                stageData.goal = { x: 330, y: 70, w: 60, h: 60 };
+                stageData.paths = [
+                    { x: 50, y: 510, w: 60, h: 60 },
+                    { x: 50, y: 510, w: 130, h: 60 },
+                    { x: 18, y: 468, w: 82, h: 48 },
+                    { x: 300, y: 348, w: 82, h: 48 },
+                    { x: 98, y: 208, w: 82, h: 48 },
+                    { x: 300, y: 88, w: 60, h: 170 }
+                ];
+                for (let i = 0; i < 4; i++) {
+                    stageData.movingPaths.push({
+                        type: 'orbit',
+                        cx: 190,
+                        cy: 430,
+                        r: 110,
+                        w: 60,
+                        h: 60,
+                        angle: (Math.PI / 2) * i,
+                        speed: 0.75
+                    });
+                }
+                for (let i = 0; i < 4; i++) {
+                    stageData.movingPaths.push({
+                        type: 'orbit',
+                        cx: 255,
+                        cy: 250,
+                        r: 105,
+                        w: 60,
+                        h: 60,
+                        angle: (Math.PI / 2) * i + Math.PI / 4,
+                        speed: -0.8
+                    });
+                }
+                stageData.obstacles.push({ type: 'slider', x: 335, y: 430, w: 80, h: 72, baseX: 335, baseY: 430, moveRange: 20, speed: 2.4, angle: -Math.PI / 2, isVertical: false });
+                stageData.obstacles.push({ type: 'slider', x: 120, y: 230, w: 80, h: 72, baseX: 120, baseY: 230, moveRange: 20, speed: 2.6, angle: Math.PI / 2, isVertical: false });
+                stageData.blinkingObstacles.push({ x: 300, y: 170, w: 60, h: 40, activeTime: 0.9, inactiveTime: 1.1, timer: 0, isActive: false });
+                stageData.blinkingObstacles.push({ x: 300, y: 120, w: 60, h: 40, activeTime: 0.9, inactiveTime: 1.1, timer: 0.55, isActive: false });
+            } else if (stage === 15) {
+                // レベル3-5：退避帯リレーの集大成
+                stageData.start = { x: 80, y: 540, w: 60, h: 60 };
+                stageData.goal = { x: 330, y: 70, w: 60, h: 60 };
+                stageData.paths = [
+                    { x: 50, y: 510, w: 60, h: 60 },
+                    { x: 50, y: 510, w: 220, h: 60 },
+                    { x: 210, y: 410, w: 60, h: 100 },
+                    { x: 90, y: 410, w: 120, h: 60 },
+                    { x: 90, y: 310, w: 60, h: 100 },
+                    { x: 90, y: 310, w: 220, h: 60 },
+                    { x: 250, y: 210, w: 60, h: 100 },
+                    { x: 160, y: 210, w: 90, h: 60 },
+                    { x: 160, y: 110, w: 60, h: 100 },
+                    { x: 160, y: 110, w: 170, h: 60 },
+                    { x: 300, y: 30, w: 60, h: 80 },
+                    { x: 270, y: 478, w: 82, h: 48 },
+                    { x: 8, y: 358, w: 82, h: 48 },
+                    { x: 310, y: 258, w: 82, h: 48 },
+                    { x: 78, y: 158, w: 82, h: 48 }
+                ];
+                stageData.obstacles.push({ type: 'slider', x: 230, y: 495, w: 80, h: 72, baseX: 230, baseY: 495, moveRange: 20, speed: 2.9, angle: Math.PI / 2, isVertical: false });
+                stageData.obstacles.push({ type: 'rotator', cx: 120, cy: 380, length: 112, angle: 0, speed: 4.1 });
+                stageData.blinkingObstacles.push({ x: 250, y: 238, w: 60, h: 120, activeTime: 0.9, inactiveTime: 1.1, timer: 0.4, isActive: false });
+                stageData.obstacles.push({ type: 'slider', x: 200, y: 185, w: 80, h: 72, baseX: 200, baseY: 185, moveRange: 20, speed: 3.1, angle: Math.PI / 2, isVertical: false });
             }
             updateCharPositions(stageData.start, stageData.goal);
         }
