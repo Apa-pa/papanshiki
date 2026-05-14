@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ヒー先生のふしぎ研究所で、みぢかな理科のステージにちょうせんしよう。">
+    <title>ヒー先生のふしぎ研究所 | ぱぱん式</title>
+    <script src="ranking.js"></script>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg-start: #e0f7fa;
+            --bg-end: #f3e5f5;
+            --card-bg: rgba(255, 255, 255, 0.96);
+            --primary: #5c6bc0;
+            --primary-dark: #3949ab;
+            --accent: #ff9800;
+            --accent-dark: #e65100;
+            --success: #66bb6a;
+            --danger: #ef5350;
+            --text-main: #333;
+            --text-sub: #777;
+            --line: #dfe8ff;
+            --shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+            --radius-main: 28px;
+            --radius-btn: 50px;
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, Meiryo, sans-serif;
+            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 16px;
+            color: var(--text-main);
+            touch-action: manipulation;
+        }
+
+        #lab-container {
+            width: 100%;
+            max-width: 560px;
+            min-height: calc(100vh - 32px);
+            background: var(--card-bg);
+            border-radius: var(--radius-main);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            position: relative;
+        }
+
+        #lab-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #7986cb 100%);
+            color: white;
+            padding: 14px 20px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .header-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title {
+            font-size: 1.05rem;
+            font-weight: bold;
+            line-height: 1.3;
+        }
+
+        .header-sub {
+            font-size: 0.75rem;
+            opacity: 0.85;
+        }
+
+        .header-link {
+            color: white;
+            text-decoration: none;
+            font-size: 0.82rem;
+            opacity: 0.9;
+            border-bottom: 1px dotted rgba(255, 255, 255, 0.9);
+            white-space: nowrap;
+        }
+
+        #progress-wrap {
+            padding: 10px 20px 0;
+            background: linear-gradient(135deg, var(--primary) 0%, #7986cb 100%);
+        }
+
+        .step-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            gap: 6px;
+        }
+
+        .step-label {
+            flex: 1;
+            text-align: center;
+            font-size: 0.62rem;
+            color: rgba(255, 255, 255, 0.75);
+            line-height: 1.2;
+        }
+
+        .step-label.active {
+            color: white;
+            font-weight: bold;
+        }
+
+        #progress-bar-bg {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.28);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        #progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--accent);
+            border-radius: 5px;
+            transition: width 0.35s ease;
+        }
+
+        .scene {
+            display: none;
+            padding: 22px 22px 26px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .scene.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .character-nav {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .character-nav img {
+            width: 56px;
+            height: 56px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .speech-bubble {
+            flex: 1;
+            background: #e3f2fd;
+            border-radius: 16px 16px 16px 4px;
+            padding: 10px 14px;
+            font-size: 0.88rem;
+            line-height: 1.55;
+        }
+
+        .scene-title {
+            font-size: 1.48rem;
+            font-weight: bold;
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .scene-sub {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            text-align: center;
+            margin-bottom: 18px;
+            line-height: 1.6;
+        }
+
+        .area-list,
+        .preview-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .info-card,
+        .area-card,
+        .preview-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f6f8ff;
+            border: 2px solid #e2e8ff;
+            border-radius: 18px;
+            padding: 12px 14px;
+        }
+
+        .area-card.locked {
+            opacity: 0.6;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-title {
+            font-size: 0.98rem;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .card-desc {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            line-height: 1.45;
+        }
+
+        .card-badge {
+            flex-shrink: 0;
+            font-size: 0.72rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 999px;
+            padding: 3px 8px;
+        }
+
+        .stage-banner {
+            border-radius: 16px;
+            color: white;
+            padding: 12px 18px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
+        }
+
+        .stage-banner.magnet {
+            background: linear-gradient(135deg, #ff8a65 0%, #d84315 100%);
+        }
+
+        .stage-banner.float {
+            background: linear-gradient(135deg, #26c6da 0%, #00838f 100%);
+        }
+
+        .stage-banner.melt {
+            background: linear-gradient(135deg, #ab47bc 0%, #6a1b9a 100%);
+        }
+
+        .stage-banner-icon {
+            font-size: 1.8rem;
+        }
+
+        .stage-banner-name {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .stage-banner-sub {
+            font-size: 0.72rem;
+            opacity: 0.88;
+        }
+
+        .intro-box,
+        .question-box,
+        .finish-box {
+            background: #fbfdff;
+            border: 2px solid var(--line);
+            border-radius: 20px;
+            padding: 18px 16px;
+        }
+
+        .intro-box {
+            margin-bottom: 18px;
+        }
+
+        .intro-box h2,
+        .finish-box h2 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+            text-align: center;
+        }
+
+        .intro-box p,
+        .finish-box p {
+            font-size: 0.92rem;
+            line-height: 1.75;
+            text-align: center;
+        }
+
+        .tip-list {
+            margin-top: 12px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .tip-item {
+            background: white;
+            border-radius: 14px;
+            padding: 10px 12px;
+            font-size: 0.82rem;
+            line-height: 1.5;
+            color: var(--text-sub);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: var(--radius-btn);
+            cursor: pointer;
+            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.18);
+            transition: transform 0.08s, box-shadow 0.08s;
+            font-family: inherit;
+        }
+
+        .btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+        }
+
+        .btn-sub {
+            background: transparent;
+            color: var(--text-sub);
+            box-shadow: none;
+            padding: 10px;
+            font-size: 0.88rem;
+        }
+
+        .btn-sub:active {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .question-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 0.82rem;
+            color: var(--text-sub);
+            font-weight: bold;
+        }
+
+        .question-title {
+            font-size: 1.06rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .question-subtitle {
+            font-size: 0.82rem;
+            color: var(--text-sub);
+            text-align: center;
+            margin-bottom: 12px;
+            line-height: 1.55;
+        }
+
+        .target-card {
+            background: white;
+            border: 3px dashed #cfe4ff;
+            border-radius: 18px;
+            padding: 18px 14px;
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        .target-emoji {
+            font-size: 4rem;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .target-label {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .target-card.is-hidden {
+            display: none;
+        }
+
+        .target-card.preview-only {
+            padding-top: 12px;
+            padding-bottom: 12px;
+        }
+
+        .target-card.preview-only .target-emoji,
+        .target-card.preview-only .target-label {
+            display: none;
+        }
+
+        .shadow-preview {
+            margin-top: 12px;
+            min-height: 92px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .shadow-preview-stage {
+            position: relative;
+            width: 180px;
+            height: 92px;
+        }
+
+        .shadow-preview-ground {
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            bottom: 14px;
+            height: 8px;
+            border-radius: 999px;
+            background: #e7edf7;
+        }
+
+        .shadow-preview-object {
+            position: absolute;
+            left: 50%;
+            bottom: 22px;
+            transform: translateX(-50%);
+            font-size: 2.1rem;
+            line-height: 1;
+            z-index: 2;
+        }
+
+        .shadow-preview-shape {
+            position: absolute;
+            left: 50%;
+            bottom: 18px;
+            height: 14px;
+            border-radius: 999px;
+            background: rgba(70, 90, 120, 0.26);
+            transform-origin: left center;
+            z-index: 1;
+        }
+
+        .shadow-preview-shape.right {
+            transform: skewX(-22deg);
+            margin-left: 6px;
+        }
+
+        .shadow-preview-shape.left {
+            transform: translateX(-100%) skewX(22deg);
+            margin-left: -6px;
+        }
+
+        .shadow-preview-shape.down {
+            width: 16px !important;
+            left: 50%;
+            transform: translateX(-50%);
+            transform-origin: center top;
+            border-radius: 999px;
+        }
+
+        .shadow-preview-shape.long {
+            width: 82px;
+        }
+
+        .shadow-preview-shape.short {
+            width: 46px;
+        }
+
+        .shadow-preview-shape.down.long {
+            height: 62px;
+            bottom: -28px;
+        }
+
+        .shadow-preview-shape.down.short {
+            height: 34px;
+            bottom: 0;
+        }
+
+        .choice-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .drop-zones {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .drop-zone {
+            border-radius: 18px;
+            border: 3px solid #d9e7ff;
+            background: linear-gradient(180deg, #ffffff 0%, #f6f9ff 100%);
+            min-height: 126px;
+            padding: 14px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 5px 0 rgba(92, 107, 192, 0.12);
+        }
+
+        .drop-zone:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(92, 107, 192, 0.12);
+        }
+
+        .drop-zone.highlight {
+            border-color: var(--accent);
+            background: linear-gradient(180deg, #fff8ec 0%, #ffffff 100%);
+        }
+
+        .drop-zone-emoji {
+            font-size: 2rem;
+            line-height: 1;
+        }
+
+        .drop-zone-label {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .drop-zone-hint {
+            font-size: 0.72rem;
+            color: var(--text-sub);
+            line-height: 1.45;
+        }
+
+        .drag-target {
+            background: white;
+            border: 3px dashed #ffcc80;
+            border-radius: 18px;
+            padding: 16px 14px;
+            text-align: center;
+            margin-bottom: 14px;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 6px 0 rgba(255, 152, 0, 0.15);
+        }
+
+        .drag-target.dragging {
+            opacity: 0.75;
+            transform: scale(0.98);
+        }
+
+        .tank-wrap {
+            display: grid;
+            gap: 12px;
+        }
+
+        .tank-zone {
+            border-radius: 20px;
+            padding: 14px 12px;
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.12);
+        }
+
+        .tank-zone:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+        }
+
+        .tank-zone.float-zone {
+            background: linear-gradient(180deg, #8fe3ff 0%, #4fc3f7 100%);
+            min-height: 92px;
+        }
+
+        .tank-zone.sink-zone {
+            background: linear-gradient(180deg, #4db6ac 0%, #00897b 100%);
+            min-height: 118px;
+        }
+
+        .tank-zone-emoji {
+            font-size: 1.9rem;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .tank-zone-label {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .tank-zone-hint {
+            font-size: 0.72rem;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+
+        .choice-btn {
+            border: none;
+            border-radius: 18px;
+            padding: 18px 10px;
+            background: white;
+            border: 2px solid #d9e7ff;
+            color: var(--text-main);
+            box-shadow: 0 5px 0 rgba(92, 107, 192, 0.12);
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .choice-btn small {
+            display: block;
+            margin-top: 6px;
+            font-size: 0.74rem;
+            color: var(--text-sub);
+            font-weight: normal;
+            line-height: 1.45;
+        }
+
+        .choice-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(92, 107, 192, 0.12);
+        }
+
+        .mix-lab {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .beaker {
+            border-radius: 18px;
+            border: 3px solid #d9e7ff;
+            background: linear-gradient(180deg, #ffffff 0%, #f8f7ff 100%);
+            padding: 14px 10px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 5px 0 rgba(92, 107, 192, 0.12);
+        }
+
+        .beaker:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(92, 107, 192, 0.12);
+        }
+
+        .beaker-emoji {
+            font-size: 2rem;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .beaker-label {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .beaker-hint {
+            font-size: 0.72rem;
+            color: var(--text-sub);
+            line-height: 1.4;
+        }
+
+        .sun-grid,
+        .sound-grid,
+        .pitch-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .sun-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .sound-grid,
+        .pitch-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .sun-button,
+        .sound-button,
+        .pitch-button {
+            border: none;
+            border-radius: 18px;
+            cursor: pointer;
+            box-shadow: 0 5px 0 rgba(92, 107, 192, 0.12);
+            color: var(--text-main);
+            font-family: inherit;
+        }
+
+        .sun-button:active,
+        .sound-button:active,
+        .pitch-button:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(92, 107, 192, 0.12);
+        }
+
+        .sun-button {
+            background: linear-gradient(180deg, #fff8df 0%, #fff1b5 100%);
+            border: 2px solid #ffe08a;
+            padding: 14px 8px;
+            text-align: center;
+        }
+
+        .sun-emoji {
+            font-size: 2rem;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .sun-label {
+            font-size: 0.95rem;
+            font-weight: bold;
+        }
+
+        .sound-button {
+            background: linear-gradient(180deg, #eefbff 0%, #d9f4ff 100%);
+            border: 2px solid #bde5f9;
+            padding: 14px 8px;
+            text-align: center;
+        }
+
+        .sound-emoji {
+            font-size: 1.95rem;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .sound-label {
+            font-size: 0.95rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .sound-hint {
+            font-size: 0.72rem;
+            color: var(--text-sub);
+            line-height: 1.4;
+        }
+
+        .pitch-button {
+            background: linear-gradient(180deg, #f7f1ff 0%, #ece1ff 100%);
+            border: 2px solid #d8caf9;
+            padding: 12px 8px;
+            text-align: center;
+        }
+
+        .pitch-button.high {
+            margin-top: 0;
+        }
+
+        .pitch-button.mid {
+            margin-top: 10px;
+        }
+
+        .pitch-button.low {
+            margin-top: 20px;
+        }
+
+        .pitch-emoji {
+            font-size: 1.9rem;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .pitch-label {
+            font-size: 0.92rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .pitch-hint {
+            font-size: 0.7rem;
+            color: var(--text-sub);
+            line-height: 1.35;
+        }
+
+        .light-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .light-button {
+            border: 2px solid #ffe1a8;
+            border-radius: 18px;
+            background: linear-gradient(180deg, #fff9e8 0%, #fff1c5 100%);
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 5px 0 rgba(255, 193, 7, 0.14);
+            color: var(--text-main);
+            font-family: inherit;
+        }
+
+        .light-button:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 rgba(255, 193, 7, 0.14);
+        }
+
+        .light-emoji {
+            font-size: 1.95rem;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .light-label {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .light-hint {
+            font-size: 0.7rem;
+            color: var(--text-sub);
+            line-height: 1.35;
+        }
+
+        #feedback-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            font-weight: bold;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            z-index: 50;
+        }
+
+        #feedback-overlay.show {
+            opacity: 1;
+        }
+
+        #feedback-overlay.correct {
+            color: #2e7d32;
+            background: rgba(200, 230, 201, 0.72);
+        }
+
+        #feedback-overlay.wrong {
+            color: #c62828;
+            background: rgba(255, 205, 210, 0.74);
+        }
+
+        .answer-hint-bar {
+            margin-top: 12px;
+            text-align: center;
+            font-size: 0.76rem;
+            color: var(--text-sub);
+            line-height: 1.5;
+        }
+
+        .reward-pill {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: white;
+            border-radius: 999px;
+            padding: 10px 18px;
+            font-size: 1.45rem;
+            font-weight: bold;
+            margin: 10px 0 14px;
+            box-shadow: 0 5px 0 rgba(0, 0, 0, 0.15);
+        }
+
+        .home-link {
+            display: block;
+            text-align: center;
+            margin-top: 12px;
+            color: var(--text-sub);
+            text-decoration: none;
+            font-size: 0.88rem;
+            border-bottom: 1px dotted var(--text-sub);
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media (max-width: 400px) {
+            body {
+                padding: 10px;
+            }
+
+            #lab-container {
+                min-height: calc(100vh - 20px);
+            }
+
+            .scene {
+                padding: 18px 16px 22px;
+            }
+
+            .scene-title {
+                font-size: 1.28rem;
+            }
+
+            .btn {
+                font-size: 1rem;
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="lab-container">
+        <div id="lab-header">
+            <div class="header-main">
+                <span style="font-size:1.8rem;">🧪</span>
+                <div>
+                    <div class="header-title">ヒー先生のふしぎ研究所</div>
+                    <div class="header-sub">サイエンスステージ</div>
+                </div>
+            </div>
+            <a href="index.html" class="header-link">🏠 ホームへ</a>
+        </div>
+
+        <div id="progress-wrap">
+            <div class="step-labels">
+                <span class="step-label" id="step-label-0">エリア</span>
+                <span class="step-label" id="step-label-1">1</span>
+                <span class="step-label" id="step-label-2">2</span>
+                <span class="step-label" id="step-label-3">3</span>
+                <span class="step-label" id="step-label-4">ごほうび</span>
+            </div>
+            <div id="progress-bar-bg">
+                <div id="progress-bar-fill"></div>
+            </div>
+        </div>
+
+        <div id="feedback-overlay"></div>
+
+        <div class="scene active" id="title-scene">
+            <div class="character-nav">
+                <img src="hi-192.webp" alt="ヒー" onerror="this.style.display='none'">
+                <div class="speech-bubble">
+                    エリアを えらぶと、3つのステージが れんぞくで はじまるよ！<br>
+                    それぞれの ふしぎを たのしく しらべよう。
+                </div>
+            </div>
+
+            <div class="scene-title">ヒー先生の ふしぎ研究所</div>
+            <div class="scene-sub">どのエリアも 3ステージこうせい。かんそうすると 50ポイント！</div>
+
+            <div class="preview-list">
+                <div class="preview-card">
+                    <div class="card-icon">🔬</div>
+                    <div class="card-info">
+                        <div class="card-title">みぢかな ふしぎ</div>
+                        <div class="card-desc">じしゃく・水そう・とけるかな？ を たんけん</div>
+                    </div>
+                </div>
+                <div class="preview-card">
+                    <div class="card-icon">💡</div>
+                    <div class="card-info">
+                    <div class="card-title">みえない ちから</div>
+                    <div class="card-desc">かげ・おと・でんきを とおす？ を しらべよう</div>
+                    </div>
+                </div>
+                <div class="preview-card">
+                    <div class="card-icon">🔥</div>
+                    <div class="card-info">
+                        <div class="card-title">へんしん じっけん</div>
+                        <div class="card-desc">これから ふえる じっけんエリア。じゅんびちゅう！</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-accent" id="to-area-select-btn">▶ エリアをえらぶ</button>
+            <a href="index.html" class="home-link">トップページにもどる</a>
+        </div>
+
+        <div class="scene" id="area-scene">
+            <div class="scene-title">エリアを えらぼう</div>
+            <div class="scene-sub">1つのエリアは 3ステージで できているよ</div>
+
+            <div class="area-list" id="area-list"></div>
+
+            <button class="btn btn-sub" id="back-title-btn">◀ タイトルへもどる</button>
+        </div>
+
+        <div class="scene" id="intro-scene">
+            <div id="intro-banner" class="stage-banner">
+                <div class="stage-banner-icon" id="intro-banner-icon">🧲</div>
+                <div>
+                    <div class="stage-banner-name" id="intro-banner-name">じしゃくステージ</div>
+                    <div class="stage-banner-sub" id="intro-banner-sub">ステージ 1 / 3</div>
+                </div>
+            </div>
+
+            <div class="intro-box">
+                <h2 id="intro-title">どんなステージ？</h2>
+                <p id="intro-text"></p>
+                <div class="tip-list">
+                    <div class="tip-item" id="intro-tip-1"></div>
+                    <div class="tip-item" id="intro-tip-2"></div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" id="start-stage-btn">このステージを はじめる</button>
+            <button class="btn btn-sub" id="back-area-btn">◀ エリアせんたくへ</button>
+        </div>
+
+        <div class="scene" id="question-scene">
+            <div id="question-banner" class="stage-banner">
+                <div class="stage-banner-icon" id="question-banner-icon">🧲</div>
+                <div>
+                    <div class="stage-banner-name" id="question-banner-name">じしゃくステージ</div>
+                    <div class="stage-banner-sub" id="question-banner-sub">もんだい 1 / 4</div>
+                </div>
+            </div>
+
+            <div class="question-box">
+                <div class="question-head">
+                    <span id="question-stage-count">ステージ 1 / 3</span>
+                    <span id="question-progress-count">1 / 4</span>
+                </div>
+                <div class="question-title" id="question-title"></div>
+                <div class="question-subtitle" id="question-subtitle"></div>
+                <div class="target-card">
+                    <div class="target-emoji" id="question-emoji"></div>
+                    <div class="target-label" id="question-label"></div>
+                    <div class="shadow-preview" id="shadow-preview" hidden>
+                        <div class="shadow-preview-stage">
+                            <div class="shadow-preview-ground"></div>
+                            <div class="shadow-preview-object" id="shadow-preview-object">🌳</div>
+                            <div class="shadow-preview-shape" id="shadow-preview-shape"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="interaction-area"></div>
+                <div class="answer-hint-bar" id="answer-hint-bar"></div>
+            </div>
+        </div>
+
+        <div class="scene" id="finish-scene">
+            <div class="character-nav">
+                <img src="hari-an.webp" alt="アン" onerror="this.style.display='none'">
+                <div class="speech-bubble">
+                    3つのステージ かんそう！ つぎは ごほうびを うけとろう！
+                </div>
+            </div>
+
+            <div class="finish-box">
+                <h2>ぜんぶ クリア！</h2>
+                <p id="finish-message">えらんだ エリアを ぜんぶ クリアしたよ。</p>
+                <div style="text-align:center;">
+                    <div class="reward-pill">50 pt</div>
+                </div>
+                <p>ごほうびを うけとったら、もういちど あそぶことも できるよ。</p>
+            </div>
+
+            <button class="btn btn-accent" id="reward-btn">ポイントを うけとる</button>
+            <button class="btn btn-primary" id="restart-btn" style="margin-top:12px;">もういちど あそぶ</button>
+            <a href="index.html" class="home-link">トップページにもどる</a>
+        </div>
+    </div>
+
+    <script>
+        const GAME_ID = 'science_lab';
+        const REWARD_POINTS = 50;
+        const QUESTIONS_PER_STAGE = 5;
+        const AUTO_ADVANCE_DELAY = 650;
+
+        const AREAS = [
+            {
+                id: 'everyday_science',
+                title: 'みぢかな ふしぎ',
+                emoji: '🔬',
+                description: 'みのまわりにある ものを つかって、かがくの ふしぎを 3つ たいけんしよう。',
+                unlocked: true,
+                stages: [
+                    {
+                        id: 'magnet',
+                        emoji: '🧲',
+                        title: 'じしゃくステージ',
+                        bannerClass: 'magnet',
+                        answerMode: 'drag-sort',
+                        introTitle: 'じしゃくに つくものを さがそう',
+                        introText: 'ものを みて、じしゃくに つくか つかないかを えらぶステージだよ。',
+                        tips: [
+                            'カードを ドラッグして、つく か つかない かごへ 入れよう。',
+                            'てつで できたものは じしゃくに つきやすいよ。'
+                        ],
+                        questionText: 'このものは じしゃくに つくかな？',
+                        choices: [
+                            { id: 'stick', label: 'つく', hint: 'ぴたっと くっつく', emoji: '🧲' },
+                            { id: 'no_stick', label: 'つかない', hint: 'くっつかない', emoji: '🍃' }
+                        ],
+                        questionPool: [
+                            { emoji: '📎', label: 'クリップ', correct: 'stick' },
+                            { emoji: '🪨', label: 'いし', correct: 'no_stick' },
+                            { emoji: '🔩', label: 'ねじ', correct: 'stick' },
+                            { emoji: '🪵', label: 'きのえだ', correct: 'no_stick' },
+                            { emoji: '🧷', label: 'あんぜんピン', correct: 'stick' },
+                            { emoji: '🥄', label: '木のスプーン', correct: 'no_stick' },
+                            { emoji: '🪙', label: '1円だま', correct: 'no_stick' },
+                            { emoji: '🗝️', label: 'かぎ', correct: 'stick' },
+                            { emoji: '✏️', label: 'えんぴつ', correct: 'no_stick' },
+                            { emoji: '🧲', label: 'クリップチェーン', correct: 'stick' }
+                        ]
+                    },
+                    {
+                        id: 'float',
+                        emoji: '🌊',
+                        title: 'うく？ しずむ？ ステージ',
+                        bannerClass: 'float',
+                        answerMode: 'tank-drop',
+                        introTitle: 'みずの中で どうなるかな？',
+                        introText: 'ものを みずに いれたとき、うくのか しずむのかを よそうするステージだよ。',
+                        tips: [
+                            '水そうの うえか 下を タップして 入れるばしょを えらぼう。',
+                            'かるくて くうきが はいったものは うきやすいよ。'
+                        ],
+                        questionText: 'このものを みずに いれたら どうなる？',
+                        choices: [
+                            { id: 'float', label: 'うく', hint: 'ぷかぷか うえに のる', emoji: '🫧' },
+                            { id: 'sink', label: 'しずむ', hint: 'したへ すーっと いく', emoji: '💧' }
+                        ],
+                        questionPool: [
+                            { emoji: '🍃', label: 'はっぱ', correct: 'float' },
+                            { emoji: '🥄', label: 'スプーン', correct: 'sink' },
+                            { emoji: '🧽', label: 'スポンジ', correct: 'float' },
+                            { emoji: '🪙', label: '10円だま', correct: 'sink' },
+                            { emoji: '🪵', label: '木ぎれ', correct: 'float' },
+                            { emoji: '🧱', label: 'レンガ', correct: 'sink' },
+                            { emoji: '⚽', label: 'ボール', correct: 'float' },
+                            { emoji: '🔑', label: 'かぎ', correct: 'sink' },
+                            { emoji: '🍎', label: 'りんご', correct: 'float' },
+                            { emoji: '🫙', label: 'ガラス玉', correct: 'sink' }
+                        ]
+                    },
+                    {
+                        id: 'melt',
+                        emoji: '🥛',
+                        title: 'とける？ とけない？ ステージ',
+                        bannerClass: 'melt',
+                        answerMode: 'beaker-choice',
+                        introTitle: 'みずに まぜると どうなる？',
+                        introText: 'ものを みずに いれたとき、とけるか とけないかを みきわめるステージだよ。',
+                        tips: [
+                            'どっちの ビーカーに 入れるか えらんで じっけんしよう。',
+                            'しおや さとうは みずに とけやすいよ。'
+                        ],
+                        questionText: 'このものは みずに いれると とけるかな？',
+                        choices: [
+                            { id: 'melt', label: 'とける', hint: 'みずに まざって みえにくい', emoji: '🧪' },
+                            { id: 'no_melt', label: 'とけない', hint: 'つぶが のこる', emoji: '🥄' }
+                        ],
+                        questionPool: [
+                            { emoji: '🧂', label: 'しお', correct: 'melt' },
+                            { emoji: '🏖️', label: 'すな', correct: 'no_melt' },
+                            { emoji: '🍬', label: 'さとう', correct: 'melt' },
+                            { emoji: '🌿', label: 'こしょう', correct: 'no_melt' },
+                            { emoji: '🧂', label: 'こんぶだしのこな', correct: 'melt' },
+                            { emoji: '🍚', label: 'おこめ', correct: 'no_melt' },
+                            { emoji: '🫘', label: 'きなこ', correct: 'no_melt' },
+                            { emoji: '🍯', label: 'はちみつ', correct: 'melt' },
+                            { emoji: '🫖', label: 'こなのおちゃ', correct: 'melt' },
+                            { emoji: '🌰', label: 'くだいた どんぐり', correct: 'no_melt' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'light_and_sound',
+                title: 'みえない ちから',
+                emoji: '💡',
+                description: 'かげ、おと、でんきを とおす？ を しらべる 3ステージエリアだよ。',
+                unlocked: true,
+                stages: [
+                    {
+                        id: 'shadow',
+                        emoji: '🌞',
+                        title: 'かげステージ',
+                        bannerClass: 'float',
+                        answerMode: 'shadow-light',
+                        introTitle: 'ライトを おいて かげを つくろう',
+                        introText: 'まんなかの ものは そのまま。おだいどおりの かげになる ライトの ばしょを えらぶステージだよ。',
+                        tips: [
+                            'ライトが 左にあると かげは 右へ のびるよ。上なら 下へ のびるよ。',
+                            'ちかい ライトは 長いかげ、 とおい ライトは みじかいかげを つくりやすいよ。'
+                        ],
+                        questionText: 'おだいどおりの かげを つくろう',
+                        choices: [
+                            { id: 'left_near', label: '左・ちかい', hint: '右へ ながく のびやすい', emoji: '🌞' },
+                            { id: 'up_near', label: '上・ちかい', hint: '下へ ながく のびやすい', emoji: '☀️' },
+                            { id: 'right_near', label: '右・ちかい', hint: '左へ ながく のびやすい', emoji: '🌤️' },
+                            { id: 'left_far', label: '左・とおい', hint: '右へ みじかく のびやすい', emoji: '🌞' },
+                            { id: 'up_far', label: '上・とおい', hint: '下へ みじかく のびやすい', emoji: '☀️' },
+                            { id: 'right_far', label: '右・とおい', hint: '左へ みじかく のびやすい', emoji: '🌤️' }
+                        ],
+                        questionPool: [
+                            { emoji: '🌳', label: '木', task: 'みぎへ ながく のびる かげ', correct: 'left_near' },
+                            { emoji: '🌳', label: '木', task: 'みぎへ みじかく のびる かげ', correct: 'left_far' },
+                            { emoji: '🗼', label: 'ぼう', task: 'ひだりへ ながく のびる かげ', correct: 'right_near' },
+                            { emoji: '🗼', label: 'ぼう', task: 'ひだりへ みじかく のびる かげ', correct: 'right_far' },
+                            { emoji: '🧍', label: 'ひと', task: '下へ ながく のびる かげ', correct: 'up_near' },
+                            { emoji: '🧍', label: 'ひと', task: '下へ みじかく のびる かげ', correct: 'up_far' },
+                            { emoji: '🌲', label: '木', task: 'みぎへ ながく のびる かげ', correct: 'left_near' },
+                            { emoji: '🧸', label: 'ぬいぐるみ', task: 'ひだりへ みじかく のびる かげ', correct: 'right_far' },
+                            { emoji: '🚏', label: 'かんばん', task: '下へ ながく のびる かげ', correct: 'up_near' },
+                            { emoji: '🪴', label: 'はちうえ', task: 'みぎへ みじかく のびる かげ', correct: 'left_far' }
+                        ]
+                    },
+                    {
+                        id: 'sound_echo',
+                        emoji: '📣',
+                        title: 'ひびく？ ひびかない？ ステージ',
+                        bannerClass: 'magnet',
+                        answerMode: 'sound-choice',
+                        introTitle: 'おとが ひびきやすい ばしょを さがそう',
+                        introText: 'ばしょや ものを みて、おとが ひびくか ひびきにくいかを えらぶステージだよ。',
+                        tips: [
+                            'かたい かべの へやや 空っぽの ものは おとが ひびきやすいよ。',
+                            '3つの えらびかたから いちばん ちかいものを えらぼう。'
+                        ],
+                        questionText: 'このばしょや ものは おとが どうなりそう？',
+                        choices: [
+                            { id: 'echo', label: 'ひびく', hint: 'やまびこ みたいに のこる', emoji: '📣' },
+                            { id: 'mid', label: 'ふつう', hint: 'どちらとも いえない', emoji: '🔊' },
+                            { id: 'quiet', label: 'ひびきにくい', hint: 'おとを すいこみやすい', emoji: '🧸' }
+                        ],
+                        questionPool: [
+                            { emoji: '🏫', label: '体育館', correct: 'echo' },
+                            { emoji: '🛋️', label: 'カーテンの多いへや', correct: 'quiet' },
+                            { emoji: '🪣', label: '空っぽのバケツ', correct: 'echo' },
+                            { emoji: '🧸', label: 'ぬいぐるみの山', correct: 'quiet' },
+                            { emoji: '🚿', label: 'おふろば', correct: 'echo' },
+                            { emoji: '🪵', label: 'たたみのへや', correct: 'mid' },
+                            { emoji: '📦', label: 'ダンボールばこ', correct: 'mid' },
+                            { emoji: '🏔️', label: '山びこの出る谷', correct: 'echo' },
+                            { emoji: '🛏️', label: 'ふとんの上', correct: 'quiet' },
+                            { emoji: '🚗', label: '車の中', correct: 'mid' }
+                        ]
+                    },
+                    {
+                        id: 'electric',
+                        emoji: '💡',
+                        title: 'でんきを とおす？ ステージ',
+                        bannerClass: 'melt',
+                        answerMode: 'beaker-choice',
+                        introTitle: 'でんきを とおす ものを みつけよう',
+                        introText: 'ものを みて、でんきを とおすか とおさないかを えらぶステージだよ。',
+                        tips: [
+                            '金ぞくの ものは でんきを とおしやすいよ。',
+                            '2つの えらびさきから ぴったりな ほうを えらぼう。'
+                        ],
+                        questionText: 'このものは でんきを とおすかな？',
+                        choices: [
+                            { id: 'conduct', label: 'とおす', hint: 'でんきが ながれる', emoji: '💡' },
+                            { id: 'no_conduct', label: 'とおさない', hint: 'でんきが ながれにくい', emoji: '🪵' }
+                        ],
+                        questionPool: [
+                            { emoji: '📎', label: 'クリップ', correct: 'conduct' },
+                            { emoji: '🪵', label: '木のぼう', correct: 'no_conduct' },
+                            { emoji: '🔩', label: 'ねじ', correct: 'conduct' },
+                            { emoji: '🧤', label: 'ゴムてぶくろ', correct: 'no_conduct' },
+                            { emoji: '🥄', label: '金ぞくスプーン', correct: 'conduct' },
+                            { emoji: '📄', label: 'かみ', correct: 'no_conduct' },
+                            { emoji: '🗝️', label: 'かぎ', correct: 'conduct' },
+                            { emoji: '🧽', label: 'かわいた スポンジ', correct: 'no_conduct' },
+                            { emoji: '🪙', label: '10円だま', correct: 'conduct' },
+                            { emoji: '✏️', label: 'えんぴつ', correct: 'no_conduct' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'change_lab',
+                title: 'へんしん じっけん',
+                emoji: '🔥',
+                description: 'あたためる、ひやす、へんかする。こちらも じゅんびちゅう！',
+                unlocked: false,
+                stages: []
+            }
+        ];
+
+        const state = {
+            currentAreaIndex: null,
+            currentStageIndex: 0,
+            currentQuestionIndex: 0,
+            stageQuestions: [],
+            currentDragChoiceId: null,
+            answeringLocked: false,
+            rewardClaimed: false
+        };
+
+        const scenes = {
+            title: document.getElementById('title-scene'),
+            area: document.getElementById('area-scene'),
+            intro: document.getElementById('intro-scene'),
+            question: document.getElementById('question-scene'),
+            finish: document.getElementById('finish-scene')
+        };
+
+        const progressFill = document.getElementById('progress-bar-fill');
+        const feedbackOverlay = document.getElementById('feedback-overlay');
+        const rewardButton = document.getElementById('reward-btn');
+        const interactionArea = document.getElementById('interaction-area');
+        const targetCard = document.querySelector('.target-card');
+        const finishMessage = document.getElementById('finish-message');
+        const shadowPreview = document.getElementById('shadow-preview');
+        const shadowPreviewObject = document.getElementById('shadow-preview-object');
+        const shadowPreviewShape = document.getElementById('shadow-preview-shape');
+
+        function showScene(name) {
+            Object.values(scenes).forEach(scene => scene.classList.remove('active'));
+            scenes[name].classList.add('active');
+        }
+
+        function setProgress(stepIndex) {
+            const labels = Array.from(document.querySelectorAll('.step-label'));
+            labels.forEach((label, index) => {
+                label.classList.toggle('active', index <= stepIndex);
+            });
+            progressFill.style.width = `${(stepIndex / 4) * 100}%`;
+        }
+
+        function renderAreaList() {
+            const areaList = document.getElementById('area-list');
+            areaList.innerHTML = '';
+
+            AREAS.forEach((area, index) => {
+                const card = document.createElement('div');
+                card.className = `area-card${area.unlocked ? '' : ' locked'}`;
+
+                const badge = area.unlocked ? '3ステージ' : 'じゅんびちゅう';
+                card.innerHTML = `
+                    <div class="card-icon">${area.emoji}</div>
+                    <div class="card-info">
+                        <div class="card-title">${area.title}</div>
+                        <div class="card-desc">${area.description}</div>
+                    </div>
+                    <div class="card-badge">${badge}</div>
+                `;
+
+                if (area.unlocked) {
+                    card.style.cursor = 'pointer';
+                    card.addEventListener('click', () => selectArea(index));
+                }
+
+                areaList.appendChild(card);
+            });
+        }
+
+        function selectArea(areaIndex) {
+            state.currentAreaIndex = areaIndex;
+            state.currentStageIndex = 0;
+            state.currentQuestionIndex = 0;
+            state.stageQuestions = [];
+            state.currentDragChoiceId = null;
+            state.answeringLocked = false;
+            setProgress(0);
+            showStageIntro();
+        }
+
+        function getCurrentArea() {
+            return AREAS[state.currentAreaIndex];
+        }
+
+        function getCurrentStage() {
+            return getCurrentArea().stages[state.currentStageIndex];
+        }
+
+        function showStageIntro() {
+            const stage = getCurrentStage();
+            const banner = document.getElementById('intro-banner');
+            banner.className = `stage-banner ${stage.bannerClass}`;
+            document.getElementById('intro-banner-icon').textContent = stage.emoji;
+            document.getElementById('intro-banner-name').textContent = stage.title;
+            document.getElementById('intro-banner-sub').textContent = `ステージ ${state.currentStageIndex + 1} / ${getCurrentArea().stages.length}`;
+            document.getElementById('intro-title').textContent = stage.introTitle;
+            document.getElementById('intro-text').textContent = stage.introText;
+            document.getElementById('intro-tip-1').textContent = stage.tips[0];
+            document.getElementById('intro-tip-2').textContent = stage.tips[1];
+            setProgress(state.currentStageIndex + 1);
+            showScene('intro');
+        }
+
+        function startStage() {
+            state.currentQuestionIndex = 0;
+            state.stageQuestions = pickRandomQuestions(getCurrentStage().questionPool, QUESTIONS_PER_STAGE);
+            state.currentDragChoiceId = null;
+            state.answeringLocked = false;
+            renderQuestion();
+            showScene('question');
+        }
+
+        function pickRandomQuestions(pool, count) {
+            const copy = [...pool];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy.slice(0, Math.min(count, copy.length));
+        }
+
+        function renderQuestion() {
+            const area = getCurrentArea();
+            const stage = getCurrentStage();
+            const question = state.stageQuestions[state.currentQuestionIndex];
+
+            const banner = document.getElementById('question-banner');
+            banner.className = `stage-banner ${stage.bannerClass}`;
+            document.getElementById('question-banner-icon').textContent = stage.emoji;
+            document.getElementById('question-banner-name').textContent = stage.title;
+            document.getElementById('question-banner-sub').textContent = `もんだい ${state.currentQuestionIndex + 1} / ${state.stageQuestions.length}`;
+            document.getElementById('question-stage-count').textContent = `ステージ ${state.currentStageIndex + 1} / ${area.stages.length}`;
+            document.getElementById('question-progress-count').textContent = `${state.currentQuestionIndex + 1} / ${state.stageQuestions.length}`;
+            document.getElementById('question-title').textContent = question.task || stage.questionText;
+            document.getElementById('question-subtitle').textContent = getQuestionSubtitle(stage.answerMode);
+            document.getElementById('question-emoji').textContent = question.emoji;
+            document.getElementById('question-label').textContent = question.label;
+            document.getElementById('answer-hint-bar').textContent = getAnswerHint(stage.answerMode);
+            targetCard.classList.toggle('is-hidden', stage.answerMode === 'drag-sort');
+            targetCard.classList.toggle('preview-only', stage.answerMode === 'shadow-light');
+            renderShadowPreview(stage, question);
+
+            renderInteraction(stage, question);
+        }
+
+        function renderShadowPreview(stage, question) {
+            if (stage.answerMode !== 'shadow-light') {
+                shadowPreview.hidden = true;
+                shadowPreview.style.display = 'none';
+                shadowPreviewShape.className = 'shadow-preview-shape';
+                return;
+            }
+
+            shadowPreview.hidden = false;
+            shadowPreview.style.display = 'flex';
+            shadowPreviewObject.textContent = question.emoji;
+
+            const correct = stage.choices.find(choice => choice.id === question.correct);
+            const choiceId = correct ? correct.id : '';
+            const direction = choiceId.startsWith('left') ? 'right' : choiceId.startsWith('right') ? 'left' : 'down';
+            const length = choiceId.endsWith('near') ? 'long' : 'short';
+
+            shadowPreviewShape.className = 'shadow-preview-shape';
+            shadowPreviewShape.classList.add(direction, length);
+        }
+
+        function getQuestionSubtitle(answerMode) {
+            if (answerMode === 'drag-sort') return 'カードを したの かごへ うごかそう';
+            if (answerMode === 'tank-drop') return '水そうの うえ か したを タップしよう';
+            if (answerMode === 'beaker-choice') return 'どっちの ビーカーに 入れるか えらぼう';
+            if (answerMode === 'shadow-light') return 'ライトの ばしょを えらぼう';
+            if (answerMode === 'sun-choice') return 'たいようの ばしょを えらぼう';
+            if (answerMode === 'sound-choice') return 'おとが ひびきそうな えらびかたを タップしよう';
+            if (answerMode === 'pitch-choice') return 'かいだんの ボタンで えらぼう';
+            return '';
+        }
+
+        function getAnswerHint(answerMode) {
+            if (answerMode === 'drag-sort') return 'ドラッグできないときは、カードをタップしてから かごをタップでも OK';
+            if (answerMode === 'tank-drop') return 'うえは うく、したは しずむ ばしょ だよ';
+            if (answerMode === 'beaker-choice') return 'とける ビーカーか、のこる ビーカーを えらんでね';
+            if (answerMode === 'shadow-light') return 'ライトの ばしょで かげの むきがかわるよ。ちかいほど 長く、 とおいほど みじかく なりやすいよ';
+            if (answerMode === 'sun-choice') return 'かげは ひかりと はんたいがわへ のびるよ';
+            if (answerMode === 'sound-choice') return 'かたい ばしょは ひびきやすく、やわらかい ものは ひびきを へらしやすいよ';
+            if (answerMode === 'pitch-choice') return 'みじかい・ちいさい は 高いおと、ながい・おおきい は 低いおと';
+            return '';
+        }
+
+        function renderInteraction(stage, question) {
+            interactionArea.innerHTML = '';
+            state.currentDragChoiceId = null;
+
+            if (stage.answerMode === 'drag-sort') {
+                const dragCard = document.createElement('div');
+                dragCard.className = 'drag-target';
+                dragCard.draggable = true;
+                dragCard.innerHTML = `<div class="target-emoji">${question.emoji}</div><div class="target-label">${question.label}</div>`;
+                dragCard.addEventListener('dragstart', () => {
+                    dragCard.classList.add('dragging');
+                });
+                dragCard.addEventListener('dragend', () => {
+                    dragCard.classList.remove('dragging');
+                });
+                dragCard.addEventListener('click', () => {
+                    state.currentDragChoiceId = stage.choices[0].id;
+                });
+                interactionArea.appendChild(dragCard);
+
+                const zones = document.createElement('div');
+                zones.className = 'drop-zones';
+                stage.choices.forEach(choice => {
+                    const zone = document.createElement('div');
+                    zone.className = 'drop-zone';
+                    zone.innerHTML = `
+                        <div class="drop-zone-emoji">${choice.emoji || '📦'}</div>
+                        <div class="drop-zone-label">${choice.label}</div>
+                        <div class="drop-zone-hint">${choice.hint}</div>
+                    `;
+                    zone.addEventListener('dragover', (event) => {
+                        event.preventDefault();
+                        zone.classList.add('highlight');
+                    });
+                    zone.addEventListener('dragleave', () => zone.classList.remove('highlight'));
+                    zone.addEventListener('drop', (event) => {
+                        event.preventDefault();
+                        zone.classList.remove('highlight');
+                        answerQuestion(choice.id);
+                    });
+                    zone.addEventListener('click', () => answerQuestion(choice.id));
+                    zones.appendChild(zone);
+                });
+                interactionArea.appendChild(zones);
+                return;
+            }
+
+            if (stage.answerMode === 'tank-drop') {
+                const wrap = document.createElement('div');
+                wrap.className = 'tank-wrap';
+                stage.choices.forEach(choice => {
+                    const zone = document.createElement('div');
+                    zone.className = `tank-zone ${choice.id === 'float' ? 'float-zone' : 'sink-zone'}`;
+                    zone.innerHTML = `
+                        <div class="tank-zone-emoji">${choice.emoji || '💧'}</div>
+                        <div class="tank-zone-label">${choice.label}</div>
+                        <div class="tank-zone-hint">${choice.hint}</div>
+                    `;
+                    zone.addEventListener('click', () => answerQuestion(choice.id));
+                    wrap.appendChild(zone);
+                });
+                interactionArea.appendChild(wrap);
+                return;
+            }
+
+            if (stage.answerMode === 'beaker-choice') {
+                const wrap = document.createElement('div');
+                wrap.className = 'mix-lab';
+                stage.choices.forEach(choice => {
+                    const beaker = document.createElement('div');
+                    beaker.className = 'beaker';
+                    beaker.innerHTML = `
+                        <div class="beaker-emoji">${choice.emoji || '🧪'}</div>
+                        <div class="beaker-label">${choice.label}</div>
+                        <div class="beaker-hint">${choice.hint}</div>
+                    `;
+                    beaker.addEventListener('click', () => answerQuestion(choice.id));
+                    wrap.appendChild(beaker);
+                });
+                interactionArea.appendChild(wrap);
+                return;
+            }
+
+            if (stage.answerMode === 'sun-choice') {
+                const wrap = document.createElement('div');
+                wrap.className = 'sun-grid';
+                stage.choices.forEach(choice => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'sun-button';
+                    button.innerHTML = `
+                        <div class="sun-emoji">${choice.emoji || '☀️'}</div>
+                        <div class="sun-label">${choice.label}</div>
+                    `;
+                    button.addEventListener('click', () => answerQuestion(choice.id));
+                    wrap.appendChild(button);
+                });
+                interactionArea.appendChild(wrap);
+                return;
+            }
+
+            if (stage.answerMode === 'shadow-light') {
+                const wrap = document.createElement('div');
+                wrap.className = 'light-grid';
+                stage.choices.forEach(choice => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'light-button';
+                    button.innerHTML = `
+                        <div class="light-emoji">${choice.emoji || '☀️'}</div>
+                        <div class="light-label">${choice.label}</div>
+                        <div class="light-hint">${choice.hint}</div>
+                    `;
+                    button.addEventListener('click', () => answerQuestion(choice.id));
+                    wrap.appendChild(button);
+                });
+                interactionArea.appendChild(wrap);
+                return;
+            }
+
+            if (stage.answerMode === 'sound-choice') {
+                const wrap = document.createElement('div');
+                wrap.className = 'sound-grid';
+                stage.choices.forEach(choice => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'sound-button';
+                    button.innerHTML = `
+                        <div class="sound-emoji">${choice.emoji || '🔊'}</div>
+                        <div class="sound-label">${choice.label}</div>
+                        <div class="sound-hint">${choice.hint}</div>
+                    `;
+                    button.addEventListener('click', () => answerQuestion(choice.id));
+                    wrap.appendChild(button);
+                });
+                interactionArea.appendChild(wrap);
+                return;
+            }
+
+            if (stage.answerMode === 'pitch-choice') {
+                const wrap = document.createElement('div');
+                wrap.className = 'pitch-grid';
+                stage.choices.forEach(choice => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    const extraClass = choice.id === 'high' ? 'high' : choice.id === 'mid' ? 'mid' : 'low';
+                    button.className = `pitch-button ${extraClass}`;
+                    button.innerHTML = `
+                        <div class="pitch-emoji">${choice.emoji || '🎵'}</div>
+                        <div class="pitch-label">${choice.label}</div>
+                        <div class="pitch-hint">${choice.hint}</div>
+                    `;
+                    button.addEventListener('click', () => answerQuestion(choice.id));
+                    wrap.appendChild(button);
+                });
+                interactionArea.appendChild(wrap);
+                return;
+            }
+        }
+
+        function showFeedback(type, text) {
+            feedbackOverlay.className = '';
+            feedbackOverlay.textContent = text;
+            feedbackOverlay.classList.add('show', type);
+        }
+
+        function hideFeedback() {
+            feedbackOverlay.className = '';
+            feedbackOverlay.textContent = '';
+        }
+
+        function answerQuestion(choiceId) {
+            if (state.answeringLocked) return;
+
+            const stage = getCurrentStage();
+            const question = state.stageQuestions[state.currentQuestionIndex];
+            const isCorrect = choiceId === question.correct;
+
+            if (!isCorrect) {
+                state.answeringLocked = true;
+                showFeedback('wrong', '✖');
+                setTimeout(() => {
+                    hideFeedback();
+                    state.answeringLocked = false;
+                }, 450);
+                return;
+            }
+
+            state.answeringLocked = true;
+            showFeedback('correct', '○');
+            setTimeout(() => {
+                hideFeedback();
+                advanceFlow();
+            }, AUTO_ADVANCE_DELAY);
+        }
+
+        function advanceFlow() {
+            if (state.currentQuestionIndex < state.stageQuestions.length - 1) {
+                state.currentQuestionIndex += 1;
+                state.answeringLocked = false;
+                renderQuestion();
+                return;
+            }
+
+            if (state.currentStageIndex < getCurrentArea().stages.length - 1) {
+                state.currentStageIndex += 1;
+                state.currentQuestionIndex = 0;
+                state.answeringLocked = false;
+                showStageIntro();
+                return;
+            }
+
+            state.answeringLocked = false;
+            finishMessage.textContent = `${getCurrentArea().title} エリアを ぜんぶ クリアしたよ。`;
+            setProgress(4);
+            showScene('finish');
+        }
+
+        function claimReward() {
+            if (state.rewardClaimed) {
+                alert('ごほうびは もう うけとったよ。');
+                return;
+            }
+
+            showPointGetDialog(REWARD_POINTS, GAME_ID, (userName) => {
+                if (!userName) return;
+                state.rewardClaimed = true;
+                rewardButton.textContent = 'うけとりずみ';
+                rewardButton.disabled = true;
+                rewardButton.style.opacity = '0.7';
+            });
+        }
+
+        function resetRun() {
+            state.currentAreaIndex = null;
+            state.currentStageIndex = 0;
+            state.currentQuestionIndex = 0;
+            state.answeringLocked = false;
+            state.rewardClaimed = false;
+            rewardButton.textContent = 'ポイントを うけとる';
+            rewardButton.disabled = false;
+            rewardButton.style.opacity = '1';
+            setProgress(0);
+            showScene('title');
+        }
+
+        document.getElementById('to-area-select-btn').addEventListener('click', () => {
+            renderAreaList();
+            setProgress(0);
+            showScene('area');
+        });
+        document.getElementById('back-title-btn').addEventListener('click', () => showScene('title'));
+        document.getElementById('back-area-btn').addEventListener('click', () => showScene('area'));
+        document.getElementById('start-stage-btn').addEventListener('click', startStage);
+        document.getElementById('restart-btn').addEventListener('click', resetRun);
+        rewardButton.addEventListener('click', claimReward);
+
+        renderAreaList();
+        setProgress(0);
+    </script>
+</body>
+
+</html>

@@ -35,7 +35,8 @@ const GAME_LIST = {
     'enogu_creator': { name: 'えのぐクリエーター', type: 'score', unit: '点', url: 'enogu_creator.html' },
     'eigo_nakama': { name: 'えいごDEなかまさがし', type: 'score', unit: '点', url: 'eigo_nakama.html' },
     'eiyou_balance': { name: '栄養バランスゲーム', type: 'score', unit: '点', url: 'eiyou_balance.html' },
-    'job_quiz': { name: 'おしごとクイズ', type: 'score', unit: '点', url: 'jobs/job_quiz.html' }
+    'job_quiz': { name: 'おしごとクイズ', type: 'score', unit: '点', url: 'jobs/job_quiz.html' },
+    'science_lab': { name: 'ヒー先生のふしぎ研究所', type: 'score', unit: '点', url: 'science_lab.html' }
 };
 
 // --- リアル株価連動設定 ---
