@@ -906,8 +906,17 @@ function showPointGetDialog(amount, arg2 = null, arg3 = null) {
                 savePlayLog(name, gameId);
             }
 
+            let parentBonus = 0;
+            if (gameId && typeof checkAndAwardParentBonus === 'function') {
+                parentBonus = checkAndAwardParentBonus(name, gameId);
+            }
+
             document.getElementById('ranking-overlay').remove();
-            alert(`${name}さんに ${pts}ポイント！`);
+            let msg = `${name}さんに ${pts}ポイント！`;
+            if (parentBonus > 0) {
+                msg += `\n\n👪 おうちのかたおすすめコンテンツ！\n特別ボーナス +${parentBonus}ポイント！！`;
+            }
+            alert(msg);
             // ユーザー名を引数に渡してコールバックを呼ぶ
             if (typeof RankingPoint.onComplete === 'function') RankingPoint.onComplete(name);
         }

@@ -818,6 +818,10 @@
             gap: 12px;
         }
 
+        .light-grid.sun-layout {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
         .light-button {
             border: 2px solid #ffe1a8;
             border-radius: 18px;
@@ -992,13 +996,6 @@
                     <div class="card-info">
                     <div class="card-title">みえない ちから</div>
                     <div class="card-desc">かげ・おと・でんきを とおす？ を しらべよう</div>
-                    </div>
-                </div>
-                <div class="preview-card">
-                    <div class="card-icon">🔥</div>
-                    <div class="card-info">
-                        <div class="card-title">へんしん じっけん</div>
-                        <div class="card-desc">これから ふえる じっけんエリア。じゅんびちゅう！</div>
                     </div>
                 </div>
             </div>
@@ -1212,32 +1209,44 @@
                         title: 'かげステージ',
                         bannerClass: 'float',
                         answerMode: 'shadow-light',
-                        introTitle: 'ライトを おいて かげを つくろう',
-                        introText: 'まんなかの ものは そのまま。おだいどおりの かげになる ライトの ばしょを えらぶステージだよ。',
+                        introTitle: 'ひかりを みて かげを つくろう',
+                        introText: 'ものに あわせて、ライトや たいようの ばしょを えらぶステージだよ。',
                         tips: [
-                            'ライトが 左にあると かげは 右へ のびるよ。上なら 下へ のびるよ。',
-                            'ちかい ライトは 長いかげ、 とおい ライトは みじかいかげを つくりやすいよ。'
+                            'ライトなら ちかさで かげの 長さが かわりやすいよ。',
+                            'たいようなら 高さが かわりやすく、ひくいと 長く たかいと みじかく なりやすいよ。'
                         ],
                         questionText: 'おだいどおりの かげを つくろう',
-                        choices: [
-                            { id: 'left_near', label: '左・ちかい', hint: '右へ ながく のびやすい', emoji: '🌞' },
-                            { id: 'up_near', label: '上・ちかい', hint: '下へ ながく のびやすい', emoji: '☀️' },
-                            { id: 'right_near', label: '右・ちかい', hint: '左へ ながく のびやすい', emoji: '🌤️' },
-                            { id: 'left_far', label: '左・とおい', hint: '右へ みじかく のびやすい', emoji: '🌞' },
-                            { id: 'up_far', label: '上・とおい', hint: '下へ みじかく のびやすい', emoji: '☀️' },
-                            { id: 'right_far', label: '右・とおい', hint: '左へ みじかく のびやすい', emoji: '🌤️' }
-                        ],
+                        defaultChoiceSet: 'light',
+                        choiceSets: {
+                            light: [
+                                { id: 'left_near', label: '左・ちかい', hint: '右へ ながく のびやすい', emoji: '🌞' },
+                                { id: 'up_near', label: '上・ちかい', hint: '下へ ながく のびやすい', emoji: '☀️' },
+                                { id: 'right_near', label: '右・ちかい', hint: '左へ ながく のびやすい', emoji: '🌤️' },
+                                { id: 'left_far', label: '左・とおい', hint: '右へ みじかく のびやすい', emoji: '🌞' },
+                                { id: 'up_far', label: '上・とおい', hint: '下へ みじかく のびやすい', emoji: '☀️' },
+                                { id: 'right_far', label: '右・とおい', hint: '左へ みじかく のびやすい', emoji: '🌤️' }
+                            ],
+                            sun: [
+                                { id: 'left_low', label: '左・ひくい', hint: '右へ ながく のびやすい', emoji: '🌅' },
+                                { id: 'up_high', label: '真上', hint: '下へ みじかく のびやすい', emoji: '☀️' },
+                                { id: 'right_low', label: '右・ひくい', hint: '左へ ながく のびやすい', emoji: '🌇' },
+                                { id: 'left_high', label: '左・たかい', hint: '右へ みじかく のびやすい', emoji: '🌤️' },
+                                { id: 'right_high', label: '右・たかい', hint: '左へ みじかく のびやすい', emoji: '🌥️' }
+                            ]
+                        },
                         questionPool: [
-                            { emoji: '🌳', label: '木', task: 'みぎへ ながく のびる かげ', correct: 'left_near' },
-                            { emoji: '🌳', label: '木', task: 'みぎへ みじかく のびる かげ', correct: 'left_far' },
-                            { emoji: '🗼', label: 'ぼう', task: 'ひだりへ ながく のびる かげ', correct: 'right_near' },
-                            { emoji: '🗼', label: 'ぼう', task: 'ひだりへ みじかく のびる かげ', correct: 'right_far' },
+                            { emoji: '🌳', label: '木', task: 'みぎへ ながく のびる かげ', correct: 'left_low', choiceSet: 'sun' },
+                            { emoji: '🌳', label: '木', task: 'みぎへ みじかく のびる かげ', correct: 'left_high', choiceSet: 'sun' },
+                            { emoji: '🗼', label: 'ぼう', task: 'ひだりへ ながく のびる かげ', correct: 'right_low', choiceSet: 'sun' },
+                            { emoji: '🗼', label: 'ぼう', task: 'ひだりへ みじかく のびる かげ', correct: 'right_high', choiceSet: 'sun' },
                             { emoji: '🧍', label: 'ひと', task: '下へ ながく のびる かげ', correct: 'up_near' },
                             { emoji: '🧍', label: 'ひと', task: '下へ みじかく のびる かげ', correct: 'up_far' },
-                            { emoji: '🌲', label: '木', task: 'みぎへ ながく のびる かげ', correct: 'left_near' },
+                            { emoji: '🌲', label: '木', task: 'みぎへ ながく のびる かげ', correct: 'left_low', choiceSet: 'sun' },
                             { emoji: '🧸', label: 'ぬいぐるみ', task: 'ひだりへ みじかく のびる かげ', correct: 'right_far' },
                             { emoji: '🚏', label: 'かんばん', task: '下へ ながく のびる かげ', correct: 'up_near' },
-                            { emoji: '🪴', label: 'はちうえ', task: 'みぎへ みじかく のびる かげ', correct: 'left_far' }
+                            { emoji: '🪴', label: 'はちうえ', task: 'みぎへ みじかく のびる かげ', correct: 'left_high', choiceSet: 'sun' },
+                            { emoji: '🌳', label: '木', task: '下へ みじかく のびる かげ', correct: 'up_high', choiceSet: 'sun' },
+                            { emoji: '🗼', label: 'ぼう', task: '下へ みじかく のびる かげ', correct: 'up_high', choiceSet: 'sun' }
                         ]
                     },
                     {
@@ -1277,6 +1286,8 @@
                         title: 'でんきを とおす？ ステージ',
                         bannerClass: 'melt',
                         answerMode: 'beaker-choice',
+                        questionSubtitle: 'でんきを とおす ほうを えらぼう',
+                        answerHint: '金ぞくは とおす、木・紙・ゴムは とおしにくいよ',
                         introTitle: 'でんきを とおす ものを みつけよう',
                         introText: 'ものを みて、でんきを とおすか とおさないかを えらぶステージだよ。',
                         tips: [
@@ -1302,14 +1313,6 @@
                         ]
                     }
                 ]
-            },
-            {
-                id: 'change_lab',
-                title: 'へんしん じっけん',
-                emoji: '🔥',
-                description: 'あたためる、ひやす、へんかする。こちらも じゅんびちゅう！',
-                unlocked: false,
-                stages: []
             }
         ];
 
@@ -1446,15 +1449,30 @@
             document.getElementById('question-stage-count').textContent = `ステージ ${state.currentStageIndex + 1} / ${area.stages.length}`;
             document.getElementById('question-progress-count').textContent = `${state.currentQuestionIndex + 1} / ${state.stageQuestions.length}`;
             document.getElementById('question-title').textContent = question.task || stage.questionText;
-            document.getElementById('question-subtitle').textContent = getQuestionSubtitle(stage.answerMode);
+            document.getElementById('question-subtitle').textContent = getQuestionSubtitle(stage, question);
             document.getElementById('question-emoji').textContent = question.emoji;
             document.getElementById('question-label').textContent = question.label;
-            document.getElementById('answer-hint-bar').textContent = getAnswerHint(stage.answerMode);
+            document.getElementById('answer-hint-bar').textContent = getAnswerHint(stage, question);
             targetCard.classList.toggle('is-hidden', stage.answerMode === 'drag-sort');
             targetCard.classList.toggle('preview-only', stage.answerMode === 'shadow-light');
             renderShadowPreview(stage, question);
 
             renderInteraction(stage, question);
+        }
+
+        function getChoicesForQuestion(stage, question) {
+            if (stage.answerMode !== 'shadow-light') return stage.choices;
+            const choiceSetId = question.choiceSet || stage.defaultChoiceSet || 'light';
+            if (stage.choiceSets && stage.choiceSets[choiceSetId]) {
+                return stage.choiceSets[choiceSetId];
+            }
+            return stage.choices || [];
+        }
+
+        function getShadowStyle(choiceId) {
+            const direction = choiceId.startsWith('left') ? 'right' : choiceId.startsWith('right') ? 'left' : 'down';
+            const length = choiceId.endsWith('near') || choiceId.endsWith('low') ? 'long' : 'short';
+            return { direction, length };
         }
 
         function renderShadowPreview(stage, question) {
@@ -1469,31 +1487,43 @@
             shadowPreview.style.display = 'flex';
             shadowPreviewObject.textContent = question.emoji;
 
-            const correct = stage.choices.find(choice => choice.id === question.correct);
+            const choices = getChoicesForQuestion(stage, question);
+            const correct = choices.find(choice => choice.id === question.correct);
             const choiceId = correct ? correct.id : '';
-            const direction = choiceId.startsWith('left') ? 'right' : choiceId.startsWith('right') ? 'left' : 'down';
-            const length = choiceId.endsWith('near') ? 'long' : 'short';
+            const { direction, length } = getShadowStyle(choiceId);
 
             shadowPreviewShape.className = 'shadow-preview-shape';
             shadowPreviewShape.classList.add(direction, length);
         }
 
-        function getQuestionSubtitle(answerMode) {
+        function getQuestionSubtitle(stage, question) {
+            if (stage.questionSubtitle) return stage.questionSubtitle;
+
+            const answerMode = stage.answerMode;
             if (answerMode === 'drag-sort') return 'カードを したの かごへ うごかそう';
             if (answerMode === 'tank-drop') return '水そうの うえ か したを タップしよう';
             if (answerMode === 'beaker-choice') return 'どっちの ビーカーに 入れるか えらぼう';
-            if (answerMode === 'shadow-light') return 'ライトの ばしょを えらぼう';
+            if (answerMode === 'shadow-light') {
+                return question.choiceSet === 'sun' ? 'たいようの たかさと ばしょを えらぼう' : 'ライトの ばしょを えらぼう';
+            }
             if (answerMode === 'sun-choice') return 'たいようの ばしょを えらぼう';
             if (answerMode === 'sound-choice') return 'おとが ひびきそうな えらびかたを タップしよう';
             if (answerMode === 'pitch-choice') return 'かいだんの ボタンで えらぼう';
             return '';
         }
 
-        function getAnswerHint(answerMode) {
+        function getAnswerHint(stage, question) {
+            if (stage.answerHint) return stage.answerHint;
+
+            const answerMode = stage.answerMode;
             if (answerMode === 'drag-sort') return 'ドラッグできないときは、カードをタップしてから かごをタップでも OK';
             if (answerMode === 'tank-drop') return 'うえは うく、したは しずむ ばしょ だよ';
             if (answerMode === 'beaker-choice') return 'とける ビーカーか、のこる ビーカーを えらんでね';
-            if (answerMode === 'shadow-light') return 'ライトの ばしょで かげの むきがかわるよ。ちかいほど 長く、 とおいほど みじかく なりやすいよ';
+            if (answerMode === 'shadow-light') {
+                return question.choiceSet === 'sun'
+                    ? 'たいようが ひくいと かげは 長く、たかいと みじかく なりやすいよ'
+                    : 'ライトの ばしょで かげの むきがかわるよ。ちかいほど 長く、 とおいほど みじかく なりやすいよ';
+            }
             if (answerMode === 'sun-choice') return 'かげは ひかりと はんたいがわへ のびるよ';
             if (answerMode === 'sound-choice') return 'かたい ばしょは ひびきやすく、やわらかい ものは ひびきを へらしやすいよ';
             if (answerMode === 'pitch-choice') return 'みじかい・ちいさい は 高いおと、ながい・おおきい は 低いおと';
@@ -1602,9 +1632,13 @@
             }
 
             if (stage.answerMode === 'shadow-light') {
+                const choices = getChoicesForQuestion(stage, question);
                 const wrap = document.createElement('div');
                 wrap.className = 'light-grid';
-                stage.choices.forEach(choice => {
+                if (question.choiceSet === 'sun') {
+                    wrap.classList.add('sun-layout');
+                }
+                choices.forEach(choice => {
                     const button = document.createElement('button');
                     button.type = 'button';
                     button.className = 'light-button';
@@ -1616,6 +1650,11 @@
                     button.addEventListener('click', () => answerQuestion(choice.id));
                     wrap.appendChild(button);
                 });
+                if (question.choiceSet === 'sun' && choices.length === 5) {
+                    const spacer = document.createElement('div');
+                    spacer.setAttribute('aria-hidden', 'true');
+                    wrap.insertBefore(spacer, wrap.children[4] || null);
+                }
                 interactionArea.appendChild(wrap);
                 return;
             }
