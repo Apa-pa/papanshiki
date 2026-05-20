@@ -20,6 +20,11 @@
         matchMistakes: 0,
         sequenceProgress: 0,
         sequenceMistakes: 0,
+        programmingInput: [],
+        programmingPosition: null,
+        programmingRunTimer: null,
+        programmingOrder: [],
+        programmingOrderMistakes: 0,
         answerLocked: false
     };
 
@@ -86,6 +91,10 @@
 
     function isClockQuestion(question) {
         return question && question.inputMode === "clock";
+    }
+
+    function isProgrammingQuestion(question) {
+        return question && question.programming;
     }
 
     function formatClockMinute(minuteText) {
@@ -264,12 +273,24 @@
         state.matchMistakes = 0;
         state.sequenceProgress = 0;
         state.sequenceMistakes = 0;
+        state.programmingInput = [];
+        state.programmingPosition = question.programming && question.programming.start
+            ? { ...question.programming.start }
+            : null;
+        if (state.programmingRunTimer) {
+            clearTimeout(state.programmingRunTimer);
+            state.programmingRunTimer = null;
+        }
+        state.programmingOrder = [];
+        state.programmingOrderMistakes = 0;
         state.answerLocked = false;
         $("question-number").textContent = currentNumber;
         $("correct-count").textContent = state.correctCount;
         $("progress-bar").style.width = `${((currentNumber - 1) / state.questions.length) * 100}%`;
         $("question-prompt").innerHTML = question.promptHtml || escapeHtml(question.prompt);
-        if (Array.isArray(question.matchItems) && question.matchItems.length > 0) {
+        if (isProgrammingQuestion(question)) {
+            renderProgrammingQuestion(question);
+        } else if (Array.isArray(question.matchItems) && question.matchItems.length > 0) {
             renderMatchButtons(question);
         } else if (Array.isArray(question.sequenceItems) && question.sequenceItems.length > 0) {
             renderSequenceButtons(question);
@@ -291,6 +312,334 @@
         $("choices").querySelectorAll(".choice-button").forEach((button) => {
             button.addEventListener("click", () => answerQuestion(button.dataset.choice, button));
         });
+    }
+
+    function renderProgrammingQuestion(question) {
+        const type = question.programming.type;
+        if (type === "maze_command" || type === "maze_follow") {
+            renderProgrammingMaze(question);
+            return;
+        }
+        if (type === "command_order" || type === "condition_build") {
+            renderProgrammingOrder(question);
+            return;
+        }
+        renderChoices(question);
+    }
+
+    function renderProgrammingMaze(question) {
+        const commandPreview = question.programming.type === "maze_follow"
+            ? `<span class="simple-equation">${formatProgrammingCommands(question.answer)}</span>`
+            : "";
+        const isFollowMode = question.programming.type === "maze_follow";
+        $("question-prompt").innerHTML = `
+            <span class="question-title">${escapeHtml(question.title)}</span>
+            ${commandPreview}
+            <span class="programming-maze-wrap">
+                ${buildProgrammingMazeHtml(question)}
+            </span>
+            <span class="question-line">${escapeHtml(question.prompt)}</span>
+        `;
+        $("choices").className = "programming-controls";
+        $("choices").innerHTML = isFollowMode ? `
+            <div class="programming-command-strip" id="programming-command-strip">ロボットのとなりのマスをタップしてね</div>
+            <div class="programming-actions single">
+                <button class="secondary-button programming-action" type="button" data-action="reset">やりなおし</button>
+            </div>
+        ` : `
+            <div class="programming-command-strip" id="programming-command-strip">まだ命令がないよ</div>
+            <div class="programming-arrow-pad" aria-label="めいろ命令">
+                ${[
+                    { value: "U", label: "↑" },
+                    { value: "L", label: "←" },
+                    { value: "R", label: "→" },
+                    { value: "D", label: "↓" }
+                ].map((item) => `
+                    <button class="programming-arrow" type="button" data-command="${item.value}">${item.label}</button>
+                `).join("")}
+            </div>
+            <div class="programming-actions">
+                <button class="secondary-button programming-action" type="button" data-action="reset">やりなおし</button>
+                <button class="primary-button programming-action" type="button" data-action="run">じっこう</button>
+            </div>
+        `;
+        if (!isFollowMode) {
+            $("choices").querySelectorAll("[data-command]").forEach((button) => {
+                button.addEventListener("click", () => handleProgrammingCommand(question, button.dataset.command));
+            });
+            $("choices").querySelector("[data-action='run']").addEventListener("click", () => submitProgrammingMaze(question));
+        }
+        $("choices").querySelector("[data-action='reset']").addEventListener("click", () => resetProgrammingMaze(question));
+        updateProgrammingMaze(question);
+    }
+
+    function formatProgrammingCommands(commands) {
+        return commands.split("").map((command) => ({ U: "↑", D: "↓", L: "←", R: "→" }[command])).join(" ");
+    }
+
+    function buildProgrammingMazeHtml(question) {
+        const maze = question.programming;
+        const walls = new Set((maze.walls || []).map((cell) => `${cell.x},${cell.y}`));
+        const rows = [];
+        for (let y = 0; y < maze.height; y++) {
+            const cells = [];
+            for (let x = 0; x < maze.width; x++) {
+                const key = `${x},${y}`;
+                const classes = ["programming-maze-cell"];
+                let label = "";
+                if (walls.has(key)) {
+                    classes.push("wall");
+                    label = "■";
+                } else if (maze.goal.x === x && maze.goal.y === y) {
+                    classes.push("goal");
+                    label = "★";
+                }
+                if (state.programmingPosition && state.programmingPosition.x === x && state.programmingPosition.y === y) {
+                    classes.push("robot");
+                    label = "🤖";
+                }
+                if (maze.type === "maze_follow" && !walls.has(key)) {
+                    cells.push(`<button class="${classes.join(" ")} tappable" type="button" data-maze-x="${x}" data-maze-y="${y}">${label}</button>`);
+                } else {
+                    cells.push(`<span class="${classes.join(" ")}">${label}</span>`);
+                }
+            }
+            rows.push(`<span class="programming-maze-row">${cells.join("")}</span>`);
+        }
+        return `<span class="programming-maze" style="--maze-cols:${maze.width}">${rows.join("")}</span>`;
+    }
+
+    function handleProgrammingCommand(question, command) {
+        if (state.answerLocked) return;
+        const maze = question.programming;
+        if (state.programmingInput.length >= question.answer.length) return;
+        state.programmingInput.push(command);
+        if (maze.type === "maze_follow") moveProgrammingRobot(question, command);
+        updateProgrammingMaze(question);
+    }
+
+    function handleProgrammingCellTap(question, button) {
+        if (state.answerLocked) return;
+        if (state.programmingInput.length >= question.answer.length) return;
+        const next = {
+            x: parseInt(button.dataset.mazeX, 10),
+            y: parseInt(button.dataset.mazeY, 10)
+        };
+        const command = getCommandBetweenPositions(state.programmingPosition, next);
+        if (!command || isBlockedCell(question.programming, next)) {
+            flashWrongCell(button);
+            return;
+        }
+        state.programmingInput.push(command);
+        state.programmingPosition = next;
+        updateProgrammingMaze(question);
+        if (state.programmingInput.length === question.answer.length) {
+            submitProgrammingMaze(question);
+        }
+    }
+
+    function flashWrongCell(button) {
+        button.classList.add("wrong");
+        setTimeout(() => {
+            button.classList.remove("wrong");
+        }, 260);
+    }
+
+    function getCommandBetweenPositions(from, to) {
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        if (dx === 0 && dy === -1) return "U";
+        if (dx === 0 && dy === 1) return "D";
+        if (dx === -1 && dy === 0) return "L";
+        if (dx === 1 && dy === 0) return "R";
+        return "";
+    }
+
+    function resetProgrammingMaze(question) {
+        if (state.answerLocked) return;
+        if (state.programmingRunTimer) {
+            clearTimeout(state.programmingRunTimer);
+            state.programmingRunTimer = null;
+        }
+        state.programmingInput = [];
+        state.programmingPosition = { ...question.programming.start };
+        updateProgrammingMaze(question);
+    }
+
+    function moveProgrammingRobot(question, command) {
+        const next = getMovedPosition(state.programmingPosition, command);
+        if (!isBlockedCell(question.programming, next)) state.programmingPosition = next;
+    }
+
+    function getMovedPosition(position, command) {
+        const moves = {
+            U: { x: 0, y: -1 },
+            D: { x: 0, y: 1 },
+            L: { x: -1, y: 0 },
+            R: { x: 1, y: 0 }
+        };
+        const move = moves[command] || { x: 0, y: 0 };
+        return { x: position.x + move.x, y: position.y + move.y };
+    }
+
+    function isBlockedCell(maze, position) {
+        if (position.x < 0 || position.y < 0 || position.x >= maze.width || position.y >= maze.height) return true;
+        return (maze.walls || []).some((wall) => wall.x === position.x && wall.y === position.y);
+    }
+
+    function simulateProgrammingPath(question) {
+        let position = { ...question.programming.start };
+        for (const command of state.programmingInput) {
+            const next = getMovedPosition(position, command);
+            if (isBlockedCell(question.programming, next)) return null;
+            position = next;
+        }
+        return position;
+    }
+
+    function submitProgrammingMaze(question) {
+        if (state.answerLocked) return;
+        if (question.programming.type === "maze_command") {
+            runProgrammingMazeAnimation(question);
+            return;
+        }
+        finishProgrammingMaze(question);
+    }
+
+    function runProgrammingMazeAnimation(question) {
+        state.answerLocked = true;
+        $("choices").querySelectorAll("button").forEach((button) => {
+            button.disabled = true;
+        });
+        state.programmingPosition = { ...question.programming.start };
+        updateProgrammingMaze(question);
+        const commands = [...state.programmingInput];
+        let step = 0;
+
+        function moveNext() {
+            if (step >= commands.length) {
+                state.answerLocked = false;
+                finishProgrammingMaze(question);
+                return;
+            }
+
+            const next = getMovedPosition(state.programmingPosition, commands[step]);
+            if (isBlockedCell(question.programming, next)) {
+                state.answerLocked = false;
+                finishProgrammingMaze(question);
+                return;
+            }
+
+            state.programmingPosition = next;
+            updateProgrammingMaze(question);
+            step += 1;
+            state.programmingRunTimer = setTimeout(moveNext, 260);
+        }
+
+        state.programmingRunTimer = setTimeout(moveNext, 220);
+    }
+
+    function finishProgrammingMaze(question) {
+        if (state.programmingRunTimer) {
+            clearTimeout(state.programmingRunTimer);
+            state.programmingRunTimer = null;
+        }
+        let selected = state.programmingInput.join("");
+        const finalPosition = question.programming.type === "maze_command"
+            ? simulateProgrammingPath(question)
+            : state.programmingPosition;
+        const reachedGoal = finalPosition
+            && finalPosition.x === question.programming.goal.x
+            && finalPosition.y === question.programming.goal.y;
+        if (question.programming.type === "maze_command" && reachedGoal) selected = question.answer;
+        const isCorrect = question.programming.type === "maze_command"
+            ? reachedGoal
+            : reachedGoal && selected === question.answer;
+        const sourceButton = $("choices").querySelector("[data-action='run']")
+            || $("question-prompt").querySelector(".programming-maze-cell.robot")
+            || $("choices").querySelector("[data-action='reset']");
+        answerQuestion(isCorrect ? question.answer : "__wrong_maze__", sourceButton);
+    }
+
+    function updateProgrammingMaze(question) {
+        const mazeWrap = $("question-prompt").querySelector(".programming-maze-wrap");
+        const strip = $("programming-command-strip");
+        if (mazeWrap) mazeWrap.innerHTML = buildProgrammingMazeHtml(question);
+        $("question-prompt").querySelectorAll("[data-maze-x]").forEach((button) => {
+            button.addEventListener("click", () => handleProgrammingCellTap(question, button));
+        });
+        if (strip) {
+            strip.textContent = state.programmingInput.length
+                ? state.programmingInput.map((command) => ({ U: "↑", D: "↓", L: "←", R: "→" }[command])).join(" ")
+                : "まだ命令がないよ";
+        }
+    }
+
+    function renderProgrammingOrder(question) {
+        $("choices").className = "programming-order";
+        const shuffledItems = shuffle(question.programming.items);
+        $("choices").innerHTML = `
+            <div class="programming-order-bank" id="programming-order-bank">
+                ${shuffledItems.map((item) => `
+                    <button class="programming-order-card" type="button" data-order-index="${item.index}">
+                        <span class="programming-order-number"></span>
+                        ${escapeHtml(item.label)}
+                    </button>
+                `).join("")}
+            </div>
+            <div class="programming-actions">
+                <button class="secondary-button programming-action" type="button" data-action="reset">やりなおし</button>
+                <button class="primary-button programming-action" type="button" data-action="submit">こたえる</button>
+            </div>
+        `;
+        $("choices").querySelectorAll("[data-order-index]").forEach((button) => {
+            button.addEventListener("click", () => addProgrammingOrderCard(question, button));
+        });
+        $("choices").querySelector("[data-action='reset']").addEventListener("click", () => resetProgrammingOrder(question));
+        $("choices").querySelector("[data-action='submit']").addEventListener("click", () => submitProgrammingOrder(question));
+    }
+
+    function refreshProgrammingOrder(question) {
+        $("choices").querySelectorAll("[data-order-index]").forEach((button) => {
+            const orderIndex = parseInt(button.dataset.orderIndex, 10);
+            const selectedIndex = state.programmingOrder.findIndex((item) => item.index === orderIndex);
+            const number = button.querySelector(".programming-order-number");
+            button.classList.toggle("selected", selectedIndex >= 0);
+            if (number) number.textContent = selectedIndex >= 0 ? String(selectedIndex + 1) : "";
+        });
+    }
+
+    function addProgrammingOrderCard(question, button) {
+        if (state.answerLocked) return;
+        const index = parseInt(button.dataset.orderIndex, 10);
+        const existingIndex = state.programmingOrder.findIndex((item) => item.index === index);
+        if (existingIndex >= 0) {
+            state.programmingOrder.splice(existingIndex, 1);
+            refreshProgrammingOrder(question);
+            return;
+        }
+        if (state.programmingOrder.length >= question.programming.items.length) return;
+        state.programmingOrder.push({
+            index,
+            label: button.textContent.trim()
+        });
+        refreshProgrammingOrder(question);
+    }
+
+    function resetProgrammingOrder(question) {
+        if (state.answerLocked) return;
+        state.programmingOrder = [];
+        $("choices").querySelectorAll("[data-order-index]").forEach((button) => {
+            button.classList.remove("selected", "correct", "wrong");
+        });
+        refreshProgrammingOrder(question);
+    }
+
+    function submitProgrammingOrder(question) {
+        if (state.answerLocked) return;
+        const selected = state.programmingOrder.map((item) => item.index).join(",");
+        const answer = question.programming.items.map((item) => item.index).join(",");
+        answerQuestion(selected === answer ? question.answer : "__wrong_order__", $("choices").querySelector("[data-action='submit']"));
     }
 
     function renderMatchButtons(question) {
@@ -564,7 +913,12 @@
         state.answerTimes.push(elapsed);
         if (isCorrect) state.correctCount += 1;
 
-        if ((Array.isArray(question.matchItems) && question.matchItems.length > 0) || (Array.isArray(question.sequenceItems) && question.sequenceItems.length > 0)) {
+        if (isProgrammingQuestion(question)) {
+            $("choices").querySelectorAll("button").forEach((button) => {
+                button.disabled = true;
+            });
+            sourceButton.classList.add(isCorrect ? "correct" : "wrong");
+        } else if ((Array.isArray(question.matchItems) && question.matchItems.length > 0) || (Array.isArray(question.sequenceItems) && question.sequenceItems.length > 0)) {
             $("choices").querySelectorAll(".kana-match-button").forEach((matchButton) => {
                 matchButton.disabled = true;
                 matchButton.classList.add("correct");
@@ -606,7 +960,7 @@
 
     function handleKeyboard(event) {
         const question = state.questions[state.currentIndex];
-        if (panels.test.classList.contains("hidden") || !question || question.choices || question.matchItems || question.sequenceItems || state.answerLocked) return;
+        if (panels.test.classList.contains("hidden") || !question || question.choices || question.matchItems || question.sequenceItems || isProgrammingQuestion(question) || state.answerLocked) return;
         if (isClockQuestion(question)) {
             if (/^[0-9]$/.test(event.key)) {
                 event.preventDefault();

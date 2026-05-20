@@ -130,6 +130,31 @@
                     gameId: "learning_labo_english_words_basic"
                 }
             ]
+        },
+        {
+            id: "thinking",
+            name: "思考力",
+            icon: "🧠",
+            className: "thinking",
+            description: "パズルやすいりで、じゅんばん・きまりを考える力をはかるよ。",
+            categories: [
+                {
+                    id: "thinking_programming_level1",
+                    name: "プログラミング（レベル1）",
+                    levelLabel: "きほん",
+                    questionCount: 20,
+                    targetSeconds: 10,
+                    gameId: "learning_labo_thinking_programming_level1"
+                },
+                {
+                    id: "thinking_reasoning",
+                    name: "推理",
+                    levelLabel: "きほん",
+                    questionCount: 20,
+                    targetSeconds: 12,
+                    gameId: "learning_labo_thinking_reasoning"
+                }
+            ]
         }
     ];
 })();
