@@ -15,6 +15,7 @@ const MISSION_POOL = [
     { id: 'rail',               name: 'つなげて！トロッコ',           type: 'game',   emoji: '🚂', url: '../rail.html' },
     { id: 'rhythm',             name: 'アンのリズムきょうしつ',       type: 'game',   emoji: '🎵', url: '../rhythm.html' },
     { id: 'dokidoki_obstacle',  name: 'ドキドキしょうがいぶつレース', type: 'game',   emoji: '🏅', url: '../dokidoki_obstacle.html' },
+    { id: 'programming_labo',   name: 'プログラミングラボで作品づくり', type: 'game', emoji: '💻', url: '../programming_labo/index.html' },
     // ページ訪問系ミッション
     { id: 'visit_avatar_shop',  name: 'アバターショップへ',           type: 'visit',  emoji: '👗', url: '../avatar_shop.html' },
     { id: 'visit_room_shop',    name: 'インテリアショップへ',         type: 'visit',  emoji: '🛋️', url: '../room_shop.html' },

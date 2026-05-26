@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link rel="icon" href="../icon-32.png">
+    <title>プログラミングラボ | ぱぱん式</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="../ranking.js"></script>
+    <script src="../sugoroku/mission.js"></script>
+</head>
+
+<body>
+    <main class="app">
+        <section id="home-screen" class="screen active">
+            <div class="hero">
+                <div class="hero-copy">
+                    <p class="eyebrow">ぱぱん式</p>
+                    <h1>プログラミングラボ</h1>
+                    <p class="subtitle">キャラにうごきをつけて、自分だけの小さな世界をつくろう。</p>
+                </div>
+                <div class="guide-box">
+                    <img src="../an192.webp" alt="アン" class="guide-img">
+                    <div class="guide-talk">アン「キャラをおいて、命令カードをならべて、再生してみよう」</div>
+                </div>
+            </div>
+
+            <div class="howto-grid" aria-label="あそびかた">
+                <div class="howto-item">
+                    <span class="step-mark">1</span>
+                    <strong>えらぶ</strong>
+                    <p>アンやピッピなどの素材をえらびます。</p>
+                </div>
+                <div class="howto-item">
+                    <span class="step-mark">2</span>
+                    <strong>おく</strong>
+                    <p>キャンバスをタップしてキャラをおきます。</p>
+                </div>
+                <div class="howto-item">
+                    <span class="step-mark">3</span>
+                    <strong>命令</strong>
+                    <p>キャラごとにうごきやもしもをつけます。</p>
+                </div>
+                <div class="howto-item">
+                    <span class="step-mark">4</span>
+                    <strong>再生</strong>
+                    <p>命令がどう動くか見て、直してみます。</p>
+                </div>
+            </div>
+
+            <div class="home-actions">
+                <button id="start-btn" class="primary-button" type="button">スタート</button>
+                <a class="secondary-link" href="../index.html">ホームにもどる</a>
+            </div>
+        </section>
+
+        <section id="lab-screen" class="screen lab-screen">
+            <header class="lab-header">
+                <div>
+                    <p class="eyebrow">PROGRAMMING LABO</p>
+                    <h1>プログラミングラボ</h1>
+                </div>
+                <div class="run-controls">
+                    <button id="play-btn" class="primary-button small" type="button">再生</button>
+                    <button id="pause-btn" class="tool-button" type="button">とめる</button>
+                    <button id="reset-btn" class="tool-button" type="button">さいしょ</button>
+                </div>
+            </header>
+
+            <div class="workspace">
+                <aside class="panel palette-panel">
+                    <h2>そざい</h2>
+                    <div id="asset-palette" class="asset-palette"></div>
+                    <p class="hint">そざいをえらんで、まんなかの画面をタップ。</p>
+                </aside>
+
+                <section class="stage-panel" aria-label="プログラミングステージ">
+                    <canvas id="stage-canvas" width="900" height="600"></canvas>
+                    <div id="status-text" class="status-text">そざいをえらんで、画面におこう</div>
+                </section>
+
+                <aside class="panel command-panel">
+                    <div class="selected-card">
+                        <img id="selected-preview" src="../an192.webp" alt="">
+                        <div>
+                            <p class="eyebrow">えらんだキャラ</p>
+                            <h2 id="selected-name">まだいません</h2>
+                        </div>
+                    </div>
+
+                    <section class="command-section">
+                        <h3>上からじゅんに</h3>
+                        <div id="step-command-buttons" class="command-buttons"></div>
+                        <div id="step-command-list" class="command-list empty-list">キャラをえらんでね</div>
+                    </section>
+
+                    <section class="command-section">
+                        <h3>ずっと</h3>
+                        <div id="loop-command-buttons" class="command-buttons"></div>
+                        <div id="loop-command-list" class="command-list empty-list">キャラをえらんでね</div>
+                    </section>
+
+                    <section class="command-section">
+                        <h3>もしも</h3>
+                        <div id="rule-command-buttons" class="command-buttons"></div>
+                        <div id="rule-command-list" class="command-list empty-list">キャラをえらんでね</div>
+                    </section>
+
+                    <div class="panel-actions">
+                        <button id="delete-object-btn" class="tool-button danger" type="button">キャラをけす</button>
+                        <button id="clear-btn" class="tool-button" type="button">ぜんぶけす</button>
+                        <button id="point-btn" class="tool-button point" type="button">30ptをもらう</button>
+                        <a class="secondary-link compact" href="../index.html">ホーム</a>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/assets.js"></script>
+    <script src="js/commands.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/canvas.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
