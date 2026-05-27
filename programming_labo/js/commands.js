@@ -21,7 +21,14 @@
         { id: "edge-bounce", label: "はしについたら はねかえる", when: "edge", action: "bounce" },
         { id: "edge-stop", label: "はしについたら とまる", when: "edge", action: "stopLoops" },
         { id: "tap-hide", label: "タップされたら きえる", when: "tap", action: "hide" },
-        { id: "hit-hide", label: "だれかにあたったら きえる", when: "hit", action: "hide" }
+        { id: "hit-hide", label: "ぶつかったら きえる", when: "hit", action: "hide" },
+        { id: "hit-hanamaru", label: "ぶつかったら 花丸を出す", when: "hit", action: "showHanamaru" },
+        { id: "hit-start-right", label: "ぶつかったら 右にうごきだす", when: "hit", action: "startMove", direction: "right", speed: 125 },
+        { id: "hit-start-left", label: "ぶつかったら 左にうごきだす", when: "hit", action: "startMove", direction: "left", speed: 125 },
+        { id: "hit-start-up", label: "ぶつかったら 上にうごきだす", when: "hit", action: "startMove", direction: "up", speed: 125 },
+        { id: "hit-start-down", label: "ぶつかったら 下にうごきだす", when: "hit", action: "startMove", direction: "down", speed: 125 },
+        { id: "hit-stop", label: "ぶつかったら とまる", when: "hit", action: "stopLoops" },
+        { id: "hit-reset", label: "ぶつかったら スタートにもどる", when: "hit", action: "resetPosition" }
     ];
 
     window.cloneCommand = function cloneCommand(command) {

@@ -50,7 +50,8 @@
             </div>
 
             <div class="home-actions">
-                <button id="start-btn" class="primary-button" type="button">スタート</button>
+                <button id="start-btn" class="primary-button" type="button">自由につくる</button>
+                <button id="quiz-start-btn" class="tool-button" type="button">クイズにちょうせん</button>
                 <a class="secondary-link" href="../index.html">ホームにもどる</a>
             </div>
         </section>
@@ -62,11 +63,25 @@
                     <h1>プログラミングラボ</h1>
                 </div>
                 <div class="run-controls">
+                    <span id="mode-badge" class="mode-badge">自由制作</span>
                     <button id="play-btn" class="primary-button small" type="button">再生</button>
                     <button id="pause-btn" class="tool-button" type="button">とめる</button>
                     <button id="reset-btn" class="tool-button" type="button">さいしょ</button>
                 </div>
             </header>
+
+            <section id="quiz-panel" class="quiz-panel hidden" aria-live="polite">
+                <div>
+                    <p class="eyebrow">QUIZ</p>
+                    <h2 id="quiz-title">クイズ</h2>
+                    <p id="quiz-description">お題をクリアしよう</p>
+                </div>
+                <div class="quiz-actions">
+                    <div id="quiz-result" class="quiz-result">命令をつけて再生してね</div>
+                    <button id="quiz-reset-btn" class="tool-button" type="button">お題をやりなおす</button>
+                    <button id="free-mode-btn" class="tool-button" type="button">自由制作へ</button>
+                </div>
+            </section>
 
             <div class="workspace">
                 <aside class="panel palette-panel">
@@ -88,6 +103,20 @@
                             <h2 id="selected-name">まだいません</h2>
                         </div>
                     </div>
+
+                    <section class="edit-section" id="size-editor">
+                        <div class="edit-heading">
+                            <h3>大きさ</h3>
+                            <span id="size-value">--</span>
+                        </div>
+                        <input id="size-range" class="size-range" type="range" min="36" max="140" step="2" value="72"
+                            aria-label="選択中キャラの大きさ">
+                        <div class="size-presets" aria-label="大きさプリセット">
+                            <button type="button" data-size="54">小</button>
+                            <button type="button" data-size="78">中</button>
+                            <button type="button" data-size="112">大</button>
+                        </div>
+                    </section>
 
                     <section class="command-section">
                         <h3>上からじゅんに</h3>
@@ -123,6 +152,8 @@
     <script src="js/state.js"></script>
     <script src="js/canvas.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/quiz_data.js"></script>
+    <script src="js/quiz_mode.js"></script>
 </body>
 
 </html>

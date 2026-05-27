@@ -9,6 +9,9 @@
         rewardClaimed: false,
         currentRunner: null,
         lastFrameTime: 0,
+        effects: [],
+        events: [],
+        activeHitPairs: new Set(),
         idSeed: 1
     };
 
@@ -43,7 +46,10 @@
             activeCommandIndex: 0,
             activeCommand: null,
             commandStartedAt: 0,
-            commandFrom: null
+            commandFrom: null,
+            ruleCursors: {
+                hit: 0
+            }
         };
     }
 
@@ -59,6 +65,9 @@
         object.activeCommand = null;
         object.commandStartedAt = 0;
         object.commandFrom = null;
+        object.ruleCursors = {
+            hit: 0
+        };
         object.loops.forEach((command) => {
             if (command.type === "moveForever" && command.startDirection) {
                 command.direction = command.startDirection;

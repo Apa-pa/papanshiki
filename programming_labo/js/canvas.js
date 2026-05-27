@@ -73,6 +73,7 @@
         if (!ctx) return;
         drawBackground();
         state.objects.forEach(drawObject);
+        state.effects.forEach(drawEffect);
     }
 
     function drawBackground() {
@@ -163,6 +164,9 @@
     function reset() {
         pause();
         state.objects.forEach(resetObjectRuntime);
+        state.effects = [];
+        state.events = [];
+        state.activeHitPairs.clear();
         drawStage();
     }
 
@@ -176,6 +180,7 @@
             keepInStage(object);
         });
         runHitRules();
+        updateEffects(now);
         drawStage();
         if (state.isPlaying) state.currentRunner = requestAnimationFrame(tick);
     }
@@ -276,6 +281,7 @@
     }
 
     function runHitRules() {
+        const touchingPairs = new Set();
         for (let i = 0; i < state.objects.length; i++) {
             const a = state.objects[i];
             if (!a.visible) continue;
@@ -284,17 +290,132 @@
                 if (!b.visible) continue;
                 const minDistance = (a.size + b.size) * 0.36;
                 if (Math.hypot(a.x - b.x, a.y - b.y) <= minDistance) {
-                    applyHitRule(a);
-                    applyHitRule(b);
+                    const pairKey = hitPairKey(a, b);
+                    touchingPairs.add(pairKey);
+                    if (!state.activeHitPairs.has(pairKey)) {
+                        const x = (a.x + b.x) / 2;
+                        const y = (a.y + b.y) / 2;
+                        recordEvent({
+                            type: "hit",
+                            objectIds: [a.id, b.id],
+                            assetIds: [a.assetId, b.assetId],
+                            x,
+                            y
+                        });
+                        applyHitRule(a, b, x, y);
+                        applyHitRule(b, a, x, y);
+                    }
                 }
             }
         }
+        state.activeHitPairs = touchingPairs;
     }
 
-    function applyHitRule(object) {
-        object.rules.filter((rule) => rule.when === "hit").forEach((rule) => {
-            if (rule.action === "hide") object.visible = false;
+    function applyHitRule(object, otherObject, x, y) {
+        const hitRules = object.rules.filter((rule) => rule.when === "hit");
+        if (!hitRules.length) return;
+
+        if (!object.ruleCursors) object.ruleCursors = { hit: 0 };
+        const cursor = object.ruleCursors.hit || 0;
+        const rule = hitRules[cursor % hitRules.length];
+        object.ruleCursors.hit = (cursor + 1) % hitRules.length;
+
+        runRuleAction(object, otherObject, rule, x, y);
+    }
+
+    function runRuleAction(object, otherObject, rule, x, y) {
+        if (rule.action === "hide") {
+            object.visible = false;
+        } else if (rule.action === "showHanamaru") {
+            addHanamaruEffect(x, y, Math.max(object.size, otherObject.size));
+        } else if (rule.action === "startMove") {
+            startMoveForever(object, rule);
+        } else if (rule.action === "stopLoops") {
+            object.loops = object.loops.filter((command) => command.type !== "moveForever" && command.type !== "spinForever");
+        } else if (rule.action === "resetPosition") {
+            object.x = object.startX;
+            object.y = object.startY;
+            object.rotation = object.startRotation;
+        }
+    }
+
+    function hitPairKey(a, b) {
+        return [a.id, b.id].sort().join(":");
+    }
+
+    function startMoveForever(object, rule) {
+        const existing = object.loops.find((command) => command.type === "moveForever");
+        if (existing) {
+            existing.direction = rule.direction;
+            existing.startDirection = rule.direction;
+            existing.speed = rule.speed;
+            return;
+        }
+        object.loops.push({
+            id: `hit-start-${rule.direction}`,
+            label: `${directionLabel(rule.direction)}に進み続ける`,
+            type: "moveForever",
+            direction: rule.direction,
+            startDirection: rule.direction,
+            speed: rule.speed
         });
+    }
+
+    function addHanamaruEffect(x, y, size) {
+        state.effects.push({
+            id: `effect_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+            type: "hanamaru",
+            x,
+            y,
+            size: Math.max(56, Math.min(120, size * 0.9)),
+            createdAt: performance.now(),
+            duration: 950
+        });
+        recordEvent({
+            type: "effectShown",
+            effect: "hanamaru",
+            x,
+            y
+        });
+    }
+
+    function updateEffects(now) {
+        state.effects = state.effects.filter((effect) => now - effect.createdAt <= effect.duration);
+    }
+
+    function drawEffect(effect) {
+        if (effect.type !== "hanamaru") return;
+        const age = performance.now() - effect.createdAt;
+        const progress = Math.min(1, age / effect.duration);
+        const alpha = progress < 0.72 ? 1 : 1 - (progress - 0.72) / 0.28;
+        const scale = 0.78 + Math.sin(progress * Math.PI) * 0.22;
+        const r = effect.size * 0.34 * scale;
+
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, alpha);
+        ctx.translate(effect.x, effect.y);
+        ctx.rotate(-0.14);
+        ctx.strokeStyle = "#e9435f";
+        ctx.lineWidth = Math.max(5, effect.size * 0.08);
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.arc(0, 0, r, -0.25, Math.PI * 2 - 0.45);
+        ctx.stroke();
+        ctx.lineWidth = Math.max(3, effect.size * 0.045);
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.72, -0.15, Math.PI * 2 - 0.62);
+        ctx.stroke();
+
+        ctx.fillStyle = "#e9435f";
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI * 2 * i) / 8;
+            const px = Math.cos(angle) * r * 1.25;
+            const py = Math.sin(angle) * r * 1.25;
+            ctx.beginPath();
+            ctx.arc(px, py, Math.max(3, effect.size * 0.035), 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
     }
 
     function directionOffset(direction, amount) {
@@ -313,6 +434,22 @@
         if (direction === "left") return "right";
         if (direction === "down") return "up";
         return "down";
+    }
+
+    function directionLabel(direction) {
+        if (direction === "left") return "左";
+        if (direction === "up") return "上";
+        if (direction === "down") return "下";
+        return "右";
+    }
+
+    function recordEvent(event) {
+        const detail = {
+            ...event,
+            time: performance.now()
+        };
+        state.events.push(detail);
+        document.dispatchEvent(new CustomEvent("programlabo:event", { detail }));
     }
 
     function easeInOut(t) {

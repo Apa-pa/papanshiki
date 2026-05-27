@@ -128,9 +128,48 @@ window.fetchPublicRoom = async function (uid) {
     }
 };
 
+function formatRaceId(date) {
+    return date.getFullYear() + "-" +
+        (date.getMonth() + 1).toString().padStart(2, '0') + "-" +
+        date.getDate().toString().padStart(2, '0') + "-1600";
+}
+
+function parseRaceId(raceId) {
+    if (!raceId || raceId.length !== 15) return null;
+    const year = Number(raceId.substring(0, 4));
+    const month = Number(raceId.substring(5, 7)) - 1;
+    const day = Number(raceId.substring(8, 10));
+    return new Date(year, month, day, 16, 0, 0, 0);
+}
+
+/**
+ * エントリー対象になる「次の土曜16時」のIDを生成する
+ */
+function getNextRaceId() {
+    const now = new Date();
+    const raceDay = 6; // 土曜日
+    const raceHour = 16; // 16時
+
+    const nextSaturday = new Date(now);
+    const diff = (raceDay - now.getDay() + 7) % 7;
+    nextSaturday.setDate(now.getDate() + diff);
+    nextSaturday.setHours(raceHour, 0, 0, 0);
+
+    // 土曜16時以降の登録は翌週分に回す
+    if (now >= nextSaturday) {
+        nextSaturday.setDate(nextSaturday.getDate() + 7);
+    }
+
+    return formatRaceId(nextSaturday);
+}
+
+window.getNextNationalRaceId = getNextRaceId;
+
 // --- 🐑 全国レース・エントリー機能 (更新) ---
 window.registerNationalRaceEntry = async function (userId, sheepData, ownerName) {
-    if (!userId || !sheepData) return;
+    if (!userId || !sheepData) return false;
+
+    const entryRaceId = getNextRaceId();
 
     const entryData = {
         ownerName: ownerName || "名無しオーナー",
@@ -139,6 +178,7 @@ window.registerNationalRaceEntry = async function (userId, sheepData, ownerName)
         stamina: sheepData.stamina,
         tenacity: sheepData.tenacity,
         rank: sheepData.rank,
+        entryRaceId: entryRaceId,
         // ★残り契約数を追加（ボーナス計算に使用）
         contractRaces: sheepData.contractRaces !== undefined ? sheepData.contractRaces : 24,
         entryTime: serverTimestamp()
@@ -147,7 +187,7 @@ window.registerNationalRaceEntry = async function (userId, sheepData, ownerName)
     try {
         const docRef = doc(db, "national_entries", userId);
         await setDoc(docRef, entryData);
-        return true;
+        return { success: true, raceId: entryRaceId };
     } catch (e) {
         console.error("エントリーエラー:", e);
         return false;
@@ -194,9 +234,21 @@ function getTargetRaceId() {
     }
 
     // ID形式: "2024-05-18-1600"
-    return lastSaturday.getFullYear() + "-" +
-        (lastSaturday.getMonth() + 1).toString().padStart(2, '0') + "-" +
-        lastSaturday.getDate().toString().padStart(2, '0') + "-1600";
+    return formatRaceId(lastSaturday);
+}
+
+function isEntryForRace(entry, raceId) {
+    if (entry.entryRaceId) {
+        return entry.entryRaceId === raceId;
+    }
+
+    // 旧形式のエントリー救済: entryTime が締切以前なら対象レース分として扱う
+    const raceDate = parseRaceId(raceId);
+    if (!raceDate || !entry.entryTime || typeof entry.entryTime.toDate !== 'function') {
+        return false;
+    }
+
+    return entry.entryTime.toDate() <= raceDate;
 }
 
 /**
@@ -224,13 +276,14 @@ window.checkAndRunNationalRace = async function () {
         if (snapshot.empty) return { status: "no_entries" };
 
         let entries = [];
-        snapshot.forEach(d => entries.push({ id: d.id, ...d.data() }));
+        snapshot.forEach(d => entries.push({ id: d.id, ref: d.ref, ...d.data() }));
+        const raceEntries = entries.filter(e => isEntryForRace(e, raceId));
 
         // 3. ランク別に計算
         const leagues = { Rookie: [], Pro: [], Legend: [] };
         const luckMax = { Rookie: 60, Pro: 80, Legend: 100 };
 
-        entries.forEach(e => {
+        raceEntries.forEach(e => {
             const lMax = luckMax[e.rank] || 60;
             const luck = Math.random() * lMax;
 
@@ -272,10 +325,12 @@ window.checkAndRunNationalRace = async function () {
         const historyRef = doc(db, "national_results", raceId);
         await setDoc(historyRef, { ...finalResults, createdAt: serverTimestamp() });
 
-        // 6. エントリーをリセット (全削除)
-        const batch = writeBatch(db);
-        snapshot.forEach(d => batch.delete(d.ref));
-        await batch.commit();
+        // 6. 今回対象のエントリーだけをリセット（未来レース分は残す）
+        if (raceEntries.length > 0) {
+            const batch = writeBatch(db);
+            raceEntries.forEach(e => batch.delete(e.ref));
+            await batch.commit();
+        }
 
         return { status: "new_result", data: finalResults };
 

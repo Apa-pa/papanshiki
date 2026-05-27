@@ -246,6 +246,71 @@ h1 {
     justify-content: flex-end;
 }
 
+.mode-badge {
+    min-height: 40px;
+    border-radius: 8px;
+    padding: 8px 12px;
+    background: #fff7e8;
+    border: 2px solid #f2c46b;
+    color: #74500c;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+}
+
+.quiz-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+    gap: 12px;
+    align-items: center;
+    border: 2px solid #f2c46b;
+    border-radius: 8px;
+    background: #fff9e8;
+    padding: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 10px 20px rgba(146, 107, 21, 0.12);
+}
+
+.quiz-panel.hidden {
+    display: none;
+}
+
+.quiz-panel h2,
+.quiz-panel p {
+    margin: 0;
+}
+
+.quiz-panel h2 {
+    color: #67480e;
+    font-size: 1.2rem;
+}
+
+.quiz-panel p {
+    color: #6f5c34;
+    line-height: 1.5;
+}
+
+.quiz-actions {
+    display: grid;
+    gap: 8px;
+}
+
+.quiz-result {
+    min-height: 40px;
+    border-radius: 8px;
+    border: 1px solid #efd185;
+    background: #fff;
+    color: #6f5c34;
+    font-weight: bold;
+    padding: 8px 10px;
+}
+
+.quiz-result.clear {
+    background: #e9f8e7;
+    border-color: #91d28d;
+    color: #27652d;
+}
+
 .workspace {
     display: grid;
     grid-template-columns: 170px minmax(360px, 1fr) 330px;
@@ -360,6 +425,69 @@ h1 {
     margin: 0;
 }
 
+.edit-section {
+    border-top: 2px dashed #d5e8f1;
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+.edit-section.disabled {
+    opacity: 0.55;
+}
+
+.edit-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.edit-heading h3 {
+    margin: 0;
+}
+
+#size-value {
+    min-width: 42px;
+    border-radius: 8px;
+    background: #eef8ff;
+    border: 1px solid #cfe5f1;
+    color: #315469;
+    font-weight: bold;
+    text-align: center;
+    padding: 4px 6px;
+}
+
+.size-range {
+    width: 100%;
+    accent-color: var(--orange);
+}
+
+.size-presets {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.size-presets button {
+    min-height: 36px;
+    border: 2px solid #c7e2ee;
+    border-radius: 8px;
+    background: #f9fdff;
+    color: #315469;
+    font-weight: bold;
+}
+
+.size-presets button.active {
+    border-color: var(--orange);
+    background: #fff7e8;
+}
+
+.size-presets button:disabled {
+    cursor: default;
+}
+
 .command-section {
     border-top: 2px dashed #d5e8f1;
     padding-top: 10px;
@@ -472,6 +600,10 @@ h1 {
 
     .run-controls > * {
         flex: 1 1 0;
+    }
+
+    .quiz-panel {
+        grid-template-columns: 1fr;
     }
 
     .asset-palette {

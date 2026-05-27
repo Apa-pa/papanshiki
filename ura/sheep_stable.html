@@ -682,9 +682,10 @@
 
                 // Firebaseへ送信
                 if (typeof window.registerNationalRaceEntry === 'function') {
-                    const success = await window.registerNationalRaceEntry(s.uid, s, publicName);
-                    if (success) {
+                    const result = await window.registerNationalRaceEntry(s.uid, s, publicName);
+                    if (result) {
                         s.entry = true;
+                        s.entryRaceId = result.raceId || (typeof window.getNextNationalRaceId === 'function' ? window.getNextNationalRaceId() : null);
                         allData[currentUserName] = s;
                         saveUserData(allData);
                         updateUI();
@@ -710,12 +711,17 @@
 
                     let myRank = 0;
                     let prize = 0;
+                    let rankedInRace = false;
 
                     [...data.rookie, ...data.pro, ...data.legend].forEach(win => {
                         if (win.uid === s.uid) {
                             myRank = win.rank;
+                            rankedInRace = true;
                         }
                     });
+
+                    const enteredThisRace = rankedInRace || (s.entry && (!s.entryRaceId || s.entryRaceId === data.raceId));
+                    if (!enteredThisRace) return;
 
                     if (myRank > 0) {
                         prize = (myRank === 1) ? 20 : (myRank === 2) ? 10 : 5;
@@ -736,6 +742,7 @@
 
                     s.lastAwardedRace = data.raceId;
                     s.entry = false;
+                    s.entryRaceId = null;
                     saveUserData(allData);
                     updateUI();
                 }
