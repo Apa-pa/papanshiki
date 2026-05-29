@@ -64,9 +64,9 @@
                 </div>
                 <div class="run-controls">
                     <span id="mode-badge" class="mode-badge">自由制作</span>
-                    <button id="play-btn" class="primary-button small" type="button">再生</button>
-                    <button id="pause-btn" class="tool-button" type="button">とめる</button>
-                    <button id="reset-btn" class="tool-button" type="button">さいしょ</button>
+                    <button id="play-btn" class="primary-button small" type="button">▶ 再生</button>
+                    <button id="pause-btn" class="tool-button" type="button">■ とめる</button>
+                    <button id="reset-btn" class="tool-button" type="button">↺ さいしょ</button>
                 </div>
             </header>
 
@@ -74,10 +74,15 @@
                 <div>
                     <p class="eyebrow">QUIZ</p>
                     <h2 id="quiz-title">クイズ</h2>
+                    <p id="quiz-count" class="quiz-count">お題 1 / 1</p>
                     <p id="quiz-description">お題をクリアしよう</p>
                 </div>
                 <div class="quiz-actions">
                     <div id="quiz-result" class="quiz-result">命令をつけて再生してね</div>
+                    <button id="quiz-menu-btn" class="tool-button" type="button" aria-expanded="false"
+                        aria-controls="quiz-nav">お題を選ぶ</button>
+                    <div id="quiz-nav" class="quiz-nav hidden" aria-label="お題を選ぶ"></div>
+                    <button id="quiz-next-btn" class="primary-button small" type="button">つぎの問題</button>
                     <button id="quiz-reset-btn" class="tool-button" type="button">お題をやりなおす</button>
                     <button id="free-mode-btn" class="tool-button" type="button">自由制作へ</button>
                 </div>
@@ -92,6 +97,11 @@
 
                 <section class="stage-panel" aria-label="プログラミングステージ">
                     <canvas id="stage-canvas" width="900" height="600"></canvas>
+                    <div class="stage-controls" aria-label="ステージ操作">
+                        <button id="stage-play-btn" class="primary-button small" type="button">▶ 再生</button>
+                        <button id="stage-pause-btn" class="tool-button" type="button">■ とめる</button>
+                        <button id="stage-reset-btn" class="tool-button" type="button">↺ さいしょ</button>
+                    </div>
                     <div id="status-text" class="status-text">そざいをえらんで、画面におこう</div>
                 </section>
 

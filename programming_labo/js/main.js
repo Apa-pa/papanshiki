@@ -43,6 +43,9 @@
         els.playBtn = document.getElementById("play-btn");
         els.pauseBtn = document.getElementById("pause-btn");
         els.resetBtn = document.getElementById("reset-btn");
+        els.stagePlayBtn = document.getElementById("stage-play-btn");
+        els.stagePauseBtn = document.getElementById("stage-pause-btn");
+        els.stageResetBtn = document.getElementById("stage-reset-btn");
         els.deleteObjectBtn = document.getElementById("delete-object-btn");
         els.clearBtn = document.getElementById("clear-btn");
         els.pointBtn = document.getElementById("point-btn");
@@ -54,23 +57,12 @@
             els.labScreen.classList.add("active");
             canvasApi.drawStage();
         });
-        els.playBtn.addEventListener("click", () => {
-            if (!state.objects.length) {
-                setStatus("まずキャラをおいてね");
-                return;
-            }
-            canvasApi.play();
-            setStatus("再生中");
-        });
-        els.pauseBtn.addEventListener("click", () => {
-            canvasApi.pause();
-            setStatus("とめたよ");
-        });
-        els.resetBtn.addEventListener("click", () => {
-            canvasApi.reset();
-            setStatus("さいしょの場所にもどしたよ");
-            updateSelectedPanel();
-        });
+        els.playBtn.addEventListener("click", playStage);
+        els.stagePlayBtn.addEventListener("click", playStage);
+        els.pauseBtn.addEventListener("click", pauseStage);
+        els.stagePauseBtn.addEventListener("click", pauseStage);
+        els.resetBtn.addEventListener("click", resetStage);
+        els.stageResetBtn.addEventListener("click", resetStage);
         els.deleteObjectBtn.addEventListener("click", deleteSelectedObject);
         els.clearBtn.addEventListener("click", clearAll);
         els.pointBtn.addEventListener("click", claimPoint);
@@ -78,6 +70,26 @@
         els.sizePresetButtons.forEach((button) => {
             button.addEventListener("click", () => updateSelectedObjectSize(Number(button.dataset.size)));
         });
+    }
+
+    function playStage() {
+            if (!state.objects.length) {
+                setStatus("まずキャラをおいてね");
+                return;
+            }
+            canvasApi.play();
+            setStatus("再生中");
+    }
+
+    function pauseStage() {
+        canvasApi.pause();
+        setStatus("とめたよ");
+    }
+
+    function resetStage() {
+        canvasApi.reset();
+        setStatus("さいしょの場所にもどしたよ");
+        updateSelectedPanel();
     }
 
     function renderAssets() {

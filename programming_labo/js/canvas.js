@@ -268,8 +268,24 @@
                     if (command.type !== "moveForever") return;
                     command.direction = oppositeDirection(command.direction, object);
                 });
+                recordEvent({
+                    type: "edgeAction",
+                    action: "bounce",
+                    objectId: object.id,
+                    assetId: object.assetId,
+                    x: object.x,
+                    y: object.y
+                });
             } else if (rule.action === "stopLoops") {
                 object.loops = object.loops.filter((command) => command.type !== "moveForever");
+                recordEvent({
+                    type: "edgeAction",
+                    action: "stopLoops",
+                    objectId: object.id,
+                    assetId: object.assetId,
+                    x: object.x,
+                    y: object.y
+                });
             }
         });
     }
@@ -325,6 +341,14 @@
 
     function runRuleAction(object, otherObject, rule, x, y) {
         if (rule.action === "hide") {
+            recordEvent({
+                type: "hidden",
+                objectId: object.id,
+                assetId: object.assetId,
+                by: "hit",
+                x: object.x,
+                y: object.y
+            });
             object.visible = false;
         } else if (rule.action === "showHanamaru") {
             addHanamaruEffect(x, y, Math.max(object.size, otherObject.size));
@@ -336,6 +360,14 @@
             object.x = object.startX;
             object.y = object.startY;
             object.rotation = object.startRotation;
+            recordEvent({
+                type: "resetPosition",
+                objectId: object.id,
+                assetId: object.assetId,
+                by: "hit",
+                x: object.x,
+                y: object.y
+            });
         }
     }
 
@@ -349,6 +381,7 @@
             existing.direction = rule.direction;
             existing.startDirection = rule.direction;
             existing.speed = rule.speed;
+            recordMoveStarted(object, rule);
             return;
         }
         object.loops.push({
@@ -358,6 +391,19 @@
             direction: rule.direction,
             startDirection: rule.direction,
             speed: rule.speed
+        });
+        recordMoveStarted(object, rule);
+    }
+
+    function recordMoveStarted(object, rule) {
+        recordEvent({
+            type: "moveStarted",
+            objectId: object.id,
+            assetId: object.assetId,
+            direction: rule.direction,
+            by: "hit",
+            x: object.x,
+            y: object.y
         });
     }
 
