@@ -1,14 +1,25 @@
 (function () {
     const { state, getAsset, getSelectedObject } = window.ProgramLaboState;
     const canvasApi = window.ProgramLaboCanvas;
+    const DEFAULT_MAX_SIZE = 140;
+    const HEART_MAX_SIZE = 220;
+    const RULE_COMMAND_GROUPS = [
+        { id: "edge", label: "はしについたら" },
+        { id: "hit", label: "ぶつかったら" },
+        { id: "tap", label: "タップしたら" }
+    ];
+    const USER_LIST_KEY = "programming_labo_users_v1";
+    const CURRENT_USER_KEY = "programming_labo_current_user_v1";
 
     const els = {};
+    let activeRuleGroup = null;
 
     function init() {
         bindElements();
         renderAssets();
         renderCommandButtons();
         bindEvents();
+        initUserSelection();
         canvasApi.initCanvas({
             canvas: els.canvas,
             onSelectionChange: updateSelectedPanel,
@@ -49,13 +60,25 @@
         els.deleteObjectBtn = document.getElementById("delete-object-btn");
         els.clearBtn = document.getElementById("clear-btn");
         els.pointBtn = document.getElementById("point-btn");
+        els.userSwitchBtn = document.getElementById("user-switch-btn");
+        els.currentUserName = document.getElementById("current-user-name");
+        els.userSelectDialog = document.getElementById("user-select-dialog");
+        els.userChoiceList = document.getElementById("user-choice-list");
+        els.newUserForm = document.getElementById("new-user-form");
+        els.newUserName = document.getElementById("new-user-name");
     }
 
     function bindEvents() {
         els.startBtn.addEventListener("click", () => {
+            if (!requireCurrentUser()) return;
             els.homeScreen.classList.remove("active");
             els.labScreen.classList.add("active");
             canvasApi.drawStage();
+        });
+        els.userSwitchBtn.addEventListener("click", showUserDialog);
+        els.newUserForm.addEventListener("submit", (ev) => {
+            ev.preventDefault();
+            selectUser(els.newUserName.value);
         });
         els.playBtn.addEventListener("click", playStage);
         els.stagePlayBtn.addEventListener("click", playStage);
@@ -70,6 +93,115 @@
         els.sizePresetButtons.forEach((button) => {
             button.addEventListener("click", () => updateSelectedObjectSize(Number(button.dataset.size)));
         });
+    }
+
+    function initUserSelection() {
+        const savedUser = localStorage.getItem(CURRENT_USER_KEY);
+        if (savedUser) {
+            state.currentUserName = savedUser;
+            updateCurrentUserDisplay();
+        }
+        renderUserChoices();
+        showUserDialog();
+    }
+
+    function getSelectableUsers() {
+        const users = new Set(getStoredLabUsers());
+        if (typeof getUserNames === "function") {
+            getUserNames().forEach((name) => users.add(name));
+        }
+        return [...users].filter(Boolean).sort();
+    }
+
+    function getStoredLabUsers() {
+        try {
+            const parsed = JSON.parse(localStorage.getItem(USER_LIST_KEY) || "[]");
+            return Array.isArray(parsed) ? parsed.filter((name) => typeof name === "string") : [];
+        } catch (error) {
+            return [];
+        }
+    }
+
+    function saveStoredLabUsers(users) {
+        localStorage.setItem(USER_LIST_KEY, JSON.stringify([...new Set(users)].sort()));
+    }
+
+    function renderUserChoices() {
+        const users = getSelectableUsers();
+        els.userChoiceList.innerHTML = "";
+        users.forEach((name) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.textContent = name;
+            button.classList.toggle("active", name === state.currentUserName);
+            button.addEventListener("click", () => selectUser(name));
+            els.userChoiceList.appendChild(button);
+        });
+    }
+
+    function showUserDialog() {
+        renderUserChoices();
+        els.userSelectDialog.classList.remove("hidden");
+        els.newUserName.value = "";
+        els.newUserName.focus();
+    }
+
+    function hideUserDialog() {
+        els.userSelectDialog.classList.add("hidden");
+    }
+
+    function selectUser(rawName) {
+        const name = rawName.trim();
+        if (!name) {
+            setStatus("あそぶ人の名前を入れてね");
+            return false;
+        }
+        const users = getSelectableUsers();
+        if (!users.includes(name)) {
+            saveStoredLabUsers([...users, name]);
+        }
+        state.currentUserName = name;
+        localStorage.setItem(CURRENT_USER_KEY, name);
+        updateCurrentUserDisplay();
+        renderUserChoices();
+        hideUserDialog();
+        document.dispatchEvent(new CustomEvent("programlabo:userchange", { detail: { userName: name } }));
+        setStatus(`${name}さんであそぶよ`);
+        return true;
+    }
+
+    function updateCurrentUserDisplay() {
+        els.currentUserName.textContent = state.currentUserName || "えらんでね";
+    }
+
+    function requireCurrentUser() {
+        if (state.currentUserName) return true;
+        showUserDialog();
+        setStatus("あそぶ人をえらんでね");
+        return false;
+    }
+
+    function awardPointsToCurrentUser(amount) {
+        if (!requireCurrentUser()) return null;
+        const userName = state.currentUserName;
+        if (typeof addPoints === "function") {
+            addPoints(userName, amount);
+        }
+        if (typeof toggleStamp === "function" && typeof getTodayString === "function") {
+            toggleStamp(userName, getTodayString(), true);
+        }
+        if (typeof savePlayLog === "function") {
+            savePlayLog(userName, "programming_labo");
+        }
+        const parentBonus = typeof checkAndAwardParentBonus === "function"
+            ? checkAndAwardParentBonus(userName, "programming_labo")
+            : 0;
+        state.lastPointAward = {
+            userName,
+            amount,
+            parentBonus
+        };
+        return userName;
     }
 
     function playStage() {
@@ -119,7 +251,7 @@
     function renderCommandButtons() {
         renderCommandGroup(els.stepButtons, window.PROGRAMMING_LABO_STEP_COMMANDS, addStepCommand);
         renderCommandGroup(els.loopButtons, window.PROGRAMMING_LABO_LOOP_COMMANDS, addLoopCommand);
-        renderCommandGroup(els.ruleButtons, window.PROGRAMMING_LABO_RULE_COMMANDS, addRuleCommand);
+        renderRuleCommandButtons();
     }
 
     function renderCommandGroup(container, commands, handler) {
@@ -131,6 +263,46 @@
             button.addEventListener("click", () => handler(command));
             container.appendChild(button);
         });
+    }
+
+    function renderRuleCommandButtons() {
+        els.ruleButtons.innerHTML = "";
+
+        const groupRow = document.createElement("div");
+        groupRow.className = "rule-command-groups";
+        RULE_COMMAND_GROUPS.forEach((group) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.textContent = group.label;
+            button.className = "rule-group-button";
+            button.classList.toggle("active", activeRuleGroup === group.id);
+            button.addEventListener("click", () => {
+                activeRuleGroup = activeRuleGroup === group.id ? null : group.id;
+                renderRuleCommandButtons();
+            });
+            groupRow.appendChild(button);
+        });
+        els.ruleButtons.appendChild(groupRow);
+
+        if (!activeRuleGroup) return;
+
+        const actionRow = document.createElement("div");
+        actionRow.className = "rule-command-actions";
+        window.PROGRAMMING_LABO_RULE_COMMANDS
+            .filter((command) => command.when === activeRuleGroup)
+            .forEach((command) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.textContent = getRuleActionLabel(command);
+                button.addEventListener("click", () => addRuleCommand(command));
+                actionRow.appendChild(button);
+            });
+        els.ruleButtons.appendChild(actionRow);
+    }
+
+    function getRuleActionLabel(command) {
+        const prefix = `${RULE_COMMAND_GROUPS.find((group) => group.id === command.when)?.label} `;
+        return command.label.startsWith(prefix) ? command.label.slice(prefix.length) : command.label;
     }
 
     function addStepCommand(command) {
@@ -208,8 +380,10 @@
         if (!hasObject) {
             els.sizeValue.textContent = "--";
             els.sizeRange.value = 72;
+            els.sizeRange.max = DEFAULT_MAX_SIZE;
             return;
         }
+        els.sizeRange.max = getObjectMaxSize(object);
         els.sizeRange.value = String(Math.round(object.startSize));
         els.sizeValue.textContent = `${Math.round(object.startSize)}`;
     }
@@ -220,7 +394,7 @@
             setStatus("大きさを変えるキャラをえらんでね");
             return;
         }
-        const nextSize = Math.max(36, Math.min(140, size));
+        const nextSize = Math.max(36, Math.min(getObjectMaxSize(object), size));
         if (state.isPlaying) {
             canvasApi.pause();
             setStatus("大きさを変えるために再生をとめたよ");
@@ -233,6 +407,10 @@
         object.activeCommandIndex = 0;
         canvasApi.drawStage();
         updateSizeEditor(object);
+    }
+
+    function getObjectMaxSize(object) {
+        return object && object.assetId === "heart" ? HEART_MAX_SIZE : DEFAULT_MAX_SIZE;
     }
 
     function renderList(container, commands, emptyText, onRemove) {
@@ -316,9 +494,11 @@
     }
 
     function openLab() {
+        if (!requireCurrentUser()) return false;
         els.homeScreen.classList.remove("active");
         els.labScreen.classList.add("active");
         canvasApi.drawStage();
+        return true;
     }
 
     function setModeLabel(label) {
@@ -351,6 +531,10 @@
     window.ProgramLaboMain = {
         openLab,
         clearAll,
+        getCurrentUser: () => state.currentUserName,
+        requireCurrentUser,
+        awardPointsToCurrentUser,
+        getLastPointAward: () => state.lastPointAward,
         refresh: updateSelectedPanel,
         setModeLabel,
         setObjectsFromData,

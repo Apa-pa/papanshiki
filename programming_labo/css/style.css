@@ -246,6 +246,34 @@ h1 {
     justify-content: flex-end;
 }
 
+.user-switch {
+    min-height: 40px;
+    border-radius: 8px;
+    padding: 6px 10px;
+    border: 2px solid #bfdeeb;
+    background: #fff;
+    color: #24566f;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    line-height: 1.1;
+    font-weight: bold;
+}
+
+.user-switch-label {
+    color: var(--muted);
+    font-size: 0.68rem;
+}
+
+.user-switch strong {
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
 .mode-badge {
     min-height: 40px;
     border-radius: 8px;
@@ -345,6 +373,173 @@ h1 {
     color: #533704;
 }
 
+.quiz-nav button.just-cleared {
+    animation: quizCheckPop 780ms ease both;
+}
+
+.quiz-nav button.cleared::after {
+    content: "✓";
+    display: inline-grid;
+    place-items: center;
+    width: 17px;
+    height: 17px;
+    margin-left: 4px;
+    border-radius: 50%;
+    background: #e9f8e7;
+    color: #27652d;
+    font-size: 0.78rem;
+    border: 1px solid #91d28d;
+}
+
+.quiz-next-ready {
+    animation: nextReady 1200ms ease-in-out 2;
+}
+
+.user-select-dialog {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: rgba(38, 63, 77, 0.58);
+}
+
+.user-select-dialog.hidden {
+    display: none;
+}
+
+.user-select-card {
+    width: min(420px, 100%);
+    border-radius: 8px;
+    border: 2px solid var(--line);
+    background: #fff;
+    box-shadow: 0 18px 42px rgba(42, 114, 150, 0.22);
+    padding: 18px;
+}
+
+.user-select-card h2 {
+    margin: 0 0 12px;
+    color: #263f4d;
+}
+
+.user-choice-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.user-choice-list button {
+    min-height: 44px;
+    border: 2px solid #bfdeeb;
+    border-radius: 8px;
+    background: #e9f5fb;
+    color: #24566f;
+    font-weight: bold;
+}
+
+.user-choice-list button.active {
+    background: #fff7e8;
+    border-color: var(--orange);
+    color: #704a0a;
+}
+
+.new-user-form {
+    border-top: 2px dashed #d5e8f1;
+    margin-top: 14px;
+    padding-top: 12px;
+}
+
+.new-user-form label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--muted);
+    font-size: 0.86rem;
+    font-weight: bold;
+}
+
+.new-user-form > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+}
+
+.new-user-form input {
+    min-height: 40px;
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font: inherit;
+}
+
+@keyframes clearPop {
+    0% {
+        opacity: 0;
+        transform: scale(0.72) rotate(-8deg);
+    }
+    58% {
+        opacity: 1;
+        transform: scale(1.08) rotate(3deg);
+    }
+    78% {
+        transform: scale(0.96) rotate(-2deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+@keyframes confettiFall {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px) rotate(0deg);
+    }
+    18% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(310px) translateX(var(--drift)) rotate(var(--rotate));
+    }
+}
+
+@keyframes rewardToast {
+    0% {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    12%,
+    78% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+}
+
+@keyframes quizCheckPop {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+    45% {
+        transform: scale(1.14);
+    }
+}
+
+@keyframes nextReady {
+    0%,
+    100% {
+        box-shadow: 0 8px 16px rgba(63, 159, 203, 0.24);
+    }
+    50% {
+        box-shadow: 0 0 0 5px rgba(255, 209, 102, 0.55), 0 8px 18px rgba(63, 159, 203, 0.28);
+    }
+}
+
 .workspace {
     display: grid;
     grid-template-columns: 170px minmax(360px, 1fr) 330px;
@@ -414,6 +609,10 @@ h1 {
     min-width: 0;
 }
 
+.stage-frame {
+    position: relative;
+}
+
 #stage-canvas {
     display: block;
     width: 100%;
@@ -424,11 +623,86 @@ h1 {
     touch-action: none;
 }
 
+.clear-celebration {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+}
+
+.clear-celebration.active {
+    opacity: 1;
+}
+
+.clear-pop {
+    width: min(210px, 46%);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    border: 7px solid #e85d75;
+    background: rgba(255, 255, 255, 0.94);
+    color: #d33855;
+    font-size: clamp(1.4rem, 4vw, 2.2rem);
+    font-weight: bold;
+    line-height: 1;
+    box-shadow: 0 14px 28px rgba(216, 73, 102, 0.22);
+    transform: scale(0.72) rotate(-7deg);
+}
+
+.clear-celebration.active .clear-pop {
+    animation: clearPop 900ms cubic-bezier(0.18, 1.35, 0.38, 1) both;
+}
+
+.confetti-piece {
+    position: absolute;
+    top: -20px;
+    left: var(--x);
+    width: var(--size);
+    height: var(--size);
+    border-radius: 3px;
+    background: var(--color);
+    opacity: 0;
+    transform: translateY(-20px) rotate(0deg);
+}
+
+.clear-celebration.active .confetti-piece {
+    animation: confettiFall var(--duration) ease-out var(--delay) both;
+}
+
 .stage-controls {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
     margin-top: 8px;
+}
+
+.reward-toast {
+    min-height: 0;
+    max-height: 0;
+    margin-top: 0;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #fff4cf;
+    border: 0 solid #f3c95d;
+    color: #7a5310;
+    font-weight: bold;
+    text-align: center;
+    transform: translateY(-6px);
+    opacity: 0;
+}
+
+.reward-toast.active {
+    max-height: 88px;
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-width: 2px;
+    animation: rewardToast 2600ms ease both;
 }
 
 .status-text {
@@ -553,6 +827,37 @@ h1 {
     padding: 6px 8px;
 }
 
+.rule-command-groups,
+.rule-command-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
+}
+
+.rule-command-groups {
+    margin-bottom: 6px;
+}
+
+.command-buttons .rule-group-button {
+    background: #e9f5fb;
+    border-color: #bfdeeb;
+    color: #24566f;
+}
+
+.command-buttons .rule-group-button.active {
+    background: #fff7e8;
+    border-color: var(--orange);
+    color: #704a0a;
+}
+
+.rule-command-actions {
+    padding: 8px;
+    border: 1px dashed #cfe5f1;
+    border-radius: 8px;
+    background: #f7fbfd;
+}
+
 .command-list {
     display: grid;
     gap: 6px;
@@ -643,6 +948,10 @@ h1 {
         flex: 1 1 0;
     }
 
+    .user-switch {
+        align-items: center;
+    }
+
     .quiz-panel {
         grid-template-columns: 1fr;
     }
@@ -664,6 +973,10 @@ h1 {
     }
 
     .panel-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .user-choice-list {
         grid-template-columns: 1fr;
     }
 }

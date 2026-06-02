@@ -63,6 +63,10 @@
                     <h1>プログラミングラボ</h1>
                 </div>
                 <div class="run-controls">
+                    <button id="user-switch-btn" class="user-switch" type="button" aria-label="ユーザーを切り替える">
+                        <span class="user-switch-label">ユーザー</span>
+                        <strong id="current-user-name">えらんでね</strong>
+                    </button>
                     <span id="mode-badge" class="mode-badge">自由制作</span>
                     <button id="play-btn" class="primary-button small" type="button">▶ 再生</button>
                     <button id="pause-btn" class="tool-button" type="button">■ とめる</button>
@@ -96,12 +100,18 @@
                 </aside>
 
                 <section class="stage-panel" aria-label="プログラミングステージ">
-                    <canvas id="stage-canvas" width="900" height="600"></canvas>
+                    <div class="stage-frame">
+                        <canvas id="stage-canvas" width="900" height="600"></canvas>
+                        <div id="clear-celebration" class="clear-celebration" aria-hidden="true">
+                            <div class="clear-pop">クリア！</div>
+                        </div>
+                    </div>
                     <div class="stage-controls" aria-label="ステージ操作">
                         <button id="stage-play-btn" class="primary-button small" type="button">▶ 再生</button>
                         <button id="stage-pause-btn" class="tool-button" type="button">■ とめる</button>
                         <button id="stage-reset-btn" class="tool-button" type="button">↺ さいしょ</button>
                     </div>
+                    <div id="reward-toast" class="reward-toast" aria-live="polite"></div>
                     <div id="status-text" class="status-text">そざいをえらんで、画面におこう</div>
                 </section>
 
@@ -156,6 +166,22 @@
             </div>
         </section>
     </main>
+
+    <div id="user-select-dialog" class="user-select-dialog hidden" role="dialog" aria-modal="true"
+        aria-labelledby="user-select-title">
+        <div class="user-select-card">
+            <p class="eyebrow">USER</p>
+            <h2 id="user-select-title">だれがあそぶ？</h2>
+            <div id="user-choice-list" class="user-choice-list"></div>
+            <form id="new-user-form" class="new-user-form">
+                <label for="new-user-name">あたらしい なまえ</label>
+                <div>
+                    <input id="new-user-name" type="text" maxlength="16" autocomplete="off" placeholder="おなまえ">
+                    <button class="primary-button small" type="submit">OK</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script src="js/assets.js"></script>
     <script src="js/commands.js"></script>

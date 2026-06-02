@@ -4,6 +4,9 @@
     let ctx;
     let onSelectionChange = function () {};
     let onStatus = function () {};
+    let dragState = null;
+    const DRAG_START_DISTANCE = 4;
+    const DROP_DELETE_MARGIN = 80;
 
     function initCanvas(options) {
         canvas = options.canvas;
@@ -12,6 +15,9 @@
         onStatus = options.onStatus;
 
         canvas.addEventListener("pointerdown", handlePointerDown);
+        canvas.addEventListener("pointermove", handlePointerMove);
+        canvas.addEventListener("pointerup", handlePointerUp);
+        canvas.addEventListener("pointercancel", handlePointerCancel);
         drawStage();
     }
 
@@ -41,6 +47,17 @@
             state.selectedObjectId = hit.id;
             if (state.isPlaying) {
                 runTapRules(hit);
+            } else {
+                dragState = {
+                    pointerId: ev.pointerId,
+                    object: hit,
+                    startPointerX: point.x,
+                    startPointerY: point.y,
+                    offsetX: hit.x - point.x,
+                    offsetY: hit.y - point.y,
+                    moved: false
+                };
+                canvas.setPointerCapture(ev.pointerId);
             }
             onSelectionChange();
             drawStage();
@@ -55,6 +72,79 @@
         onStatus(`${object.label}をおいたよ`);
         onSelectionChange();
         drawStage();
+    }
+
+    function handlePointerMove(ev) {
+        if (!dragState || dragState.pointerId !== ev.pointerId) return;
+        const point = canvasPoint(ev);
+        const distance = Math.hypot(point.x - dragState.startPointerX, point.y - dragState.startPointerY);
+        if (!dragState.moved && distance < DRAG_START_DISTANCE) return;
+
+        dragState.moved = true;
+        dragState.object.x = point.x + dragState.offsetX;
+        dragState.object.y = point.y + dragState.offsetY;
+        drawStage();
+    }
+
+    function handlePointerUp(ev) {
+        if (!dragState || dragState.pointerId !== ev.pointerId) return;
+        finishDrag();
+    }
+
+    function handlePointerCancel(ev) {
+        if (!dragState || dragState.pointerId !== ev.pointerId) return;
+        releaseDragPointer(ev.pointerId);
+        dragState = null;
+    }
+
+    function finishDrag() {
+        const { object, moved, pointerId } = dragState;
+        releaseDragPointer(pointerId);
+        dragState = null;
+
+        if (!moved) return;
+
+        if (isDroppedFarOutside(object)) {
+            removeObject(object);
+            onStatus(`${object.label}をけしたよ`);
+        } else {
+            keepDragObjectInStage(object);
+            object.startX = object.x;
+            object.startY = object.y;
+            object.startRotation = object.rotation;
+            object.startSize = object.size;
+            state.activeHitPairs.clear();
+            onStatus(`${object.label}をうごかしたよ`);
+        }
+        onSelectionChange();
+        drawStage();
+    }
+
+    function releaseDragPointer(pointerId) {
+        if (canvas.hasPointerCapture && canvas.hasPointerCapture(pointerId)) {
+            canvas.releasePointerCapture(pointerId);
+        }
+    }
+
+    function isDroppedFarOutside(object) {
+        return (
+            object.x < -DROP_DELETE_MARGIN ||
+            object.x > canvas.width + DROP_DELETE_MARGIN ||
+            object.y < -DROP_DELETE_MARGIN ||
+            object.y > canvas.height + DROP_DELETE_MARGIN
+        );
+    }
+
+    function removeObject(object) {
+        state.objects = state.objects.filter((item) => item.id !== object.id);
+        state.activeHitPairs.clear();
+        state.selectedObjectId = state.objects.length ? state.objects[state.objects.length - 1].id : null;
+    }
+
+    function keepDragObjectInStage(object) {
+        const r = object.size * 0.5;
+        object.x = Math.max(r, Math.min(canvas.width - r, object.x));
+        object.y = Math.max(r, Math.min(canvas.height - r, object.y));
     }
 
     function findObjectAt(x, y) {
@@ -263,36 +353,22 @@
 
     function runEdgeRules(object) {
         object.rules.filter((rule) => rule.when === "edge").forEach((rule) => {
-            if (rule.action === "bounce") {
-                object.loops.forEach((command) => {
-                    if (command.type !== "moveForever") return;
-                    command.direction = oppositeDirection(command.direction, object);
-                });
-                recordEvent({
-                    type: "edgeAction",
-                    action: "bounce",
-                    objectId: object.id,
-                    assetId: object.assetId,
-                    x: object.x,
-                    y: object.y
-                });
-            } else if (rule.action === "stopLoops") {
-                object.loops = object.loops.filter((command) => command.type !== "moveForever");
-                recordEvent({
-                    type: "edgeAction",
-                    action: "stopLoops",
-                    objectId: object.id,
-                    assetId: object.assetId,
-                    x: object.x,
-                    y: object.y
-                });
-            }
+            runRuleAction(object, null, rule, object.x, object.y, "edge");
         });
     }
 
     function runTapRules(object) {
         object.rules.filter((rule) => rule.when === "tap").forEach((rule) => {
-            if (rule.action === "hide") object.visible = false;
+            recordEvent({
+                type: "tapAction",
+                action: rule.action,
+                objectId: object.id,
+                assetId: object.assetId,
+                key: object.key,
+                x: object.x,
+                y: object.y
+            });
+            runRuleAction(object, null, rule, object.x, object.y, "tap");
         });
     }
 
@@ -315,6 +391,7 @@
                             type: "hit",
                             objectIds: [a.id, b.id],
                             assetIds: [a.assetId, b.assetId],
+                            keys: [a.key, b.key].filter(Boolean),
                             x,
                             y
                         });
@@ -336,26 +413,40 @@
         const rule = hitRules[cursor % hitRules.length];
         object.ruleCursors.hit = (cursor + 1) % hitRules.length;
 
-        runRuleAction(object, otherObject, rule, x, y);
+        runRuleAction(object, otherObject, rule, x, y, "hit");
     }
 
-    function runRuleAction(object, otherObject, rule, x, y) {
-        if (rule.action === "hide") {
+    function runRuleAction(object, otherObject, rule, x, y, trigger) {
+        if (rule.action === "bounce") {
+            bounceObject(object);
+            recordEvent({
+                type: "bounce",
+                objectId: object.id,
+                assetId: object.assetId,
+                key: object.key,
+                by: trigger,
+                x: object.x,
+                y: object.y
+            });
+            recordEdgeAction(object, rule, trigger);
+        } else if (rule.action === "hide") {
             recordEvent({
                 type: "hidden",
                 objectId: object.id,
                 assetId: object.assetId,
-                by: "hit",
+                key: object.key,
+                by: trigger,
                 x: object.x,
                 y: object.y
             });
             object.visible = false;
         } else if (rule.action === "showHanamaru") {
-            addHanamaruEffect(x, y, Math.max(object.size, otherObject.size));
+            addHanamaruEffect(x, y, Math.max(object.size, otherObject ? otherObject.size : object.size));
         } else if (rule.action === "startMove") {
-            startMoveForever(object, rule);
+            startMoveForever(object, rule, trigger);
         } else if (rule.action === "stopLoops") {
             object.loops = object.loops.filter((command) => command.type !== "moveForever" && command.type !== "spinForever");
+            recordEdgeAction(object, rule, trigger);
         } else if (rule.action === "resetPosition") {
             object.x = object.startX;
             object.y = object.startY;
@@ -364,44 +455,67 @@
                 type: "resetPosition",
                 objectId: object.id,
                 assetId: object.assetId,
-                by: "hit",
+                key: object.key,
+                by: trigger,
                 x: object.x,
                 y: object.y
             });
         }
     }
 
+    function bounceObject(object) {
+        object.loops.forEach((command) => {
+            if (command.type !== "moveForever") return;
+            command.direction = oppositeDirection(command.direction, object);
+            command.startDirection = command.direction;
+        });
+    }
+
+    function recordEdgeAction(object, rule, trigger) {
+        if (trigger !== "edge") return;
+        recordEvent({
+            type: "edgeAction",
+            action: rule.action,
+            objectId: object.id,
+            assetId: object.assetId,
+            key: object.key,
+            x: object.x,
+            y: object.y
+        });
+    }
+
     function hitPairKey(a, b) {
         return [a.id, b.id].sort().join(":");
     }
 
-    function startMoveForever(object, rule) {
+    function startMoveForever(object, rule, trigger) {
         const existing = object.loops.find((command) => command.type === "moveForever");
         if (existing) {
             existing.direction = rule.direction;
             existing.startDirection = rule.direction;
             existing.speed = rule.speed;
-            recordMoveStarted(object, rule);
+            recordMoveStarted(object, rule, trigger);
             return;
         }
         object.loops.push({
-            id: `hit-start-${rule.direction}`,
+            id: `${trigger}-start-${rule.direction}`,
             label: `${directionLabel(rule.direction)}に進み続ける`,
             type: "moveForever",
             direction: rule.direction,
             startDirection: rule.direction,
             speed: rule.speed
         });
-        recordMoveStarted(object, rule);
+        recordMoveStarted(object, rule, trigger);
     }
 
-    function recordMoveStarted(object, rule) {
+    function recordMoveStarted(object, rule, trigger) {
         recordEvent({
             type: "moveStarted",
             objectId: object.id,
             assetId: object.assetId,
+            key: object.key,
             direction: rule.direction,
-            by: "hit",
+            by: trigger,
             x: object.x,
             y: object.y
         });
