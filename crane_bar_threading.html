@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>クレーンゲーム棒とおし</title>
+    <script src="ranking.js"></script>
+    <style>
+        :root {
+            --bg: #e8f5f3;
+            --panel: #ffffff;
+            --ink: #193a40;
+            --sub: #52696d;
+            --accent: #ff8f00;
+            --accent-shadow: #c96800;
+            --blue: #2679ca;
+            --blue-shadow: #15518b;
+            --red: #df4a3a;
+            --green: #23884d;
+            --rail: #cbd8dc;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            padding: 10px;
+            font-family: "UD Digital Kyokasho-tai-R", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+            color: var(--ink);
+            background: linear-gradient(180deg, #dff4f0 0%, #edf8e7 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        h1 {
+            margin: 6px 0 2px;
+            font-size: clamp(20px, 4vw, 28px);
+            line-height: 1.25;
+            text-align: center;
+            color: #146068;
+        }
+
+        #message {
+            width: min(100%, 880px);
+            min-height: 42px;
+            margin: 4px 0 8px;
+            padding: 6px 8px;
+            color: var(--accent);
+            font-size: clamp(17px, 3.3vw, 22px);
+            font-weight: 800;
+            line-height: 1.35;
+            text-align: center;
+            text-shadow: 1px 1px 0 #fff;
+        }
+
+        .player-panel {
+            width: min(100%, 880px);
+            margin: 4px 0 8px;
+            padding: 8px 10px;
+            display: grid;
+            grid-template-columns: auto minmax(140px, 220px) auto;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #bdd2d7;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.82);
+            color: var(--sub);
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .player-panel select {
+            width: 100%;
+            min-height: 34px;
+            border: 2px solid #b7cbd1;
+            border-radius: 8px;
+            padding: 4px 8px;
+            font: inherit;
+            font-size: 15px;
+            background: #fff;
+            color: var(--ink);
+        }
+
+        .point-badge {
+            min-width: 112px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            background: #fff3d6;
+            color: #a85d00;
+            text-align: center;
+        }
+
+        .player-panel select {
+            display: none;
+        }
+
+        .selected-user {
+            min-width: 130px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            background: #e8f5e9;
+            color: #237248;
+            text-align: center;
+        }
+
+        .start-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            background: rgba(16, 36, 42, 0.78);
+        }
+
+        .start-modal.active {
+            display: flex;
+        }
+
+        .modal-card {
+            width: min(100%, 520px);
+            max-height: min(92vh, 720px);
+            overflow: auto;
+            padding: 22px;
+            border: 5px solid #ffcf5a;
+            border-radius: 18px;
+            background: #ffffff;
+            box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+            text-align: center;
+        }
+
+        .modal-card h2 {
+            margin: 0 0 12px;
+            color: #146068;
+            font-size: clamp(22px, 5vw, 30px);
+        }
+
+        .modal-card select {
+            width: min(100%, 260px);
+            min-height: 44px;
+            margin: 4px 0 12px;
+            border: 2px solid #b7cbd1;
+            border-radius: 10px;
+            padding: 6px 10px;
+            color: var(--ink);
+            background: #fff;
+            font: inherit;
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .modal-points {
+            display: inline-block;
+            margin-bottom: 12px;
+            padding: 7px 14px;
+            border-radius: 999px;
+            background: #fff3d6;
+            color: #a85d00;
+            font-weight: 900;
+        }
+
+        .modal-rules {
+            margin: 12px 0 18px;
+            padding: 14px;
+            border-radius: 12px;
+            background: #eef8fb;
+            color: var(--ink);
+            text-align: left;
+            font-size: 15px;
+            line-height: 1.65;
+            font-weight: 700;
+        }
+
+        .modal-rules p {
+            margin: 0 0 8px;
+        }
+
+        .modal-rules p:last-child {
+            margin-bottom: 0;
+        }
+
+        #modal-start-btn {
+            min-width: min(100%, 260px);
+            background: var(--accent);
+            box-shadow: 0 6px 0 var(--accent-shadow);
+        }
+
+        #modal-start-btn:active {
+            box-shadow: 0 0 0 var(--accent-shadow);
+        }
+
+        #game-wrap {
+            width: min(100%, 880px);
+            aspect-ratio: 16 / 10;
+            border: 5px solid #b7d3d3;
+            border-radius: 14px;
+            overflow: hidden;
+            background: var(--panel);
+            box-shadow: 0 10px 24px rgba(28, 74, 72, 0.16);
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            background: #f8fbfd;
+        }
+
+        .hud {
+            width: min(100%, 880px);
+            margin: 8px 0 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .meter {
+            min-height: 34px;
+            padding: 4px 6px;
+            border: 1px solid #cad8d8;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.72);
+            text-align: center;
+        }
+
+        .meter span {
+            display: block;
+            color: var(--sub);
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .meter strong {
+            display: block;
+            margin-top: 1px;
+            font-size: clamp(13px, 2.6vw, 17px);
+            line-height: 1;
+        }
+
+        .controls {
+            width: min(100%, 880px);
+            margin-top: 8px;
+            padding: 12px 16px 16px;
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 16px;
+            align-items: center;
+            justify-items: center;
+            border: 4px solid #b6c4c8;
+            border-radius: 0 0 24px 24px;
+            background:
+                linear-gradient(180deg, #f6fafb 0%, #dce8eb 100%);
+            box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.9), 0 8px 16px rgba(28, 74, 72, 0.12);
+        }
+
+        button {
+            min-height: 58px;
+            border: 0;
+            border-radius: 999px;
+            padding: 10px 14px;
+            color: #fff;
+            font: inherit;
+            font-size: clamp(16px, 3.5vw, 21px);
+            font-weight: 900;
+            background: var(--blue);
+            box-shadow: 0 6px 0 var(--blue-shadow);
+            cursor: pointer;
+        }
+
+        .play-btn {
+            width: clamp(92px, 20vw, 132px);
+            height: clamp(92px, 20vw, 132px);
+            min-height: 0;
+            padding: 0;
+            border-radius: 50%;
+            border: 5px solid rgba(255, 255, 255, 0.9);
+            font-size: clamp(32px, 8vw, 50px);
+            line-height: 1;
+            display: grid;
+            place-items: center;
+            box-shadow:
+                0 9px 0 var(--blue-shadow),
+                0 12px 18px rgba(25, 58, 62, 0.22);
+        }
+
+        .play-btn:active,
+        .play-btn.pressed {
+            transform: translateY(9px);
+            box-shadow:
+                0 0 0 var(--blue-shadow),
+                0 5px 10px rgba(25, 58, 62, 0.18);
+        }
+
+        button:active,
+        button.pressed {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 var(--blue-shadow);
+        }
+
+        button:disabled {
+            background: #aebbc0;
+            box-shadow: 0 6px 0 #839196;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .play-btn:disabled,
+        #depth-btn:disabled {
+            background: #aebbc0;
+            box-shadow:
+                0 9px 0 #839196,
+                0 12px 18px rgba(25, 58, 62, 0.14);
+            color: #edf3f4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #depth-btn {
+            background: var(--accent);
+            box-shadow:
+                0 9px 0 var(--accent-shadow),
+                0 12px 18px rgba(25, 58, 62, 0.22);
+        }
+
+        #depth-btn:active,
+        #depth-btn.pressed {
+            box-shadow:
+                0 0 0 var(--accent-shadow),
+                0 5px 10px rgba(25, 58, 62, 0.18);
+        }
+
+        #view-indicator,
+        #reset-btn,
+        .home-btn {
+            min-width: 126px;
+            min-height: 50px;
+            background: #607d86;
+            box-shadow: 0 5px 0 #3d555d;
+            font-size: clamp(14px, 3vw, 18px);
+        }
+
+        #view-indicator {
+            width: clamp(104px, 18vw, 140px);
+            border-radius: 12px;
+            padding: 8px 10px;
+            color: #eaf3f4;
+            cursor: default;
+        }
+
+        .secondary {
+            width: min(100%, 880px);
+            margin-top: 9px;
+            display: grid;
+            grid-template-columns: auto auto auto;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .home-btn {
+            display: inline-grid;
+            place-items: center;
+            min-height: 50px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            color: #fff;
+            font-weight: 900;
+            text-decoration: none;
+        }
+
+        .home-btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 0 0 #3d555d;
+        }
+
+        .help {
+            width: min(100%, 880px);
+            margin-top: 8px;
+            color: var(--sub);
+            font-size: 13px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        @media (max-width: 680px) {
+            body {
+                padding: 8px;
+            }
+
+            #game-wrap {
+                aspect-ratio: 4 / 3;
+                border-width: 4px;
+            }
+
+            .hud {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+            }
+
+            .controls {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                padding: 10px 12px 14px;
+            }
+
+            .player-panel {
+                grid-template-columns: 1fr;
+                gap: 6px;
+                text-align: center;
+            }
+
+            .secondary {
+                grid-template-columns: 1fr;
+            }
+
+            #view-indicator {
+                grid-column: 1 / -1;
+                width: min(100%, 220px);
+                min-height: 38px;
+            }
+
+            #reset-btn,
+            .home-btn {
+                min-width: 0;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>クレーンゲーム棒とおし</h1>
+    <div class="player-panel">
+        <span>プレイヤー</span>
+        <select id="user-select"></select>
+        <div class="selected-user" id="selected-user-read">未選択</div>
+        <div class="point-badge"><span id="point-read">--</span> pt</div>
+    </div>
+    <div id="message">1つ目のボタンを押している間、棒が右へ動くよ。離すと横位置が決まります。</div>
+
+    <div id="game-wrap">
+        <canvas id="game" width="960" height="600"></canvas>
+    </div>
+
+    <div class="controls">
+        <button type="button" id="right-btn" class="play-btn" aria-label="1番ボタン">①</button>
+        <button type="button" id="depth-btn" class="play-btn" aria-label="2番ボタン">②</button>
+        <button type="button" id="view-indicator" disabled>正面ビュー</button>
+    </div>
+
+    <div class="hud" aria-live="polite">
+        <div class="meter"><span>横位置</span><strong id="x-read">0</strong></div>
+        <div class="meter"><span>奥行き</span><strong id="z-read">0</strong></div>
+        <div class="meter"><span>判定</span><strong id="judge-read">待機</strong></div>
+    </div>
+
+    <div class="secondary">
+        <button type="button" id="reset-btn">もういちど</button>
+        <button type="button" id="new-btn">穴を変える</button>
+        <a href="index.html" class="home-btn">トップにもどる</a>
+    </div>
+
+    <div class="help">1回10pt。成功すると50pt。①で右移動、②で奥移動。②は①で横位置を決めてから押せます。</div>
+
+    <div class="start-modal active" id="start-modal" role="dialog" aria-modal="true" aria-labelledby="start-modal-title">
+        <div class="modal-card">
+            <h2 id="start-modal-title">クレーンゲーム棒とおし</h2>
+            <label for="modal-user-select">プレイヤーを選んでね</label><br>
+            <select id="modal-user-select"></select>
+            <div class="modal-points">もってるポイント: <span id="modal-point-read">--</span> pt</div>
+            <div class="modal-rules">
+                <p><ruby>穴<rt>あな</rt></ruby>に<ruby>棒<rt>ぼう</rt></ruby>をとおすクレーンゲームだよ！</p>
+                <p>①を<ruby>押<rt>お</rt></ruby>している<ruby>間<rt>あいだ</rt></ruby>、<ruby>棒<rt>ぼう</rt></ruby>が<ruby>右<rt>みぎ</rt></ruby>へ<ruby>動<rt>うご</rt></ruby>きます。<ruby>離<rt>はな</rt></ruby>したところで<ruby>横位置<rt>よこいち</rt></ruby>が<ruby>決<rt>き</rt></ruby>まります。</p>
+                <p>②を<ruby>押<rt>お</rt></ruby>している<ruby>間<rt>あいだ</rt></ruby>、<ruby>横<rt>よこ</rt></ruby>から<ruby>見<rt>み</rt></ruby>ながら<ruby>棒<rt>ぼう</rt></ruby>が<ruby>奥<rt>おく</rt></ruby>へ<ruby>動<rt>うご</rt></ruby>きます。<ruby>離<rt>はな</rt></ruby>したところで<ruby>奥行<rt>おくゆ</rt></ruby>きが<ruby>決<rt>き</rt></ruby>まります。</p>
+                <p><ruby>少<rt>すこ</rt></ruby>し<ruby>待<rt>ま</rt></ruby>つと<ruby>棒<rt>ぼう</rt></ruby>が<ruby>下<rt>お</rt></ruby>ります。<ruby>穴<rt>あな</rt></ruby>に<ruby>通<rt>とお</rt></ruby>ればクリアです。</p>
+                <p>1<ruby>回<rt>かい</rt></ruby>の<ruby>挑戦<rt>ちょうせん</rt></ruby>で10pt<ruby>使<rt>つか</rt></ruby>います。<ruby>成功<rt>せいこう</rt></ruby>すると50ptもらえます。</p>
+            </div>
+            <button type="button" id="modal-start-btn">このプレイヤーではじめる</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('game');
+        const ctx = canvas.getContext('2d');
+        const messageEl = document.getElementById('message');
+        const userSelect = document.getElementById('user-select');
+        const selectedUserRead = document.getElementById('selected-user-read');
+        const startModal = document.getElementById('start-modal');
+        const modalUserSelect = document.getElementById('modal-user-select');
+        const modalPointRead = document.getElementById('modal-point-read');
+        const modalStartBtn = document.getElementById('modal-start-btn');
+        const pointRead = document.getElementById('point-read');
+        const xRead = document.getElementById('x-read');
+        const zRead = document.getElementById('z-read');
+        const judgeRead = document.getElementById('judge-read');
+        const rightBtn = document.getElementById('right-btn');
+        const depthBtn = document.getElementById('depth-btn');
+        const viewIndicator = document.getElementById('view-indicator');
+        const resetBtn = document.getElementById('reset-btn');
+        const newBtn = document.getElementById('new-btn');
+        const frontBg = new Image();
+        frontBg.src = 'image/ufo.png';
+        frontBg.onload = () => draw();
+
+        const W = canvas.width;
+        const H = canvas.height;
+        const area = { x: 110, y: 92, w: 740, h: 390 };
+        const rodDiameter = 40;
+        const rodRadius = rodDiameter / 2;
+        const holeDiameter = rodDiameter * 1.5;
+        const holeRadius = holeDiameter / 2;
+        const tolerance = 9;
+        const dropDelay = 2;
+        const dropTravel = 390;
+        const challengeCost = 10;
+        const clearReward = 50;
+        const gameId = 'crane_bar_threading';
+
+        let phase = 'x';
+        let selectedUserName = '';
+        let gameReady = false;
+        let attemptPaid = false;
+        let rewardGiven = false;
+        let lastTime = performance.now();
+        let holdRight = false;
+        let holdDepth = false;
+        let countdown = dropDelay;
+        let rod;
+        let hole;
+        let dropY = 0;
+        let result = null;
+        let flash = 0;
+
+        function rand(min, max) {
+            return min + Math.random() * (max - min);
+        }
+
+        function clamp(value, min, max) {
+            return Math.max(min, Math.min(max, value));
+        }
+
+        function setMessage(text, color = '#ff8f00') {
+            messageEl.textContent = text;
+            messageEl.style.color = color;
+        }
+
+        function loadUsers() {
+            if (typeof getUserNames !== 'function') {
+                userSelect.innerHTML = '<option value="">ユーザー情報なし</option>';
+                modalUserSelect.innerHTML = '<option value="">ユーザー情報なし</option>';
+                setMessage('ranking.js が読み込めないため、ポイント機能を使えません。', '#df4a3a');
+                updatePointDisplay();
+                return;
+            }
+
+            const users = getUserNames();
+            userSelect.innerHTML = '';
+            modalUserSelect.innerHTML = '';
+            if (users.length === 0) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'ユーザーがいません';
+                userSelect.appendChild(option);
+                modalUserSelect.appendChild(option.cloneNode(true));
+                selectedUserName = '';
+            } else {
+                users.forEach((name) => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    userSelect.appendChild(option);
+                    modalUserSelect.appendChild(option.cloneNode(true));
+                });
+                selectedUserName = users[0];
+                userSelect.value = selectedUserName;
+                modalUserSelect.value = selectedUserName;
+            }
+            updatePointDisplay();
+        }
+
+        function updatePointDisplay() {
+            if (!selectedUserName || typeof getUserPoints !== 'function') {
+                pointRead.textContent = '--';
+                modalPointRead.textContent = '--';
+                selectedUserRead.textContent = '未選択';
+                return;
+            }
+            const points = getUserPoints(selectedUserName);
+            pointRead.textContent = points;
+            modalPointRead.textContent = points;
+            selectedUserRead.textContent = selectedUserName;
+        }
+
+        function canPayChallenge() {
+            return selectedUserName &&
+                typeof getUserPoints === 'function' &&
+                getUserPoints(selectedUserName) >= challengeCost;
+        }
+
+        function payChallengeCost() {
+            if (attemptPaid) return true;
+            if (!selectedUserName) {
+                setMessage('プレイヤーを選んでください。', '#df4a3a');
+                return false;
+            }
+            if (typeof spendPoints !== 'function') {
+                setMessage('ポイント機能を読み込めませんでした。', '#df4a3a');
+                return false;
+            }
+            if (!spendPoints(selectedUserName, challengeCost)) {
+                setMessage(`ポイントが足りません。1回 ${challengeCost}pt です。`, '#df4a3a');
+                updatePointDisplay();
+                return false;
+            }
+            attemptPaid = true;
+            if (typeof savePlayLog === 'function') savePlayLog(selectedUserName, gameId);
+            updatePointDisplay();
+            return true;
+        }
+
+        function setup(newHole = true) {
+            phase = 'x';
+            attemptPaid = false;
+            rewardGiven = false;
+            holdRight = false;
+            holdDepth = false;
+            countdown = dropDelay;
+            dropY = 0;
+            result = null;
+            flash = 0;
+            rod = {
+                x: area.x + 34,
+                z: area.y + 34,
+                speedX: 150,
+                speedZ: 85
+            };
+            if (newHole || !hole) {
+                const centerX = area.x + area.w / 2;
+                const centerZ = area.y + area.h / 2;
+                hole = {
+                    x: centerX + rand(0, area.w * 0.2),
+                    z: centerZ + rand(0, area.h * 0.2)
+                };
+            }
+            setMessage('1つ目のボタンを押している間、棒が右へ動くよ。離すと横位置が決まります。');
+            updateUi();
+        }
+
+        function updateUi() {
+            xRead.textContent = Math.round(rod.x - area.x);
+            zRead.textContent = Math.round(rod.z - area.y);
+
+            if (phase === 'result') {
+                judgeRead.textContent = result && result.success ? '成功' : '失敗';
+                judgeRead.style.color = result && result.success ? '#23884d' : '#df4a3a';
+            } else {
+                judgeRead.textContent = phase === 'drop' ? '落下中' : '待機';
+                judgeRead.style.color = '#193a40';
+            }
+
+            rightBtn.disabled = !gameReady || phase !== 'x' || !canPayChallenge();
+            depthBtn.disabled = phase !== 'z';
+            rightBtn.classList.toggle('pressed', holdRight);
+            depthBtn.classList.toggle('pressed', holdDepth);
+            const viewLabel = getCurrentView() === 'front' ? '正面ビュー' :
+                getCurrentView() === 'side' ? '横ビュー' : '真上ビュー';
+            viewIndicator.textContent = viewLabel;
+        }
+
+        function startRight() {
+            if (!gameReady) {
+                startModal.classList.add('active');
+                return;
+            }
+            if (phase !== 'x') return;
+            if (!payChallengeCost()) {
+                updateUi();
+                return;
+            }
+            holdRight = true;
+            setMessage(`10pt使いました。離したところで横位置が決まります。`);
+            updateUi();
+        }
+
+        function stopRight() {
+            if (!holdRight || phase !== 'x') return;
+            holdRight = false;
+            phase = 'z';
+            setMessage('2つ目のボタンです。横から見ながら、棒を奥へ進めます。', '#2679ca');
+            updateUi();
+        }
+
+        function startDepth() {
+            if (phase !== 'z') return;
+            holdDepth = true;
+            setMessage('離したところで奥行きが決まります。');
+            updateUi();
+        }
+
+        function stopDepth() {
+            if (!holdDepth || phase !== 'z') return;
+            holdDepth = false;
+            phase = 'countdown';
+            countdown = dropDelay;
+            setMessage('位置決定。少し待つと棒がおります。', '#2679ca');
+            updateUi();
+        }
+
+        function startDrop() {
+            phase = 'drop';
+            dropY = 0;
+            setMessage('棒がおりています...', '#2679ca');
+            updateUi();
+        }
+
+        function judge() {
+            const dx = rod.x - hole.x;
+            const dz = rod.z - hole.z;
+            const distance = Math.hypot(dx, dz);
+            const success = distance <= tolerance;
+            result = { dx, dz, distance, success };
+            phase = 'result';
+            flash = success ? 42 : 12;
+            if (success) {
+                if (!rewardGiven && selectedUserName && typeof addPoints === 'function') {
+                    addPoints(selectedUserName, clearReward);
+                    rewardGiven = true;
+                    updatePointDisplay();
+                }
+                setMessage(`クリア！ ${clearReward}pt 獲得しました。`, '#23884d');
+            } else {
+                const xHint = Math.abs(dx) <= tolerance ? '' : (dx > 0 ? '右' : '左');
+                const zHint = Math.abs(dz) <= tolerance ? '' : (dz > 0 ? '奥' : '手前');
+                const hint = [xHint, zHint].filter(Boolean).join('・');
+                setMessage(`失敗。${hint ? hint + 'にずれています。' : 'ほんの少しずれています。'}`, '#df4a3a');
+            }
+            updateUi();
+        }
+
+        function update(dt) {
+            if (phase === 'x' && holdRight) {
+                rod.x += rod.speedX * dt;
+                if (rod.x >= area.x + area.w - rodRadius) {
+                    rod.x = area.x + area.w - rodRadius;
+                    stopRight();
+                }
+                updateUi();
+            }
+
+            if (phase === 'z' && holdDepth) {
+                rod.z += rod.speedZ * dt;
+                if (rod.z >= area.y + area.h - rodRadius) {
+                    rod.z = area.y + area.h - rodRadius;
+                    stopDepth();
+                }
+                updateUi();
+            }
+
+            if (phase === 'countdown') {
+                countdown -= dt;
+                if (countdown <= 0) {
+                    countdown = 0;
+                    startDrop();
+                }
+                updateUi();
+            }
+
+            if (phase === 'drop') {
+                dropY += 300 * dt;
+                if (dropY >= dropTravel) {
+                    dropY = dropTravel;
+                    judge();
+                }
+            }
+
+            if (flash > 0) flash = Math.max(0, flash - dt * 28);
+        }
+
+        function drawRoundRect(x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        function drawImageCover(img, x, y, w, h) {
+            const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+            const sw = w / scale;
+            const sh = h / scale;
+            const sx = (img.naturalWidth - sw) / 2;
+            const sy = (img.naturalHeight - sh) / 2;
+            ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+        }
+
+        function drawCabinet() {
+            ctx.clearRect(0, 0, W, H);
+            ctx.fillStyle = '#edf7fb';
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.fillStyle = '#dcebee';
+            ctx.fillRect(0, 0, W, 78);
+            ctx.fillStyle = '#c5d4d8';
+            ctx.fillRect(80, 52, W - 160, 18);
+            ctx.fillStyle = '#8aa2aa';
+            ctx.fillRect(80, 58, W - 160, 5);
+
+            ctx.fillStyle = '#e6eef0';
+            drawRoundRect(area.x - 34, area.y - 34, area.w + 68, area.h + 88, 16);
+            ctx.fill();
+            ctx.strokeStyle = '#a8bdc3';
+            ctx.lineWidth = 5;
+            ctx.stroke();
+
+            ctx.fillStyle = '#f8fbfd';
+            drawRoundRect(area.x, area.y, area.w, area.h, 8);
+            ctx.fill();
+
+            ctx.strokeStyle = 'rgba(38, 121, 202, 0.16)';
+            ctx.lineWidth = 2;
+            for (let x = area.x + 80; x < area.x + area.w; x += 80) {
+                ctx.beginPath();
+                ctx.moveTo(x, area.y);
+                ctx.lineTo(x, area.y + area.h);
+                ctx.stroke();
+            }
+            for (let y = area.y + 70; y < area.y + area.h; y += 70) {
+                ctx.beginPath();
+                ctx.moveTo(area.x, y);
+                ctx.lineTo(area.x + area.w, y);
+                ctx.stroke();
+            }
+        }
+
+        function getCurrentView() {
+            if (phase === 'z') return 'side';
+            if (phase === 'result') return 'top';
+            return 'front';
+        }
+
+        function drawFrontView() {
+            ctx.clearRect(0, 0, W, H);
+            const hasFrontBg = frontBg.complete && frontBg.naturalWidth > 0;
+            const bgScale = 1;
+            const bgRect = {
+                x: W * (1 - bgScale) / 2,
+                y: H * (1 - bgScale) / 2,
+                w: W * bgScale,
+                h: H * bgScale
+            };
+            if (frontBg.complete && frontBg.naturalWidth > 0) {
+                ctx.fillStyle = '#edf7fb';
+                ctx.fillRect(0, 0, W, H);
+                drawImageCover(frontBg, bgRect.x, bgRect.y, bgRect.w, bgRect.h);
+            } else {
+                ctx.fillStyle = '#edf7fb';
+                ctx.fillRect(0, 0, W, H);
+
+                ctx.fillStyle = '#dcebee';
+                ctx.fillRect(0, 0, W, 78);
+                ctx.fillStyle = '#c5d4d8';
+                ctx.fillRect(80, 52, W - 160, 18);
+                ctx.fillStyle = '#8aa2aa';
+                ctx.fillRect(80, 58, W - 160, 5);
+            }
+
+            const panel = hasFrontBg
+                ? { x: 76, y: 106, w: 808, h: 426 }
+                : { x: 105, y: 102, w: 750, h: 410 };
+            const frontTuning = hasFrontBg
+                ? {
+                    xOffset: 0,
+                    xScale: 1,
+                    tableY: 558,
+                    topY: 120
+                }
+                : null;
+            const scaleX = panel.w / area.w;
+            const rodX = panel.x + (rod.x - area.x) * scaleX * (frontTuning ? frontTuning.xScale : 1) + (frontTuning ? frontTuning.xOffset : 0);
+            const holeX = panel.x + (hole.x - area.x) * scaleX * (frontTuning ? frontTuning.xScale : 1) + (frontTuning ? frontTuning.xOffset : 0);
+            const tableY = frontTuning ? frontTuning.tableY : panel.y + panel.h - 78;
+            const topY = frontTuning ? frontTuning.topY : panel.y + 26;
+            const rodBottom = phase === 'drop'
+                ? topY + 58 + dropY
+                : topY + 78;
+
+            if (!hasFrontBg) {
+                ctx.fillStyle = '#f8fbfd';
+                drawRoundRect(panel.x, panel.y, panel.w, panel.h, 12);
+                ctx.fill();
+                ctx.strokeStyle = '#a8bdc3';
+                ctx.lineWidth = 5;
+                ctx.stroke();
+
+                ctx.fillStyle = '#e6eef0';
+                ctx.fillRect(panel.x, tableY, panel.w, panel.h - (tableY - panel.y));
+                ctx.strokeStyle = 'rgba(38, 121, 202, 0.15)';
+                ctx.lineWidth = 2;
+                for (let x = panel.x + 80; x < panel.x + panel.w; x += 80) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, panel.y);
+                    ctx.lineTo(x, tableY + 34);
+                    ctx.stroke();
+                }
+            }
+
+            ctx.fillStyle = 'rgba(0,0,0,0.12)';
+            ctx.beginPath();
+            ctx.ellipse(holeX, tableY + 24, holeRadius + 18, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#384d54';
+            ctx.beginPath();
+            ctx.ellipse(holeX, tableY, holeRadius + 11, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#f8fbfd';
+            ctx.beginPath();
+            ctx.ellipse(holeX, tableY, holeRadius, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#ff8f00';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([8, 8]);
+            ctx.beginPath();
+            ctx.moveTo(holeX - tolerance, tableY - 38);
+            ctx.lineTo(holeX - tolerance, tableY + 28);
+            ctx.moveTo(holeX + tolerance, tableY - 38);
+            ctx.lineTo(holeX + tolerance, tableY + 28);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = '#263c42';
+            drawRoundRect(rodX - rodRadius, topY, rodDiameter, Math.max(rodDiameter, rodBottom - topY), 10);
+            ctx.fill();
+            ctx.fillStyle = '#ffcf5a';
+            ctx.fillRect(rodX - rodRadius + 6, topY + 8, 10, Math.max(18, rodBottom - topY - 16));
+
+            ctx.fillStyle = '#193a40';
+            ctx.font = 'bold 22px "UD Digital Kyokasho-tai-R", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('正面から見た横位置', W / 2, 96);
+
+        }
+
+        function drawTopView() {
+            drawCabinet();
+
+            ctx.fillStyle = 'rgba(0,0,0,0.08)';
+            ctx.beginPath();
+            ctx.ellipse(hole.x, hole.z + 12, holeRadius + 20, 12, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#384d54';
+            ctx.beginPath();
+            ctx.arc(hole.x, hole.z, holeRadius + 11, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#f8fbfd';
+            ctx.beginPath();
+            ctx.arc(hole.x, hole.z, holeRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#ff8f00';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([8, 8]);
+            ctx.beginPath();
+            ctx.arc(hole.x, hole.z, tolerance, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = '#df4a3a';
+            ctx.fillRect(area.x, rod.z - 2, area.w, 4);
+            ctx.fillRect(rod.x - 2, area.y, 4, area.h);
+
+            const rodScreenY = rod.z;
+            ctx.fillStyle = '#263c42';
+            ctx.beginPath();
+            ctx.arc(rod.x, rodScreenY, rodRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffcf5a';
+            ctx.beginPath();
+            ctx.arc(rod.x - 6, rodScreenY - 6, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            drawResultOverlay();
+        }
+
+        function drawSideView() {
+            ctx.clearRect(0, 0, W, H);
+            ctx.fillStyle = '#edf7fb';
+            ctx.fillRect(0, 0, W, H);
+            ctx.fillStyle = '#dcebee';
+            ctx.fillRect(0, 0, W, 78);
+
+            const panel = { x: 130, y: 112, w: 700, h: 390 };
+            ctx.fillStyle = '#f8fbfd';
+            drawRoundRect(panel.x, panel.y, panel.w, panel.h, 12);
+            ctx.fill();
+            ctx.strokeStyle = '#a8bdc3';
+            ctx.lineWidth = 5;
+            ctx.stroke();
+
+            ctx.fillStyle = '#e5eef1';
+            ctx.fillRect(panel.x, panel.y + panel.h - 45, panel.w, 45);
+
+            const scaleZ = panel.w / area.h;
+            const holeX = panel.x + (hole.z - area.y) * scaleZ;
+            const rodX = panel.x + (rod.z - area.y) * scaleZ;
+            const tableY = panel.y + panel.h - 68;
+            const topY = panel.y + 34;
+            const rodBottom = phase === 'drop' || phase === 'result'
+                ? topY + 58 + dropY
+                : topY + 58;
+
+            ctx.strokeStyle = 'rgba(38, 121, 202, 0.16)';
+            ctx.lineWidth = 2;
+            for (let x = panel.x + 80; x < panel.x + panel.w; x += 80) {
+                ctx.beginPath();
+                ctx.moveTo(x, panel.y);
+                ctx.lineTo(x, panel.y + panel.h);
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = '#384d54';
+            ctx.beginPath();
+            ctx.ellipse(holeX, tableY, holeRadius + 12, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#f8fbfd';
+            ctx.beginPath();
+            ctx.ellipse(holeX, tableY, holeRadius, 6, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#ff8f00';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([8, 8]);
+            ctx.beginPath();
+            ctx.moveTo(holeX - tolerance, tableY - 34);
+            ctx.lineTo(holeX - tolerance, tableY + 34);
+            ctx.moveTo(holeX + tolerance, tableY - 34);
+            ctx.lineTo(holeX + tolerance, tableY + 34);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = '#263c42';
+            drawRoundRect(rodX - rodRadius, topY, rodDiameter, Math.max(rodDiameter, rodBottom - topY), 10);
+            ctx.fill();
+            ctx.fillStyle = '#ffcf5a';
+            ctx.fillRect(rodX - rodRadius + 6, topY + 8, 10, Math.max(18, rodBottom - topY - 16));
+
+            ctx.fillStyle = '#193a40';
+            ctx.font = 'bold 22px "UD Digital Kyokasho-tai-R", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('横から見た奥行き', W / 2, 104);
+
+            drawResultOverlay();
+        }
+
+        function drawResultOverlay() {
+            if (phase !== 'result' || !result) return;
+            ctx.save();
+            if (flash > 0) {
+                ctx.globalAlpha = Math.min(0.34, flash / 38);
+                ctx.fillStyle = result.success ? '#4caf50' : '#e04f3f';
+                ctx.fillRect(0, 0, W, H);
+                ctx.globalAlpha = 1;
+            }
+
+            if (result.success) {
+                drawClearCelebration();
+            }
+
+            ctx.fillStyle = 'rgba(255,255,255,0.94)';
+            drawRoundRect(32, H - 82, 432, 56, 8);
+            ctx.fill();
+            ctx.fillStyle = result.success ? '#23884d' : '#df4a3a';
+            ctx.font = 'bold 22px "UD Digital Kyokasho-tai-R", sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`中心ズレ ${Math.round(result.distance)}px / 許容 ${Math.round(tolerance)}px`, 52, H - 54);
+            ctx.restore();
+        }
+
+        function drawClearCelebration() {
+            const t = performance.now() / 1000;
+            const burst = Math.max(0, Math.min(1, flash / 42));
+            const colors = ['#ffcf5a', '#ff6f61', '#38bdf8', '#52b788', '#f472b6'];
+
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            for (let i = 0; i < 36; i++) {
+                const angle = (Math.PI * 2 / 36) * i + t * 0.6;
+                const radius = 70 + (1 - burst) * 190 + (i % 4) * 10;
+                const x = hole.x + Math.cos(angle) * radius;
+                const y = hole.z + Math.sin(angle) * radius * 0.72;
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle + t * 3);
+                ctx.globalAlpha = 0.35 + burst * 0.65;
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fillRect(-5, -9, 10, 18);
+                ctx.restore();
+            }
+
+            for (let i = 0; i < 4; i++) {
+                const r = 58 + i * 34 + (1 - burst) * 26;
+                ctx.globalAlpha = Math.max(0, 0.75 - i * 0.13) * burst;
+                ctx.strokeStyle = colors[i % colors.length];
+                ctx.lineWidth = 7 - i;
+                ctx.beginPath();
+                ctx.arc(hole.x, hole.z, r, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = 'rgba(255,255,255,0.94)';
+            drawRoundRect(W / 2 - 172, 28, 344, 72, 14);
+            ctx.fill();
+            ctx.strokeStyle = '#ffcf5a';
+            ctx.lineWidth = 5;
+            ctx.stroke();
+            ctx.fillStyle = '#23884d';
+            ctx.font = 'bold 42px "UD Digital Kyokasho-tai-R", sans-serif';
+            ctx.fillText('CLEAR!', W / 2, 65);
+            ctx.restore();
+        }
+
+        function draw() {
+            const view = getCurrentView();
+            if (view === 'front') drawFrontView();
+            else if (view === 'side') drawSideView();
+            else drawTopView();
+        }
+
+        function loop(now) {
+            const dt = Math.min(0.033, (now - lastTime) / 1000);
+            lastTime = now;
+            update(dt);
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        function bindHold(button, onStart, onStop) {
+            button.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                if (button.disabled) return;
+                button.setPointerCapture(e.pointerId);
+                onStart();
+            });
+            button.addEventListener('pointerup', onStop);
+            button.addEventListener('pointercancel', onStop);
+            button.addEventListener('pointerleave', onStop);
+        }
+
+        bindHold(rightBtn, startRight, stopRight);
+        bindHold(depthBtn, startDepth, stopDepth);
+
+        resetBtn.addEventListener('click', () => setup(false));
+        newBtn.addEventListener('click', () => setup(true));
+        userSelect.addEventListener('change', () => {
+            selectedUserName = userSelect.value;
+            modalUserSelect.value = selectedUserName;
+            updatePointDisplay();
+            updateUi();
+        });
+        modalUserSelect.addEventListener('change', () => {
+            selectedUserName = modalUserSelect.value;
+            userSelect.value = selectedUserName;
+            updatePointDisplay();
+            updateUi();
+        });
+        modalStartBtn.addEventListener('click', () => {
+            selectedUserName = modalUserSelect.value;
+            userSelect.value = selectedUserName;
+            updatePointDisplay();
+            if (!selectedUserName) {
+                setMessage('プレイヤーを選んでください。', '#df4a3a');
+                return;
+            }
+            gameReady = true;
+            startModal.classList.remove('active');
+            setMessage('①を押している間、棒が右へ動きます。離すと横位置が決まります。');
+            updateUi();
+        });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.repeat) return;
+            if (e.code === 'Space') {
+                e.preventDefault();
+                startRight();
+            } else if (e.code === 'Enter') {
+                e.preventDefault();
+                startDepth();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                stopRight();
+            } else if (e.code === 'Enter') {
+                e.preventDefault();
+                stopDepth();
+            }
+        });
+
+        loadUsers();
+        setup(true);
+        requestAnimationFrame(loop);
+    </script>
+</body>
+</html>

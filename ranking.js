@@ -37,7 +37,8 @@ const GAME_LIST = {
     'eiyou_balance': { name: '栄養バランスゲーム', type: 'score', unit: '点', url: 'eiyou_balance.html' },
     'job_quiz': { name: 'おしごとクイズ', type: 'score', unit: '点', url: 'jobs/job_quiz.html' },
     'science_lab': { name: 'ヒー先生のふしぎ研究所', type: 'score', unit: '点', url: 'science_lab.html' },
-    'programming_labo': { name: 'プログラミングラボ', type: 'score', unit: '回', url: 'programming_labo/index.html' }
+    'programming_labo': { name: 'プログラミングラボ', type: 'score', unit: '回', url: 'programming_labo/index.html' },
+    'crane_bar_threading': { name: 'クレーンゲーム棒とおし', type: 'score', unit: '回', url: 'crane_bar_threading.html' }
 };
 
 // --- リアル株価連動設定 ---
