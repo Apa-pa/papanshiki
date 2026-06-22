@@ -48,6 +48,14 @@
                     gameId: "learning_labo_math_clock"
                 },
                 {
+                    id: "math_length",
+                    name: "ながさ",
+                    levelLabel: "cm/mm",
+                    questionCount: 20,
+                    targetSeconds: 11,
+                    gameId: "learning_labo_math_length"
+                },
+                {
                     id: "math_hissan",
                     name: "ひっさん",
                     levelLabel: "たてけいさん",

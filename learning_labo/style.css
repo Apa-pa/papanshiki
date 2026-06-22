@@ -577,7 +577,7 @@ h2 {
 
 .length-row {
     display: grid;
-    grid-template-columns: 54px 1fr;
+    grid-template-columns: 82px 1fr;
     align-items: center;
     gap: 10px;
 }
@@ -610,6 +610,11 @@ h2 {
     box-shadow: inset 0 -2px 0 rgba(47, 110, 125, 0.18);
 }
 
+.length-mm-bar::before {
+    right: auto;
+    width: min(100%, calc(var(--mm) * 10% / var(--cm)));
+}
+
 .length-tick {
     position: relative;
     z-index: 1;
@@ -622,6 +627,62 @@ h2 {
 .length-tick.major {
     height: 28px;
     background: var(--orange-dark);
+}
+
+.length-unit-line {
+    display: block;
+    color: #4a6470;
+    font-size: clamp(2rem, 8vw, 3.6rem);
+    font-weight: 900;
+    line-height: 1.15;
+    margin: 8px auto;
+}
+
+.length-ruler-scene {
+    width: min(100%, 460px);
+    display: grid;
+    gap: 8px;
+    margin: 0 auto;
+}
+
+.length-ruler-object {
+    width: calc(var(--mm) * 1%);
+    min-width: 22px;
+    height: 30px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #67a7b5, #77b877);
+    box-shadow: inset 0 -3px 0 rgba(47, 110, 125, 0.22);
+}
+
+.length-ruler {
+    position: relative;
+    height: 54px;
+    border: 3px solid #d6ad62;
+    border-radius: 8px;
+    background: #fff6df;
+}
+
+.length-ruler-tick {
+    position: absolute;
+    left: calc(var(--index) * 10%);
+    bottom: 0;
+    width: 2px;
+    height: 22px;
+    background: #7d653f;
+}
+
+.length-ruler-tick.major {
+    height: 34px;
+}
+
+.length-ruler-tick span {
+    position: absolute;
+    left: 50%;
+    top: -20px;
+    color: #7d653f;
+    font-size: 0.8rem;
+    font-weight: 900;
+    transform: translateX(-50%);
 }
 
 .operator {
@@ -1010,19 +1071,22 @@ h2 {
     color: #b93b3b;
 }
 
-.clock-display {
+.clock-display,
+.length-display {
     gap: 10px;
     padding: 14px;
 }
 
-.clock-answer-fields {
+.clock-answer-fields,
+.length-answer-fields {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
     width: 100%;
 }
 
-.clock-field {
+.clock-field,
+.length-field {
     display: grid;
     gap: 6px;
     place-items: center;
@@ -1035,19 +1099,22 @@ h2 {
     cursor: pointer;
 }
 
-.clock-field.is-active {
+.clock-field.is-active,
+.length-field.is-active {
     background: #fff6df;
     border-color: var(--orange);
 }
 
-.clock-value {
+.clock-value,
+.length-value {
     color: #4a6470;
     font-size: clamp(1.8rem, 7vw, 2.5rem);
     font-weight: 900;
     line-height: 1;
 }
 
-.clock-field ruby {
+.clock-field ruby,
+.length-field span:last-child {
     color: var(--muted);
     font-size: 1rem;
     font-weight: 900;
@@ -1057,7 +1124,8 @@ h2 {
     font-size: 0.55em;
 }
 
-.clock-help {
+.clock-help,
+.length-help {
     color: var(--muted);
     font-size: 1rem;
     font-weight: 900;
@@ -1065,11 +1133,13 @@ h2 {
     text-align: center;
 }
 
-.clock-help.correct {
+.clock-help.correct,
+.length-help.correct {
     color: #3f7a43;
 }
 
-.clock-help.wrong {
+.clock-help.wrong,
+.length-help.wrong {
     color: #b93b3b;
 }
 

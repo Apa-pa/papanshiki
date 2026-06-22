@@ -250,6 +250,7 @@ var urlsToCache = [
   './learning_labo/tests/math_multiplication.js',
   './learning_labo/tests/math_division.js',
   './learning_labo/tests/math_clock.js',
+  './learning_labo/tests/math_length.js',
   './learning_labo/tests/japanese_kana.js',
   './learning_labo/tests/japanese_words.js',
   './learning_labo/tests/japanese_kanji_grade1.js',

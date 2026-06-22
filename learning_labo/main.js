@@ -16,6 +16,7 @@
         saved: false,
         numericInput: "",
         clockInput: { hour: "", minute: "", activePart: "hour" },
+        lengthInput: { cm: "", mm: "", activePart: "cm" },
         matchSelection: [],
         matchMistakes: 0,
         sequenceProgress: 0,
@@ -93,6 +94,10 @@
         return question && question.inputMode === "clock";
     }
 
+    function isLengthQuestion(question) {
+        return question && question.inputMode === "length";
+    }
+
     function isProgrammingQuestion(question) {
         return question && question.programming;
     }
@@ -105,9 +110,16 @@
         return `${Number(hour)}:${formatClockMinute(minute)}`;
     }
 
+    function buildLengthAnswerValue(cm, mm) {
+        return `${Number(cm)}:${Number(mm)}`;
+    }
+
     function getCorrectAnswerValue(question) {
         if (isClockQuestion(question)) {
             return buildClockAnswerValue(question.answerHour, question.answerMinute);
+        }
+        if (isLengthQuestion(question)) {
+            return buildLengthAnswerValue(question.answerCm, question.answerMm);
         }
         return String(question.answer);
     }
@@ -115,6 +127,9 @@
     function formatCorrectAnswerLabel(question) {
         if (isClockQuestion(question)) {
             return `${Number(question.answerHour)}時${formatClockMinute(question.answerMinute)}分`;
+        }
+        if (isLengthQuestion(question)) {
+            return `${Number(question.answerCm)}cm${Number(question.answerMm)}mm`;
         }
         return String(question.answer);
     }
@@ -269,6 +284,7 @@
         const currentNumber = state.currentIndex + 1;
         state.numericInput = "";
         state.clockInput = { hour: "", minute: "", activePart: "hour" };
+        state.lengthInput = { cm: "", mm: "", activePart: "cm" };
         state.matchSelection = [];
         state.matchMistakes = 0;
         state.sequenceProgress = 0;
@@ -298,6 +314,8 @@
             renderChoices(question);
         } else if (isClockQuestion(question)) {
             renderClockKeypad();
+        } else if (isLengthQuestion(question)) {
+            renderLengthKeypad();
         } else {
             renderNumberKeypad();
         }
@@ -791,6 +809,44 @@
         updateClockDisplay();
     }
 
+    function renderLengthKeypad() {
+        $("choices").className = "number-answer";
+        $("choices").innerHTML = `
+            <div class="number-display length-display" aria-live="polite">
+                <div class="length-answer-fields">
+                    <button class="length-field is-active" id="length-cm-field" type="button" data-length-part="cm">
+                        <span class="length-value" id="length-cm-display">--</span>
+                        <span>cm</span>
+                    </button>
+                    <button class="length-field" id="length-mm-field" type="button" data-length-part="mm">
+                        <span class="length-value" id="length-mm-display">--</span>
+                        <span>mm</span>
+                    </button>
+                </div>
+                <div class="length-help" id="length-help">「cm」と「mm」を入れてね</div>
+            </div>
+            <div class="keypad" aria-label="長さ入力">
+                ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => `
+                    <button class="keypad-button" type="button" data-key="${number}">${number}</button>
+                `).join("")}
+                <button class="keypad-button keypad-clear" type="button" data-action="backspace">けす</button>
+                <button class="keypad-button" type="button" data-key="0">0</button>
+                <button class="keypad-button keypad-submit" type="button" data-action="submit">こたえる</button>
+            </div>
+        `;
+
+        $("choices").querySelectorAll("[data-length-part]").forEach((button) => {
+            button.addEventListener("click", () => {
+                state.lengthInput.activePart = button.dataset.lengthPart;
+                updateLengthDisplay();
+            });
+        });
+        $("choices").querySelectorAll(".keypad-button").forEach((button) => {
+            button.addEventListener("click", () => handleLengthKeypad(button));
+        });
+        updateLengthDisplay();
+    }
+
     function updateNumberDisplay() {
         $("number-input-display").textContent = state.numericInput || "こたえをいれてね";
     }
@@ -816,6 +872,30 @@
             help.textContent = "つぎに「分」を入れてね";
         } else {
             help.textContent = `${Number(hour)}時${formatClockMinute(minute)}分であっているかな？`;
+        }
+    }
+
+    function updateLengthDisplay() {
+        const cmDisplay = $("length-cm-display");
+        const mmDisplay = $("length-mm-display");
+        const help = $("length-help");
+        const cmField = $("length-cm-field");
+        const mmField = $("length-mm-field");
+
+        if (!cmDisplay || !mmDisplay || !help || !cmField || !mmField) return;
+
+        const { cm, mm, activePart } = state.lengthInput;
+        cmDisplay.textContent = cm || "--";
+        mmDisplay.textContent = mm || "--";
+        cmField.classList.toggle("is-active", activePart === "cm");
+        mmField.classList.toggle("is-active", activePart === "mm");
+
+        if (!cm) {
+            help.textContent = "「cm」を入れてね";
+        } else if (!mm) {
+            help.textContent = "つぎに「mm」を入れてね";
+        } else {
+            help.textContent = `${Number(cm)}cm${Number(mm)}mmであっているかな？`;
         }
     }
 
@@ -862,6 +942,30 @@
         }
     }
 
+    function handleLengthKeypad(button) {
+        if (state.answerLocked) return;
+        const { activePart } = state.lengthInput;
+        if (button.dataset.key) {
+            appendLengthDigit(button.dataset.key);
+            updateLengthDisplay();
+            return;
+        }
+        if (button.dataset.action === "backspace") {
+            const currentValue = state.lengthInput[activePart];
+            if (currentValue) {
+                state.lengthInput[activePart] = currentValue.slice(0, -1);
+            } else if (activePart === "mm") {
+                state.lengthInput.activePart = "cm";
+                state.lengthInput.cm = state.lengthInput.cm.slice(0, -1);
+            }
+            updateLengthDisplay();
+            return;
+        }
+        if (button.dataset.action === "submit") {
+            submitLengthAnswer(button);
+        }
+    }
+
     function appendClockDigit(digit) {
         const { activePart } = state.clockInput;
         const currentValue = state.clockInput[activePart];
@@ -874,6 +978,23 @@
             if (state.clockInput.hour.length >= 2 || /^[2-9]$/.test(firstDigit)) {
                 state.clockInput.activePart = "minute";
             }
+        }
+    }
+
+    function appendLengthDigit(digit) {
+        const { activePart } = state.lengthInput;
+        const currentValue = state.lengthInput[activePart];
+        const maxLength = activePart === "cm" ? 2 : 1;
+        if (currentValue.length >= maxLength) return;
+
+        if (currentValue === "0" && activePart === "cm") {
+            state.lengthInput[activePart] = digit;
+        } else {
+            state.lengthInput[activePart] += digit;
+        }
+
+        if (activePart === "cm" && state.lengthInput.cm.length >= 1) {
+            state.lengthInput.activePart = "mm";
         }
     }
 
@@ -901,6 +1022,32 @@
         }
 
         answerQuestion(buildClockAnswerValue(hourNumber, minuteNumber), sourceButton);
+    }
+
+    function submitLengthAnswer(sourceButton) {
+        const { cm, mm } = state.lengthInput;
+        const help = $("length-help");
+        if (!cm || !mm) {
+            if (help) help.textContent = "「cm」と「mm」の両方を入れてね";
+            return;
+        }
+
+        const cmNumber = Number(cm);
+        const mmNumber = Number(mm);
+        if (!Number.isInteger(cmNumber) || cmNumber < 0 || cmNumber > 99) {
+            if (help) help.textContent = "「cm」は0から99で入れてね";
+            state.lengthInput.activePart = "cm";
+            updateLengthDisplay();
+            return;
+        }
+        if (!Number.isInteger(mmNumber) || mmNumber < 0 || mmNumber > 9) {
+            if (help) help.textContent = "「mm」は0から9で入れてね";
+            state.lengthInput.activePart = "mm";
+            updateLengthDisplay();
+            return;
+        }
+
+        answerQuestion(buildLengthAnswerValue(cmNumber, mmNumber), sourceButton);
     }
 
     function answerQuestion(selected, sourceButton) {
@@ -944,6 +1091,12 @@
                 });
                 $("clock-help").textContent = isCorrect ? "せいかい！" : `こたえは ${formatCorrectAnswerLabel(question)}`;
                 $("clock-help").classList.add(isCorrect ? "correct" : "wrong");
+            } else if (isLengthQuestion(question)) {
+                $("choices").querySelectorAll(".length-field").forEach((lengthField) => {
+                    lengthField.disabled = true;
+                });
+                $("length-help").textContent = isCorrect ? "せいかい！" : `こたえは ${formatCorrectAnswerLabel(question)}`;
+                $("length-help").classList.add(isCorrect ? "correct" : "wrong");
             } else {
                 $("number-input-display").textContent = isCorrect ? "せいかい！" : `こたえは ${formatCorrectAnswerLabel(question)}`;
                 $("number-input-display").classList.add(isCorrect ? "correct" : "wrong");
@@ -983,6 +1136,31 @@
                 event.preventDefault();
                 state.clockInput.activePart = state.clockInput.activePart === "hour" ? "minute" : "hour";
                 updateClockDisplay();
+            }
+            return;
+        }
+        if (isLengthQuestion(question)) {
+            if (/^[0-9]$/.test(event.key)) {
+                event.preventDefault();
+                appendLengthDigit(event.key);
+                updateLengthDisplay();
+            } else if (event.key === "Backspace") {
+                event.preventDefault();
+                const activePart = state.lengthInput.activePart;
+                if (state.lengthInput[activePart]) {
+                    state.lengthInput[activePart] = state.lengthInput[activePart].slice(0, -1);
+                } else if (activePart === "mm") {
+                    state.lengthInput.activePart = "cm";
+                    state.lengthInput.cm = state.lengthInput.cm.slice(0, -1);
+                }
+                updateLengthDisplay();
+            } else if (event.key === "Enter") {
+                event.preventDefault();
+                submitLengthAnswer($("choices").querySelector("[data-action='submit']"));
+            } else if (event.key === "Tab") {
+                event.preventDefault();
+                state.lengthInput.activePart = state.lengthInput.activePart === "cm" ? "mm" : "cm";
+                updateLengthDisplay();
             }
             return;
         }
