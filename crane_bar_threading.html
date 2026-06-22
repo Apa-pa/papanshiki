@@ -98,19 +98,6 @@
             text-align: center;
         }
 
-        .player-panel select {
-            display: none;
-        }
-
-        .selected-user {
-            min-width: 130px;
-            padding: 7px 10px;
-            border-radius: 999px;
-            background: #e8f5e9;
-            color: #237248;
-            text-align: center;
-        }
-
         .start-modal {
             position: fixed;
             inset: 0;
@@ -440,7 +427,6 @@
     <div class="player-panel">
         <span>プレイヤー</span>
         <select id="user-select"></select>
-        <div class="selected-user" id="selected-user-read">未選択</div>
         <div class="point-badge"><span id="point-read">--</span> pt</div>
     </div>
     <div id="message">1つ目のボタンを押している間、棒が右へ動くよ。離すと横位置が決まります。</div>
@@ -491,7 +477,6 @@
         const ctx = canvas.getContext('2d');
         const messageEl = document.getElementById('message');
         const userSelect = document.getElementById('user-select');
-        const selectedUserRead = document.getElementById('selected-user-read');
         const startModal = document.getElementById('start-modal');
         const modalUserSelect = document.getElementById('modal-user-select');
         const modalPointRead = document.getElementById('modal-point-read');
@@ -555,6 +540,7 @@
             if (typeof getUserNames !== 'function') {
                 userSelect.innerHTML = '<option value="">ユーザー情報なし</option>';
                 modalUserSelect.innerHTML = '<option value="">ユーザー情報なし</option>';
+                selectedUserName = '';
                 setMessage('ranking.js が読み込めないため、ポイント機能を使えません。', '#df4a3a');
                 updatePointDisplay();
                 return;
@@ -589,13 +575,27 @@
             if (!selectedUserName || typeof getUserPoints !== 'function') {
                 pointRead.textContent = '--';
                 modalPointRead.textContent = '--';
-                selectedUserRead.textContent = '未選択';
                 return;
             }
             const points = getUserPoints(selectedUserName);
             pointRead.textContent = points;
             modalPointRead.textContent = points;
-            selectedUserRead.textContent = selectedUserName;
+        }
+
+        function selectUser(name, resetActiveAttempt = false) {
+            const previousUserName = selectedUserName;
+            selectedUserName = name;
+            userSelect.value = selectedUserName;
+            modalUserSelect.value = selectedUserName;
+            updatePointDisplay();
+
+            const isActiveAttempt = attemptPaid || holdRight || holdDepth || phase !== 'x';
+            if (resetActiveAttempt && gameReady && previousUserName !== selectedUserName && isActiveAttempt) {
+                setup(false);
+                setMessage(`${selectedUserName || 'プレイヤー'}に変更しました。①からもう一度はじめてください。`, '#2679ca');
+            } else {
+                updateUi();
+            }
         }
 
         function canPayChallenge() {
@@ -1170,21 +1170,13 @@
         resetBtn.addEventListener('click', () => setup(false));
         newBtn.addEventListener('click', () => setup(true));
         userSelect.addEventListener('change', () => {
-            selectedUserName = userSelect.value;
-            modalUserSelect.value = selectedUserName;
-            updatePointDisplay();
-            updateUi();
+            selectUser(userSelect.value, true);
         });
         modalUserSelect.addEventListener('change', () => {
-            selectedUserName = modalUserSelect.value;
-            userSelect.value = selectedUserName;
-            updatePointDisplay();
-            updateUi();
+            selectUser(modalUserSelect.value);
         });
         modalStartBtn.addEventListener('click', () => {
-            selectedUserName = modalUserSelect.value;
-            userSelect.value = selectedUserName;
-            updatePointDisplay();
+            selectUser(modalUserSelect.value);
             if (!selectedUserName) {
                 setMessage('プレイヤーを選んでください。', '#df4a3a');
                 return;
