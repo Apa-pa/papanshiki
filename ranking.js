@@ -71,6 +71,8 @@ const COLLECTION_KEY = 'papan_collection_v1';
 const PLAY_LOG_KEY = 'papan_play_log_v1';       // 直近30日のプレイ履歴
 const PARENT_PICKS_KEY = 'papan_parent_picks_v1'; // 保護者が選択したコンテンツ（全員共通）
 const PARENT_BONUS_KEY = 'papan_parent_bonus_v1'; // 保護者ボーナス受取済みフラグ
+const DAILY_POINT_DIVIDEND_CAP = 1000;
+const POINT_DIVIDEND_RECEIVE_CAP = 3000;
 
 // --- 共通ヘルパー関数 ---
 function getUserNames() {
@@ -489,6 +491,7 @@ function distributeDividends(days) {
     const market = getMarketData();
     const allStocks = JSON.parse(localStorage.getItem(STOCK_KEY) || '{}');
     let report = [];
+    const pointDividendCap = Math.min(days * DAILY_POINT_DIVIDEND_CAP, POINT_DIVIDEND_RECEIVE_CAP);
     for (let user in allStocks) {
         let totalP = 0, totalD = 0;
         for (let id in allStocks[user]) {
@@ -500,9 +503,12 @@ function distributeDividends(days) {
                 if (div > 0) info.currency === 'point' ? totalP += div : totalD += div;
             }
         }
+        const rawTotalP = totalP;
+        if (totalP > pointDividendCap) totalP = pointDividendCap;
         if (totalP > 0 || totalD > 0) {
             addPoints(user, totalP); addDonguri(user, totalD);
-            report.push(`${user}さんに 配当: ${totalP}pt / ${totalD}🌰${days > 1 ? ` (${days}日分!)` : ''}`);
+            const cappedText = rawTotalP > totalP ? ` (pt配当は上限${totalP}ptまで)` : '';
+            report.push(`${user}さんに 配当: ${totalP}pt / ${totalD}🌰${days > 1 ? ` (${days}日分!)` : ''}${cappedText}`);
         }
     }
     return report;
