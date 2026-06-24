@@ -68,8 +68,10 @@
     function createContext() {
         return {
             cmToMm: shuffle(range(2, 9)),
+            cmToMmCount: 0,
             mmToCm: shuffle(range(2, 9)),
-            ruler: shuffle(range(12, 89)),
+            mmToCmCount: 0,
+            ruler: shuffle(range(12, 59)),
             addition: createAdditionPool(),
             difference: createDifferencePool()
         };
@@ -123,12 +125,15 @@
     }
 
     function makeRulerObject(totalMm) {
-        const ticks = Array.from({ length: 11 }, (_, index) => (
-            `<span class="length-ruler-tick ${index === 0 || index === 10 ? "major" : ""}" style="--index:${index}"><span>${index}</span></span>`
-        )).join("");
+        const maxMm = 60;
+        const ticks = Array.from({ length: maxMm + 1 }, (_, mm) => {
+            const className = mm % 10 === 0 ? "major" : (mm % 5 === 0 ? "middle" : "");
+            const label = mm % 10 === 0 ? `<span>${mm / 10}</span>` : "";
+            return `<span class="length-ruler-tick ${className}" style="--mm-index:${mm};--max-mm:${maxMm}">${label}</span>`;
+        }).join("");
         return `
-            <span class="length-ruler-scene">
-                <span class="length-ruler-object" style="--mm:${totalMm}"></span>
+            <span class="length-ruler-scene" style="--max-mm:${maxMm}">
+                <span class="length-ruler-object" style="--mm:${totalMm};--max-mm:${maxMm}"><span class="length-ruler-guide"></span></span>
                 <span class="length-ruler">${ticks}</span>
             </span>
         `;
@@ -136,10 +141,12 @@
 
     function makeCmToMmQuestion(context) {
         const cm = takeOne(context.cmToMm);
+        const showHint = context.cmToMmCount === 0;
+        context.cmToMmCount += 1;
         return makeNumberQuestion(
             "length_cm_to_mm",
             "cmをmmにする",
-            `<span class="question-title">cmをmmにする</span>${makeUnitLine(`${cm}cm = ?mm`)}<span class="question-line">1cmは10mmだよ。</span>`,
+            `<span class="question-title">cmをmmにする</span>${makeUnitLine(`${cm}cm = ?mm`)}${showHint ? `<span class="question-line">1cmは10mmだよ。</span>` : ""}`,
             cm * 10
         );
     }
@@ -147,10 +154,12 @@
     function makeMmToCmQuestion(context) {
         const cm = takeOne(context.mmToCm);
         const mm = cm * 10;
+        const showHint = context.mmToCmCount === 0;
+        context.mmToCmCount += 1;
         return makeNumberQuestion(
             "length_mm_to_cm",
             "mmをcmにする",
-            `<span class="question-title">mmをcmにする</span>${makeUnitLine(`${mm}mm = ?cm`)}<span class="question-line">10mmで1cmだよ。</span>`,
+            `<span class="question-title">mmをcmにする</span>${makeUnitLine(`${mm}mm = ?cm`)}${showHint ? `<span class="question-line">10mmで1cmだよ。</span>` : ""}`,
             cm
         );
     }
@@ -161,7 +170,7 @@
         return makeLengthQuestion(
             "length_ruler_cm_mm",
             "ものさしでよむ",
-            `<span class="question-title">ものさしでよむ</span>${makeRulerObject(totalMm)}<span class="question-line">ものの長さは何cm何mm？</span>`,
+            `<span class="question-title">ものさしでよむ</span>${makeRulerObject(totalMm)}<span class="question-line">ものの<ruby>長<rt>なが</rt></ruby>さは<ruby>何<rt>なん</rt></ruby>cm<ruby>何<rt>なん</rt></ruby>mm？</span>`,
             answer.cm,
             answer.mm
         );
@@ -174,7 +183,7 @@
         return makeLengthQuestion(
             "length_addition_no_carry",
             "ながさのたし算",
-            `<span class="question-title">ながさのたし算</span>${makeUnitLine(`${aCm}cm${aMm}mm + ${bCm}cm${bMm}mm`)}<span class="question-line">あわせて何cm何mm？</span>`,
+            `<span class="question-title">ながさのたし<ruby>算<rt>ざん</rt></ruby></span>${makeUnitLine(`${aCm}cm${aMm}mm + ${bCm}cm${bMm}mm`)}<span class="question-line">あわせて<ruby>何<rt>なん</rt></ruby>cm<ruby>何<rt>なん</rt></ruby>mm？</span>`,
             answer.cm,
             answer.mm
         );
@@ -188,7 +197,7 @@
         return makeLengthQuestion(
             "length_difference_no_borrow",
             "ながさのちがい",
-            `<span class="question-title">ながさのちがい</span><span class="length-bars"><span class="length-row"><span class="length-label">${formatLength(biggerTotal)}</span>${makeLengthMmBar(biggerTotal)}</span><span class="length-row"><span class="length-label">${formatLength(smallerTotal)}</span>${makeLengthMmBar(smallerTotal)}</span></span><span class="question-line">ちがいは何cm何mm？</span>`,
+            `<span class="question-title">ながさのちがい</span><span class="length-bars"><span class="length-row"><span class="length-label">${formatLength(biggerTotal)}</span>${makeLengthMmBar(biggerTotal)}</span><span class="length-row"><span class="length-label">${formatLength(smallerTotal)}</span>${makeLengthMmBar(smallerTotal)}</span></span><span class="question-line">ちがいは<ruby>何<rt>なん</rt></ruby>cm<ruby>何<rt>なん</rt></ruby>mm？</span>`,
             answer.cm,
             answer.mm
         );
@@ -206,7 +215,7 @@
         return makeChoiceQuestion(
             "length_100cm_unit",
             "100cmのたんい",
-            `<span class="question-title">100センチをあらわす単位</span>${makeUnitLine("100cm = 1?")}<span class="question-line">どの単位であらわせるかな？</span>`,
+            `<span class="question-title">100センチをあらわす<ruby>単位<rt>たんい</rt></ruby></span>${makeUnitLine("100cm = 1?")}<span class="question-line">どの<ruby>単位<rt>たんい</rt></ruby>であらわせるかな？</span>`,
             "m",
             shuffle(UNIT_CHOICES)
         );
@@ -216,17 +225,17 @@
         return makeChoiceQuestion(
             "length_1000m_unit",
             "1000mのたんい",
-            `<span class="question-title">1000メートルをあらわす単位</span>${makeUnitLine("1000m = 1?")}<span class="question-line">どの単位であらわせるかな？</span>`,
+            `<span class="question-title">1000メートルをあらわす<ruby>単位<rt>たんい</rt></ruby></span>${makeUnitLine("1000m = 1?")}<span class="question-line">どの<ruby>単位<rt>たんい</rt></ruby>であらわせるかな？</span>`,
             "km",
             shuffle(UNIT_CHOICES)
         );
     }
 
-    function makeUnitOrderQuestion(type, title, prompt, orderedUnits) {
+    function makeUnitOrderQuestion(type, title, titleHtml, prompt, orderedUnits) {
         return {
             type,
             title,
-            promptHtml: `<span class="question-title">${title}</span><span class="question-line">${prompt}</span>`,
+            promptHtml: `<span class="question-title">${titleHtml}</span><span class="question-line">${prompt}</span>`,
             answer: "ok",
             sequenceClass: "kana-match length-unit-order",
             sequenceItems: orderedUnits.map((unit, index) => ({
@@ -240,7 +249,8 @@
         return makeUnitOrderQuestion(
             "length_order_short_to_long",
             "短い順にタップしよう",
-            "短いものから順番にタップしてね。",
+            "<ruby>短<rt>みじか</rt></ruby>い<ruby>順<rt>じゅん</rt></ruby>にタップしよう",
+            "<ruby>短<rt>みじか</rt></ruby>いものから<ruby>順番<rt>じゅんばん</rt></ruby>にタップしてね。",
             ["mm", "cm", "m", "km"]
         );
     }
@@ -249,7 +259,8 @@
         return makeUnitOrderQuestion(
             "length_order_long_to_short",
             "長い順にタップしよう",
-            "長いものから順番にタップしてね。",
+            "<ruby>長<rt>なが</rt></ruby>い<ruby>順<rt>じゅん</rt></ruby>にタップしよう",
+            "<ruby>長<rt>なが</rt></ruby>いものから<ruby>順番<rt>じゅんばん</rt></ruby>にタップしてね。",
             ["km", "m", "cm", "mm"]
         );
     }
