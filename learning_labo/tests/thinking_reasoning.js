@@ -217,91 +217,84 @@
         q(
             "contradiction_front",
             "矛盾探し",
-            contradictionLines([
-                ["a", "ヒーは一番前です。"],
-                ["b", "アンはヒーより前です。"],
-                ["c", "ピッピは一番後ろです。"]
-            ], "AとCが正しいとすると、おかしい文はどれ？"),
+            contradictionPrompt([
+                "5さいの男の子、たろうくんがいます。",
+                "たろうくんは、ほいくえんに行っています。"
+            ], "つぎのうち、おかしい説明はどれ？"),
             "b",
             contradictionChoices([
-                ["a", "ヒーは一番前"],
-                ["b", "アンはヒーより前"],
-                ["c", "ピッピは一番後ろ"]
+                ["a", "なまえはたろう"],
+                ["b", "小学校に行っている"],
+                ["c", "5さいの男の子"]
             ])
         ),
         q(
             "contradiction_tall",
             "矛盾探し",
-            contradictionLines([
-                ["a", "ヒーはアンより高いです。"],
-                ["b", "アンはピッピより高いです。"],
-                ["c", "ピッピはヒーより高いです。"]
-            ], "AとBが正しいとすると、おかしい文はどれ？"),
+            contradictionPrompt([
+                "おさらの上に、みかんが5こあります。",
+                "ヒーが2こ食べました。"
+            ], "つぎのうち、おかしい説明はどれ？"),
             "c",
             contradictionChoices([
-                ["a", "ヒーはアンより高い"],
-                ["b", "アンはピッピより高い"],
-                ["c", "ピッピはヒーより高い"]
+                ["a", "はじめは5こあった"],
+                ["b", "2こ食べた"],
+                ["c", "のこりは5こ"]
             ])
         ),
         q(
             "contradiction_colors",
             "矛盾探し",
-            contradictionLines([
-                ["a", "赤い箱は左はしです。"],
-                ["b", "青い箱は赤い箱のすぐ右です。"],
-                ["c", "赤い箱は青い箱の右です。"]
-            ], "AとBが正しいとすると、おかしい文はどれ？"),
-            "c",
+            contradictionPrompt([
+                "プールから出てきたばかりの子がいます。",
+                "からだはまだ少しぬれています。"
+            ], "つぎのうち、おかしい説明はどれ？"),
+            "a",
             contradictionChoices([
-                ["a", "赤い箱は左はし"],
-                ["b", "青い箱は赤い箱のすぐ右"],
-                ["c", "赤い箱は青い箱の右"]
+                ["a", "かみがサラサラ"],
+                ["b", "ゆびさきがふやけている"],
+                ["c", "くちびるが青い"]
             ])
         ),
         q(
             "contradiction_seats",
             "矛盾探し",
-            contradictionLines([
-                ["a", "アンは1番の席です。"],
-                ["b", "ヒーはアンのとなりです。"],
-                ["c", "ヒーは3番の席です。"]
-            ], "席は1番・2番・3番です。AとCが正しいとすると、おかしい文はどれ？"),
+            contradictionPrompt([
+                "リュックの中に、本と水とうが入っています。",
+                "おべんとうは入っていません。"
+            ], "つぎのうち、おかしい説明はどれ？"),
             "b",
             contradictionChoices([
-                ["a", "アンは1番"],
-                ["b", "ヒーはアンのとなり"],
-                ["c", "ヒーは3番"]
+                ["a", "本が入っている"],
+                ["b", "おべんとうが入っている"],
+                ["c", "水とうが入っている"]
             ])
         ),
         q(
             "contradiction_all_different",
             "矛盾探し",
-            contradictionLines([
-                ["a", "3人は赤・青・黄を1つずつ選びました。"],
-                ["b", "ヒーは赤です。"],
-                ["c", "アンも赤です。"]
-            ], "AとBが正しいとすると、おかしい文はどれ？"),
-            "c",
+            contradictionPrompt([
+                "こうたくんのひざからちがでています。",
+            
+            ] "つぎのうち、おかしい説明はどれ？"),
+            "a",
             contradictionChoices([
-                ["a", "3人は別々の色"],
-                ["b", "ヒーは赤"],
-                ["c", "アンも赤"]
+                ["a", "こうたくんは長ズボンをはいていてはだはみえない"],
+                ["b", "グラウンドであそんでいた"],
+                ["c", "こうたくんはころんだらしい"]
             ])
         ),
         q(
             "contradiction_order",
             "矛盾探し",
-            contradictionLines([
-                ["a", "ピッピはアンより前です。"],
-                ["b", "アンはヒーより前です。"],
-                ["c", "ヒーはピッピより前です。"]
-            ], "AとBが正しいとすると、おかしい文はどれ？"),
+            contradictionPrompt([
+                "アンは右手にえんぴつ、左手にけしゴムを持っています。"
+            ], "つぎのうち、おかしい説明はどれ？"),
             "c",
             contradictionChoices([
-                ["a", "ピッピはアンより前"],
-                ["b", "アンはヒーより前"],
-                ["c", "ヒーはピッピより前"]
+                ["a", "右手にえんぴつ"],
+                ["b", "左手にけしゴム"],
+                ["c", "右手はからっぽ"]
             ])
         )
     ];
@@ -405,9 +398,9 @@
         )).join("");
     }
 
-    function contradictionLines(items, questionText) {
-        return `${items.map(([key, text]) => (
-            `<span class="question-line">${key.toUpperCase()}: ${text}</span>`
+    function contradictionPrompt(facts, questionText) {
+        return `${facts.map((text) => (
+            `<span class="question-line">${text}</span>`
         )).join("")}<span class="question-line"><strong>${questionText}</strong></span>`;
     }
 
