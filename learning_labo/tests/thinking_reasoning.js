@@ -17,7 +17,7 @@
             "なかまはずれ",
             `<span class="question-line">「たべもの」のなかまではないものはどれ？</span>`,
             "chair",
-            [r("apple", "りんご"), r("bread", "パン"), r("milk", "牛乳"), r("chair", "いす")]
+            [r("apple", "りんご"), r("bread", "パン"), r("milk", "<ruby>牛乳<rt>ぎゅうにゅう</rt></ruby>"), r("chair", "いす")]
         ),
         q(
             "classify_odd_tool",
@@ -28,273 +28,273 @@
         ),
         q(
             "classify_rule_red_round",
-            "ルールに合うもの",
-            `<span class="question-line">ルールは「赤くて、まるいもの」です。合うものはどれ？</span>`,
+            "ルールに<ruby>合<rt>あ</rt></ruby>うもの",
+            `<span class="question-line">ルールは「<ruby>赤<rt>あか</rt></ruby>くて、まるいもの」です。<ruby>合<rt>あ</rt></ruby>うものはどれ？</span>`,
             "red_circle",
-            [r("red_circle", "赤いまる"), r("red_square", "赤いしかく"), r("blue_circle", "青いまる"), r("blue_square", "青いしかく")]
+            [r("red_circle", "<ruby>赤<rt>あか</rt></ruby>いまる"), r("red_square", "<ruby>赤<rt>あか</rt></ruby>いしかく"), r("blue_circle", "<ruby>青<rt>あお</rt></ruby>いまる"), r("blue_square", "<ruby>青<rt>あお</rt></ruby>いしかく")]
         ),
         q(
             "classify_rule_not_blue",
-            "ルールに合うもの",
-            `<span class="question-line">ルールは「青ではなくて、三角でもない」です。合うものはどれ？</span>`,
+            "ルールに<ruby>合<rt>あ</rt></ruby>うもの",
+            `<span class="question-line">ルールは「<ruby>青<rt>あお</rt></ruby>ではなくて、<ruby>三角<rt>さんかく</rt></ruby>でもない」です。<ruby>合<rt>あ</rt></ruby>うものはどれ？</span>`,
             "red_circle",
-            [r("blue_circle", "青いまる"), r("red_triangle", "赤い三角"), r("blue_square", "青いしかく"), r("red_circle", "赤いまる")]
+            [r("blue_circle", "<ruby>青<rt>あお</rt></ruby>いまる"), r("red_triangle", "<ruby>赤<rt>あか</rt></ruby>い<ruby>三角<rt>さんかく</rt></ruby>"), r("blue_square", "<ruby>青<rt>あお</rt></ruby>いしかく"), r("red_circle", "<ruby>赤<rt>あか</rt></ruby>いまる")]
         ),
         q(
             "classify_same_group",
-            "同じなかま",
-            `<span class="question-line">「はさみ・のり・セロテープ」と同じなかまはどれ？</span>`,
+            "<ruby>同<rt>おな</rt></ruby>じなかま",
+            `<span class="question-line">「はさみ・のり・セロテープ」と<ruby>同<rt>おな</rt></ruby>じなかまはどれ？</span>`,
             "stapler",
             [r("stapler", "ホチキス"), r("banana", "バナナ"), r("shoes", "くつ"), r("clock", "とけい")]
         ),
         q(
             "classify_rule_place",
-            "ルールに合うもの",
-            `<span class="question-line">ルールは「学校にありそうで、外では使わないもの」です。合うものはどれ？</span>`,
+            "ルールに<ruby>合<rt>あ</rt></ruby>うもの",
+            `<span class="question-line">ルールは「<ruby>学校<rt>がっこう</rt></ruby>にありそうで、<ruby>外<rt>そと</rt></ruby>では<ruby>使<rt>つか</rt></ruby>わないもの」です。<ruby>合<rt>あ</rt></ruby>うものはどれ？</span>`,
             "blackboard",
-            [r("blackboard", "黒板"), r("umbrella", "かさ"), r("bicycle", "じてんしゃ"), r("sandals", "サンダル")]
+            [r("blackboard", "<ruby>黒板<rt>こくばん</rt></ruby>"), r("umbrella", "かさ"), r("bicycle", "じてんしゃ"), r("sandals", "サンダル")]
         )
     ];
 
     const ORDER = [
         q(
             "order_line_easy",
-            "じゅんばん推理",
+            "じゅんばん<ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "ヒーはアンより前です。",
-                "ピッピは一番後ろです。",
-                "前から2番目はだれ？"
+                "ヒーはアンより<ruby>前<rt>まえ</rt></ruby>です。",
+                "ピッピは<ruby>一番<rt>いちばん</rt></ruby><ruby>後<rt>うし</rt></ruby>ろです。",
+                "<ruby>前<rt>まえ</rt></ruby>から2<ruby>番目<rt>ばんめ</rt></ruby>はだれ？"
             ]),
             "an",
             characterChoices()
         ),
         q(
             "order_height_middle",
-            "じゅんばん推理",
+            "じゅんばん<ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "アンはヒーより高いです。",
-                "ピッピはアンより高いです。",
-                "真ん中の高さなのはだれ？"
+                "アンはヒーより<ruby>高<rt>たか</rt></ruby>いです。",
+                "ピッピはアンより<ruby>高<rt>たか</rt></ruby>いです。",
+                "<ruby>真<rt>ま</rt></ruby>ん<ruby>中<rt>なか</rt></ruby>の<ruby>高<rt>たか</rt></ruby>さなのはだれ？"
             ]),
             "an",
             characterChoices()
         ),
         q(
             "order_left_right",
-            "じゅんばん推理",
+            "じゅんばん<ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "3人が左から1列にならんでいます。",
-                "ヒーは左はしではありません。",
-                "アンはヒーのすぐ左です。",
-                "ピッピは一番右です。",
-                "左はしはだれ？"
+                "3<ruby>人<rt>にん</rt></ruby>が<ruby>左<rt>ひだり</rt></ruby>から1<ruby>列<rt>れつ</rt></ruby>にならんでいます。",
+                "ヒーは<ruby>左<rt>ひだり</rt></ruby>はしではありません。",
+                "アンはヒーのすぐ<ruby>左<rt>ひだり</rt></ruby>です。",
+                "ピッピは<ruby>一番<rt>いちばん</rt></ruby><ruby>右<rt>みぎ</rt></ruby>です。",
+                "<ruby>左<rt>ひだり</rt></ruby>はしはだれ？"
             ]),
             "an",
             characterChoices()
         ),
         q(
             "order_race_second",
-            "じゅんばん推理",
+            "じゅんばん<ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "3人でかけっこをしました。",
-                "ヒーは3位ではありません。",
-                "アンはピッピより後ろです。",
-                "ピッピは1位ではありません。",
-                "2位はだれ？"
+                "3<ruby>人<rt>にん</rt></ruby>でかけっこをしました。",
+                "ヒーは3<ruby>位<rt>い</rt></ruby>ではありません。",
+                "アンはピッピより<ruby>後<rt>うし</rt></ruby>ろです。",
+                "ピッピは1<ruby>位<rt>い</rt></ruby>ではありません。",
+                "2<ruby>位<rt>い</rt></ruby>はだれ？"
             ]),
             "pippi",
             characterChoices()
         ),
         q(
             "order_boxes",
-            "じゅんばん推理",
+            "じゅんばん<ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "赤・青・黄の箱が左から1列にならんでいます。",
-                "赤は左はしではありません。",
-                "青は赤のすぐ右です。",
-                "黄は右はしではありません。",
-                "真ん中の箱は何色？"
+                "<ruby>赤<rt>あか</rt></ruby>・<ruby>青<rt>あお</rt></ruby>・<ruby>黄<rt>き</rt></ruby>の<ruby>箱<rt>はこ</rt></ruby>が<ruby>左<rt>ひだり</rt></ruby>から1<ruby>列<rt>れつ</rt></ruby>にならんでいます。",
+                "<ruby>赤<rt>あか</rt></ruby>は<ruby>左<rt>ひだり</rt></ruby>はしではありません。",
+                "<ruby>青<rt>あお</rt></ruby>は<ruby>赤<rt>あか</rt></ruby>のすぐ<ruby>右<rt>みぎ</rt></ruby>です。",
+                "<ruby>黄<rt>き</rt></ruby>は<ruby>右<rt>みぎ</rt></ruby>はしではありません。",
+                "<ruby>真<rt>ま</rt></ruby>ん<ruby>中<rt>なか</rt></ruby>の<ruby>箱<rt>はこ</rt></ruby>は<ruby>何色<rt>なにいろ</rt></ruby>？"
             ]),
             "red",
             colorChoices()
         ),
         q(
             "order_books",
-            "じゅんばん推理",
+            "じゅんばん<ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "国語・算数・音楽の本を上からつみました。",
-                "算数は一番上ではありません。",
-                "音楽は算数のすぐ下です。",
-                "国語は一番下ではありません。",
-                "一番上の本はどれ？"
+                "<ruby>国語<rt>こくご</rt></ruby>・<ruby>算数<rt>さんすう</rt></ruby>・<ruby>音楽<rt>おんがく</rt></ruby>の<ruby>本<rt>ほん</rt></ruby>を<ruby>上<rt>うえ</rt></ruby>からつみました。",
+                "<ruby>算数<rt>さんすう</rt></ruby>は<ruby>一番<rt>いちばん</rt></ruby><ruby>上<rt>うえ</rt></ruby>ではありません。",
+                "<ruby>音楽<rt>おんがく</rt></ruby>は<ruby>算数<rt>さんすう</rt></ruby>のすぐ<ruby>下<rt>した</rt></ruby>です。",
+                "<ruby>国語<rt>こくご</rt></ruby>は<ruby>一番<rt>いちばん</rt></ruby><ruby>下<rt>した</rt></ruby>ではありません。",
+                "<ruby>一番<rt>いちばん</rt></ruby><ruby>上<rt>うえ</rt></ruby>の<ruby>本<rt>ほん</rt></ruby>はどれ？"
             ]),
             "japanese",
-            [r("japanese", "国語"), r("math", "算数"), r("music", "音楽"), r("science", "理科")]
+            [r("japanese", "<ruby>国語<rt>こくご</rt></ruby>"), r("math", "<ruby>算数<rt>さんすう</rt></ruby>"), r("music", "<ruby>音楽<rt>おんがく</rt></ruby>"), r("science", "<ruby>理科<rt>りか</rt></ruby>")]
         )
     ];
 
     const MATCHING = [
         q(
             "matching_hat_color",
-            "対応推理",
+            "<ruby>対応<rt>たいおう</rt></ruby><ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "3人は赤・青・黄のぼうしを1つずつかぶっています。",
-                "ピッピは赤いぼうしです。",
-                "ヒーは青ではありません。",
-                "アンのぼうしは何色？"
+                "3<ruby>人<rt>にん</rt></ruby>は<ruby>赤<rt>あか</rt></ruby>・<ruby>青<rt>あお</rt></ruby>・<ruby>黄<rt>き</rt></ruby>のぼうしを1つずつかぶっています。",
+                "ピッピは<ruby>赤<rt>あか</rt></ruby>いぼうしです。",
+                "ヒーは<ruby>青<rt>あお</rt></ruby>ではありません。",
+                "アンのぼうしは<ruby>何色<rt>なにいろ</rt></ruby>？"
             ]),
             "blue",
             colorChoices()
         ),
         q(
             "matching_items",
-            "対応推理",
+            "<ruby>対応<rt>たいおう</rt></ruby><ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "3人は本・ボール・かぎを1つずつ持っています。",
-                "アンは本を持っていません。",
-                "ヒーはかぎを持っていません。",
-                "ピッピは本を持っています。",
-                "ヒーが持っているものはどれ？"
+                "3<ruby>人<rt>にん</rt></ruby>は<ruby>本<rt>ほん</rt></ruby>・ボール・かぎを1つずつ<ruby>持<rt>も</rt></ruby>っています。",
+                "アンは<ruby>本<rt>ほん</rt></ruby>を<ruby>持<rt>も</rt></ruby>っていません。",
+                "ヒーはかぎを<ruby>持<rt>も</rt></ruby>っていません。",
+                "ピッピは<ruby>本<rt>ほん</rt></ruby>を<ruby>持<rt>も</rt></ruby>っています。",
+                "ヒーが<ruby>持<rt>も</rt></ruby>っているものはどれ？"
             ]),
             "ball",
-            [r("book", "本"), r("ball", "ボール"), r("key", "かぎ"), r("pencil", "えんぴつ")]
+            [r("book", "<ruby>本<rt>ほん</rt></ruby>"), r("ball", "ボール"), r("key", "かぎ"), r("pencil", "えんぴつ")]
         ),
         q(
             "matching_drinks",
-            "対応推理",
+            "<ruby>対応<rt>たいおう</rt></ruby><ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "3人は水・お茶・牛乳を1つずつ飲みました。",
-                "ヒーは水ではありません。",
-                "アンは牛乳ではありません。",
-                "ピッピは水を飲みました。",
-                "アンが飲んだものはどれ？"
+                "3<ruby>人<rt>にん</rt></ruby>は<ruby>水<rt>みず</rt></ruby>・お<ruby>茶<rt>ちゃ</rt></ruby>・<ruby>牛乳<rt>ぎゅうにゅう</rt></ruby>を1つずつ<ruby>飲<rt>の</rt></ruby>みました。",
+                "ヒーは<ruby>水<rt>みず</rt></ruby>ではありません。",
+                "アンは<ruby>牛乳<rt>ぎゅうにゅう</rt></ruby>ではありません。",
+                "ピッピは<ruby>水<rt>みず</rt></ruby>を<ruby>飲<rt>の</rt></ruby>みました。",
+                "アンが<ruby>飲<rt>の</rt></ruby>んだものはどれ？"
             ]),
             "tea",
-            [r("water", "水"), r("tea", "お茶"), r("milk", "牛乳"), r("juice", "ジュース")]
+            [r("water", "<ruby>水<rt>みず</rt></ruby>"), r("tea", "お<ruby>茶<rt>ちゃ</rt></ruby>"), r("milk", "<ruby>牛乳<rt>ぎゅうにゅう</rt></ruby>"), r("juice", "ジュース")]
         ),
         q(
             "matching_seats",
-            "対応推理",
+            "<ruby>対応<rt>たいおう</rt></ruby><ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "3人は1番・2番・3番の席に1人ずつすわりました。",
-                "ヒーは1番ではありません。",
-                "アンは3番ではありません。",
-                "ピッピは1番です。",
-                "ヒーの席は何番？"
+                "3<ruby>人<rt>にん</rt></ruby>は1<ruby>番<rt>ばん</rt></ruby>・2<ruby>番<rt>ばん</rt></ruby>・3<ruby>番<rt>ばん</rt></ruby>の<ruby>席<rt>せき</rt></ruby>に1<ruby>人<rt>り</rt></ruby>ずつすわりました。",
+                "ヒーは1<ruby>番<rt>ばん</rt></ruby>ではありません。",
+                "アンは3<ruby>番<rt>ばん</rt></ruby>ではありません。",
+                "ピッピは1<ruby>番<rt>ばん</rt></ruby>です。",
+                "ヒーの<ruby>席<rt>せき</rt></ruby>は<ruby>何番<rt>なんばん</rt></ruby>？"
             ]),
             "3",
-            [r("1", "1番"), r("2", "2番"), r("3", "3番"), r("4", "4番")]
+            [r("1", "1<ruby>番<rt>ばん</rt></ruby>"), r("2", "2<ruby>番<rt>ばん</rt></ruby>"), r("3", "3<ruby>番<rt>ばん</rt></ruby>"), r("4", "4<ruby>番<rt>ばん</rt></ruby>")]
         ),
         q(
             "matching_fruit",
-            "対応推理",
+            "<ruby>対応<rt>たいおう</rt></ruby><ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "3人はりんご・みかん・ぶどうを1つずつ選びました。",
+                "3<ruby>人<rt>にん</rt></ruby>はりんご・みかん・ぶどうを1つずつ<ruby>選<rt>えら</rt></ruby>びました。",
                 "アンはみかんではありません。",
                 "ピッピはぶどうではありません。",
                 "ヒーはみかんです。",
-                "ピッピが選んだものはどれ？"
+                "ピッピが<ruby>選<rt>えら</rt></ruby>んだものはどれ？"
             ]),
             "apple",
             [r("apple", "りんご"), r("orange", "みかん"), r("grape", "ぶどう"), r("melon", "メロン")]
         ),
         q(
             "matching_rooms",
-            "対応推理",
+            "<ruby>対応<rt>たいおう</rt></ruby><ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "3人は図書室・音楽室・体育館へ1人ずつ行きました。",
-                "ヒーは体育館ではありません。",
-                "アンは図書室ではありません。",
-                "ピッピは体育館へ行きました。",
-                "ヒーが行った場所はどこ？"
+                "3<ruby>人<rt>にん</rt></ruby>は<ruby>図書室<rt>としょしつ</rt></ruby>・<ruby>音楽室<rt>おんがくしつ</rt></ruby>・<ruby>体育館<rt>たいいくかん</rt></ruby>へ1<ruby>人<rt>り</rt></ruby>ずつ<ruby>行<rt>い</rt></ruby>きました。",
+                "ヒーは<ruby>体育館<rt>たいいくかん</rt></ruby>ではありません。",
+                "アンは<ruby>図書室<rt>としょしつ</rt></ruby>ではありません。",
+                "ピッピは<ruby>体育館<rt>たいいくかん</rt></ruby>へ<ruby>行<rt>い</rt></ruby>きました。",
+                "ヒーが<ruby>行<rt>い</rt></ruby>った<ruby>場所<rt>ばしょ</rt></ruby>はどこ？"
             ]),
             "library",
-            [r("library", "図書室"), r("music", "音楽室"), r("gym", "体育館"), r("yard", "校庭")]
+            [r("library", "<ruby>図書室<rt>としょしつ</rt></ruby>"), r("music", "<ruby>音楽室<rt>おんがくしつ</rt></ruby>"), r("gym", "<ruby>体育館<rt>たいいくかん</rt></ruby>"), r("yard", "<ruby>校庭<rt>こうてい</rt></ruby>")]
         )
     ];
 
     const CONTRADICTIONS = [
         q(
             "contradiction_front",
-            "矛盾探し",
+            "<ruby>矛盾<rt>むじゅん</rt></ruby><ruby>探<rt>さが</rt></ruby>し",
             contradictionPrompt([
-                "5さいの男の子、たろうくんがいます。",
-                "たろうくんは、ほいくえんに行っています。"
-            ], "つぎのうち、おかしい説明はどれ？"),
+                "5さいの<ruby>男<rt>おとこ</rt></ruby>の<ruby>子<rt>こ</rt></ruby>、たろうくんがいます。",
+                "たろうくんは、ほいくえんに<ruby>行<rt>い</rt></ruby>っています。"
+            ], "つぎのうち、おかしい<ruby>説明<rt>せつめい</rt></ruby>はどれ？"),
             "b",
             contradictionChoices([
                 ["a", "なまえはたろう"],
-                ["b", "小学校に行っている"],
-                ["c", "5さいの男の子"]
+                ["b", "<ruby>小学校<rt>しょうがっこう</rt></ruby>に<ruby>行<rt>い</rt></ruby>っている"],
+                ["c", "5さいの<ruby>男<rt>おとこ</rt></ruby>の<ruby>子<rt>こ</rt></ruby>"]
             ])
         ),
         q(
             "contradiction_tall",
-            "矛盾探し",
+            "<ruby>矛盾<rt>むじゅん</rt></ruby><ruby>探<rt>さが</rt></ruby>し",
             contradictionPrompt([
-                "おさらの上に、みかんが5こあります。",
-                "ヒーが2こ食べました。"
-            ], "つぎのうち、おかしい説明はどれ？"),
+                "おさらの<ruby>上<rt>うえ</rt></ruby>に、みかんが5こあります。",
+                "ヒーが2こ<ruby>食<rt>た</rt></ruby>べました。"
+            ], "つぎのうち、おかしい<ruby>説明<rt>せつめい</rt></ruby>はどれ？"),
             "c",
             contradictionChoices([
                 ["a", "はじめは5こあった"],
-                ["b", "2こ食べた"],
+                ["b", "2こ<ruby>食<rt>た</rt></ruby>べた"],
                 ["c", "のこりは5こ"]
             ])
         ),
         q(
             "contradiction_colors",
-            "矛盾探し",
+            "<ruby>矛盾<rt>むじゅん</rt></ruby><ruby>探<rt>さが</rt></ruby>し",
             contradictionPrompt([
-                "プールから出てきたばかりの子がいます。",
-                "からだはまだ少しぬれています。"
-            ], "つぎのうち、おかしい説明はどれ？"),
+                "プールから<ruby>出<rt>で</rt></ruby>てきたばかりの<ruby>子<rt>こ</rt></ruby>がいます。",
+                "からだはまだ<ruby>少<rt>すこ</rt></ruby>しぬれています。"
+            ], "つぎのうち、おかしい<ruby>説明<rt>せつめい</rt></ruby>はどれ？"),
             "a",
             contradictionChoices([
                 ["a", "かみがサラサラ"],
                 ["b", "ゆびさきがふやけている"],
-                ["c", "くちびるが青い"]
+                ["c", "くちびるが<ruby>青<rt>あお</rt></ruby>い"]
             ])
         ),
         q(
             "contradiction_seats",
-            "矛盾探し",
+            "<ruby>矛盾<rt>むじゅん</rt></ruby><ruby>探<rt>さが</rt></ruby>し",
             contradictionPrompt([
-                "リュックの中に、本と水とうが入っています。",
-                "おべんとうは入っていません。"
-            ], "つぎのうち、おかしい説明はどれ？"),
+                "リュックの<ruby>中<rt>なか</rt></ruby>に、<ruby>本<rt>ほん</rt></ruby>と<ruby>水<rt>すい</rt></ruby>とうが<ruby>入<rt>はい</rt></ruby>っています。",
+                "おべんとうは<ruby>入<rt>はい</rt></ruby>っていません。"
+            ], "つぎのうち、おかしい<ruby>説明<rt>せつめい</rt></ruby>はどれ？"),
             "b",
             contradictionChoices([
-                ["a", "本が入っている"],
-                ["b", "おべんとうが入っている"],
-                ["c", "水とうが入っている"]
+                ["a", "<ruby>本<rt>ほん</rt></ruby>が<ruby>入<rt>はい</rt></ruby>っている"],
+                ["b", "おべんとうが<ruby>入<rt>はい</rt></ruby>っている"],
+                ["c", "<ruby>水<rt>すい</rt></ruby>とうが<ruby>入<rt>はい</rt></ruby>っている"]
             ])
         ),
         q(
             "contradiction_all_different",
-            "矛盾探し",
+            "<ruby>矛盾<rt>むじゅん</rt></ruby><ruby>探<rt>さが</rt></ruby>し",
             contradictionPrompt([
-                "こうたくんのひざからちがでています。",
-            
-            ] "つぎのうち、おかしい説明はどれ？"),
+                "こうたくんのひざから、ちがでています。",
+                "こうたくんはグラウンドでころんだようです。"
+            ], "つぎのうち、おかしい<ruby>説明<rt>せつめい</rt></ruby>はどれ？"),
             "a",
             contradictionChoices([
-                ["a", "こうたくんは長ズボンをはいていてはだはみえない"],
+                ["a", "こうたくんは<ruby>長<rt>なが</rt></ruby>ズボンをはいていて、ひざがみえない"],
                 ["b", "グラウンドであそんでいた"],
                 ["c", "こうたくんはころんだらしい"]
             ])
         ),
         q(
             "contradiction_order",
-            "矛盾探し",
+            "<ruby>矛盾<rt>むじゅん</rt></ruby><ruby>探<rt>さが</rt></ruby>し",
             contradictionPrompt([
-                "アンは右手にえんぴつ、左手にけしゴムを持っています。"
-            ], "つぎのうち、おかしい説明はどれ？"),
+                "アンは<ruby>右手<rt>みぎて</rt></ruby>にえんぴつ、<ruby>左手<rt>ひだりて</rt></ruby>にけしゴムを<ruby>持<rt>も</rt></ruby>っています。"
+            ], "つぎのうち、おかしい<ruby>説明<rt>せつめい</rt></ruby>はどれ？"),
             "c",
             contradictionChoices([
-                ["a", "右手にえんぴつ"],
-                ["b", "左手にけしゴム"],
-                ["c", "右手はからっぽ"]
+                ["a", "<ruby>右手<rt>みぎて</rt></ruby>にえんぴつ"],
+                ["b", "<ruby>左手<rt>ひだりて</rt></ruby>にけしゴム"],
+                ["c", "<ruby>右手<rt>みぎて</rt></ruby>はからっぽ"]
             ])
         )
     ];
@@ -302,87 +302,87 @@
     const TRUTH_LIE = [
         q(
             "truth_one_winner",
-            "ほんとう・うそ推理",
+            "ほんとう・うそ<ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "かけっこの1位は1人です。",
-                "本当のことを言っているのは1人だけです。",
-                "ヒー「1位はアンです」",
-                "アン「1位はアンではありません」",
-                "ピッピ「1位はヒーではありません」",
-                "1位はだれ？"
+                "かけっこの1<ruby>位<rt>い</rt></ruby>は1<ruby>人<rt>り</rt></ruby>です。",
+                "<ruby>本当<rt>ほんとう</rt></ruby>のことを<ruby>言<rt>い</rt></ruby>っているのは1<ruby>人<rt>り</rt></ruby>だけです。",
+                "ヒー「1<ruby>位<rt>い</rt></ruby>はアンです」",
+                "アン「1<ruby>位<rt>い</rt></ruby>はアンではありません」",
+                "ピッピ「1<ruby>位<rt>い</rt></ruby>はヒーではありません」",
+                "1<ruby>位<rt>い</rt></ruby>はだれ？"
             ]),
             "hi",
             characterChoices()
         ),
         q(
             "truth_box_color",
-            "ほんとう・うそ推理",
+            "ほんとう・うそ<ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "あたりは赤・青・黄の箱のどれか1つです。",
-                "本当のことを言っているのは1人だけです。",
-                "ヒー「あたりは赤です」",
-                "アン「あたりは赤ではありません」",
-                "ピッピ「あたりは青ではありません」",
-                "あたりの箱は何色？"
+                "あたりは<ruby>赤<rt>あか</rt></ruby>・<ruby>青<rt>あお</rt></ruby>・<ruby>黄<rt>き</rt></ruby>の<ruby>箱<rt>はこ</rt></ruby>のどれか1つです。",
+                "<ruby>本当<rt>ほんとう</rt></ruby>のことを<ruby>言<rt>い</rt></ruby>っているのは1<ruby>人<rt>り</rt></ruby>だけです。",
+                "ヒー「あたりは<ruby>赤<rt>あか</rt></ruby>です」",
+                "アン「あたりは<ruby>赤<rt>あか</rt></ruby>ではありません」",
+                "ピッピ「あたりは<ruby>青<rt>あお</rt></ruby>ではありません」",
+                "あたりの<ruby>箱<rt>はこ</rt></ruby>は<ruby>何色<rt>なにいろ</rt></ruby>？"
             ]),
             "blue",
             colorChoices()
         ),
         q(
             "truth_one_liar_pet",
-            "ほんとう・うそ推理",
+            "ほんとう・うそ<ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "なくしたカードは本・星・花のどれか1つです。",
-                "うそを言っているのは1人だけです。",
-                "ヒー「カードは本か星です」",
-                "アン「カードは星です」",
-                "ピッピ「カードは花です」",
+                "なくしたカードは<ruby>本<rt>ほん</rt></ruby>・<ruby>星<rt>ほし</rt></ruby>・<ruby>花<rt>はな</rt></ruby>のどれか1つです。",
+                "うそを<ruby>言<rt>い</rt></ruby>っているのは1<ruby>人<rt>り</rt></ruby>だけです。",
+                "ヒー「カードは<ruby>本<rt>ほん</rt></ruby>か<ruby>星<rt>ほし</rt></ruby>です」",
+                "アン「カードは<ruby>星<rt>ほし</rt></ruby>です」",
+                "ピッピ「カードは<ruby>花<rt>はな</rt></ruby>です」",
                 "なくしたカードはどれ？"
             ]),
             "star",
-            [r("book", "本"), r("star", "星"), r("flower", "花"), r("moon", "月")]
+            [r("book", "<ruby>本<rt>ほん</rt></ruby>"), r("star", "<ruby>星<rt>ほし</rt></ruby>"), r("flower", "<ruby>花<rt>はな</rt></ruby>"), r("moon", "<ruby>月<rt>つき</rt></ruby>")]
         ),
         q(
             "truth_one_liar_seat",
-            "ほんとう・うそ推理",
+            "ほんとう・うそ<ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "ヒーの席は1番・2番・3番のどれかです。",
-                "うそを言っているのは1人だけです。",
-                "ヒー「ぼくの席は1番ではありません」",
-                "アン「ヒーの席は2番です」",
-                "ピッピ「ヒーの席は1番です」",
-                "ヒーの席は何番？"
+                "ヒーの<ruby>席<rt>せき</rt></ruby>は1<ruby>番<rt>ばん</rt></ruby>・2<ruby>番<rt>ばん</rt></ruby>・3<ruby>番<rt>ばん</rt></ruby>のどれかです。",
+                "うそを<ruby>言<rt>い</rt></ruby>っているのは1<ruby>人<rt>り</rt></ruby>だけです。",
+                "ヒー「ぼくの<ruby>席<rt>せき</rt></ruby>は1<ruby>番<rt>ばん</rt></ruby>ではありません」",
+                "アン「ヒーの<ruby>席<rt>せき</rt></ruby>は2<ruby>番<rt>ばん</rt></ruby>です」",
+                "ピッピ「ヒーの<ruby>席<rt>せき</rt></ruby>は1<ruby>番<rt>ばん</rt></ruby>です」",
+                "ヒーの<ruby>席<rt>せき</rt></ruby>は<ruby>何番<rt>なんばん</rt></ruby>？"
             ]),
             "2",
-            [r("1", "1番"), r("2", "2番"), r("3", "3番"), r("4", "4番")]
+            [r("1", "1<ruby>番<rt>ばん</rt></ruby>"), r("2", "2<ruby>番<rt>ばん</rt></ruby>"), r("3", "3<ruby>番<rt>ばん</rt></ruby>"), r("4", "4<ruby>番<rt>ばん</rt></ruby>")]
         ),
         q(
             "truth_only_one_key",
-            "ほんとう・うそ推理",
+            "ほんとう・うそ<ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "かぎは赤・青・黄の箱のどれか1つに入っています。",
-                "本当のことを言っているのは1人だけです。",
-                "ヒー「赤い箱に入っています」",
-                "アン「赤い箱には入っていません」",
-                "ピッピ「青い箱には入っていません」",
-                "かぎはどの箱？"
+                "かぎは<ruby>赤<rt>あか</rt></ruby>・<ruby>青<rt>あお</rt></ruby>・<ruby>黄<rt>き</rt></ruby>の<ruby>箱<rt>はこ</rt></ruby>のどれか1つに<ruby>入<rt>はい</rt></ruby>っています。",
+                "<ruby>本当<rt>ほんとう</rt></ruby>のことを<ruby>言<rt>い</rt></ruby>っているのは1<ruby>人<rt>り</rt></ruby>だけです。",
+                "ヒー「<ruby>赤<rt>あか</rt></ruby>い<ruby>箱<rt>はこ</rt></ruby>に<ruby>入<rt>はい</rt></ruby>っています」",
+                "アン「<ruby>赤<rt>あか</rt></ruby>い<ruby>箱<rt>はこ</rt></ruby>には<ruby>入<rt>はい</rt></ruby>っていません」",
+                "ピッピ「<ruby>青<rt>あお</rt></ruby>い<ruby>箱<rt>はこ</rt></ruby>には<ruby>入<rt>はい</rt></ruby>っていません」",
+                "かぎはどの<ruby>箱<rt>はこ</rt></ruby>？"
             ]),
             "blue",
             colorChoices()
         ),
         q(
             "truth_one_lie_rank",
-            "ほんとう・うそ推理",
+            "ほんとう・うそ<ruby>推理<rt>すいり</rt></ruby>",
             lines([
-                "アンの順位は1位・2位・3位のどれかです。",
-                "うそを言っているのは1人だけです。",
-                "ヒー「アンは1位ではありません」",
-                "アン「わたしは2位です」",
-                "ピッピ「アンは1位です」",
-                "アンの順位は何位？"
+                "アンの<ruby>順位<rt>じゅんい</rt></ruby>は1<ruby>位<rt>い</rt></ruby>・2<ruby>位<rt>い</rt></ruby>・3<ruby>位<rt>い</rt></ruby>のどれかです。",
+                "うそを<ruby>言<rt>い</rt></ruby>っているのは1<ruby>人<rt>り</rt></ruby>だけです。",
+                "ヒー「アンは1<ruby>位<rt>い</rt></ruby>ではありません」",
+                "アン「わたしは2<ruby>位<rt>い</rt></ruby>です」",
+                "ピッピ「アンは1<ruby>位<rt>い</rt></ruby>です」",
+                "アンの<ruby>順位<rt>じゅんい</rt></ruby>は<ruby>何位<rt>なんい</rt></ruby>？"
             ]),
             "2",
-            [r("1", "1位"), r("2", "2位"), r("3", "3位"), r("4", "4位")]
+            [r("1", "1<ruby>位<rt>い</rt></ruby>"), r("2", "2<ruby>位<rt>い</rt></ruby>"), r("3", "3<ruby>位<rt>い</rt></ruby>"), r("4", "4<ruby>位<rt>い</rt></ruby>")]
         )
     ];
 
@@ -413,7 +413,7 @@
     }
 
     function colorChoices() {
-        return [r("red", "赤"), r("blue", "青"), r("yellow", "黄"), r("green", "緑")];
+        return [r("red", "<ruby>赤<rt>あか</rt></ruby>"), r("blue", "<ruby>青<rt>あお</rt></ruby>"), r("yellow", "<ruby>黄<rt>き</rt></ruby>"), r("green", "<ruby>緑<rt>みどり</rt></ruby>")];
     }
 
     function shuffle(items) {
