@@ -166,7 +166,7 @@ function getNextRaceId() {
 window.getNextNationalRaceId = getNextRaceId;
 
 // --- 🐑 全国レース・エントリー機能 (更新) ---
-window.registerNationalRaceEntry = async function (userId, sheepData, ownerName) {
+window.registerNationalRaceEntry = async function (userId, sheepData, ownerName, localEntryInfo = {}) {
     if (!userId || !sheepData) return false;
 
     const entryRaceId = getNextRaceId();
@@ -179,6 +179,8 @@ window.registerNationalRaceEntry = async function (userId, sheepData, ownerName)
         tenacity: sheepData.tenacity,
         rank: sheepData.rank,
         entryRaceId: entryRaceId,
+        localOwnerName: localEntryInfo.localOwnerName || "",
+        entryKey: localEntryInfo.entryKey || "",
         // ★残り契約数を追加（ボーナス計算に使用）
         contractRaces: sheepData.contractRaces !== undefined ? sheepData.contractRaces : 24,
         entryTime: serverTimestamp()

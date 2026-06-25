@@ -482,6 +482,43 @@
         function generateUuid() {
             return 'u_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
         }
+        function getEntryKey(userName, sheep) {
+            return userName && sheep && sheep.uid ? `${userName}::${sheep.uid}` : "";
+        }
+        function isEntryForCurrentUser(sheep) {
+            if (!sheep || !currentUserName) return false;
+            return sheep.entry === true
+                && sheep.entryOwnerName === currentUserName
+                && sheep.entryKey === getEntryKey(currentUserName, sheep);
+        }
+        function prepareSheepIdentity(allData, userName) {
+            const sheep = allData[userName];
+            if (!sheep) return null;
+
+            let changed = false;
+            if (!sheep.uid) {
+                sheep.uid = generateUuid();
+                changed = true;
+            }
+
+            const duplicatedByOtherUser = Object.keys(allData).some(name =>
+                name !== userName && allData[name] && allData[name].uid === sheep.uid
+            );
+            if (duplicatedByOtherUser && !isEntryForCurrentUser(sheep)) {
+                sheep.uid = generateUuid();
+                sheep.entry = false;
+                sheep.entryRaceId = null;
+                sheep.entryOwnerName = null;
+                sheep.entryKey = null;
+                changed = true;
+            }
+
+            if (changed) {
+                allData[userName] = sheep;
+                saveUserData(allData);
+            }
+            return sheep;
+        }
 
         const MASTERS = [
             { rank: "Rookie", name: "もふもふ新人", cost: 24, speed: 30, stamina: 30, tenacity: 30, totalMax: 200, desc: "合計限界: 200" },
@@ -504,6 +541,8 @@
 
         function selectUser(name) {
             currentUserName = name;
+            const allData = getUserData();
+            prepareSheepIdentity(allData, currentUserName);
             document.getElementById('user-overlay').style.display = 'none';
             document.getElementById('user-display').innerText = "オーナー: " + name;
             // ミッション達成記録（ひつじ厩舎をひらく）
@@ -511,13 +550,14 @@
                 addMissionStock(name, 'sheep_stable');
             }
             updateUI();
+            setTimeout(initNationalRaceSystem, 500);
         }
 
         function updateUI() {
             const bal = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
             document.getElementById('balance').innerText = bal;
             const allData = getUserData();
-            const s = allData[currentUserName];
+            const s = prepareSheepIdentity(allData, currentUserName);
             const details = document.getElementById('sheep-details');
             const msg = document.getElementById('no-sheep-msg');
 
@@ -544,7 +584,7 @@
 
                 const isMax = (currentTotal >= s.totalMax);
                 document.querySelectorAll('.train-btn').forEach(btn => btn.disabled = isMax);
-                document.getElementById('entry-status').innerText = s.entry ? "📢 全国レースに登録済み！" : "";
+                document.getElementById('entry-status').innerText = isEntryForCurrentUser(s) ? "📢 全国レースに登録済み！" : "";
             } else {
                 msg.style.display = "block";
                 details.style.display = "none";
@@ -580,6 +620,7 @@
             const allData = getUserData();
 
             allData[currentUserName] = {
+                uid: generateUuid(),
                 rank: target.rank,
                 name: target.name,
                 speed: target.speed,
@@ -660,11 +701,11 @@
 
         async function entryNationalRace() {
             const allData = getUserData();
-            const s = allData[currentUserName];
+            const s = prepareSheepIdentity(allData, currentUserName);
             if (!s) return;
 
             // すでに登録済みかチェック
-            if (s.entry) {
+            if (isEntryForCurrentUser(s)) {
                 alert("すでに今週のレースにはエントリー済みです！");
                 return;
             }
@@ -675,17 +716,19 @@
             // 現在は「無料」であることを明示
             if (confirm(`「${s.name}」を全国レースに登録しますか？\n（今だけ出走料：無料！ 🌰）`)) {
 
-                // IDがない場合は発行
-                if (!s.uid) {
-                    s.uid = generateUuid();
-                }
+                const entryKey = getEntryKey(currentUserName, s);
 
                 // Firebaseへ送信
                 if (typeof window.registerNationalRaceEntry === 'function') {
-                    const result = await window.registerNationalRaceEntry(s.uid, s, publicName);
+                    const result = await window.registerNationalRaceEntry(s.uid, s, publicName, {
+                        localOwnerName: currentUserName,
+                        entryKey: entryKey
+                    });
                     if (result) {
                         s.entry = true;
                         s.entryRaceId = result.raceId || (typeof window.getNextNationalRaceId === 'function' ? window.getNextNationalRaceId() : null);
+                        s.entryOwnerName = currentUserName;
+                        s.entryKey = entryKey;
                         allData[currentUserName] = s;
                         saveUserData(allData);
                         updateUI();
@@ -699,7 +742,7 @@
 
         async function initNationalRaceSystem() {
             const allData = getUserData();
-            const s = allData[currentUserName];
+            const s = prepareSheepIdentity(allData, currentUserName);
             if (!s) return;
 
             if (typeof window.checkAndRunNationalRace === 'function') {
@@ -720,7 +763,7 @@
                         }
                     });
 
-                    const enteredThisRace = rankedInRace || (s.entry && (!s.entryRaceId || s.entryRaceId === data.raceId));
+                    const enteredThisRace = rankedInRace || (isEntryForCurrentUser(s) && s.entryRaceId === data.raceId);
                     if (!enteredThisRace) return;
 
                     if (myRank > 0) {
@@ -743,6 +786,8 @@
                     s.lastAwardedRace = data.raceId;
                     s.entry = false;
                     s.entryRaceId = null;
+                    s.entryOwnerName = null;
+                    s.entryKey = null;
                     saveUserData(allData);
                     updateUI();
                 }
