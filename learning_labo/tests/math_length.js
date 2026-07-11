@@ -193,18 +193,19 @@
         const { biggerCm, biggerMm, smallerCm, smallerMm } = takeOne(context.difference);
         const biggerTotal = biggerCm * 10 + biggerMm;
         const smallerTotal = smallerCm * 10 + smallerMm;
+        const rulerMaxCm = Math.ceil(biggerTotal / 10);
         const answer = toParts(biggerTotal - smallerTotal);
         return makeLengthQuestion(
             "length_difference_no_borrow",
             "ながさのちがい",
-            `<span class="question-title">ながさのちがい</span><span class="length-bars"><span class="length-row"><span class="length-label">${formatLength(biggerTotal)}</span>${makeLengthMmBar(biggerTotal)}</span><span class="length-row"><span class="length-label">${formatLength(smallerTotal)}</span>${makeLengthMmBar(smallerTotal)}</span></span><span class="question-line">ちがいは<ruby>何<rt>なん</rt></ruby>cm<ruby>何<rt>なん</rt></ruby>mm？</span>`,
+            `<span class="question-title">ながさのちがい</span><span class="length-bars"><span class="length-row"><span class="length-label">${formatLength(biggerTotal)}</span>${makeLengthMmBar(biggerTotal, rulerMaxCm)}</span><span class="length-row"><span class="length-label">${formatLength(smallerTotal)}</span>${makeLengthMmBar(smallerTotal, rulerMaxCm)}</span></span><span class="question-line">ちがいは<ruby>何<rt>なん</rt></ruby>cm<ruby>何<rt>なん</rt></ruby>mm？</span>`,
             answer.cm,
             answer.mm
         );
     }
 
-    function makeLengthMmBar(totalMm) {
-        const cm = Math.ceil(totalMm / 10);
+    function makeLengthMmBar(totalMm, maxCm = Math.ceil(totalMm / 10)) {
+        const cm = maxCm;
         const ticks = Array.from({ length: cm + 1 }, (_, index) => (
             `<span class="length-tick ${index === 0 || index === cm ? "major" : ""}"></span>`
         )).join("");

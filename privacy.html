@@ -1,65 +1,349 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="icon-32.png">
+    <meta name="description" content="ぱぱん式における、ゲーム記録、公開名、アクセス情報などの取り扱いについて説明します。">
+    <link rel="canonical" href="https://papan-shiki.com/privacy.html">
+    <meta property="og:title" content="プライバシーポリシー | ぱぱん式">
+    <meta property="og:description" content="ぱぱん式における利用者情報の保存、利用目的、公開範囲、外部サービスについて説明します。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://papan-shiki.com/privacy.html">
+    <meta property="og:image" content="https://papan-shiki.com/header02.webp">
     <title>プライバシーポリシー | ぱぱん式</title>
     <style>
-        body {
-            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
+        :root {
+            --blue: #2d7fa8;
+            --light-blue: #edf9ff;
+            --orange: #ff9800;
+            --brown: #554c46;
         }
-        h1 { font-size: 24px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
-        h2 { font-size: 18px; background: #f0f0f0; padding: 10px; border-left: 5px solid #88cdf6; margin-top: 30px; }
-        p { margin-bottom: 15px; }
-        .footer-link { margin-top: 50px; text-align: center; }
-        a { color: #007bff; text-decoration: none; }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            color: var(--brown);
+            background: #f0f9ff;
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            line-height: 1.8;
+        }
+
+        a {
+            color: #176f9e;
+        }
+
+        a:focus-visible {
+            outline: 3px solid #2e86c1;
+            outline-offset: 3px;
+        }
+
+        .hero {
+            padding: 36px 20px 30px;
+            text-align: center;
+            background: linear-gradient(160deg, #fff8e8, #eaf8ff 58%, #eef9ef);
+            border-bottom: 5px solid #ffcf82;
+        }
+
+        .hero img {
+            width: 92px;
+            height: 92px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 4px rgba(80, 66, 50, 0.13));
+        }
+
+        .hero h1 {
+            margin: 6px 0;
+            color: #654b3b;
+            font-size: clamp(1.65rem, 5vw, 2.35rem);
+            line-height: 1.4;
+        }
+
+        .hero p {
+            max-width: 700px;
+            margin: 8px auto 0;
+        }
+
+        main {
+            width: min(860px, calc(100% - 28px));
+            margin: 28px auto 56px;
+            padding: clamp(22px, 5vw, 44px);
+            border-radius: 24px;
+            background: #fff;
+            box-shadow: 0 7px 22px rgba(68, 101, 119, 0.1);
+        }
+
+        h2 {
+            margin: 34px 0 14px;
+            padding: 9px 13px;
+            border-left: 6px solid #88cdf6;
+            border-radius: 7px;
+            color: #604b40;
+            background: var(--light-blue);
+            font-size: 1.25rem;
+            line-height: 1.5;
+        }
+
+        h2:first-of-type {
+            margin-top: 12px;
+        }
+
+        h3 {
+            margin: 22px 0 8px;
+            color: var(--blue);
+            font-size: 1.08rem;
+        }
+
+        ul {
+            padding-left: 1.4em;
+        }
+
+        li {
+            margin: 7px 0;
+        }
+
+        .summary {
+            padding: 17px 19px;
+            border-left: 6px solid #43a047;
+            border-radius: 12px;
+            background: #f0faf1;
+        }
+
+        .warning {
+            padding: 15px 18px;
+            border-left: 6px solid var(--orange);
+            border-radius: 12px;
+            background: #fff8e8;
+        }
+
+        .service-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.96rem;
+        }
+
+        .service-table th,
+        .service-table td {
+            padding: 11px;
+            border: 1px solid #d8e8ef;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .service-table th {
+            background: #f2faff;
+        }
+
+        .links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        .links a {
+            display: inline-block;
+            padding: 9px 16px;
+            border: 2px solid #88cdf6;
+            border-radius: 22px;
+            background: #fff;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .updated {
+            margin-top: 38px;
+            padding-top: 18px;
+            border-top: 1px solid #d9e6eb;
+            text-align: right;
+            font-size: 0.92rem;
+        }
+
+        footer {
+            padding: 24px 20px;
+            border-top: 1px solid #dbeaf0;
+            background: #fff;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .service-table,
+            .service-table tbody,
+            .service-table tr,
+            .service-table th,
+            .service-table td {
+                display: block;
+            }
+
+            .service-table tr {
+                margin-bottom: 13px;
+                border: 1px solid #d8e8ef;
+                border-radius: 10px;
+                overflow: hidden;
+            }
+
+            .service-table th,
+            .service-table td {
+                border: 0;
+                border-bottom: 1px solid #e4eef2;
+            }
+        }
     </style>
 </head>
+
 <body>
+    <header class="hero">
+        <img src="hi-an-192.webp" alt="エゾリスのヒーとハリネズミのアン">
+        <h1>プライバシーポリシー</h1>
+        <p>「ぱぱん式」（以下「当サイト」といいます）における、利用者情報の取り扱いについて説明します。</p>
+    </header>
 
-    <h1>プライバシーポリシー</h1>
+    <main>
+        <p class="summary">当サイトは、会員登録をしなくても利用できます。ゲームの記録などは原則としてお使いのブラウザ内に保存され、全国ランキングやマイルーム公開など、利用者が選んだオンライン機能に必要な情報だけが外部サービスへ送信されます。</p>
 
-    <p>「ぱぱん式」（以下、「当サイト」と言います。）における、ユーザーの個人情報の取扱いについて、以下のとおりプライバシーポリシーを定めます。</p>
+        <h2>1. 基本方針</h2>
+        <p>当サイトは、利用者、特にお子さまの情報を大切に取り扱います。サービスの提供に必要な範囲を超えて情報を取得せず、取得または保存した情報については、不正アクセス、漏えい、改ざん等を防ぐために適切な管理に努めます。</p>
 
-    <h2>広告の配信について</h2>
-    <p>※2026年1月時点で広告は掲載していませんが今後掲載の可能性があるものです。</p>
-    
-    <p>当サイトは、第三者配信の広告サービス（Googleアドセンス、Amazonアソシエイト）を利用しています。</p>
-    <p>広告配信事業者は、ユーザーの興味に応じた商品やサービスの広告を表示するため、当サイトや他サイトへのアクセスに関する情報「Cookie（クッキー）」(氏名、住所、メール アドレス、電話番号は含まれません) を使用することがあります。</p>
-    <p>Cookieを無効にする設定およびGoogleアドセンスに関する詳細は<a href="https://policies.google.com/technologies/ads?hl=ja" target="_blank">「Googleポリシーと規約」</a>をご覧ください。</p>
-    
-    <p>また、当サイトは、Amazon.co.jpを宣伝しリンクすることによってサイトが紹介料を獲得できる手段を提供することを目的に設定されたアフィリエイトプログラムである、Amazonアソシエイト・プログラムの参加者です。</p>
+        <h2>2. 取得・保存する情報</h2>
 
-    <h2>アクセス解析ツールについて</h2>
-    <p>当サイトでは、サイトの利用状況を把握するためにGoogleによるアクセス解析ツール「Googleアナリティクス」を利用する可能性があります。Googleアナリティクスはトラフィックデータの収集のためにCookieを使用しています。このトラフィックデータは匿名で収集されており、個人を特定するものではありません。</p>
+        <h3>ブラウザ内に保存される情報</h3>
+        <p>当サイトでは、ブラウザの保存機能（localStorage等）を利用して、主に次の情報を利用者の端末内に保存します。</p>
+        <ul>
+            <li>ゲームの記録、目標、取り組んだ履歴</li>
+            <li>利用者がゲーム結果の保存時に設定した名前</li>
+            <li>ポイント、どんぐり、株、ガチャ、所持品等のサイト内データ</li>
+            <li>アバター、マイルーム、ひつじ牧場等の設定</li>
+            <li>まなびカレンダー、日替わりミッション、ミッションすごろく等の進行状況</li>
+            <li>画面表示や最後に選択した利用者等の設定</li>
+        </ul>
+        <p>これらは原則として端末内で利用され、当サイトの運営者へ一括送信されるものではありません。</p>
 
-    <h2>免責事項</h2>
-    <p>当サイトのコンテンツ・情報につきまして、可能な限り正確な情報を掲載するよう努めておりますが、誤情報が入り込んだり、情報が古くなっていることもございます。</p>
-    <p>当サイトに掲載された内容によって生じた損害等の一切の責任を負いかねますのでご了承ください。</p>
+        <h3>オンライン機能で送信される情報</h3>
+        <p>利用者が全国ランキング、マイルーム公開、全国ひつじレース等を利用した場合、機能の提供に必要な範囲で、次のような情報がFirebaseへ送信されます。</p>
+        <ul>
+            <li>利用者が入力した公開名とゲーム記録</li>
+            <li>公開用のマイルーム、アバター、家具等の情報</li>
+            <li>全国ひつじレースへの参加情報および結果</li>
+            <li>登録日時や機能上必要となる識別情報</li>
+        </ul>
+        <p>全国ランキングへの登録やマイルームの公開は任意です。公開機能を使わず、端末内だけに記録を保存して遊ぶこともできます。</p>
 
-    <h2>著作権について</h2>
-    <p>当サイトに掲載している文章や画像、ゲームのプログラムなどにつきましては、無断転載することを禁止します。</p>
-    <p>当サイトは著作権や肖像権の侵害を目的としたものではありません。著作権や肖像権に関して問題がございましたら、お問い合わせフォームよりご連絡ください。迅速に対応いたします。</p>
+        <h3>通信時に取り扱われる情報</h3>
+        <p>当サイトや外部サービスへ接続すると、IPアドレス、ブラウザや端末の種類、アクセス日時、参照先等の技術的な情報が、ホスティング事業者や外部サービス提供者によって自動的に取り扱われることがあります。</p>
 
-    <h2>リンクについて</h2>
-    <p>当サイトは基本的にリンクフリーです。リンクを行う場合の許可や連絡は不要です。<br>
-    ただし、インラインフレームの使用や画像の直リンクはご遠慮ください。</p>
+        <h2>3. 情報の利用目的</h2>
+        <p>当サイトは、取得・保存した情報を次の目的で利用します。</p>
+        <ul>
+            <li>ゲーム記録、目標、ポイント、所持品等を保存・表示するため</li>
+            <li>保護者向けダッシュボードに学習状況を表示するため</li>
+            <li>全国ランキング、公開マイルーム、全国ひつじレースを提供するため</li>
+            <li>為替や市場データを利用した学習コンテンツを提供するため</li>
+            <li>不具合の調査、不正利用の防止、安全な運営のため</li>
+            <li>利用状況を把握し、コンテンツや使いやすさを改善するため</li>
+        </ul>
 
-    <hr>
-    
-    <p style="text-align: right; font-size: 0.9em;">
-        策定日：2026年1月17日<br>
-        運営者：ぱぱん
-    </p>
+        <h2>4. 公開名と公開情報について</h2>
+        <p>全国ランキング等で使用する公開名は、他の利用者から見える場合があります。公開名には、次のような本人を特定できる情報を入力しないでください。</p>
+        <ul>
+            <li>本名、学校名、学級名</li>
+            <li>住所、電話番号、メールアドレス</li>
+            <li>SNSのアカウント名や連絡先</li>
+            <li>その他、本人や生活場所を特定できる情報</li>
+        </ul>
+        <p class="warning">お子さまが公開機能を利用するときは、必要に応じて保護者の方と一緒に操作してください。不適切な内容や個人情報を含む投稿は、予告なく非表示または削除する場合があります。</p>
 
-    <div class="footer-link">
-        <a href="index.html">トップページに戻る</a>
-    </div>
+        <h2>5. 外部サービス</h2>
+        <p>当サイトでは、次の外部サービスを利用しています。外部サービスにおける情報の取り扱いについては、各提供者のプライバシーポリシー等をご確認ください。</p>
+        <table class="service-table">
+            <thead>
+                <tr>
+                    <th>サービス</th>
+                    <th>利用目的</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>GitHub Pages</td>
+                    <td>当サイトの配信、通信の処理</td>
+                </tr>
+                <tr>
+                    <td>Google Firebase / Firestore</td>
+                    <td>全国ランキング、公開マイルーム、全国ひつじレースの保存・表示</td>
+                </tr>
+                <tr>
+                    <td>Google Sheets</td>
+                    <td>学習用の市場連動データの取得</td>
+                </tr>
+                <tr>
+                    <td>ExchangeRate-API</td>
+                    <td>学習用の為替レートの取得</td>
+                </tr>
+                <tr>
+                    <td>Googleフォーム</td>
+                    <td>お問い合わせの受付</td>
+                </tr>
+            </tbody>
+        </table>
+        <p>外部サイトへ移動した後の情報の取り扱いは、移動先のサービスが定める方針に従います。</p>
 
+        <h2>6. Cookie・アクセス解析について</h2>
+        <p>現在、当サイトではGoogle Analyticsなどのアクセス解析サービスを利用していません。</p>
+        <p>ブラウザ内への記録保存やPWA・オフライン機能のため、localStorageやキャッシュ等のブラウザ機能を利用します。これらはゲームの進行や設定を同じ端末で引き継ぐために使用します。</p>
+
+        <h2>7. 広告・アフィリエイトについて</h2>
+        <p>現在、当サイトでは第三者配信広告およびアフィリエイト広告を掲載していません。</p>
+        <p>今後これらを導入する場合は、利用するサービス、Cookie等の使用目的、利用者が選択できる設定について本ポリシーに追記し、必要な案内を行います。</p>
+
+        <h2>8. お子さまの利用について</h2>
+        <p>当サイトは、3歳から12歳ごろまでのお子さまを主な対象としています。会員登録時に氏名、住所、電話番号、メールアドレス等を求める仕組みはありません。</p>
+        <p>公開機能の利用や、個人情報に関わるお問い合わせを行うときは、保護者の方と一緒に内容を確認してください。</p>
+
+        <h2>9. データの削除とバックアップ</h2>
+        <h3>端末内データ</h3>
+        <p>端末内の記録は、ブラウザのサイトデータを削除することで消去できます。ただし、削除した記録を元に戻せない場合があります。端末変更や削除の前には、<a href="backup.html">データのバックアップ</a>をご利用ください。</p>
+        <h3>公開データ</h3>
+        <p>全国ランキングや公開マイルーム等に送信した情報について、削除の相談を希望される場合は、公開名、対象の機能、内容が分かる情報を添えて、保護者の方から<a href="https://docs.google.com/forms/d/e/1FAIpQLSeNFBIGZckX6JMXuxQpBFBoT3IGDQU1XIaSwmOx0hdpo8-94A/viewform" target="_blank" rel="noopener noreferrer">お問い合わせフォーム</a>よりご連絡ください。本人確認や対象データの特定ができない場合は、対応できないことがあります。</p>
+
+        <h2>10. 情報の第三者提供</h2>
+        <p>当サイトは、法令に基づく場合を除き、取得した個人情報を本人または保護者の同意なく第三者へ販売・提供しません。ただし、本ポリシーに記載した機能の提供に必要な範囲で、外部サービスを利用します。</p>
+
+        <h2>11. 安全管理</h2>
+        <p>当サイトは、公開範囲を必要最小限にし、不適切な投稿への対応や外部サービスの適切な設定など、情報の漏えい、滅失、改ざん、不正利用を防ぐために必要な対策を継続的に見直します。</p>
+
+        <h2>12. 免責事項</h2>
+        <p>当サイトのコンテンツ・情報については、可能な限り正確な情報を掲載するよう努めますが、正確性、完全性、安全性を保証するものではありません。外部サービスの障害、端末やブラウザの状態、通信環境等によって、データの消失や機能の停止が生じる場合があります。</p>
+        <p>当サイトの利用により生じた損害について、運営者の故意または重大な過失による場合を除き、運営者は責任を負いかねます。</p>
+
+        <h2>13. 著作権とリンク</h2>
+        <p>当サイトに掲載している文章、画像、ゲームプログラム等の無断転載を禁止します。著作権や肖像権に関する問題がある場合は、お問い合わせフォームよりご連絡ください。</p>
+        <p>当サイトは原則としてリンクフリーです。通常のリンクに許可や連絡は必要ありません。ただし、画像への直リンクや、当サイトの内容であることが分かりにくくなる形での表示はご遠慮ください。</p>
+
+        <h2>14. ポリシーの変更</h2>
+        <p>法令、利用サービスまたは当サイトの機能の変更に応じて、本ポリシーを改定することがあります。重要な変更がある場合は、当サイト上で分かりやすくお知らせします。変更後の内容は、このページに掲載した時点から適用します。</p>
+
+        <h2>15. 運営者・お問い合わせ</h2>
+        <p>運営者：ぱぱん</p>
+        <p>本ポリシー、公開情報、著作権等に関するお問い合わせは、<a href="https://docs.google.com/forms/d/e/1FAIpQLSeNFBIGZckX6JMXuxQpBFBoT3IGDQU1XIaSwmOx0hdpo8-94A/viewform" target="_blank" rel="noopener noreferrer">お問い合わせフォーム</a>よりご連絡ください。</p>
+
+        <p class="updated">
+            策定日：2026年1月17日<br>
+            最終改定日：2026年7月11日
+        </p>
+
+        <nav class="links" aria-label="関連ページ">
+            <a href="help.html">ヘルプ・おうちのかたへ</a>
+            <a href="backup.html">データのバックアップ</a>
+            <a href="index.html">トップページへ戻る</a>
+        </nav>
+    </main>
+
+    <footer>© ぱぱん式</footer>
 </body>
+
 </html>
