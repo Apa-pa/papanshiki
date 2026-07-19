@@ -877,6 +877,250 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* index2 experiment: playful learning launchpad */
+        :root {
+            --sky: #e9f7ff;
+            --navy: #183153;
+            --blue: #3e8df5;
+            --yellow: #ffd84d;
+            --coral: #ff725e;
+            --mint: #59d3b2;
+            --paper: #fffef9;
+            --line: #cfe5f2;
+        }
+
+        body {
+            color: var(--navy);
+            background:
+                radial-gradient(circle at 12% 7%, rgba(255,216,77,.3) 0 80px, transparent 81px),
+                radial-gradient(circle at 92% 20%, rgba(89,211,178,.2) 0 130px, transparent 131px),
+                var(--sky);
+        }
+
+        .hero-header {
+            min-height: 610px;
+            padding: 0;
+            background:
+                linear-gradient(115deg, rgba(16,45,81,.93), rgba(25,81,135,.73)),
+                url('header01.webp') center/cover;
+            border-radius: 0 0 56px 56px;
+            overflow: hidden;
+            position: relative;
+            isolation: isolate;
+        }
+
+        .hero-header::before,
+        .hero-header::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .hero-header::before {
+            width: 420px;
+            height: 420px;
+            right: -120px;
+            top: -170px;
+            background: rgba(255,216,77,.93);
+        }
+
+        .hero-header::after {
+            width: 260px;
+            height: 260px;
+            left: -100px;
+            bottom: -130px;
+            border: 42px solid rgba(89,211,178,.55);
+        }
+
+        .hero-overlay { display: none; }
+
+        .hero-inner {
+            width: min(1120px, calc(100% - 40px));
+            min-height: 610px;
+            margin: auto;
+            padding: 76px 0 96px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(350px, .8fr);
+            gap: 58px;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .hero-copy { max-width: 680px; }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 13px;
+            color: var(--navy);
+            background: var(--yellow);
+            border-radius: 999px;
+            font-size: .74rem;
+            font-weight: 900;
+            letter-spacing: .13em;
+            box-shadow: 4px 4px 0 #b98200;
+        }
+
+        .hero-title {
+            margin: 24px 0 18px;
+            color: #fff;
+            font-size: clamp(2.7rem, 6vw, 5.4rem);
+            line-height: 1.02;
+            letter-spacing: -.055em;
+            text-wrap: balance;
+            text-shadow: 0 5px 0 rgba(8,35,65,.3);
+        }
+
+        .hero-title .hero-pop { color: var(--yellow); }
+
+        .hero-lead {
+            max-width: 600px;
+            color: #e8f5ff;
+            font-size: clamp(1rem, 1.7vw, 1.15rem);
+            line-height: 1.9;
+            font-weight: 700;
+        }
+
+        .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+
+        .hero-btn {
+            min-height: 54px;
+            padding: 12px 22px;
+            border: 2px solid #fff;
+            border-radius: 17px;
+            font: 900 1rem/1.2 inherit;
+            cursor: pointer;
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+
+        .hero-btn:hover { transform: translateY(-3px) rotate(-1deg); }
+        .hero-btn-primary { color: var(--navy); background: var(--yellow); box-shadow: 0 7px 0 #b98200; border-color: var(--yellow); }
+        .hero-btn-secondary { color: #fff; background: rgba(255,255,255,.1); backdrop-filter: blur(8px); box-shadow: 0 6px 0 rgba(4,24,48,.3); }
+
+        .hero-highlights {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            transform: rotate(1.2deg);
+        }
+
+        .highlight-card {
+            min-height: 145px;
+            padding: 20px;
+            color: var(--navy);
+            background: var(--paper);
+            border: 3px solid var(--navy);
+            border-radius: 25px;
+            box-shadow: 7px 8px 0 rgba(8,35,65,.5);
+            box-sizing: border-box;
+        }
+
+        .highlight-card:nth-child(2) { transform: translateY(24px) rotate(2deg); background: #eafff8; }
+        .highlight-card:nth-child(3) { transform: rotate(-2deg); background: #fff8d8; }
+        .highlight-card:nth-child(4) { transform: translateY(24px); background: #fff0ed; }
+        .highlight-icon { font-size: 1.8rem; margin-bottom: 7px; }
+        .highlight-card strong { font-size: 1rem; }
+        .highlight-card p { margin: 7px 0 0; color: #4c617b; font-size: .82rem; line-height: 1.65; }
+
+        .page-main { width: min(1120px, calc(100% - 28px)); max-width: none; margin: -48px auto 48px; padding: 0; position: relative; z-index: 2; }
+        .daily-mission-wrap { border-radius: 22px; overflow: hidden; }
+
+        .intro-shell,
+        .filter-shell {
+            background: rgba(255,254,249,.96);
+            border: 3px solid var(--navy);
+            border-radius: 32px;
+            box-shadow: 9px 10px 0 rgba(24,49,83,.17);
+        }
+
+        .intro-shell { padding: clamp(24px, 5vw, 52px); }
+        .intro-title { color: var(--navy); font-size: clamp(1.7rem, 4vw, 3rem); letter-spacing: -.035em; }
+        .intro-copy { color: #61728a; max-width: 720px; }
+
+        .age-pill {
+            border: 2px solid var(--navy);
+            color: var(--navy);
+            background: #fff;
+            box-shadow: 3px 4px 0 var(--navy);
+            font-weight: 900;
+        }
+
+        .age-pill:hover { color: var(--navy); background: var(--yellow); transform: translateY(-2px); }
+
+        .spotlight-card {
+            min-height: 190px;
+            border: 3px solid var(--navy);
+            border-radius: 24px;
+            box-shadow: 5px 6px 0 var(--navy);
+        }
+
+        .spotlight-card:hover { transform: translate(-2px,-4px); box-shadow: 8px 10px 0 var(--navy); }
+        .spotlight-sugoroku { background: #fff4bd; }
+        .spotlight-labo { background: #dff9f1; }
+        .spotlight-mission { background: #e4efff; }
+        .spotlight-parent { background: #ffe7e1; }
+        .spotlight-card strong { color: var(--navy); font-size: 1.35rem; }
+        .spotlight-card p { color: #52667e; }
+        .micro-label { color: var(--navy); background: #fff; border: 1px solid var(--navy); }
+
+        .filter-shell { margin-top: 26px; padding: clamp(22px,4vw,42px); }
+        .filter-copy h2 { color: var(--navy); font-size: clamp(1.5rem,3vw,2.3rem); }
+        .filter-select, .filter-search { border-color: var(--blue); color: var(--navy); background-color: #fff; }
+
+        .menu-container {
+            max-width: none;
+            background: var(--navy);
+            border: 3px solid var(--navy);
+            border-radius: 22px;
+            gap: 2px;
+            box-shadow: 5px 6px 0 rgba(24,49,83,.16);
+        }
+
+        .menu-btn { color: var(--navy); padding: 15px 6px; }
+        .menu-btn:hover { background: #fff5c8; }
+        .quick-link { border: 2px solid var(--line); border-radius: 20px; }
+
+        .section-title {
+            color: var(--navy);
+            border: 0;
+            padding: 18px 22px;
+            margin-top: 42px;
+            background: var(--paper);
+            border-radius: 20px;
+            box-shadow: 4px 5px 0 var(--line);
+        }
+
+        .card { border: 2px solid var(--line); border-radius: 22px; box-shadow: 5px 6px 0 rgba(24,49,83,.1); }
+        .card:hover { border-color: var(--navy); box-shadow: 7px 9px 0 rgba(24,49,83,.16); transform: translateY(-4px); }
+
+        @media (max-width: 850px) {
+            .hero-header { min-height: auto; border-radius: 0 0 38px 38px; }
+            .hero-inner { min-height: auto; padding: 56px 0 90px; grid-template-columns: 1fr; gap: 38px; }
+            .hero-highlights { max-width: 620px; }
+            .page-main { margin-top: -45px; }
+        }
+
+        @media (max-width: 600px) {
+            .hero-inner { width: min(100% - 28px, 1120px); padding-top: 38px; }
+            .hero-title { font-size: clamp(2.55rem, 13vw, 4rem); }
+            .hero-lead { font-size: .95rem; line-height: 1.75; }
+            .hero-actions { display: grid; grid-template-columns: 1fr 1fr; }
+            .hero-btn-primary { grid-column: 1 / -1; }
+            .hero-btn { padding-inline: 10px; font-size: .88rem; }
+            .hero-highlights { grid-template-columns: 1fr 1fr; gap: 9px; transform: none; }
+            .highlight-card { min-height: 132px; padding: 14px; border-width: 2px; border-radius: 19px; box-shadow: 4px 5px 0 rgba(8,35,65,.5); }
+            .highlight-card:nth-child(2), .highlight-card:nth-child(4) { transform: translateY(12px); }
+            .highlight-card:nth-child(3) { transform: none; }
+            .highlight-card p { display: none; }
+            .page-main { width: calc(100% - 18px); }
+            .intro-shell, .filter-shell { border-width: 2px; border-radius: 25px; box-shadow: 5px 6px 0 rgba(24,49,83,.15); }
+            .spotlight-grid { grid-template-columns: 1fr; }
+            .spotlight-card { min-height: 0; }
+            .menu-container { grid-template-columns: repeat(3, 1fr); margin-inline: 0; }
+        }
     </style>
 </head>
 
@@ -886,35 +1130,35 @@
         <div class="hero-overlay"></div>
         <div class="hero-inner">
             <div class="hero-copy">
-                <div class="eyebrow">PROTOTYPE TOP / INDEX2</div>
-                <h1 class="hero-title">まようより、<br>すぐにあそべる<br>まなびポータルへ。</h1>
-                <p class="hero-lead">最初の一画面で「年齢に合う入口」「今日のおすすめ」「回遊の行き先」が見えるトップの試作版です。やさしい雰囲気は残しつつ、スマホで選びやすい形を目指します。</p>
+                <div class="eyebrow">🌟 まなびは、あそびだ。</div>
+                <h1 class="hero-title">きょうは、<br><span class="hero-pop">なにして</span><br>あそぶ？</h1>
+                <p class="hero-lead">さんすうも、ことばも、かがくも。好きな入口をえらんだら、すぐにスタート！ ぱぱん式は、子どもの「やってみたい」が見つかる無料のまなび場です。</p>
                 <div class="hero-actions">
-                    <button class="hero-btn hero-btn-primary" onclick="scrollToDiscover()">🎯 いまのおすすめをみる</button>
-                    <button class="hero-btn hero-btn-secondary" onclick="setAgeFilter('5')">🧒 5さいから さがす</button>
-                    <button class="hero-btn hero-btn-secondary" onclick="setAgeFilter('8')">📚 8さいから さがす</button>
+                    <button class="hero-btn hero-btn-primary" onclick="scrollToDiscover()">🚀 あそびを見つける</button>
+                    <button class="hero-btn hero-btn-secondary" onclick="setAgeFilter('5')">5さいから</button>
+                    <button class="hero-btn hero-btn-secondary" onclick="setAgeFilter('8')">8さいから</button>
                 </div>
             </div>
             <div class="hero-highlights">
                 <div class="highlight-card">
                     <div class="highlight-icon">🌟</div>
-                    <strong>はじめてでも入りやすい</strong>
-                    <p>年齢・おすすめ・教科から、最初の1本をすぐ見つけられる入口を上にまとめます。</p>
+                    <strong>すぐにあそべる</strong>
+                    <p>登録なし。気になるカードを選んだら、そのままスタートできます。</p>
                 </div>
                 <div class="highlight-card">
                     <div class="highlight-icon">🧭</div>
-                    <strong>つぎの行き先が見える</strong>
-                    <p>学び、ラボ、すごろく、きろくが一つながりに見える回遊導線を強めます。</p>
+                    <strong>じぶんで選べる</strong>
+                    <p>年齢や教科から、いまの自分にぴったりの遊びを探せます。</p>
                 </div>
                 <div class="highlight-card">
                     <div class="highlight-icon">📱</div>
-                    <strong>スマホで見やすい</strong>
-                    <p>最初に絞ってからカードを見る流れに変えて、縦の長さを軽くします。</p>
+                    <strong>どこでも学べる</strong>
+                    <p>スマホでもタブレットでも、無料でいつでも楽しめます。</p>
                 </div>
                 <div class="highlight-card">
                     <div class="highlight-icon">🧪</div>
-                    <strong>本番前にここで検証</strong>
-                    <p>`index.html` へ移す前に、見た目と導線の両方をこのページで試せるようにします。</p>
+                    <strong>がんばりが残る</strong>
+                    <p>記録やポイントが、もう一回やってみる気持ちにつながります。</p>
                 </div>
             </div>
         </div>
@@ -927,8 +1171,8 @@
         <section class="intro-shell" id="discover-area">
             <div class="intro-head">
                 <div>
-                    <h2 class="intro-title">きょうの入口を、ここからえらぼう</h2>
-                    <p class="intro-copy">年齢でさがす、いま目立たせたい導線に行く、ラボやすごろくへ回る。トップの最初の一画面でやりたいことを見つけやすくする実験です。</p>
+                    <h2 class="intro-title">まずは、ここから！</h2>
+                    <p class="intro-copy">年齢から選んでも、おすすめから飛び込んでもOK。今日の「やってみたい」を見つけよう。</p>
                 </div>
             </div>
             <div class="age-pills">
