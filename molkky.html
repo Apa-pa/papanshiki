@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>森のモルック - ぱぱん式</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <script src="ranking.js"></script>
+    <style>
+        :root {
+            --wood-dark: #5d4037;
+            --wood: #8d6e63;
+            --wood-light: #d7b98e;
+            --grass: #5f8f4e;
+            --cream: #fff9e8;
+            --orange: #e86f35;
+            --ink: #3e3028;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #dfe8d7;
+            color: var(--ink);
+            font-family: "UD Digital Kyokasho-tai-R", "Yu Gothic", Meiryo, sans-serif;
+        }
+
+        button, a { font: inherit; }
+
+        #app {
+            width: min(100%, 560px);
+            height: 100%;
+            max-height: 960px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            background: var(--grass);
+            box-shadow: 0 0 28px rgba(39, 54, 34, .35);
+            position: relative;
+        }
+
+        #scoreboard {
+            min-height: 96px;
+            padding: 10px 12px 9px;
+            background: linear-gradient(145deg, #6d4c41, #4e342e);
+            border-bottom: 5px solid #3e2723;
+            color: white;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 9px;
+            z-index: 5;
+        }
+
+        .score-item { text-align: center; min-width: 0; }
+        .score-label { font-size: 12px; font-weight: 800; opacity: .88; }
+        .score-value { font-size: 30px; line-height: 1.05; font-weight: 900; }
+        #remaining { color: #ffe66d; }
+        #misses { letter-spacing: 2px; font-size: 21px; white-space: nowrap; }
+
+        .target-coin {
+            width: 74px;
+            height: 74px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: radial-gradient(circle at 35% 28%, #fff6ca, #e0b874 72%);
+            color: #603d25;
+            border: 4px solid #f8de9b;
+            box-shadow: inset 0 -5px 0 rgba(114, 73, 38, .18), 0 4px 8px rgba(0, 0, 0, .3);
+        }
+
+        .target-coin small { display: block; font-size: 10px; line-height: 1; }
+        .target-coin strong { display: block; font-size: 31px; line-height: 1; }
+
+        #game-area {
+            flex: 1;
+            min-height: 0;
+            position: relative;
+            overflow: hidden;
+            touch-action: none;
+            background:
+                radial-gradient(circle at 15% 15%, rgba(255,255,255,.09) 0 2px, transparent 3px),
+                radial-gradient(circle at 75% 55%, rgba(31,67,29,.13) 0 2px, transparent 3px),
+                linear-gradient(#6f9f59, #4f7e42);
+            background-size: 31px 31px, 41px 41px, auto;
+        }
+
+        #game-area canvas { display: block; position: absolute; inset: 0; z-index: 1; }
+
+        #message {
+            position: absolute;
+            left: 50%;
+            top: 14px;
+            transform: translate(-50%, -10px);
+            width: max-content;
+            max-width: calc(100% - 28px);
+            padding: 10px 18px;
+            border-radius: 999px;
+            background: rgba(255, 249, 232, .96);
+            border: 3px solid #e4c58e;
+            box-shadow: 0 5px 14px rgba(35, 52, 28, .25);
+            font-size: 16px;
+            font-weight: 900;
+            text-align: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: .22s ease;
+            z-index: 7;
+        }
+
+        #message.show { opacity: 1; transform: translate(-50%, 0); }
+        #message.good { border-color: #ffd54f; color: #8b4a16; }
+        #message.miss { border-color: #ef9a9a; color: #a83232; }
+
+        #hint {
+            position: absolute;
+            left: 50%;
+            bottom: 11px;
+            transform: translateX(-50%);
+            padding: 7px 14px;
+            border-radius: 18px;
+            background: rgba(37, 61, 31, .74);
+            color: white;
+            font-size: 13px;
+            font-weight: 800;
+            pointer-events: none;
+            white-space: nowrap;
+            z-index: 6;
+        }
+
+        #history {
+            min-height: 42px;
+            padding: 7px 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow-x: auto;
+            background: #f4ead4;
+            border-top: 4px solid #6d4c41;
+            scrollbar-width: none;
+        }
+
+        #history::-webkit-scrollbar { display: none; }
+        .history-title { font-size: 11px; font-weight: 900; color: #745746; flex: 0 0 auto; }
+        .history-chip {
+            min-width: 30px;
+            padding: 3px 8px;
+            text-align: center;
+            border-radius: 12px;
+            background: white;
+            border: 2px solid #d7b98e;
+            font-weight: 900;
+            font-size: 13px;
+            flex: 0 0 auto;
+        }
+        .history-chip.zero { color: #c23b32; border-color: #efb1aa; }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            background: rgba(35, 52, 29, .76);
+            backdrop-filter: blur(3px);
+        }
+
+        .overlay[hidden] { display: none; }
+
+        .panel {
+            width: min(100%, 430px);
+            max-height: calc(100% - 10px);
+            overflow-y: auto;
+            padding: 22px 20px 18px;
+            text-align: center;
+            border: 5px solid #8b5e3c;
+            border-radius: 24px;
+            background: var(--cream);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, .32), inset 0 0 0 3px #edd7a9;
+        }
+
+        .panel h1, .panel h2 { margin: 0 0 8px; color: #6c422b; }
+        .panel h1 { font-size: clamp(31px, 8vw, 43px); }
+        .panel h2 { font-size: 30px; }
+        .logo-stick { font-size: 56px; line-height: 1; transform: rotate(-12deg); margin: 4px 0 8px; }
+        .subtitle { margin: 0 0 14px; font-weight: 900; color: #61824e; }
+
+        .rules {
+            margin: 13px 0;
+            padding: 13px 15px;
+            border-radius: 16px;
+            background: #f3e7c9;
+            text-align: left;
+            font-size: 14px;
+            line-height: 1.65;
+            font-weight: 700;
+        }
+
+        .rule-row { display: grid; grid-template-columns: 28px 1fr; gap: 5px; }
+        .rule-row + .rule-row { margin-top: 5px; }
+
+        .primary-btn, .secondary-btn {
+            border: 0;
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: 900;
+            transition: transform .1s;
+        }
+
+        .primary-btn {
+            min-width: 210px;
+            padding: 14px 30px;
+            color: white;
+            background: var(--orange);
+            box-shadow: 0 5px 0 #a84422;
+            font-size: 21px;
+        }
+
+        .secondary-btn {
+            padding: 9px 18px;
+            background: #e6d5b4;
+            color: #644a39;
+            box-shadow: 0 3px 0 #bca27d;
+            font-size: 14px;
+        }
+
+        .primary-btn:active, .secondary-btn:active { transform: translateY(3px); box-shadow: none; }
+        .home-link { display: inline-block; margin-top: 17px; color: #775d4c; font-weight: 800; }
+
+        #result-detail {
+            margin: 13px 0;
+            padding: 12px;
+            border-radius: 14px;
+            background: #f3e7c9;
+            font-size: 16px;
+            font-weight: 800;
+            line-height: 1.65;
+        }
+
+        #result-detail strong { color: #d65f2d; font-size: 27px; }
+
+        #top-controls {
+            position: absolute;
+            right: 9px;
+            top: 9px;
+            z-index: 8;
+            display: flex;
+            gap: 6px;
+        }
+
+        .round-btn {
+            width: 38px;
+            height: 38px;
+            border: 2px solid rgba(255,255,255,.75);
+            border-radius: 50%;
+            background: rgba(48, 72, 40, .78);
+            color: white;
+            font-size: 18px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+        @media (max-height: 650px) {
+            #scoreboard { min-height: 76px; padding: 6px 10px; }
+            .target-coin { width: 60px; height: 60px; }
+            .target-coin strong { font-size: 25px; }
+            .score-value { font-size: 25px; }
+            #history { min-height: 36px; padding-block: 4px; }
+            .panel { padding: 15px; }
+            .logo-stick { font-size: 43px; }
+            .rules { line-height: 1.45; margin: 8px 0; }
+        }
+    </style>
+</head>
+
+<body>
+    <main id="app">
+        <header id="scoreboard" aria-label="スコアボード">
+            <div class="score-item">
+                <div class="score-label">いまの とくてん</div>
+                <div class="score-value" id="score">0</div>
+            </div>
+            <div class="target-coin" aria-label="目標50点">
+                <div><small>めざせ</small><strong>50</strong></div>
+            </div>
+            <div class="score-item">
+                <div class="score-label">あと <span id="remaining">50</span>てん</div>
+                <div id="misses" aria-label="連続ミス0回">○ ○ ○</div>
+            </div>
+        </header>
+
+        <section id="game-area" aria-label="モルックのコート">
+            <div id="top-controls">
+                <button id="sound-button" class="round-btn" aria-label="音を切る">♪</button>
+                <button id="rules-button" class="round-btn" aria-label="ルールを見る">?</button>
+            </div>
+            <div id="message" role="status" aria-live="polite"></div>
+            <div id="hint">画面のどこかを下にひっぱって はなそう！</div>
+        </section>
+
+        <div id="history" aria-label="得点履歴">
+            <span class="history-title">なげた記録</span>
+            <span id="history-empty" class="history-title">まだありません</span>
+        </div>
+
+        <section id="start-screen" class="overlay">
+            <div class="panel">
+                <h1 id="game-title">森のモルック</h1>
+                <div class="logo-stick" aria-hidden="true">🪵</div>
+                <p id="game-subtitle" class="subtitle">ぴったり50点を めざそう！</p>
+                <div class="rules">
+                    <div class="rule-row"><span>☝️</span><span><b>1本</b>たおすと、書かれた数字が得点。</span></div>
+                    <div class="rule-row"><span>✌️</span><span><b>2本以上</b>たおすと、たおした本数が得点。</span></div>
+                    <div class="rule-row"><span>🎯</span><span>ちょうど<b>50点</b>でクリア！ こえると25点にもどります。</span></div>
+                    <div class="rule-row"><span>💦</span><span>3回つづけてミスするとゲーム終了です。</span></div>
+                    <div id="air-reward-rule" class="rule-row" style="display:none;"><span>🏆</span><span><b>8投以内</b>のクリアは60pt、9投以上は30pt。ミスで終了すると15ptです。</span></div>
+                </div>
+                <button id="start-button" class="primary-btn">ゲームスタート</button><br>
+                <a class="home-link" href="index.html">🏠 ホームへもどる</a>
+            </div>
+        </section>
+
+        <section id="rules-screen" class="overlay" hidden>
+            <div class="panel">
+                <h2>あそびかた</h2>
+                <div class="rules">
+                    <div class="rule-row"><span>🪵</span><span id="detail-throw-rule">コートの<b>どこからでも</b>、投げたい方向と反対へひっぱって、はなします。</span></div>
+                    <div class="rule-row"><span>1️⃣</span><span>ピンが1本だけなら、ピンの数字が得点です。</span></div>
+                    <div class="rule-row"><span>🔢</span><span>複数なら数字の合計ではなく、<b>倒れた本数</b>が得点です。</span></div>
+                    <div class="rule-row"><span>📍</span><span>倒れたピンはその場所で立つので、少しずつ広がります。</span></div>
+                    <div class="rule-row"><span>↩️</span><span>50点をこえると、得点は25点にもどります。</span></div>
+                </div>
+                <button id="close-rules-button" class="secondary-btn">ゲームにもどる</button>
+            </div>
+        </section>
+
+        <section id="result-screen" class="overlay" hidden>
+            <div class="panel">
+                <h2 id="result-title">ゲーム終了</h2>
+                <div id="result-icon" class="logo-stick">🪵</div>
+                <div id="result-detail"></div>
+                <button id="retry-button" class="primary-btn">もういっかい</button><br>
+                <a class="home-link" href="index.html">🏠 ホームへもどる</a>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        (() => {
+            'use strict';
+
+            const gameArea = document.getElementById('game-area');
+            const scoreEl = document.getElementById('score');
+            const remainingEl = document.getElementById('remaining');
+            const missesEl = document.getElementById('misses');
+            const hintEl = document.getElementById('hint');
+            const messageEl = document.getElementById('message');
+            const historyEl = document.getElementById('history');
+            const startScreen = document.getElementById('start-screen');
+            const resultScreen = document.getElementById('result-screen');
+            const rulesScreen = document.getElementById('rules-screen');
+
+            if (!window.Matter) {
+                document.getElementById('start-button').addEventListener('click', () => {
+                    alert('ゲームの読み込みに失敗しました。インターネット接続を確認して、もう一度開いてください。');
+                });
+                return;
+            }
+
+            const { Engine, Render, Runner, Bodies, Body, Composite, Events, Sleeping } = window.Matter;
+
+            const PIN_VALUES = [1, 2, 3, 10, 4, 5, 11, 12, 6, 7, 9, 8];
+            const ROWS = [[1, 2], [3, 10, 4], [5, 11, 12, 6], [7, 9, 8]];
+            const MAX_PULL = 135;
+            const PIN_RADIUS = 17;
+            const DIRECT_FALL_IMPACT = 2.4;
+            const CHAIN_FALL_IMPACT = 1.85;
+            const FALL_ANIMATION_MS = 360;
+
+            let engine = null;
+            let render = null;
+            let runner = null;
+            let walls = [];
+            let pins = [];
+            let thrower = null;
+            let width = 0;
+            let height = 0;
+            let playing = false;
+            let throwActive = false;
+            let aiming = false;
+            let aimStart = null;
+            let aimNow = null;
+            let thrownAt = 0;
+            let settledFrames = 0;
+            let turnTimer = null;
+            let score = 0;
+            let missStreak = 0;
+            let throwCount = 0;
+            let history = [];
+            let messageTimer = null;
+            let soundOn = true;
+            let audioContext = null;
+            let rewardShown = false;
+            let airFlight = null;
+
+            setupGameLabels();
+
+            function setupGameLabels() {
+                document.getElementById('game-subtitle').textContent = '着地点をねらって ぴったり50点！';
+                document.getElementById('detail-throw-rule').innerHTML = 'どこからでも引っぱれます。矢印の先にある<b>着地点</b>をピンへ合わせて、はなします。';
+                document.getElementById('air-reward-rule').style.display = 'grid';
+                hintEl.textContent = '矢印の先を 着地点にあわせよう！';
+            }
+
+            function initPhysics() {
+                width = gameArea.clientWidth;
+                height = gameArea.clientHeight;
+                engine = Engine.create({ enableSleeping: true });
+                engine.world.gravity.x = 0;
+                engine.world.gravity.y = 0;
+
+                render = Render.create({
+                    element: gameArea,
+                    engine,
+                    options: {
+                        width,
+                        height,
+                        wireframes: false,
+                        background: 'transparent',
+                        pixelRatio: Math.min(window.devicePixelRatio || 1, 2)
+                    }
+                });
+                render.canvas.setAttribute('aria-hidden', 'true');
+
+                runner = Runner.create();
+                createWalls();
+                bindPhysicsEvents();
+                Render.run(render);
+                Runner.run(runner, engine);
+            }
+
+            function createWalls() {
+                walls.forEach(w => Composite.remove(engine.world, w));
+                const thick = 50;
+                const wallOptions = { isStatic: true, label: 'wall', render: { visible: false }, restitution: 0.25 };
+                walls = [
+                    Bodies.rectangle(width / 2, -thick / 2, width + thick * 2, thick, wallOptions),
+                    Bodies.rectangle(width / 2, height + thick / 2, width + thick * 2, thick, wallOptions),
+                    Bodies.rectangle(-thick / 2, height / 2, thick, height + thick * 2, wallOptions),
+                    Bodies.rectangle(width + thick / 2, height / 2, thick, height + thick * 2, wallOptions)
+                ];
+                Composite.add(engine.world, walls);
+            }
+
+            function initialPinPositions() {
+                const positions = new Map();
+                const centerX = width / 2;
+                const startY = Math.max(100, Math.min(height * .22, 155));
+                const gapX = Math.min(41, width / 12);
+                const gapY = 37;
+
+                ROWS.forEach((row, rowIndex) => {
+                    const rowWidth = (row.length - 1) * gapX;
+                    row.forEach((value, columnIndex) => {
+                        positions.set(value, {
+                            x: centerX - rowWidth / 2 + columnIndex * gapX,
+                            // ROWSは投球地点に近い列から定義しているため、画面では下側へ配置する。
+                            y: startY + (ROWS.length - 1 - rowIndex) * gapY
+                        });
+                    });
+                });
+                return positions;
+            }
+
+            function createPins() {
+                const positions = initialPinPositions();
+                pins = PIN_VALUES.map(value => {
+                    const pos = positions.get(value);
+                    const pin = Bodies.circle(pos.x, pos.y, PIN_RADIUS, {
+                        label: 'pin',
+                        restitution: 0.18,
+                        friction: 0.12,
+                        frictionAir: 0.105,
+                        density: 0.024,
+                        sleepThreshold: 28,
+                        render: { visible: false }
+                    });
+                    pin.pinValue = value;
+                    pin.roundOrigin = { x: pos.x, y: pos.y };
+                    pin.maxRoundSpeed = 0;
+                    pin.wasStruck = false;
+                    pin.isFalling = false;
+                    pin.isDown = false;
+                    pin.fallProgress = 0;
+                    pin.fallDirection = { x: 0, y: -1 };
+                    pin.wobble = 0;
+                    return pin;
+                });
+                Composite.add(engine.world, pins);
+            }
+
+            function createThrower() {
+                if (thrower) Composite.remove(engine.world, thrower);
+                standPins();
+                airFlight = null;
+                const y = height - 70;
+                thrower = Bodies.rectangle(width / 2, y, 18, 58, {
+                    label: 'thrower',
+                    restitution: 0.08,
+                    friction: 0.06,
+                    frictionAir: 0.085,
+                    density: 0.12,
+                    chamfer: { radius: 8 },
+                    render: { visible: false }
+                });
+                Body.setAngle(thrower, -0.08);
+                Composite.add(engine.world, thrower);
+                hintEl.textContent = '矢印の先を 着地点にあわせよう！';
+                hintEl.style.display = '';
+            }
+
+            function bindPhysicsEvents() {
+                Events.on(engine, 'collisionStart', event => {
+                    if (!throwActive) return;
+                    event.pairs.forEach(pair => {
+                        if (pair.bodyA.label === 'pin') registerPinImpact(pair.bodyA, pair.bodyB);
+                        if (pair.bodyB.label === 'pin') registerPinImpact(pair.bodyB, pair.bodyA);
+                    });
+                });
+
+                Events.on(engine, 'afterUpdate', () => {
+                    if (!playing || !throwActive) return;
+                    const frameMs = engine.timing.lastDelta || 16.67;
+                    updateAirFlight(frameMs);
+                    pins.forEach(pin => {
+                        pin.maxRoundSpeed = Math.max(pin.maxRoundSpeed, pin.speed);
+                        pin.wobble *= .91;
+                        if (pin.isFalling) {
+                            pin.fallProgress = Math.min(1, pin.fallProgress + frameMs / FALL_ANIMATION_MS);
+                            if (pin.fallProgress >= 1) {
+                                pin.isFalling = false;
+                                pin.isDown = true;
+                            }
+                        }
+                    });
+
+                    const elapsed = performance.now() - thrownAt;
+                    const movingBodies = [thrower, ...pins].filter(Boolean);
+                    const allSlow = movingBodies.every(body => body.speed < .19 && body.angularSpeed < .15);
+                    const allFallsFinished = pins.every(pin => !pin.isFalling);
+                    const flightFinished = !airFlight || airFlight.landed;
+                    settledFrames = allSlow && allFallsFinished && flightFinished ? settledFrames + 1 : 0;
+
+                    if ((elapsed > 650 && settledFrames > 24) || elapsed > 5200) {
+                        finishThrow();
+                    }
+                });
+
+                Events.on(render, 'beforeRender', drawCourt);
+                Events.on(render, 'afterRender', drawGamePieces);
+            }
+
+            function updateAirFlight(frameMs) {
+                if (!airFlight || airFlight.landed || !thrower) return;
+
+                airFlight.elapsed += frameMs;
+                const progress = Math.min(1, airFlight.elapsed / airFlight.duration);
+                const eased = progress * progress * (3 - 2 * progress);
+                const groundX = airFlight.start.x + (airFlight.target.x - airFlight.start.x) * eased;
+                const groundY = airFlight.start.y + (airFlight.target.y - airFlight.start.y) * eased;
+                airFlight.height = Math.sin(progress * Math.PI) * Math.min(105, height * .16);
+                airFlight.progress = progress;
+                Body.setPosition(thrower, { x: groundX, y: groundY });
+                Body.setAngle(thrower, airFlight.startAngle + progress * Math.PI * 2.15);
+
+                if (progress < 1) return;
+
+                airFlight.height = 0;
+                airFlight.landed = true;
+                Body.setStatic(thrower, false);
+                thrower.collisionFilter.mask = 0xFFFF;
+                Sleeping.set(thrower, false);
+                Body.setVelocity(thrower, {
+                    x: airFlight.direction.x * airFlight.landingSpeed,
+                    y: airFlight.direction.y * airFlight.landingSpeed
+                });
+                Body.setAngularVelocity(thrower, .16);
+                playTone(145, .09, 'square', .04);
+            }
+
+            function registerPinImpact(pin, other) {
+                if (!other || other.label === 'wall' || pin.isDown) return;
+
+                const relativeX = other.velocity.x - pin.velocity.x;
+                const relativeY = other.velocity.y - pin.velocity.y;
+                const impact = Math.max(Math.hypot(relativeX, relativeY), other.speed || 0);
+                if (impact < .45) return;
+
+                pin.wasStruck = true;
+                const chainIsAlreadyFalling = other.label === 'pin' && (other.isFalling || other.isDown);
+                const threshold = other.label === 'thrower'
+                    ? DIRECT_FALL_IMPACT
+                    : chainIsAlreadyFalling ? 1.3 : CHAIN_FALL_IMPACT;
+
+                pin.wobble = Math.max(pin.wobble, Math.min(1, impact / threshold));
+                if (pin.isFalling || impact < threshold) return;
+
+                let directionX = pin.position.x - other.position.x;
+                let directionY = pin.position.y - other.position.y;
+                let directionLength = Math.hypot(directionX, directionY);
+                if (directionLength < .01) {
+                    directionX = relativeX;
+                    directionY = relativeY;
+                    directionLength = Math.hypot(directionX, directionY) || 1;
+                }
+
+                pin.fallDirection = {
+                    x: directionX / directionLength,
+                    y: directionY / directionLength
+                };
+                pin.fallProgress = .01;
+                pin.isFalling = true;
+                playTone(105 + Math.random() * 45, .055, 'square', .03);
+            }
+
+            function standPins() {
+                pins.forEach(pin => {
+                    pin.isFalling = false;
+                    pin.isDown = false;
+                    pin.fallProgress = 0;
+                    pin.wobble = 0;
+                    pin.wasStruck = false;
+                    pin.roundOrigin = { x: pin.position.x, y: pin.position.y };
+                });
+            }
+
+            function drawCourt() {
+                const ctx = render.context;
+                ctx.save();
+                ctx.clearRect(0, 0, width, height);
+
+                const gradient = ctx.createLinearGradient(0, 0, 0, height);
+                gradient.addColorStop(0, '#78a960');
+                gradient.addColorStop(1, '#4f7e42');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, width, height);
+
+                ctx.globalAlpha = .12;
+                ctx.strokeStyle = '#e8f3d9';
+                ctx.lineWidth = 1;
+                for (let y = 20; y < height; y += 34) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(width, y + 11);
+                    ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+
+                const lineY = height - 125;
+                ctx.fillStyle = 'rgba(53, 83, 43, .42)';
+                ctx.fillRect(0, lineY, width, height - lineY);
+                ctx.setLineDash([10, 8]);
+                ctx.strokeStyle = 'rgba(255,255,255,.82)';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(20, lineY);
+                ctx.lineTo(width - 20, lineY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.font = "bold 11px 'Yu Gothic', sans-serif";
+                ctx.fillStyle = 'rgba(255,255,255,.86)';
+                ctx.textAlign = 'left';
+                ctx.fillText('なげるライン', 24, lineY + 18);
+                ctx.restore();
+            }
+
+            function drawGamePieces() {
+                const ctx = render.context;
+                // 奥のピンから描くことで、手前のピンが自然に重なる。
+                [...pins].sort((a, b) => a.position.y - b.position.y).forEach(drawPin);
+                if (thrower) drawThrower(ctx, thrower);
+                if (aiming && thrower && aimStart && aimNow) drawAim(ctx);
+            }
+
+            function drawPin(pin) {
+                const ctx = render.context;
+                const { x, y } = pin.position;
+                const rawProgress = Math.max(0, Math.min(1, pin.fallProgress || 0));
+                const progress = rawProgress * rawProgress * (3 - 2 * rawProgress);
+                const direction = pin.fallDirection || { x: 0, y: -1 };
+                const wobble = pin.isFalling || pin.isDown
+                    ? 0
+                    : Math.sin(engine.timing.timestamp * .035 + pin.pinValue) * pin.wobble * 4;
+                const topX = direction.x * 36 * progress + wobble * (1 - progress);
+                const topY = -34 * (1 - progress) + direction.y * 36 * progress;
+                const bodyAngle = Math.atan2(topY, topX);
+                const textAngle = bodyAngle + Math.PI / 2;
+                const middleX = topX * .48;
+                const middleY = topY * .48;
+
+                ctx.save();
+                ctx.translate(x, y);
+
+                // 地面に落ちる影。倒れるほど長く、濃くなる。
+                ctx.strokeStyle = `rgba(36, 42, 25, ${.2 + progress * .16})`;
+                ctx.lineWidth = 22;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(4, 7);
+                ctx.lineTo(topX + 5, topY + 8);
+                ctx.stroke();
+
+                // 木の側面を太い線で描き、立った円柱から横倒しの丸太へ連続変形させる。
+                ctx.strokeStyle = '#724522';
+                ctx.lineWidth = 28;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(topX, topY);
+                ctx.stroke();
+
+                const wood = ctx.createLinearGradient(-14, 0, 14, 0);
+                wood.addColorStop(0, '#9c6332');
+                wood.addColorStop(.24, '#e0ad62');
+                wood.addColorStop(.52, '#f0c77e');
+                wood.addColorStop(.8, '#b9783c');
+                wood.addColorStop(1, '#754625');
+                ctx.strokeStyle = wood;
+                ctx.lineWidth = 23;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(topX, topY);
+                ctx.stroke();
+
+                // 上面の年輪が見えることで高さを表現する。
+                ctx.save();
+                ctx.translate(topX, topY);
+                ctx.rotate(textAngle);
+                ctx.fillStyle = '#f3cd86';
+                ctx.strokeStyle = pin.isFalling || pin.isDown ? '#6c4022' : '#8a572d';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 11.5, 5.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.strokeStyle = 'rgba(119,71,33,.34)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 7, 3, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+
+                // 数字はピンの側面に置き、倒れる方向に合わせて回転する。
+                ctx.save();
+                ctx.translate(middleX, middleY);
+                ctx.rotate(textAngle);
+                ctx.fillStyle = '#49301f';
+                ctx.font = `900 ${pin.pinValue >= 10 ? 13 : 15}px 'Yu Gothic', sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.strokeStyle = 'rgba(255,235,180,.5)';
+                ctx.lineWidth = 2.5;
+                ctx.strokeText(String(pin.pinValue), 0, 1);
+                ctx.fillText(String(pin.pinValue), 0, 1);
+                ctx.restore();
+
+                if (pin.wasStruck && !pin.isFalling && !pin.isDown && pin.wobble > .12) {
+                    ctx.strokeStyle = 'rgba(255,241,118,.8)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(0, -11, 19 + pin.wobble * 3, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+
+            function drawThrower(ctx, body) {
+                const flightHeight = airFlight && !airFlight.landed ? airFlight.height : 0;
+                const flightScale = 1 + flightHeight / 280;
+                ctx.save();
+                ctx.translate(body.position.x, body.position.y + 7);
+                ctx.rotate(body.angle);
+                ctx.globalAlpha = .28 - Math.min(.17, flightHeight / 700);
+                ctx.fillStyle = '#1e2418';
+                roundRect(ctx, -7 * flightScale, -25 * flightScale, 20 * flightScale, 58 * flightScale, 7);
+                ctx.fill();
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(body.position.x, body.position.y - flightHeight);
+                ctx.rotate(body.angle);
+                ctx.scale(flightScale, flightScale);
+
+                const wood = ctx.createLinearGradient(-9, 0, 9, 0);
+                wood.addColorStop(0, '#8a572f');
+                wood.addColorStop(.35, '#e1ae65');
+                wood.addColorStop(.65, '#bc7a3f');
+                wood.addColorStop(1, '#714526');
+                ctx.fillStyle = wood;
+                ctx.strokeStyle = '#5b351f';
+                ctx.lineWidth = 2;
+                roundRect(ctx, -9, -29, 18, 58, 7);
+                ctx.fill();
+                ctx.stroke();
+                ctx.strokeStyle = 'rgba(255,235,180,.5)';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(-3, -21);
+                ctx.lineTo(-3, 21);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            function roundRect(ctx, x, y, w, h, r) {
+                ctx.beginPath();
+                ctx.roundRect(x, y, w, h, r);
+            }
+
+            function drawAim(ctx) {
+                let dx = aimNow.x - aimStart.x;
+                let dy = aimNow.y - aimStart.y;
+                const length = Math.hypot(dx, dy);
+                if (length < 5) return;
+                drawAirAim(ctx, dx, dy, length);
+            }
+
+            function calculateAirShot(dx, dy, length = Math.hypot(dx, dy)) {
+                const safeLength = Math.max(.001, length);
+                const direction = { x: -dx / safeLength, y: -dy / safeLength };
+                const power = Math.min(1, safeLength / MAX_PULL);
+                const minimumDistance = Math.min(155, height * .27);
+                const maximumDistance = Math.min(540, height - 165);
+                const distance = minimumDistance + (maximumDistance - minimumDistance) * power;
+                const target = {
+                    x: Math.max(28, Math.min(width - 28, thrower.position.x + direction.x * distance)),
+                    y: Math.max(58, Math.min(height - 145, thrower.position.y + direction.y * distance))
+                };
+                return {
+                    direction,
+                    power,
+                    target,
+                    landingSpeed: 3.8 + power * 3.2
+                };
+            }
+
+            function drawAirAim(ctx, dx, dy, length) {
+                const shot = calculateAirShot(dx, dy, length);
+                const startX = thrower.position.x;
+                const startY = thrower.position.y;
+                const controlX = (startX + shot.target.x) / 2;
+                const controlY = (startY + shot.target.y) / 2 - 58;
+
+                ctx.save();
+                ctx.setLineDash([8, 7]);
+                ctx.strokeStyle = `rgba(255, ${Math.round(235 - shot.power * 120)}, 55, .94)`;
+                ctx.lineWidth = 3 + shot.power * 2;
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.quadraticCurveTo(controlX, controlY, shot.target.x, shot.target.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = 'rgba(255, 241, 118, .2)';
+                ctx.strokeStyle = '#fff176';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.ellipse(shot.target.x, shot.target.y, 25, 13, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(shot.target.x, shot.target.y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff176';
+                ctx.fill();
+                ctx.font = "900 11px 'Yu Gothic', sans-serif";
+                ctx.textAlign = 'center';
+                ctx.fillStyle = 'white';
+                ctx.strokeStyle = 'rgba(52,75,42,.75)';
+                ctx.lineWidth = 3;
+                ctx.strokeText('着地', shot.target.x, shot.target.y - 18);
+                ctx.fillText('着地', shot.target.x, shot.target.y - 18);
+                ctx.restore();
+            }
+
+            function pointerPosition(event) {
+                const rect = render.canvas.getBoundingClientRect();
+                return {
+                    x: (event.clientX - rect.left) * (width / rect.width),
+                    y: (event.clientY - rect.top) * (height / rect.height)
+                };
+            }
+
+            gameArea.addEventListener('pointerdown', event => {
+                if (!playing || throwActive || !thrower || !rulesScreen.hidden || event.target.closest('button')) return;
+                const pos = pointerPosition(event);
+                event.preventDefault();
+                aiming = true;
+                // モンスト方式：触った場所に関係なく、そこからのドラッグ量と方向だけを使う。
+                aimStart = pos;
+                aimNow = { ...pos };
+                try {
+                    gameArea.setPointerCapture?.(event.pointerId);
+                } catch (error) {
+                    // 一部ブラウザーでは親要素によるポインター取得に対応していない。
+                    // window の pointerup でも投球を確定するため、そのまま続行する。
+                }
+                unlockAudio();
+            });
+
+            gameArea.addEventListener('pointermove', event => {
+                if (!aiming) return;
+                event.preventDefault();
+                aimNow = pointerPosition(event);
+            });
+
+            function releasePointer(event) {
+                if (!aiming || !thrower) return;
+                aimNow = pointerPosition(event);
+                aiming = false;
+                let dx = aimNow.x - aimStart.x;
+                let dy = aimNow.y - aimStart.y;
+                let distance = Math.hypot(dx, dy);
+                if (distance < 18) return;
+                if (distance > MAX_PULL) {
+                    dx *= MAX_PULL / distance;
+                    dy *= MAX_PULL / distance;
+                    distance = MAX_PULL;
+                }
+
+                pins.forEach(pin => {
+                    pin.roundOrigin = { x: pin.position.x, y: pin.position.y };
+                    pin.maxRoundSpeed = 0;
+                    pin.wasStruck = false;
+                    pin.wobble = 0;
+                    Body.setVelocity(pin, { x: 0, y: 0 });
+                    Body.setAngularVelocity(pin, 0);
+                    Sleeping.set(pin, false);
+                });
+
+                const shot = calculateAirShot(dx, dy, distance);
+                Body.setVelocity(thrower, { x: 0, y: 0 });
+                Body.setAngularVelocity(thrower, 0);
+                Body.setStatic(thrower, true);
+                thrower.collisionFilter.mask = 0;
+                airFlight = {
+                    start: { x: thrower.position.x, y: thrower.position.y },
+                    target: shot.target,
+                    direction: shot.direction,
+                    landingSpeed: shot.landingSpeed,
+                    startAngle: thrower.angle,
+                    duration: 680,
+                    elapsed: 0,
+                    progress: 0,
+                    height: 0,
+                    landed: false
+                };
+                throwActive = true;
+                thrownAt = performance.now();
+                settledFrames = 0;
+                throwCount++;
+                hintEl.style.display = 'none';
+                playTone(175, .08, 'sawtooth', .035);
+            }
+
+            // 引っぱった指がコートの外へ出ても、離した瞬間に確実に投球する。
+            window.addEventListener('pointerup', releasePointer);
+            gameArea.addEventListener('pointercancel', () => { aiming = false; });
+
+            function finishThrow() {
+                if (!throwActive) return;
+                throwActive = false;
+                settledFrames = 0;
+
+                [thrower, ...pins].filter(Boolean).forEach(body => {
+                    Body.setVelocity(body, { x: 0, y: 0 });
+                    Body.setAngularVelocity(body, 0);
+                });
+
+                // 移動距離ではなく、衝撃で最後まで倒れたピンだけを得点にする。
+                const fallen = pins.filter(pin => pin.isDown || pin.fallProgress >= .82);
+
+                const turnScore = fallen.length === 1 ? fallen[0].pinValue : fallen.length;
+                history.push(turnScore);
+
+                if (turnScore === 0) {
+                    missStreak++;
+                    showMessage(`ミス！ あと${3 - missStreak}回`, 'miss', 1250);
+                    playMissSound();
+                } else {
+                    missStreak = 0;
+                    score += turnScore;
+                    const detail = fallen.length === 1
+                        ? `${fallen[0].pinValue}番を ねらいうち！`
+                        : `${fallen.length}本たおした！`;
+                    showMessage(`＋${turnScore}点　${detail}`, 'good', 1450);
+                    playScoreSound(turnScore);
+                }
+
+                let busted = false;
+                if (score > 50) {
+                    score = 25;
+                    busted = true;
+                    showMessage('50点をこえたので 25点にもどります！', 'miss', 1900);
+                    playMissSound();
+                }
+
+                updateUI();
+                addHistoryChip(turnScore);
+
+                // 倒れた地点で立て直す。画面外や投球ライン内には残さない。
+                fallen.forEach(pin => {
+                    const safeX = Math.max(PIN_RADIUS + 5, Math.min(width - PIN_RADIUS - 5, pin.position.x));
+                    const safeY = Math.max(PIN_RADIUS + 8, Math.min(height - 150, pin.position.y));
+                    Body.setPosition(pin, { x: safeX, y: safeY });
+                });
+                pins.forEach(pin => {
+                    pin.roundOrigin = { x: pin.position.x, y: pin.position.y };
+                    pin.maxRoundSpeed = 0;
+                    pin.wasStruck = false;
+                });
+
+                const wait = busted ? 2100 : 1550;
+                clearTimeout(turnTimer);
+                turnTimer = setTimeout(() => {
+                    if (!playing) return;
+                    if (score === 50) {
+                        endGame(true);
+                    } else if (missStreak >= 3) {
+                        endGame(false);
+                    } else {
+                        createThrower();
+                    }
+                }, wait);
+            }
+
+            function updateUI() {
+                scoreEl.textContent = score;
+                remainingEl.textContent = 50 - score;
+                missesEl.innerHTML = [0, 1, 2].map(index => index < missStreak ? '×' : '○').join(' ');
+                missesEl.style.color = missStreak ? '#ffb4a8' : 'white';
+                missesEl.setAttribute('aria-label', `連続ミス${missStreak}回`);
+            }
+
+            function addHistoryChip(value) {
+                document.getElementById('history-empty')?.remove();
+                const chip = document.createElement('span');
+                chip.className = `history-chip${value === 0 ? ' zero' : ''}`;
+                chip.textContent = value === 0 ? 'ミス' : `+${value}`;
+                historyEl.appendChild(chip);
+                historyEl.scrollLeft = historyEl.scrollWidth;
+            }
+
+            function resetHistory() {
+                historyEl.querySelectorAll('.history-chip').forEach(el => el.remove());
+                if (!document.getElementById('history-empty')) {
+                    const empty = document.createElement('span');
+                    empty.id = 'history-empty';
+                    empty.className = 'history-title';
+                    empty.textContent = 'まだありません';
+                    historyEl.appendChild(empty);
+                }
+            }
+
+            function showMessage(text, type = '', duration = 1400) {
+                clearTimeout(messageTimer);
+                messageEl.textContent = text;
+                messageEl.className = `show ${type}`;
+                messageTimer = setTimeout(() => { messageEl.className = ''; }, duration);
+            }
+
+            function startGame() {
+                if (!window.Matter) {
+                    alert('ゲームの読み込みに失敗しました。インターネット接続を確認して、もう一度開いてください。');
+                    return;
+                }
+                unlockAudio();
+                clearTimeout(turnTimer);
+                clearTimeout(messageTimer);
+
+                if (!engine) initPhysics();
+                Composite.clear(engine.world, false, true);
+                createWalls();
+                createPins();
+
+                score = 0;
+                missStreak = 0;
+                throwCount = 0;
+                history = [];
+                rewardShown = false;
+                playing = true;
+                throwActive = false;
+                aiming = false;
+                messageEl.className = '';
+                resetHistory();
+                updateUI();
+                createThrower();
+                startScreen.hidden = true;
+                resultScreen.hidden = true;
+                rulesScreen.hidden = true;
+                showMessage('50点ぴったりを めざそう！', 'good', 1300);
+            }
+
+            function endGame(clear) {
+                playing = false;
+                throwActive = false;
+                aiming = false;
+                hintEl.style.display = 'none';
+
+                const earnedPoints = clear ? (throwCount <= 8 ? 60 : 30) : 15;
+                const rewardLine = `<br>獲得ポイント：<strong>${earnedPoints}pt</strong>`;
+
+                document.getElementById('result-title').textContent = clear ? '🎉 50点ぴったり！' : 'ゲーム終了';
+                document.getElementById('result-icon').textContent = clear ? '🏆' : '🌲';
+                document.getElementById('result-detail').innerHTML = clear
+                    ? `<strong>${throwCount}投</strong>でクリア！<br>ねらいどおりの ナイスモルック！${rewardLine}`
+                    : `3回つづけてミスしました。<br>今回の得点は <strong>${score}点</strong>！${rewardLine}`;
+                resultScreen.hidden = false;
+                if (clear) playClearSound();
+
+                if (!rewardShown && typeof showPointGetDialog === 'function') {
+                    rewardShown = true;
+                    setTimeout(() => showPointGetDialog(earnedPoints, 'molkky'), 450);
+                }
+            }
+
+            function unlockAudio() {
+                if (!soundOn) return;
+                if (!audioContext) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) audioContext = new AudioCtx();
+                }
+                if (audioContext?.state === 'suspended') audioContext.resume();
+            }
+
+            function playTone(frequency, duration, type = 'sine', volume = .03, delay = 0) {
+                if (!soundOn || !audioContext) return;
+                const start = audioContext.currentTime + delay;
+                const oscillator = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                oscillator.type = type;
+                oscillator.frequency.setValueAtTime(frequency, start);
+                gain.gain.setValueAtTime(volume, start);
+                gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
+                oscillator.connect(gain).connect(audioContext.destination);
+                oscillator.start(start);
+                oscillator.stop(start + duration);
+            }
+
+            function playScoreSound(value) {
+                playTone(330, .12, 'sine', .035);
+                playTone(440 + Math.min(value, 12) * 12, .16, 'sine', .035, .08);
+            }
+
+            function playMissSound() {
+                playTone(180, .14, 'triangle', .035);
+                playTone(120, .2, 'triangle', .03, .1);
+            }
+
+            function playClearSound() {
+                [523, 659, 784, 1047].forEach((note, index) => playTone(note, .28, 'sine', .045, index * .12));
+            }
+
+            document.getElementById('start-button').addEventListener('click', startGame);
+            document.getElementById('retry-button').addEventListener('click', startGame);
+            document.getElementById('rules-button').addEventListener('click', () => {
+                if (throwActive) return;
+                rulesScreen.hidden = false;
+            });
+            document.getElementById('close-rules-button').addEventListener('click', () => {
+                rulesScreen.hidden = true;
+            });
+            document.getElementById('sound-button').addEventListener('click', event => {
+                soundOn = !soundOn;
+                event.currentTarget.textContent = soundOn ? '♪' : '×';
+                event.currentTarget.setAttribute('aria-label', soundOn ? '音を切る' : '音を出す');
+                if (soundOn) {
+                    unlockAudio();
+                    playTone(440, .09, 'sine', .03);
+                }
+            });
+        })();
+    </script>
+</body>
+
+</html>
