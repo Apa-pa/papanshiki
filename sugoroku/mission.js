@@ -11,6 +11,7 @@ const MISSION_POOL = [
     { id: 'labo2',              name: 'かんかくのラボ',               type: 'game',   emoji: '🧠', url: '../performance_labo/labo2.html' },
     { id: 'kanji_card_battle',  name: 'かんじカードバトル',           type: 'game',   emoji: '🃏', url: '../kanji_card_battle.html' },
     { id: 'math_strike',        name: 'けいさんビリヤード',           type: 'game',   emoji: '🎱', url: '../math_strike.html' },
+    { id: 'math_molkky',        name: 'ひきざんモルック',             type: 'game',   emoji: '🪵', url: '../math_molkky.html' },
     { id: 'passcode',           name: 'パスコードをあてよう！',       type: 'game',   emoji: '🔐', url: '../passcode.html' },
     { id: 'rail',               name: 'つなげて！トロッコ',           type: 'game',   emoji: '🚂', url: '../rail.html' },
     { id: 'rhythm',             name: 'アンのリズムきょうしつ',       type: 'game',   emoji: '🎵', url: '../rhythm.html' },

@@ -1,5 +1,5 @@
 // キャッシュの名前（更新時にバージョンを変えると新しいキャッシュが作られます）
-var CACHE_NAME = 'papanshiki-v36';
+var CACHE_NAME = 'papanshiki-v38';
 var urlsToCache = [
   // === トップページ ===
   './',
@@ -43,6 +43,7 @@ var urlsToCache = [
   // === 算数・数学系 ===
   './unit_runner.html',
   './math_strike.html',
+  './math_molkky.html',
   './sansuu.html',
   './sansuu_bunsu.html',
   './math.html',
