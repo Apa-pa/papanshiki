@@ -272,7 +272,7 @@ function showResult() {
     const scoreSnapshot = { ...measurementState.scores };
 
     if (typeof showPointGetDialog === 'function') {
-        showPointGetDialog(pt, (selectedUserName) => {
+        showPointGetDialog(pt, 'labo', (selectedUserName) => {
             // ユーザー選択後に記録を保存
             if (selectedUserName) {
                 saveLaboRecord(selectedUserName, scoreSnapshot);

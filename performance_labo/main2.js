@@ -244,7 +244,7 @@ function showResult() {
     const scoreSnapshot = { ...measurementState.scores };
 
     if (typeof showPointGetDialog === 'function') {
-        showPointGetDialog(pt, (selectedUserName) => {
+        showPointGetDialog(pt, 'labo2', (selectedUserName) => {
             if (selectedUserName) {
                 saveLaboRecord(selectedUserName, scoreSnapshot);
                 // ミッション達成記録（ラボ2をクリア）

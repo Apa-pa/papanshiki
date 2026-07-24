@@ -6,7 +6,7 @@
 // ================================================================
 const MISSION_POOL = [
     // ゲームクリア系ミッション
-    { id: 'labo',               name: 'スポーツのうりょくラボ',       type: 'game',   emoji: '🏃', url: '../learning_labo/labo.html' },
+    { id: 'labo',               name: 'スポーツのうりょくラボ',       type: 'game',   emoji: '🏃', url: '../performance_labo/labo.html' },
     { id: 'learning_labo_play', name: 'がくしゅうスターラボをプレイ', type: 'game',   emoji: '⭐', url: '../learning_labo/labo.html' },
     { id: 'labo2',              name: 'かんかくのラボ',               type: 'game',   emoji: '🧠', url: '../performance_labo/labo2.html' },
     { id: 'kanji_card_battle',  name: 'かんじカードバトル',           type: 'game',   emoji: '🃏', url: '../kanji_card_battle.html' },
