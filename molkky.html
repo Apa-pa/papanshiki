@@ -380,6 +380,8 @@
             const PIN_VALUES = [1, 2, 3, 10, 4, 5, 11, 12, 6, 7, 9, 8];
             const ROWS = [[1, 2], [3, 10, 4], [5, 11, 12, 6], [7, 9, 8]];
             const MAX_PULL = 135;
+            const STRIKE_CYCLE_MS = 1400;
+            const MAX_STRIKE_MULTIPLIER = 1.85;
             const PIN_RADIUS = 17;
             const DIRECT_FALL_IMPACT = 2.4;
             const CHAIN_FALL_IMPACT = 1.85;
@@ -398,6 +400,7 @@
             let aiming = false;
             let aimStart = null;
             let aimNow = null;
+            let aimStartedAt = 0;
             let thrownAt = 0;
             let settledFrames = 0;
             let turnTimer = null;
@@ -415,9 +418,9 @@
 
             function setupGameLabels() {
                 document.getElementById('game-subtitle').textContent = '着地点をねらって ぴったり50点！';
-                document.getElementById('detail-throw-rule').innerHTML = 'どこからでも引っぱれます。矢印の先にある<b>着地点</b>をピンへ合わせて、はなします。';
+                document.getElementById('detail-throw-rule').innerHTML = 'どこからでも引っぱれます。矢印の先を<b>着地点</b>へ合わせ、動く「弾く力」を見て、好きな強さではなします。';
                 document.getElementById('air-reward-rule').style.display = 'grid';
-                hintEl.textContent = '矢印の先を 着地点にあわせよう！';
+                hintEl.textContent = '着地点をあわせて 力を見てはなそう！';
             }
 
             function initPhysics() {
@@ -523,7 +526,7 @@
                 });
                 Body.setAngle(thrower, -0.08);
                 Composite.add(engine.world, thrower);
-                hintEl.textContent = '矢印の先を 着地点にあわせよう！';
+                hintEl.textContent = '着地点をあわせて 力を見てはなそう！';
                 hintEl.style.display = '';
             }
 
@@ -829,6 +832,46 @@
                 const length = Math.hypot(dx, dy);
                 if (length < 5) return;
                 drawAirAim(ctx, dx, dy, length);
+                drawStrikePower(ctx);
+            }
+
+            function getStrikePower(now = performance.now()) {
+                const phase = ((now - aimStartedAt) % STRIKE_CYCLE_MS) / STRIKE_CYCLE_MS;
+                const level = 1 - Math.abs(phase * 2 - 1);
+                return {
+                    level,
+                    multiplier: 1 + level * (MAX_STRIKE_MULTIPLIER - 1)
+                };
+            }
+
+            function drawStrikePower(ctx) {
+                const strike = getStrikePower();
+                const barWidth = Math.min(156, width * .44);
+                const barHeight = 17;
+                const x = (width - barWidth) / 2;
+                const y = height - 148;
+                const fillRatio = .55 + strike.level * .45;
+
+                ctx.save();
+                ctx.fillStyle = 'rgba(35, 45, 27, .84)';
+                roundRect(ctx, x - 9, y - 29, barWidth + 18, 57, 13);
+                ctx.fill();
+                ctx.font = "900 12px 'Yu Gothic', sans-serif";
+                ctx.textAlign = 'center';
+                ctx.fillStyle = 'white';
+                ctx.fillText(`弾く力 ×${strike.multiplier.toFixed(1)}`, width / 2, y - 10);
+                ctx.fillStyle = 'rgba(255,255,255,.2)';
+                roundRect(ctx, x, y, barWidth, barHeight, 8);
+                ctx.fill();
+                const hue = 115 - strike.level * 105;
+                ctx.fillStyle = `hsl(${hue}, 88%, 55%)`;
+                roundRect(ctx, x, y, barWidth * fillRatio, barHeight, 8);
+                ctx.fill();
+                if (strike.level > .88) {
+                    ctx.fillStyle = '#fff59d';
+                    ctx.fillText('いまだ！', width / 2, y + 30);
+                }
+                ctx.restore();
             }
 
             function calculateAirShot(dx, dy, length = Math.hypot(dx, dy)) {
@@ -901,6 +944,7 @@
                 const pos = pointerPosition(event);
                 event.preventDefault();
                 aiming = true;
+                aimStartedAt = performance.now();
                 // モンスト方式：触った場所に関係なく、そこからのドラッグ量と方向だけを使う。
                 aimStart = pos;
                 aimNow = { ...pos };
@@ -922,6 +966,7 @@
             function releasePointer(event) {
                 if (!aiming || !thrower) return;
                 aimNow = pointerPosition(event);
+                const strike = getStrikePower();
                 aiming = false;
                 let dx = aimNow.x - aimStart.x;
                 let dy = aimNow.y - aimStart.y;
@@ -952,7 +997,7 @@
                     start: { x: thrower.position.x, y: thrower.position.y },
                     target: shot.target,
                     direction: shot.direction,
-                    landingSpeed: shot.landingSpeed,
+                    landingSpeed: shot.landingSpeed * strike.multiplier,
                     startAngle: thrower.angle,
                     duration: 680,
                     elapsed: 0,

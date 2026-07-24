@@ -286,7 +286,7 @@
                 <div class="logo" aria-hidden="true">🪵➖</div>
                 <p class="subtitle">棒の数字を 目標ぴったりにしよう！</p>
                 <div class="rules">
-                    <div class="rule"><span>🎯</span><span>矢印の先にある「着地点」をピンへ合わせて投げます。</span></div>
+                    <div class="rule"><span>🎯</span><span>矢印の先を「着地点」へ合わせ、動く「弾く力」を見て、好きな強さではなします。</span></div>
                     <div class="rule"><span>1️⃣</span><span>1本だけ倒すと、そのピンの数字を引きます。</span></div>
                     <div class="rule"><span>🔢</span><span>複数本なら、倒れた本数を引きます。</span></div>
                     <div class="rule"><span>↩️</span><span>目標より小さくなる投球はバースト。数字は元に戻ります。</span></div>
@@ -334,6 +334,8 @@
             const MAX_STAGES = 10;
             const MAX_SHOTS = 5;
             const MAX_PULL = 135;
+            const STRIKE_CYCLE_MS = 1400;
+            const MAX_STRIKE_MULTIPLIER = 1.85;
             const PIN_RADIUS = 17;
             const DIRECT_FALL_IMPACT = 2.4;
             const CHAIN_FALL_IMPACT = 1.85;
@@ -354,6 +356,7 @@
             let aiming = false;
             let aimStart = null;
             let aimNow = null;
+            let aimStartedAt = 0;
             let airFlight = null;
             let thrownAt = 0;
             let settledFrames = 0;
@@ -902,6 +905,46 @@
                 ctx.strokeText('着地', shot.target.x, shot.target.y - 18);
                 ctx.fillText('着地', shot.target.x, shot.target.y - 18);
                 ctx.restore();
+                drawStrikePower(ctx);
+            }
+
+            function getStrikePower(now = performance.now()) {
+                const phase = ((now - aimStartedAt) % STRIKE_CYCLE_MS) / STRIKE_CYCLE_MS;
+                const level = 1 - Math.abs(phase * 2 - 1);
+                return {
+                    level,
+                    multiplier: 1 + level * (MAX_STRIKE_MULTIPLIER - 1)
+                };
+            }
+
+            function drawStrikePower(ctx) {
+                const strike = getStrikePower();
+                const barWidth = Math.min(156, width * .44);
+                const barHeight = 17;
+                const x = (width - barWidth) / 2;
+                const y = height - 148;
+                const fillRatio = .55 + strike.level * .45;
+
+                ctx.save();
+                ctx.fillStyle = 'rgba(35,45,27,.84)';
+                roundedRect(ctx, x - 9, y - 29, barWidth + 18, 57, 13);
+                ctx.fill();
+                ctx.font = "900 12px 'Yu Gothic', sans-serif";
+                ctx.textAlign = 'center';
+                ctx.fillStyle = 'white';
+                ctx.fillText(`弾く力 ×${strike.multiplier.toFixed(1)}`, width / 2, y - 10);
+                ctx.fillStyle = 'rgba(255,255,255,.2)';
+                roundedRect(ctx, x, y, barWidth, barHeight, 8);
+                ctx.fill();
+                const hue = 115 - strike.level * 105;
+                ctx.fillStyle = `hsl(${hue},88%,55%)`;
+                roundedRect(ctx, x, y, barWidth * fillRatio, barHeight, 8);
+                ctx.fill();
+                if (strike.level > .88) {
+                    ctx.fillStyle = '#fff59d';
+                    ctx.fillText('いまだ！', width / 2, y + 30);
+                }
+                ctx.restore();
             }
 
             function pointerPosition(event) {
@@ -917,6 +960,7 @@
                 event.preventDefault();
                 const position = pointerPosition(event);
                 aiming = true;
+                aimStartedAt = performance.now();
                 aimStart = position;
                 aimNow = { ...position };
                 try { gameArea.setPointerCapture?.(event.pointerId); } catch (error) {}
@@ -931,6 +975,7 @@
             function releasePointer(event) {
                 if (!aiming || !thrower) return;
                 aimNow = pointerPosition(event);
+                const strike = getStrikePower();
                 aiming = false;
                 let dx = aimNow.x - aimStart.x;
                 let dy = aimNow.y - aimStart.y;
@@ -965,7 +1010,7 @@
                     start: { x: thrower.position.x, y: thrower.position.y },
                     target: shot.target,
                     direction: shot.direction,
-                    landingSpeed: shot.landingSpeed,
+                    landingSpeed: shot.landingSpeed * strike.multiplier,
                     startAngle: thrower.angle,
                     duration: 680,
                     elapsed: 0,
