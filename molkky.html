@@ -20,6 +20,11 @@
 
         * { box-sizing: border-box; }
 
+        ruby rt {
+            font-size: .58em;
+            font-weight: 700;
+        }
+
         html, body {
             margin: 0;
             width: 100%;
@@ -313,15 +318,15 @@
 
         <section id="start-screen" class="overlay">
             <div class="panel">
-                <h1 id="game-title">森のモルック</h1>
+                <h1 id="game-title"><ruby>森<rt>もり</rt></ruby>のモルック</h1>
                 <div class="logo-stick" aria-hidden="true">🪵</div>
-                <p id="game-subtitle" class="subtitle">ぴったり50点を めざそう！</p>
+                <p id="game-subtitle" class="subtitle">ぴったり50<ruby>点<rt>てん</rt></ruby>を めざそう！</p>
                 <div class="rules">
-                    <div class="rule-row"><span>☝️</span><span><b>1本</b>たおすと、書かれた数字が得点。</span></div>
-                    <div class="rule-row"><span>✌️</span><span><b>2本以上</b>たおすと、たおした本数が得点。</span></div>
-                    <div class="rule-row"><span>🎯</span><span>ちょうど<b>50点</b>でクリア！ こえると25点にもどります。</span></div>
-                    <div class="rule-row"><span>💦</span><span>3回つづけてミスするとゲーム終了です。</span></div>
-                    <div id="air-reward-rule" class="rule-row" style="display:none;"><span>🏆</span><span><b>8投以内</b>のクリアは60pt、9投以上は30pt。ミスで終了すると15ptです。</span></div>
+                    <div class="rule-row"><span>☝️</span><span><b><ruby>1本<rt>いっぽん</rt></ruby></b>たおすと、<ruby>書<rt>か</rt></ruby>かれた<ruby>数字<rt>すうじ</rt></ruby>が<ruby>得点<rt>とくてん</rt></ruby>。</span></div>
+                    <div class="rule-row"><span>✌️</span><span><b><ruby>2本以上<rt>にほんいじょう</rt></ruby></b>たおすと、たおした<ruby>本数<rt>ほんすう</rt></ruby>が<ruby>得点<rt>とくてん</rt></ruby>。</span></div>
+                    <div class="rule-row"><span>🎯</span><span>ちょうど<b>50<ruby>点<rt>てん</rt></ruby></b>でクリア！ こえると25<ruby>点<rt>てん</rt></ruby>にもどります。</span></div>
+                    <div class="rule-row"><span>💦</span><span><ruby>3回<rt>さんかい</rt></ruby>つづけてミスするとゲーム<ruby>終了<rt>しゅうりょう</rt></ruby>です。</span></div>
+                    <div id="air-reward-rule" class="rule-row" style="display:none;"><span>🏆</span><span><b><ruby>8投以内<rt>はっとういない</rt></ruby></b>のクリアは60pt、<ruby>9投以上<rt>きゅうとういじょう</rt></ruby>は30pt。ミスで<ruby>終了<rt>しゅうりょう</rt></ruby>すると15ptです。</span></div>
                 </div>
                 <button id="start-button" class="primary-btn">ゲームスタート</button><br>
                 <a class="home-link" href="index.html">🏠 ホームへもどる</a>
@@ -417,7 +422,7 @@
             setupGameLabels();
 
             function setupGameLabels() {
-                document.getElementById('game-subtitle').textContent = '着地点をねらって ぴったり50点！';
+                document.getElementById('game-subtitle').innerHTML = '<ruby>着地点<rt>ちゃくちてん</rt></ruby>をねらって ぴったり50<ruby>点<rt>てん</rt></ruby>！';
                 document.getElementById('detail-throw-rule').innerHTML = 'どこからでも引っぱれます。矢印の先を<b>着地点</b>へ合わせ、動く「弾く力」を見て、好きな強さではなします。';
                 document.getElementById('air-reward-rule').style.display = 'grid';
                 hintEl.textContent = '着地点をあわせて 力を見てはなそう！';
