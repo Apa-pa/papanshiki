@@ -406,7 +406,22 @@
             'attention_dual_task': 50, // 50点
             'memory_route': 300,        // 300点
             'shopping_mission_brain': 180, // 3分
+            'math_molkky': 40 // 40点
         };
+
+        // ポイント獲得や体験が中心で、タイム・スコアを競う記録ページの対象外
+        const RECORD_EXCLUDED_GAME_IDS = new Set([
+            'job_quiz',
+            'science_lab',
+            'programming_labo',
+            'crane_bar_threading',
+            'molkky'
+        ]);
+
+        function getRecordGames() {
+            return Object.entries(GAME_LIST)
+                .filter(([gameId]) => !RECORD_EXCLUDED_GAME_IDS.has(gameId));
+        }
 
         window.onload = function () {
             if (typeof getUserNames !== 'function') {
@@ -461,7 +476,7 @@
             pointDisplay.innerText = getUserPoints(userName);
 
             // リスト表示
-            for (const [gameId, info] of Object.entries(GAME_LIST)) {
+            for (const [gameId, info] of getRecordGames()) {
                 const recordVal = userRecords[gameId];
                 const goalVal = userGoals[gameId] || '';
 
@@ -534,7 +549,7 @@
             const userGoals = getAllGoals()[userName] || {};
             let isChanged = false;
 
-            for (const [gameId, info] of Object.entries(GAME_LIST)) {
+            for (const [gameId, info] of getRecordGames()) {
                 const record = parseFloat(userRecords[gameId]);
                 const goal = parseFloat(userGoals[gameId]);
                 const hasRecord = !isNaN(record);

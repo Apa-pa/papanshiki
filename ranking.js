@@ -175,6 +175,8 @@ const DAILY_MISSION_CANDIDATES = [
     'rain_vowel', // あめふり母音
     'tsumitsumi', // 漢字つみつみ
     'math_div',   // わりざん
+    'math_molkky', // ひきざんモルック
+    'job_quiz', // おしごとクイズ
 ];
 
 const DAILY_MISSION_KEY = 'papan_daily_mission_v1';
