@@ -416,6 +416,27 @@ button:focus-visible {
 .papan-visual img { position: relative; z-index: 1; width: 100%; aspect-ratio: 1.25; border: 10px solid #fff; border-radius: 48% 42% 44% 40%; box-shadow: 0 22px 45px rgba(63, 107, 123, .18); object-fit: cover; }
 .visual-caption { position: relative; z-index: 2; display: flex; justify-content: center; gap: 25px; margin-top: 24px; color: #44788b; font: 700 .65rem "DM Sans", sans-serif; letter-spacing: .18em; }
 
+.service-kozuque .service-kicker { color: #166963; }
+.kozuque-visual { display: grid; padding: clamp(28px, 5vw, 58px); place-items: center; background: linear-gradient(145deg, #dcefe9, #f5eedb); }
+.kozuque-visual::before { position: absolute; width: 260px; height: 260px; top: -90px; right: -65px; border-radius: 50%; content: ""; background: rgba(234, 185, 80, .24); }
+.kozuque-visual::after { position: absolute; width: 190px; height: 190px; bottom: -70px; left: -50px; border-radius: 50%; content: ""; background: rgba(22, 91, 87, .12); }
+.quest-board { position: relative; z-index: 1; width: min(410px, 100%); padding: 24px; border: 1px solid rgba(22, 91, 87, .12); border-radius: 26px; background: #f9f7f0; box-shadow: 0 22px 50px rgba(36, 79, 72, .16); transform: rotate(-1.5deg); }
+.quest-board-head { display: grid; grid-template-columns: auto 1fr auto; gap: 13px; align-items: center; margin-bottom: 20px; }
+.quest-brand { display: grid; width: 48px; height: 48px; color: #fff; place-items: center; border-radius: 15px; background: #165b57; font: 700 .9rem "DM Sans", sans-serif; }
+.quest-board-head > span:nth-child(2) { display: flex; flex-direction: column; }
+.quest-board-head small { color: #8a8b80; font: 700 .55rem "DM Sans", sans-serif; letter-spacing: .12em; }
+.quest-board-head strong { margin-top: 3px; font-size: .95rem; }
+.quest-board-head > b { color: #165b57; font: 700 1.5rem "DM Sans", sans-serif; }
+.quest-board-head > b span { margin-left: 2px; font-size: .65em; }
+.quest-item { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; margin-top: 10px; padding: 14px; border-radius: 16px; background: #fff; box-shadow: 0 7px 18px rgba(37, 67, 60, .07); }
+.quest-item > span { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 13px; background: #f5eedb; font-size: 1.2rem; }
+.quest-item p, .quest-item strong, .quest-item small { display: block; margin: 0; }
+.quest-item strong { font-size: .78rem; }
+.quest-item small { margin-top: 3px; color: var(--muted); font-size: .58rem; }
+.quest-item > b { color: #c07824; font: 700 .78rem "DM Sans", sans-serif; white-space: nowrap; }
+.quest-complete { margin-top: 18px; padding: 13px; color: #fff; border-radius: 14px; background: #165b57; font-size: .76rem; font-weight: 700; text-align: center; }
+.quest-complete span { display: inline-grid; width: 20px; height: 20px; margin-right: 5px; color: #165b57; place-items: center; border-radius: 50%; background: #fff; }
+
 .service-oshi { background: #fff; }
 .service-oshi .service-kicker { color: #ad555f; }
 .oshi-visual { display: grid; padding: clamp(28px, 5vw, 65px); place-items: center; background: var(--oshi-bg); }
@@ -439,11 +460,12 @@ button:focus-visible {
 .phone-frame img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
 
 .guide { background: #fff; }
-.guide-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.guide-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
 .guide-card { display: grid; min-height: 180px; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center; padding: 28px; border: 1px solid var(--line); border-radius: var(--radius-md); text-decoration: none; transition: transform .2s ease, box-shadow .2s ease; }
 .guide-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); }
 .guide-icon { display: grid; width: 58px; height: 58px; place-items: center; border-radius: 50%; font-size: 1.45rem; }
 .guide-study .guide-icon { color: #377f9f; background: #e8f5fa; }
+.guide-kozuque .guide-icon { color: #166963; background: #e3f2ed; }
 .guide-oshi .guide-icon { color: #b45660; background: #fbeaec; }
 .guide-make .guide-icon { color: #756391; background: #eee8f5; }
 .guide-text { display: flex; flex-direction: column; }
