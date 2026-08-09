@@ -905,7 +905,7 @@ function showPointGetDialog(amount, arg2 = null, arg3 = null) {
     const overlay = document.createElement('div');
     overlay.id = 'ranking-overlay';
     overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; font-family: sans-serif; text-align: center;`;
-    overlay.innerHTML = `<div style="background:white; color:#333; padding:25px; border-radius:20px; width:90%; max-width:400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);"><h2>🎁 クリアおめでとう！</h2><div style="background:#fff3e0; border-radius:10px; padding:15px; margin-bottom:20px;"><div>ごほうび</div><div style="font-size:36px; font-weight:bold;">${amount} ポイント</div></div>${usersHtml}<button onclick="document.getElementById('ranking-overlay').remove(); if(typeof RankingPoint.onComplete === 'function') RankingPoint.onComplete();" style="margin-top:20px; background:none; border:none; color:#999; text-decoration:underline; cursor:pointer;">とじる</button></div>`;
+    overlay.innerHTML = `<div style="background:white; color:#333; padding:25px; border-radius:20px; width:90%; max-width:400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);"><h2>🎁 クリアおめでとう！</h2><div style="background:#fff3e0; border-radius:10px; padding:15px; margin-bottom:20px;"><div>ごほうび</div><div style="font-size:36px; font-weight:bold;">${amount} ポイント</div></div><div id="user-list" style="margin-bottom:20px;">${usersHtml}</div><div style="border-top:2px dashed #eee; padding-top:20px;"><p style="margin:0 0 10px 0; font-size:14px; font-weight:bold;">あたらしく 登録する</p><form onsubmit="RankingPoint.registerNew(); return false;" style="display:flex; justify-content:center; gap:5px;"><input type="text" id="new-point-username" maxlength="12" autocomplete="off" placeholder="おなまえ" style="padding:10px; font-size:16px; width:60%; border:2px solid #ddd; border-radius:5px;"><button type="submit" style="padding:10px 20px; font-size:16px; background:#2196F3; color:white; border:none; border-radius:5px; font-weight:bold;">OK</button></form></div><button onclick="document.getElementById('ranking-overlay').remove(); if(typeof RankingPoint.onComplete === 'function') RankingPoint.onComplete();" style="margin-top:20px; background:none; border:none; color:#999; text-decoration:underline; cursor:pointer;">とじる</button></div>`;
     document.body.appendChild(overlay);
     window.RankingPoint = {
         onComplete: onComplete,
@@ -931,6 +931,15 @@ function showPointGetDialog(amount, arg2 = null, arg3 = null) {
             alert(msg);
             // ユーザー名を引数に渡してコールバックを呼ぶ
             if (typeof RankingPoint.onComplete === 'function') RankingPoint.onComplete(name);
+        },
+        registerNew: () => {
+            const input = document.getElementById('new-point-username');
+            const name = input ? input.value.trim() : '';
+            if (!name) {
+                if (input) input.focus();
+                return;
+            }
+            RankingPoint.selectUser(name, amount);
         }
     };
 }
