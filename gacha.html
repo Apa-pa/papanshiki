@@ -370,7 +370,9 @@
         /* ▼ 右上ナビチップ ▼ */
         .top-nav-chips {
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
             gap: 6px;
             margin-bottom: 12px;
         }
@@ -401,6 +403,11 @@
             transform: translateY(1px);
             box-shadow: none;
         }
+
+        .home-link {
+            padding: 3px 10px;
+            font-size: 0.7rem;
+        }
     </style>
 </head>
 
@@ -409,6 +416,7 @@
     <div class="container">
         <!-- 右上ナビリンク -->
         <div class="top-nav-chips">
+            <a href="index.html" class="nav-chip home-link" aria-label="ホームにもどる">もどる</a>
             <a href="calendar.html" class="nav-chip">📅 まなびカレンダー</a>
         </div>
 

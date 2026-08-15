@@ -270,9 +270,17 @@
         /* ▼ 右上ナビチップ ▼ */
         .top-nav-chips {
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: flex-start;
             gap: 6px;
             margin-bottom: 12px;
+        }
+
+        .top-nav-links {
+            display: flex;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: 6px;
         }
 
         .nav-chip {
@@ -302,6 +310,12 @@
             box-shadow: none;
         }
 
+        .home-link {
+            flex: 0 0 auto;
+            padding: 3px 10px;
+            font-size: 0.7rem;
+        }
+
         /* スマホでは表の1行を「ゲーム名／記録と目標」の二段にする */
         @media (max-width: 600px) {
             body {
@@ -320,7 +334,11 @@
 
             .top-nav-chips {
                 flex-wrap: wrap;
-                justify-content: center;
+                gap: 5px;
+            }
+
+            .top-nav-links {
+                flex: 1 1 220px;
                 gap: 5px;
             }
 
@@ -444,8 +462,11 @@
     <div class="container">
         <!-- 右上ナビリンク -->
         <div class="top-nav-chips">
-            <a href="calendar.html" class="nav-chip">📅 まなびカレンダー</a>
-            <a href="dashboard.html" class="nav-chip">📊 パパママとみるダッシュボード</a>
+            <a href="index.html" class="nav-chip home-link" aria-label="ホームにもどる">もどる</a>
+            <div class="top-nav-links">
+                <a href="calendar.html" class="nav-chip">📅 まなびカレンダー</a>
+                <a href="dashboard.html" class="nav-chip">📊 パパママとみるダッシュボード</a>
+            </div>
         </div>
 
         <h1>🏆 がんばったきろく</h1>
