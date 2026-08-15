@@ -343,6 +343,40 @@
             box-shadow: none;
         }
 
+        .rate-chart-action {
+            position: absolute;
+            right: 55px;
+            bottom: 15px;
+        }
+
+        @media (max-width: 520px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 14px;
+            }
+
+            .rate-board {
+                padding: 15px 15px 70px;
+            }
+
+            .rate-chart-action {
+                right: 70px;
+                bottom: 15px;
+                left: 15px;
+                display: flex;
+                justify-content: center;
+            }
+
+            .rate-chart-action .nav-chip {
+                min-height: 40px;
+                padding: 8px 18px;
+                font-size: 0.85rem;
+            }
+        }
+
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -457,7 +491,7 @@
             <div>1 <img src="image/donguri.webp" class="donguri-icon" alt="どんぐり"> = <span id="rate-display"
                     class="rate-val">---</span> pt</div>
 
-            <div style="position: absolute; bottom: 15px; right: 55px;">
+            <div class="rate-chart-action">
                 <button class="nav-chip" onclick="showChartModal()">📈 チャート</button>
             </div>
             <a href="ura/secret_home.html" class="secret-key">🗝️</a>
@@ -535,8 +569,14 @@
     </div>
 
     <script>
+        const PUBLISHED_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT11R_97G1YmVITxEtQ7zspehsp2SsjKbflETP1_0VDkLzJQAYLnVjXJXOIE32WJDTUTcZ8PnlxTJa6/pub?output=csv';
+        const RATE_SOURCE_URL = `${PUBLISHED_SHEET_CSV_URL}&gid=979723762`;
+        const RATE_HISTORY_URL = `${PUBLISHED_SHEET_CSV_URL}&gid=481724768`;
+
         let currentRate = 150;
         let currentMode = 'buy';
+        let chartRateHistory = [];
+        let chartDataPromise = null;
 
         window.onload = function () {
             const users = getUserNames();
@@ -574,6 +614,7 @@
             }
 
             fetchRate();
+            fetchRateHistory();
         };
 
         function closeUserSelectModal() {
@@ -595,12 +636,19 @@
         async function fetchRate() {
             const display = document.getElementById('rate-display');
             try {
-                const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-                const data = await res.json();
-                const rawRate = data.rates.JPY;
+                const res = await fetch(RATE_SOURCE_URL, { cache: 'no-store' });
+                if (!res.ok) throw new Error(`Rate CSV request failed: ${res.status}`);
+
+                const text = await res.text();
+                const rows = text.trim().split(/\r?\n/);
+                const rawRate = rows.slice(1)
+                    .map(row => Number.parseFloat(row.split(',')[0].trim()))
+                    .find(rate => Number.isFinite(rate) && rate > 0);
+
+                if (!Number.isFinite(rawRate)) throw new Error('Rate CSV has no valid rate');
+
                 currentRate = Math.round(rawRate);
                 display.innerText = currentRate;
-                saveDailyRate(currentRate);
                 calcFromDonguri();
             } catch (e) {
                 console.error("Rate fetch failed", e);
@@ -738,54 +786,51 @@
         }
 
         // --- チャート機能 ---
-        function saveDailyRate(rate) {
-            const HISTORY_KEY = 'papan_exchange_rate_history';
-            let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+        async function fetchRateHistory() {
+            if (chartRateHistory.length > 0) return chartRateHistory;
+            if (chartDataPromise) return chartDataPromise;
 
-            const today = new Date();
-            const dateStr = `${today.getFullYear()}-${('0' + (today.getMonth() + 1)).slice(-2)}-${('0' + today.getDate()).slice(-2)}`;
+            chartDataPromise = (async () => {
+                try {
+                    const res = await fetch(RATE_HISTORY_URL, { cache: 'no-store' });
+                    if (!res.ok) throw new Error(`Rate history CSV request failed: ${res.status}`);
 
-            const todayEntry = history.find(entry => entry.date === dateStr);
-            if (todayEntry) {
-                todayEntry.rate = rate; // 重複する場合は最新で上書き
-            } else {
-                history.push({ date: dateStr, rate: rate });
+                    const text = await res.text();
+                    const rows = text.trim().split(/\r?\n/).slice(1);
+                    const history = rows.map(row => {
+                        const cols = row.split(',');
+                        const date = (cols[0] || '').trim();
+                        const rate = Number.parseFloat((cols[1] || '').trim());
+                        return { date, rate };
+                    }).filter(entry => /^\d{4}-\d{2}-\d{2}$/.test(entry.date)
+                        && Number.isFinite(entry.rate)
+                        && entry.rate > 0);
+
+                    chartRateHistory = history
+                        .sort((a, b) => a.date.localeCompare(b.date))
+                        .slice(-30);
+                } catch (e) {
+                    console.warn('Rate history fetch failed:', e);
+                    chartRateHistory = [];
+                }
+
+                return chartRateHistory;
+            })();
+
+            try {
+                return await chartDataPromise;
+            } finally {
+                chartDataPromise = null;
             }
-
-            if (history.length > 30) history = history.slice(history.length - 30);
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
         }
 
         function getChartData() {
-            const HISTORY_KEY = 'papan_exchange_rate_history';
-            let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-            if (history.length === 0) return [];
-
-            const today = new Date();
-            let chartData = [];
-            const baseRate = history[0].rate; // 初回データ（バックフィル用）
-
-            // 29日前から今日までの30日分を作成
-            for (let i = 29; i >= 0; i--) {
-                let targetDate = new Date(today);
-                targetDate.setDate(today.getDate() - i);
-                const dateStr = `${targetDate.getFullYear()}-${('0' + (targetDate.getMonth() + 1)).slice(-2)}-${('0' + targetDate.getDate()).slice(-2)}`;
-
-                let found = history.find(entry => entry.date === dateStr);
-                if (found) {
-                    chartData.push({ date: dateStr, rate: found.rate });
-                } else {
-                    // データがない日は、最後に見つかったレートを引き継ぐ（初回は真っ直ぐになる）
-                    let dummyRate = baseRate;
-                    if (chartData.length > 0) dummyRate = chartData[chartData.length - 1].rate;
-                    chartData.push({ date: dateStr, rate: dummyRate });
-                }
-            }
-            return chartData;
+            return chartRateHistory;
         }
 
-        function showChartModal() {
+        async function showChartModal() {
             document.getElementById('chart-modal').style.display = 'flex';
+            await fetchRateHistory();
             drawChart();
         }
 
@@ -799,7 +844,6 @@
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             const data = getChartData();
-            if (data.length === 0) return;
 
             // レティナ対応: 描画解像度を2倍にしてCanvasの表示サイズに合わせる
             const rect = canvas.getBoundingClientRect();
@@ -811,6 +855,15 @@
             const height = rect.height;
 
             ctx.clearRect(0, 0, width, height);
+
+            if (data.length === 0) {
+                ctx.fillStyle = '#777';
+                ctx.font = '14px "UD Digital Kyokasho-tai-R", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('チャートを読み込めませんでした', width / 2, height / 2);
+                return;
+            }
 
             let min = Math.min(...data.map(d => d.rate));
             let max = Math.max(...data.map(d => d.rate));
@@ -831,7 +884,7 @@
             const chartWidth = width - paddingX - 10;
             const chartHeight = height - paddingYBottom - paddingYTop;
 
-            const getX = (index) => paddingX + (index / (data.length - 1)) * chartWidth;
+            const getX = (index) => paddingX + (index / Math.max(data.length - 1, 1)) * chartWidth;
             const getY = (val) => paddingYTop + chartHeight - ((val - min) / (max - min)) * chartHeight;
 
             // グリッドとY軸ラベル

@@ -150,7 +150,7 @@
 - 外部 CDN/外部 API 依存あり。
   - `Chart.js`
   - `Matter.js`
-  - `https://api.exchangerate-api.com/...`
+  - `https://api.exchangerate-api.com/...`（監査時点。2026-08-16に依存を解消し、Google Sheetsの公開CSVによるUSD/JPY現在レート・直近30日履歴の取得へ移行）
 - `service-worker.js` は手動の `urlsToCache` 配列で運用。
 - Service Worker キャッシュ漏れがある。
   - 例: `index2.html`
