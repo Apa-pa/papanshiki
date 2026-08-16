@@ -142,25 +142,27 @@ function parseRaceId(raceId) {
     return new Date(year, month, day, 16, 0, 0, 0);
 }
 
-/**
- * エントリー対象になる「次の土曜16時」のIDを生成する
- */
-function getNextRaceId() {
-    const now = new Date();
+function getNextRaceIdFromDate(baseDate) {
     const raceDay = 6; // 土曜日
     const raceHour = 16; // 16時
-
-    const nextSaturday = new Date(now);
-    const diff = (raceDay - now.getDay() + 7) % 7;
-    nextSaturday.setDate(now.getDate() + diff);
+    const nextSaturday = new Date(baseDate);
+    const diff = (raceDay - baseDate.getDay() + 7) % 7;
+    nextSaturday.setDate(baseDate.getDate() + diff);
     nextSaturday.setHours(raceHour, 0, 0, 0);
 
     // 土曜16時以降の登録は翌週分に回す
-    if (now >= nextSaturday) {
+    if (baseDate >= nextSaturday) {
         nextSaturday.setDate(nextSaturday.getDate() + 7);
     }
 
     return formatRaceId(nextSaturday);
+}
+
+/**
+ * エントリー対象になる「次の土曜16時」のIDを生成する
+ */
+function getNextRaceId() {
+    return getNextRaceIdFromDate(new Date());
 }
 
 window.getNextNationalRaceId = getNextRaceId;
@@ -239,102 +241,151 @@ function getTargetRaceId() {
     return formatRaceId(lastSaturday);
 }
 
-function isEntryForRace(entry, raceId) {
-    if (entry.entryRaceId) {
-        return entry.entryRaceId === raceId;
+function resolveEntryRaceId(entry) {
+    if (entry.entryRaceId && parseRaceId(entry.entryRaceId)) {
+        return entry.entryRaceId;
     }
 
-    // 旧形式のエントリー救済: entryTime が締切以前なら対象レース分として扱う
-    const raceDate = parseRaceId(raceId);
-    if (!raceDate || !entry.entryTime || typeof entry.entryTime.toDate !== 'function') {
-        return false;
+    // 旧形式のエントリーは登録時刻から本来の対象レースを復元する
+    if (!entry.entryTime || typeof entry.entryTime.toDate !== 'function') {
+        return null;
     }
 
-    return entry.entryTime.toDate() <= raceDate;
+    return getNextRaceIdFromDate(entry.entryTime.toDate());
 }
+
+window.fetchNationalRaceResult = async function (raceId) {
+    if (!parseRaceId(raceId)) return null;
+
+    try {
+        const resultSnap = await getDoc(doc(db, "national_results", raceId));
+        return resultSnap.exists() ? resultSnap.data() : null;
+    } catch (e) {
+        console.error("レース履歴取得エラー:", e);
+        return null;
+    }
+};
 
 /**
  * 全国レースの状況をチェックし、必要なら計算を実行する
  */
 window.checkAndRunNationalRace = async function () {
-    const raceId = getTargetRaceId();
+    const targetRaceId = getTargetRaceId();
 
     try {
-        // 1. すでに結果が出ているか確認
+        // 1. 最新結果を取得（未処理エントリーの確認前には終了しない）
         const resultRef = doc(db, "national_results", "latest");
         const resultSnap = await getDoc(resultRef);
         const latestData = resultSnap.exists() ? resultSnap.data() : null;
 
-        // すでに最新レースの結果が書き込まれていれば、それを返す
-        if (latestData && latestData.raceId === raceId) {
-            return { status: "finished", data: latestData };
-        }
-
-        // --- 🏁 ここからレース実行ロジック (最初の一人だけが実行) ---
-
-        // 2. エントリーを全取得
+        // 2. 締切済みエントリーを全取得し、最古の未処理レースを選ぶ
         const entriesRef = collection(db, "national_entries");
         const snapshot = await getDocs(entriesRef);
-        if (snapshot.empty) return { status: "no_entries" };
-
         let entries = [];
-        snapshot.forEach(d => entries.push({ id: d.id, ref: d.ref, ...d.data() }));
-        const raceEntries = entries.filter(e => isEntryForRace(e, raceId));
-
-        // 3. ランク別に計算
-        const leagues = { Rookie: [], Pro: [], Legend: [] };
-        const luckMax = { Rookie: 60, Pro: 80, Legend: 100 };
-
-        raceEntries.forEach(e => {
-            const lMax = luckMax[e.rank] || 60;
-            const luck = Math.random() * lMax;
-
-            // ★ ベテランボーナスの計算 (24回から減るほど最大12点加算)
-            const remaining = e.contractRaces !== undefined ? e.contractRaces : 24;
-            const experienceBonus = (24 - remaining) * 0.5;
-
-            // スコア計算式にボーナスを追加
-            e.totalScore = (e.speed * 1.2) + (e.stamina * 0.8) + (e.tenacity * 1.0) + luck + experienceBonus;
-
-            // ランク名の大文字小文字ブレを吸収して安全に振り分ける
-            const normalizedRank = (e.rank || "").toLowerCase();
-            let rankKey = Object.keys(leagues).find(k => k.toLowerCase() === normalizedRank);
-            
-            if (rankKey) {
-                leagues[rankKey].push(e);
-            } else {
-                console.warn("Unknown rank ignored:", e.rank);
-            }
+        snapshot.forEach(d => {
+            const entry = { id: d.id, ref: d.ref, ...d.data() };
+            entry.resolvedRaceId = resolveEntryRaceId(entry);
+            entries.push(entry);
         });
 
-        // 4. 各ランクの上位3名を決定
-        const finalResults = { raceId: raceId, rookie: [], pro: [], legend: [] };
-        for (let key in leagues) {
-            leagues[key].sort((a, b) => b.totalScore - a.totalScore);
-            finalResults[key.toLowerCase()] = leagues[key].slice(0, 3).map((r, idx) => ({
-                rank: idx + 1,
-                sheepName: r.sheepName,
-                ownerName: r.ownerName,
-                uid: r.id, // 賞金判定用
-                score: Math.floor(r.totalScore)
-            }));
+        const dueEntries = entries.filter(e =>
+            e.resolvedRaceId && e.resolvedRaceId <= targetRaceId
+        );
+
+        // 対象エントリーが0件なら、空の結果は作らない
+        if (dueEntries.length === 0) {
+            if (latestData && latestData.raceId === targetRaceId) {
+                return { status: "finished", data: latestData };
+            }
+            return { status: "no_entries" };
         }
 
-        // 5. 結果をFirebaseに保存
-        await setDoc(resultRef, { ...finalResults, createdAt: serverTimestamp() });
+        const raceIds = [...new Set(dueEntries.map(e => e.resolvedRaceId))].sort();
+        const processedResults = [];
+        let newestData = latestData;
+        let createdNewResult = false;
 
-        // 5.5 履歴として別ドキュメントにもコピー保存（将来の結果一覧ページ用）
-        const historyRef = doc(db, "national_results", raceId);
-        await setDoc(historyRef, { ...finalResults, createdAt: serverTimestamp() });
+        // 3. 未処理レースを古い順にすべて処理する
+        for (const raceId of raceIds) {
+            const raceEntries = dueEntries.filter(e => e.resolvedRaceId === raceId);
+            const historyRef = doc(db, "national_results", raceId);
+            const historySnap = await getDoc(historyRef);
 
-        // 6. 今回対象のエントリーだけをリセット（未来レース分は残す）
-        if (raceEntries.length > 0) {
+            // 結果保存後に削除だけ失敗したケースでは、再抽選せず既存結果を使う
+            if (historySnap.exists()) {
+                const historyData = historySnap.data();
+                const cleanupBatch = writeBatch(db);
+                raceEntries.forEach(e => cleanupBatch.delete(e.ref));
+                await cleanupBatch.commit();
+                processedResults.push(historyData);
+                continue;
+            }
+
+            const leagues = { Rookie: [], Pro: [], Legend: [] };
+            const luckMax = { Rookie: 60, Pro: 80, Legend: 100 };
+
+            raceEntries.forEach(e => {
+                const lMax = luckMax[e.rank] || 60;
+                const luck = Math.random() * lMax;
+
+                // ★ ベテランボーナスの計算 (24回から減るほど最大12点加算)
+                const remaining = e.contractRaces !== undefined ? e.contractRaces : 24;
+                const experienceBonus = (24 - remaining) * 0.5;
+
+                // スコア計算式にボーナスを追加
+                e.totalScore = (e.speed * 1.2) + (e.stamina * 0.8) + (e.tenacity * 1.0) + luck + experienceBonus;
+
+                // ランク名の大文字小文字ブレを吸収して安全に振り分ける
+                const normalizedRank = (e.rank || "").toLowerCase();
+                const rankKey = Object.keys(leagues).find(k => k.toLowerCase() === normalizedRank);
+
+                if (rankKey) {
+                    leagues[rankKey].push(e);
+                } else {
+                    console.warn("Unknown rank ignored:", e.rank);
+                }
+            });
+
+            // 4. 各ランクの上位3名を決定
+            const finalResults = {
+                raceId: raceId,
+                participants: raceEntries.map(e => e.id),
+                rookie: [],
+                pro: [],
+                legend: []
+            };
+            for (const key in leagues) {
+                leagues[key].sort((a, b) => b.totalScore - a.totalScore);
+                finalResults[key.toLowerCase()] = leagues[key].slice(0, 3).map((r, idx) => ({
+                    rank: idx + 1,
+                    sheepName: r.sheepName,
+                    ownerName: r.ownerName,
+                    uid: r.id, // 賞金判定用
+                    score: Math.floor(r.totalScore)
+                }));
+            }
+
+            // 5. 履歴を保存。過去レースの後追い処理では latest を巻き戻さない
+            await setDoc(historyRef, { ...finalResults, createdAt: serverTimestamp() });
+            if (!newestData || !newestData.raceId || raceId >= newestData.raceId) {
+                await setDoc(resultRef, { ...finalResults, createdAt: serverTimestamp() });
+                newestData = finalResults;
+            }
+
+            // 6. 今回対象のエントリーだけをリセット（未来レース分は残す）
             const batch = writeBatch(db);
             raceEntries.forEach(e => batch.delete(e.ref));
             await batch.commit();
+
+            processedResults.push(finalResults);
+            createdNewResult = true;
         }
 
-        return { status: "new_result", data: finalResults };
+        return {
+            status: createdNewResult ? "new_result" : "finished",
+            data: processedResults[processedResults.length - 1],
+            results: processedResults
+        };
 
     } catch (e) {
         console.error("Race Process Error:", e);

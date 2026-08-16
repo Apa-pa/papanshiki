@@ -748,8 +748,23 @@
             if (typeof window.checkAndRunNationalRace === 'function') {
                 const res = await window.checkAndRunNationalRace();
 
-                if (res.status === "new_result" || res.status === "finished") {
-                    const data = res.data;
+                const returnedResults = Array.isArray(res.results)
+                    ? res.results
+                    : ((res.status === "new_result" || res.status === "finished") && res.data ? [res.data] : []);
+                let data = returnedResults.find(result =>
+                    isEntryForCurrentUser(s) && s.entryRaceId === result.raceId
+                ) || res.data || null;
+
+                // 過去レースが後追い処理された場合も、各参加者が自分の結果を受け取れるようにする
+                if (isEntryForCurrentUser(s)
+                    && s.entryRaceId
+                    && (!data || data.raceId !== s.entryRaceId)
+                    && typeof window.fetchNationalRaceResult === 'function') {
+                    const ownRaceData = await window.fetchNationalRaceResult(s.entryRaceId);
+                    if (ownRaceData) data = ownRaceData;
+                }
+
+                if (data) {
                     if (s.lastAwardedRace === data.raceId) return;
 
                     let myRank = 0;
@@ -763,7 +778,10 @@
                         }
                     });
 
-                    const enteredThisRace = rankedInRace || (isEntryForCurrentUser(s) && s.entryRaceId === data.raceId);
+                    const listedAsParticipant = Array.isArray(data.participants) && data.participants.includes(s.uid);
+                    const enteredThisRace = listedAsParticipant
+                        || rankedInRace
+                        || (isEntryForCurrentUser(s) && s.entryRaceId === data.raceId);
                     if (!enteredThisRace) return;
 
                     if (myRank > 0) {
