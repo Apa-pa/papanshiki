@@ -30,6 +30,55 @@
             margin-bottom: 10px;
         }
 
+        .top-nav-chips {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .top-nav-links {
+            display: flex;
+            justify-content: flex-end;
+            flex: 1 1 260px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .nav-chip {
+            display: inline-block;
+            padding: 4px 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: #fff;
+            color: #6b4e3d;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .nav-chip:hover {
+            transform: translateY(-1px);
+            background: #fff8f0;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-chip:active {
+            transform: translateY(1px);
+            box-shadow: none;
+        }
+
+        .home-link {
+            flex: 0 0 auto;
+            padding: 3px 10px;
+            font-size: 0.7rem;
+        }
+
         .user-select-area {
             background: #c8e6c9;
             padding: 15px;
@@ -186,6 +235,14 @@
 <body>
 
     <div class="container">
+        <div class="top-nav-chips">
+            <a href="index.html" class="nav-chip home-link" aria-label="ホームにもどる">もどる</a>
+            <div class="top-nav-links">
+                <a href="room.html" class="nav-chip">🏠 マイルーム</a>
+                <a href="avatar_shop.html" class="nav-chip">👕 アバターショップ</a>
+            </div>
+        </div>
+
         <h1>🪑 インテリアショップ</h1>
         <p>お部屋を すてきに もようがえ！</p>
 

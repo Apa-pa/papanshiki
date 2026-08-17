@@ -374,6 +374,7 @@
             let targetNumber = 5;
             let currentNumber = 20;
             let shotsLeft = MAX_SHOTS;
+            let stageSnapshots = [];
 
             function randomInt(min, max) {
                 return min + Math.floor(Math.random() * (max - min + 1));
@@ -590,12 +591,14 @@
                 throwActive = false;
                 aiming = false;
                 shotsLeft = MAX_SHOTS;
+                stageSnapshots = [];
                 resetHistory();
 
                 const config = getStageConfig();
                 const pinCount = randomInt(config.pinMin, config.pinMax);
                 const values = createStageValues(pinCount, config);
                 createPins(values, config);
+                saveStageSnapshot();
                 updateUI();
                 createThrower();
                 const checkpoint = stage === 6 ? '5ステージ達成！ 30pt獲得　' : '';
@@ -1042,6 +1045,7 @@
                 const subtraction = fallen.length === 1 ? fallen[0].pinValue : fallen.length;
                 const before = currentNumber;
                 let busted = false;
+                let rewoundThrows = 0;
 
                 if (subtraction === 0) {
                     showFormula('ミス！ 数字はそのまま', 'bust', 1450);
@@ -1068,9 +1072,21 @@
                     });
                 });
 
+                if (currentNumber - targetNumber === 1 && !pins.some(pin => pin.pinValue === 1)) {
+                    rewoundThrows = restoreTwoThrowsAgo();
+                    if (rewoundThrows > 0) {
+                        showFormula(`あと1なのに「1」がない！ ${rewoundThrows}投前の盤面にもどる`, 'bust', 2300);
+                        addHistory(`詰み → ${rewoundThrows}投前にもどる`, true);
+                    }
+                }
+
+                if (rewoundThrows === 0) saveStageSnapshot();
+
                 updateUI();
                 clearTimeout(turnTimer);
-                const wait = stage >= 6 && currentNumber === targetNumber && MAX_SHOTS - shotsLeft <= 3
+                const wait = rewoundThrows > 0
+                    ? 2400
+                    : stage >= 6 && currentNumber === targetNumber && MAX_SHOTS - shotsLeft <= 3
                     ? 2350
                     : busted ? 2050 : 1750;
                 turnTimer = setTimeout(() => {
@@ -1122,6 +1138,46 @@
                     empty.textContent = 'まだありません';
                     historyEl.appendChild(empty);
                 }
+            }
+
+            function saveStageSnapshot() {
+                stageSnapshots.push({
+                    currentNumber,
+                    historyCount: historyEl.querySelectorAll('.history-chip').length,
+                    pins: pins.map(pin => ({
+                        x: pin.position.x,
+                        y: pin.position.y,
+                        angle: pin.angle
+                    }))
+                });
+            }
+
+            function restoreTwoThrowsAgo() {
+                if (stageSnapshots.length === 0) return 0;
+                const throwsBack = Math.min(2, stageSnapshots.length);
+                const snapshotIndex = Math.max(0, stageSnapshots.length - 2);
+                const snapshot = stageSnapshots[snapshotIndex];
+                if (!snapshot || snapshot.pins.length !== pins.length) return 0;
+
+                currentNumber = snapshot.currentNumber;
+                pins.forEach((pin, index) => {
+                    const savedPin = snapshot.pins[index];
+                    Body.setPosition(pin, { x: savedPin.x, y: savedPin.y });
+                    Body.setAngle(pin, savedPin.angle);
+                    Body.setVelocity(pin, { x: 0, y: 0 });
+                    Body.setAngularVelocity(pin, 0);
+                    pin.roundOrigin = { x: savedPin.x, y: savedPin.y };
+                    pin.wasStruck = false;
+                    pin.isFalling = false;
+                    pin.isDown = false;
+                    pin.fallProgress = 0;
+                    pin.wobble = 0;
+                });
+
+                const historyChips = [...historyEl.querySelectorAll('.history-chip')];
+                historyChips.slice(snapshot.historyCount).forEach(chip => chip.remove());
+                stageSnapshots = stageSnapshots.slice(0, snapshotIndex + 1);
+                return throwsBack;
             }
 
             function startGame() {
