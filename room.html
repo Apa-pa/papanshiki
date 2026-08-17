@@ -140,6 +140,25 @@
             overflow: hidden;
         }
 
+        .landscape-hint {
+            display: none;
+        }
+
+        @media screen and (max-width: 600px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
+            .landscape-hint {
+                display: block;
+                margin: 0 0 12px;
+                padding: 10px 12px;
+                border: 2px solid #ffb74d;
+                border-radius: 12px;
+                background: #fff3e0;
+                color: #6d4c41;
+                font-size: 0.95rem;
+                font-weight: bold;
+                line-height: 1.5;
+            }
+        }
+
         /* アバター (一番手前: z-index 10) */
         .my-avatar {
             position: absolute;
@@ -274,6 +293,9 @@
         </div>
 
         <div id="room-content" style="display:none;">
+            <p class="landscape-hint" role="status">
+                📱 お部屋は、スマホを横向きにすると見やすいよ！
+            </p>
             <div class="room-stage" id="my-room-bg">
                 <img id="medal-left-2" class="medal-item medal-left-2" style="display:none;">
                 <img id="medal-left-1" class="medal-item medal-left-1" style="display:none;">
