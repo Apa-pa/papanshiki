@@ -1,5 +1,5 @@
 // キャッシュの名前（更新時にバージョンを変えると新しいキャッシュが作られます）
-var CACHE_NAME = 'papanshiki-v40';
+var CACHE_NAME = 'papanshiki-v41';
 var urlsToCache = [
   // === トップページ ===
   './',
@@ -7,14 +7,13 @@ var urlsToCache = [
   './index2.html',
   './manifest.json',
   './header01.webp',
-  './header02.webp',
+  './header04.webp',
 
   // === アイコン・小画像 ===
-  './icon-32.png',
-  './icon-192.png',
-  './icon-512.png',
-  './icon-192.webp',
-  './icon-512.webp',
+  './202609favicon-32.png',
+  './202609apple-touch-icon.png',
+  './202609icon-192.png',
+  './202609icon-512.png',
   './player.webp',
   './pippi192.webp',
   './an192.webp',
