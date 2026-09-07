@@ -434,6 +434,9 @@ button:focus-visible {
 .quest-item strong { font-size: .78rem; }
 .quest-item small { margin-top: 3px; color: var(--muted); font-size: .58rem; }
 .quest-item > b { color: #c07824; font: 700 .78rem "DM Sans", sans-serif; white-space: nowrap; }
+.quest-type { display: inline-block; margin-right: 6px; padding: 2px 5px; border-radius: 999px; font-size: .54rem; font-style: normal; line-height: 1.35; vertical-align: 1px; }
+.quest-type-recurring { color: #165b57; background: #dcefe9; }
+.quest-type-once { color: #8a5519; background: #f5e6c5; }
 .quest-complete { margin-top: 18px; padding: 13px; color: #fff; border-radius: 14px; background: #165b57; font-size: .76rem; font-weight: 700; text-align: center; }
 .quest-complete span { display: inline-grid; width: 20px; height: 20px; margin-right: 5px; color: #165b57; place-items: center; border-radius: 50%; background: #fff; }
 
