@@ -38,6 +38,7 @@
 |---|---|
 | `papan_records_v1` | ゲームの自己ベスト記録 |
 | `papan_goals_v1` | 各ゲームの目標値 |
+| `papan_auto_goals_v1` | ユーザー別の目標自動おまかせ設定 |
 | `papan_points_v1` | ポイント残高（主通貨） |
 | `papan_donguri_v1` | どんぐり残高（第2通貨） |
 | `papan_stamps_v3` | まなびカレンダーのスタンプ |
@@ -260,6 +261,7 @@
 - 各ゲームのベスト記録を `localStorage` に保存
 - `record.html` で一覧表示・目標設定・達成判定
 - 「おまかせ設定」: 達成済みの目標を自動で1%上方修正
+- 「自動おまかせ設定」: ユーザーごとにON/OFFでき、ON時は目標達成直後に同じルールで次の目標を設定
 - ゲームのタイプ: `time`（タイム型：少ないほど良い）、`score`（スコア型：多いほど良い）
 
 ### 5.7 まなびカレンダー（スタンプ機能）
@@ -414,7 +416,7 @@ e:\ぱぱん式\
      - `index.html` にカードを追加してホーム画面から遷移できるようにする
    - **タイプA/Bの場合の追加作業**:
      - `ranking.js` の `GAME_LIST` にゲームIDを追加（※保護者ダッシュボードの「おすすめコンテンツ」選択肢にも自動反映されます）
-     - `record.html` の `DEFAULT_GOALS` に初期目標値を追加
+     - `ranking.js` の `DEFAULT_GOALS` に初期目標値を追加
      - ゲーム終了時に `showSaveDialog(gameId, resultValue)` を呼ぶ
      - タイプBの場合は `<script type="module" src="firebase-ranking.js"></script>` を追加
    - **タイプC/Dの場合の追加作業**:

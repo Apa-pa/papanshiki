@@ -77,6 +77,10 @@
         /* おまかせボタンエリア */
         .auto-set-area {
             margin: 10px 0 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
         }
 
         .auto-btn {
@@ -102,6 +106,31 @@
 
         .auto-btn:hover {
             background: #03a9f4;
+        }
+
+        .auto-toggle-btn {
+            background: #78909c;
+            box-shadow: 0 4px #546e7a;
+        }
+
+        .auto-toggle-btn:hover {
+            background: #607d8b;
+        }
+
+        .auto-toggle-btn.is-on {
+            background: #66bb6a;
+            box-shadow: 0 4px #388e3c;
+        }
+
+        .auto-toggle-btn.is-on:hover {
+            background: #4caf50;
+        }
+
+        .auto-setting-note {
+            width: 100%;
+            margin: 0;
+            color: #607d8b;
+            font-size: 13px;
         }
 
         table {
@@ -488,6 +517,13 @@
                 <button class="auto-btn" onclick="autoSetGoals()">
                     🤖 目標を「おまかせ」で設定する
                 </button>
+                <button id="auto-goal-toggle" class="auto-btn auto-toggle-btn" type="button"
+                    aria-pressed="false" onclick="toggleAutoGoalSetting()">
+                    🔁 自動おまかせ：OFF
+                </button>
+                <p id="auto-goal-status" class="auto-setting-note">
+                    ONにすると、目標クリア後に次の目標を自動で設定します。
+                </p>
             </div>
 
             <table>
@@ -515,46 +551,6 @@
     </div>
 
     <script>
-        // ゲームごとのデフォルト目標値（初心者向け）
-        const DEFAULT_GOALS = {
-            'make10': 60,
-            'math_add_easy': 60,
-            'math_add_hard': 60,
-            'math_sub_easy': 60,
-            'math_sub_hard': 60,
-            'math_multi': 100,
-            'math_div': 100,
-            'rain_math': 100,
-            'clock_read': 180,
-            'triangle_angle': 180,
-            'katakana': 60,
-            'alphabet': 90,
-            'romaji_hole': 120,
-            'rain_vowel': 100,
-            'rain_consonant': 100,
-            'touch25': 60,
-            'tsumitsumi': 10,
-            'memory': 120,
-            'youji': 60,
-            'shopping': 90,
-            'memory_route': 300,
-            'shopping_mission_brain': 180,
-            'attention_dual_task': 50,
-            'water': 90,
-            'rail': 300,
-            'daily_english': 180,
-            'frac_add_easy': 120,
-            'frac_add_hard': 300,
-            'frac_sub_easy': 120,
-            'frac_sub_hard': 300,
-            'frac_multi': 300,
-            'math_strike': 200,
-            'enogu_creator': 60,
-            'eigo_nakama': 100,
-            'eiyou_balance': 70,
-            'math_molkky': 40
-        };
-
         // ポイント獲得や体験が中心で、タイム・スコアを競う記録ページの対象外
         const RECORD_EXCLUDED_GAME_IDS = new Set([
             'job_quiz',
@@ -620,6 +616,7 @@
 
             // ポイント表示
             pointDisplay.innerText = getUserPoints(userName);
+            updateAutoGoalSettingDisplay(userName);
 
             // リスト表示
             for (const [gameId, info] of getRecordGames()) {
@@ -683,6 +680,57 @@
             showRecords();
         }
 
+        function getRecordGameIds() {
+            return getRecordGames().map(([gameId]) => gameId);
+        }
+
+        function updateAutoGoalSettingDisplay(userName) {
+            const button = document.getElementById('auto-goal-toggle');
+            const status = document.getElementById('auto-goal-status');
+            if (!button || !status || typeof isAutoGoalEnabled !== 'function') return;
+
+            const isEnabled = isAutoGoalEnabled(userName);
+            button.classList.toggle('is-on', isEnabled);
+            button.setAttribute('aria-pressed', String(isEnabled));
+            button.textContent = isEnabled ? '🔁 自動おまかせ：ON' : '🔁 自動おまかせ：OFF';
+            status.textContent = isEnabled
+                ? '目標をクリアすると、次の目標が自動で設定されます。'
+                : 'ONにすると、目標クリア後に次の目標を自動で設定します。';
+        }
+
+        function applyGoalsWithCurrentRules(userName) {
+            if (typeof applyRecommendedGoals !== 'function') return [];
+            return applyRecommendedGoals(userName, getRecordGameIds());
+        }
+
+        function recordAutoSetMission(userName, changedGoals) {
+            if (changedGoals.length > 0 && typeof addMissionStock === 'function') {
+                addMissionStock(userName, 'auto_set_goals');
+            }
+        }
+
+        function toggleAutoGoalSetting() {
+            const userName = document.getElementById('user-select').value;
+            if (!userName || typeof setAutoGoalEnabled !== 'function') return;
+
+            const willEnable = !isAutoGoalEnabled(userName);
+            if (willEnable) {
+                const confirmMsg = "自動おまかせ設定をONにしますか？\n\n今すぐ現在の『おまかせ設定』を行い、これからは目標をクリアするたびに次の目標を自動で設定します。";
+                if (!confirm(confirmMsg)) return;
+
+                const changedGoals = applyGoalsWithCurrentRules(userName);
+                setAutoGoalEnabled(userName, true);
+                recordAutoSetMission(userName, changedGoals);
+                showRecords();
+                alert(`自動おまかせ設定をONにしました！\n${changedGoals.length}個の目標を設定・更新しました。`);
+                return;
+            }
+
+            setAutoGoalEnabled(userName, false);
+            showRecords();
+            alert('自動おまかせ設定をOFFにしました。\n現在の目標はそのまま残ります。');
+        }
+
         // ▼▼▼ おまかせ設定ロジック ▼▼▼
         function autoSetGoals() {
             const userName = document.getElementById('user-select').value;
@@ -691,66 +739,11 @@
             const confirmMsg = "目標を「おまかせ」で設定しますか？\n\n・達成したものは、ベスト記録より1%高く\n・未達成のものはそのまま\n・記録がないものは標準レベルに\n\n設定されます。";
             if (!confirm(confirmMsg)) return;
 
-            const userRecords = getAllRecords()[userName] || {};
-            const userGoals = getAllGoals()[userName] || {};
-            let isChanged = false;
+            const changedGoals = applyGoalsWithCurrentRules(userName);
 
-            for (const [gameId, info] of getRecordGames()) {
-                const record = parseFloat(userRecords[gameId]);
-                const goal = parseFloat(userGoals[gameId]);
-                const hasRecord = !isNaN(record);
-                const hasGoal = !isNaN(goal);
-
-                let newGoal = null;
-
-                // 1. 達成済み判定（または記録あるのに目標がない場合）
-                let isAchieved = false;
-                if (hasRecord) {
-                    if (!hasGoal) {
-                        isAchieved = true; // 目標がないなら達成扱い（ベスト基準で設定する）
-                    } else {
-                        if (info.type === 'score' && record >= goal) isAchieved = true;
-                        if (info.type === 'time' && record <= goal) isAchieved = true;
-                    }
-                }
-
-                // ロジック分岐
-                if (isAchieved) {
-                    // ★ 1%だけ高く設定（単位未満は繰り上げ）
-                    if (info.type === 'score') {
-                        // スコア：1%増やす
-                        let increase = record * 0.01;
-                        if (increase < 1) increase = 1; // 最小1点は上げる
-                        newGoal = Math.ceil(record + increase);
-                    } else {
-                        // タイム：1%減らす（速くする）
-                        let decrease = record * 0.01;
-                        if (decrease < 0.1) decrease = 0.1; // 最小0.1秒は速くする
-                        newGoal = parseFloat((record - decrease).toFixed(1));
-                        if (newGoal < 0) newGoal = 0;
-                    }
-
-                } else if (!hasRecord && !hasGoal) {
-                    // ★ 記録も目標もない → デフォルト設定
-                    newGoal = DEFAULT_GOALS[gameId] || (info.type === 'time' ? 60 : 50);
-                }
-                // ※ 未達成の場合は何もしない（今の目標を維持）
-
-                // 保存
-                if (newGoal !== null) {
-                    saveGoal(userName, gameId, newGoal);
-                    isChanged = true;
-                }
-            }
-
-            if (isChanged) {
+            if (changedGoals.length > 0) {
                 showRecords();
-                
-                // アクション系ミッション達成記録（おまかせ設定）
-                if (typeof addMissionStock === 'function') {
-                    addMissionStock(userName, 'auto_set_goals');
-                }
-                
+                recordAutoSetMission(userName, changedGoals);
                 alert("目標を設定しました！\nがんばって記録更新を目指してね！");
             } else {
                 alert("変更が必要な目標はありませんでした。\n今の目標に向かってがんばろう！");

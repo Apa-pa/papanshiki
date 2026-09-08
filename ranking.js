@@ -65,6 +65,7 @@ const STOCK_MASTER = {
 // --- 定数定義 ---
 const STORAGE_KEY = 'papan_records_v1';
 const GOAL_KEY = 'papan_goals_v1';
+const AUTO_GOAL_KEY = 'papan_auto_goals_v1';
 const POINT_KEY = 'papan_points_v1';
 const REWARDED_KEY = 'papan_rewarded_goals_v1';
 const STAMP_KEY = 'papan_stamps_v3';
@@ -76,6 +77,46 @@ const PARENT_PICKS_KEY = 'papan_parent_picks_v1'; // 保護者が選択したコ
 const PARENT_BONUS_KEY = 'papan_parent_bonus_v1'; // 保護者ボーナス受取済みフラグ
 const DAILY_POINT_DIVIDEND_CAP = 1000;
 const POINT_DIVIDEND_RECEIVE_CAP = 3000;
+
+// ゲームごとのデフォルト目標値（初心者向け）
+const DEFAULT_GOALS = {
+    'make10': 60,
+    'math_add_easy': 60,
+    'math_add_hard': 60,
+    'math_sub_easy': 60,
+    'math_sub_hard': 60,
+    'math_multi': 100,
+    'math_div': 100,
+    'rain_math': 100,
+    'clock_read': 180,
+    'triangle_angle': 180,
+    'katakana': 60,
+    'alphabet': 90,
+    'romaji_hole': 120,
+    'rain_vowel': 100,
+    'rain_consonant': 100,
+    'touch25': 60,
+    'tsumitsumi': 10,
+    'memory': 120,
+    'youji': 60,
+    'shopping': 90,
+    'memory_route': 300,
+    'shopping_mission_brain': 180,
+    'attention_dual_task': 50,
+    'water': 90,
+    'rail': 300,
+    'daily_english': 180,
+    'frac_add_easy': 120,
+    'frac_add_hard': 300,
+    'frac_sub_easy': 120,
+    'frac_sub_hard': 300,
+    'frac_multi': 300,
+    'math_strike': 200,
+    'enogu_creator': 60,
+    'eigo_nakama': 100,
+    'eiyou_balance': 70,
+    'math_molkky': 40
+};
 
 // 旧「eawase」は、一覧・全国ランキングとも memory.html の記録として扱われていた。
 // youji.html とは分離し、既存データは memory へ移行する。
@@ -196,6 +237,78 @@ function getUserDonguri(userName) {
 // 記録・目標設定関係
 function getAllRecords() { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
 function getAllGoals() { return JSON.parse(localStorage.getItem(GOAL_KEY) || '{}'); }
+
+function getAutoGoalSettings() {
+    return JSON.parse(localStorage.getItem(AUTO_GOAL_KEY) || '{}');
+}
+
+function isAutoGoalEnabled(userName) {
+    return getAutoGoalSettings()[userName] === true;
+}
+
+function setAutoGoalEnabled(userName, enabled) {
+    if (!userName) return;
+    const settings = getAutoGoalSettings();
+    settings[userName] = Boolean(enabled);
+    localStorage.setItem(AUTO_GOAL_KEY, JSON.stringify(settings));
+}
+
+function calculateRecommendedGoal(gameId, recordValue, goalValue) {
+    const info = GAME_LIST[gameId];
+    if (!info || !Object.prototype.hasOwnProperty.call(DEFAULT_GOALS, gameId)) return null;
+
+    const record = parseFloat(recordValue);
+    const goal = parseFloat(goalValue);
+    const hasRecord = !Number.isNaN(record);
+    const hasGoal = !Number.isNaN(goal);
+
+    let isAchieved = false;
+    if (hasRecord) {
+        if (!hasGoal) {
+            isAchieved = true;
+        } else if (info.type === 'score') {
+            isAchieved = record >= goal;
+        } else if (info.type === 'time') {
+            isAchieved = record <= goal;
+        }
+    }
+
+    if (isAchieved) {
+        if (info.type === 'score') {
+            const increase = Math.max(record * 0.01, 1);
+            return Math.ceil(record + increase);
+        }
+
+        const decrease = Math.max(record * 0.01, 0.1);
+        return Math.max(parseFloat((record - decrease).toFixed(1)), 0);
+    }
+
+    if (!hasRecord && !hasGoal) return DEFAULT_GOALS[gameId];
+    return null;
+}
+
+function applyRecommendedGoals(userName, gameIds = Object.keys(DEFAULT_GOALS)) {
+    if (!userName) return [];
+
+    const userRecords = getAllRecords()[userName] || {};
+    const allGoals = getAllGoals();
+    if (!allGoals[userName]) allGoals[userName] = {};
+    const userGoals = allGoals[userName];
+    const changedGoals = [];
+
+    gameIds.forEach(gameId => {
+        const newGoal = calculateRecommendedGoal(gameId, userRecords[gameId], userGoals[gameId]);
+        if (newGoal === null || parseFloat(userGoals[gameId]) === newGoal) return;
+
+        userGoals[gameId] = newGoal;
+        changedGoals.push({ gameId, value: newGoal });
+    });
+
+    if (changedGoals.length > 0) {
+        localStorage.setItem(GOAL_KEY, JSON.stringify(allGoals));
+    }
+    return changedGoals;
+}
 
 function saveGoal(userName, gameId, value) {
     const goals = getAllGoals();
@@ -762,6 +875,11 @@ function checkAndAwardPoints(userName, gameId, currentRecord) {
         // 保存
         localStorage.setItem(_POINT_KEY, JSON.stringify(allPoints));
         localStorage.setItem(_REWARDED_KEY, JSON.stringify(allHistory));
+
+        // 自動設定がONなら、更新済みのベスト記録を基準に次の目標へ進める
+        if (isAutoGoalEnabled(userName)) {
+            applyRecommendedGoals(userName, [gameId]);
+        }
 
         return reward; // 獲得ポイント(150)を返す
     }
