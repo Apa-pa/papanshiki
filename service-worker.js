@@ -1,5 +1,5 @@
 // キャッシュの名前（更新時にバージョンを変えると新しいキャッシュが作られます）
-var CACHE_NAME = 'papanshiki-v43';
+var CACHE_NAME = 'papanshiki-v44';
 var urlsToCache = [
   // === トップページ ===
   './',
@@ -323,6 +323,28 @@ self.addEventListener('install', function (event) {
     caches.open(CACHE_NAME)
       .then(function (cache) {
         return cache.addAll(urlsToCache);
+      })
+      .then(function () {
+        return self.skipWaiting();
+      })
+  );
+});
+
+// 新しいService Workerをすぐ有効化し、古い世代のキャッシュを削除する
+self.addEventListener('activate', function (event) {
+  event.waitUntil(
+    caches.keys()
+      .then(function (cacheNames) {
+        return Promise.all(
+          cacheNames
+            .filter(function (cacheName) {
+              return cacheName.startsWith('papanshiki-') && cacheName !== CACHE_NAME;
+            })
+            .map(function (cacheName) { return caches.delete(cacheName); })
+        );
+      })
+      .then(function () {
+        return self.clients.claim();
       })
   );
 });

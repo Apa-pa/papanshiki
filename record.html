@@ -684,12 +684,25 @@
             return getRecordGames().map(([gameId]) => gameId);
         }
 
+        const AUTO_GOAL_STORAGE_KEY = 'papan_auto_goals_v1';
+
+        function readAutoGoalSetting(userName) {
+            const settings = JSON.parse(localStorage.getItem(AUTO_GOAL_STORAGE_KEY) || '{}');
+            return settings[userName] === true;
+        }
+
+        function writeAutoGoalSetting(userName, enabled) {
+            const settings = JSON.parse(localStorage.getItem(AUTO_GOAL_STORAGE_KEY) || '{}');
+            settings[userName] = Boolean(enabled);
+            localStorage.setItem(AUTO_GOAL_STORAGE_KEY, JSON.stringify(settings));
+        }
+
         function updateAutoGoalSettingDisplay(userName) {
             const button = document.getElementById('auto-goal-toggle');
             const status = document.getElementById('auto-goal-status');
-            if (!button || !status || typeof isAutoGoalEnabled !== 'function') return;
+            if (!button || !status) return;
 
-            const isEnabled = isAutoGoalEnabled(userName);
+            const isEnabled = readAutoGoalSetting(userName);
             button.classList.toggle('is-on', isEnabled);
             button.setAttribute('aria-pressed', String(isEnabled));
             button.textContent = isEnabled ? '🔁 自動おまかせ：ON' : '🔁 自動おまかせ：OFF';
@@ -699,7 +712,9 @@
         }
 
         function applyGoalsWithCurrentRules(userName) {
-            if (typeof applyRecommendedGoals !== 'function') return [];
+            if (typeof applyRecommendedGoals !== 'function') {
+                throw new Error('ranking.js is out of date');
+            }
             return applyRecommendedGoals(userName, getRecordGameIds());
         }
 
@@ -711,22 +726,30 @@
 
         function toggleAutoGoalSetting() {
             const userName = document.getElementById('user-select').value;
-            if (!userName || typeof setAutoGoalEnabled !== 'function') return;
+            if (!userName) return;
 
-            const willEnable = !isAutoGoalEnabled(userName);
+            const willEnable = !readAutoGoalSetting(userName);
             if (willEnable) {
                 const confirmMsg = "自動おまかせ設定をONにしますか？\n\n今すぐ現在の『おまかせ設定』を行い、これからは目標をクリアするたびに次の目標を自動で設定します。";
                 if (!confirm(confirmMsg)) return;
 
-                const changedGoals = applyGoalsWithCurrentRules(userName);
-                setAutoGoalEnabled(userName, true);
+                let changedGoals;
+                try {
+                    changedGoals = applyGoalsWithCurrentRules(userName);
+                } catch (error) {
+                    console.error(error);
+                    alert('自動おまかせ設定に必要な更新を読み込めませんでした。\nページを再読み込みして、もう一度お試しください。');
+                    return;
+                }
+
+                writeAutoGoalSetting(userName, true);
                 recordAutoSetMission(userName, changedGoals);
                 showRecords();
                 alert(`自動おまかせ設定をONにしました！\n${changedGoals.length}個の目標を設定・更新しました。`);
                 return;
             }
 
-            setAutoGoalEnabled(userName, false);
+            writeAutoGoalSetting(userName, false);
             showRecords();
             alert('自動おまかせ設定をOFFにしました。\n現在の目標はそのまま残ります。');
         }
