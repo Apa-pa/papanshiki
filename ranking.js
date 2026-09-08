@@ -18,7 +18,8 @@ const GAME_LIST = {
     'rain_consonant': { name: 'あめふりローマ字(子)', type: 'score', unit: '点', url: 'rain_romaji.html' },
     'touch25': { name: '1から25までタッチ', type: 'time', unit: '秒', url: 'numbers.html' },
     'tsumitsumi': { name: '漢字つみつみ', type: 'score', unit: 'こ', url: 'tsumitsumi.html' },
-    'eawase': { name: 'えあわせ', type: 'time', unit: '秒', url: 'memory.html' },
+    'memory': { name: 'どうぶつあわせ', type: 'time', unit: '秒', url: 'memory.html' },
+    'youji': { name: 'えあわせパズル', type: 'time', unit: '秒', url: 'youji.html' },
     'shopping': { name: 'ぴったりしはらい', type: 'time', unit: '秒', url: 'shopping.html' },
     'memory_route': { name: 'きおくルートたんけん', type: 'score', unit: '点', url: 'memory_route.html' },
     'shopping_mission_brain': { name: 'かいものミッション', type: 'time', unit: '秒', url: 'shopping_mission_brain.html' },
@@ -75,6 +76,61 @@ const PARENT_PICKS_KEY = 'papan_parent_picks_v1'; // 保護者が選択したコ
 const PARENT_BONUS_KEY = 'papan_parent_bonus_v1'; // 保護者ボーナス受取済みフラグ
 const DAILY_POINT_DIVIDEND_CAP = 1000;
 const POINT_DIVIDEND_RECEIVE_CAP = 3000;
+
+// 旧「eawase」は、一覧・全国ランキングとも memory.html の記録として扱われていた。
+// youji.html とは分離し、既存データは memory へ移行する。
+function migrateLegacyEawaseId() {
+    const oldId = 'eawase';
+    const newId = 'memory';
+    const userMapKeys = [STORAGE_KEY, GOAL_KEY, REWARDED_KEY, PARENT_BONUS_KEY];
+
+    userMapKeys.forEach(key => {
+        const raw = localStorage.getItem(key);
+        if (!raw) return;
+
+        const data = JSON.parse(raw);
+        let changed = false;
+        Object.values(data).forEach(userData => {
+            if (!userData || typeof userData !== 'object' || Array.isArray(userData)) return;
+            if (!Object.prototype.hasOwnProperty.call(userData, oldId)) return;
+
+            if (!Object.prototype.hasOwnProperty.call(userData, newId)) {
+                userData[newId] = userData[oldId];
+            }
+            delete userData[oldId];
+            changed = true;
+        });
+
+        if (changed) localStorage.setItem(key, JSON.stringify(data));
+    });
+
+    const playLogRaw = localStorage.getItem(PLAY_LOG_KEY);
+    if (playLogRaw) {
+        const playLogs = JSON.parse(playLogRaw);
+        let changed = false;
+        Object.values(playLogs).forEach(userLogs => {
+            if (!Array.isArray(userLogs)) return;
+            userLogs.forEach(entry => {
+                if (entry && entry.gameId === oldId) {
+                    entry.gameId = newId;
+                    changed = true;
+                }
+            });
+        });
+        if (changed) localStorage.setItem(PLAY_LOG_KEY, JSON.stringify(playLogs));
+    }
+
+    const parentPicksRaw = localStorage.getItem(PARENT_PICKS_KEY);
+    if (parentPicksRaw) {
+        const parentPicks = JSON.parse(parentPicksRaw);
+        if (Array.isArray(parentPicks) && parentPicks.includes(oldId)) {
+            const migratedPicks = [...new Set(parentPicks.map(id => id === oldId ? newId : id))];
+            localStorage.setItem(PARENT_PICKS_KEY, JSON.stringify(migratedPicks.slice(0, 2)));
+        }
+    }
+}
+
+migrateLegacyEawaseId();
 
 // --- 共通ヘルパー関数 ---
 function getUserNames() {

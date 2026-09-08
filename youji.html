@@ -235,10 +235,10 @@
             document.getElementById('final-time-display').textContent = finalTime + "びょう";
             changeScreen('result-screen');
 
-             // IDは 'eawase'、記録は finalTime (秒数) です
-        if(typeof showSaveDialog === 'function') {
-            showSaveDialog('eawase', finalTime);
-        }
+            // IDは 'youji'、記録は finalTime (秒数) です
+            if (typeof showSaveDialog === 'function') {
+                showSaveDialog('youji', finalTime);
+            }
 
             return;
         }

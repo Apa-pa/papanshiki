@@ -1212,9 +1212,9 @@
                 document.getElementById('result-detail').innerHTML = `${progressText}<br><br>基本 ${basePoints}pt ＋ 3投ボーナス ${bonusPoints}pt<br>獲得ポイント：<strong>${totalPoints}pt</strong>`;
                 resultScreen.hidden = false;
 
-                if (totalPoints > 0 && typeof showPointGetDialog === 'function') {
+                if (totalPoints > 0 && typeof showSaveDialog === 'function') {
                     setTimeout(() => {
-                        showPointGetDialog(totalPoints, 'math_molkky', (selectedUserName) => {
+                        showSaveDialog('math_molkky', totalPoints, totalPoints, (selectedUserName) => {
                             if (selectedUserName && typeof addMissionStock === 'function') {
                                 addMissionStock(selectedUserName, 'math_molkky');
                             }
