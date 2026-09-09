@@ -62,16 +62,33 @@
 
         /* ポイント表示エリア */
         .point-display {
-            background: linear-gradient(135deg, #ffca28, #ff6f00);
-            color: white;
-            padding: 15px;
-            border-radius: 50px;
-            font-size: 24px;
+            background: #fff8dc;
+            color: #4e342e;
+            padding: 10px 14px;
+            border: 2px solid #e0a800;
+            border-radius: 10px;
             font-weight: bold;
             margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(255, 111, 0, 0.3);
-            display: inline-block;
-            min-width: 200px;
+            box-shadow: 0 2px 5px rgba(121, 85, 72, 0.14);
+            display: inline-flex;
+            align-items: baseline;
+            gap: 12px;
+        }
+
+        .point-label {
+            color: #6d4c41;
+            font-size: 13px;
+            letter-spacing: 0.04em;
+        }
+
+        .point-value {
+            color: #9a4f00;
+            font-size: 24px;
+        }
+
+        .point-unit {
+            margin-left: 3px;
+            font-size: 13px;
         }
 
         /* おまかせボタンエリア */
@@ -80,19 +97,19 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 12px;
+            gap: 6px;
         }
 
         .auto-btn {
-            background: #29b6f6;
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 30px;
-            font-size: 16px;
+            background: #fff;
+            color: #6b4e3d;
+            border: 1px solid #ddd;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px #0288d1;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             transition: 0.2s;
             display: inline-flex;
             align-items: center;
@@ -100,30 +117,33 @@
         }
 
         .auto-btn:active {
-            transform: translateY(2px);
+            transform: translateY(1px);
             box-shadow: none;
         }
 
         .auto-btn:hover {
-            background: #03a9f4;
+            transform: translateY(-1px);
+            background: #fff8f0;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
         }
 
         .auto-toggle-btn {
-            background: #78909c;
-            box-shadow: 0 4px #546e7a;
+            background: #fff;
         }
 
         .auto-toggle-btn:hover {
-            background: #607d8b;
+            background: #fff8f0;
         }
 
         .auto-toggle-btn.is-on {
-            background: #66bb6a;
-            box-shadow: 0 4px #388e3c;
+            color: #2e6b32;
+            background: #f1f8e9;
+            border-color: #9ccc65;
+            box-shadow: 0 2px 4px rgba(46, 107, 50, 0.12);
         }
 
         .auto-toggle-btn.is-on:hover {
-            background: #4caf50;
+            background: #e8f5e9;
         }
 
         .auto-setting-note {
@@ -389,13 +409,12 @@
             .point-display {
                 box-sizing: border-box;
                 max-width: 100%;
-                font-size: 22px;
             }
 
             .auto-btn {
                 max-width: 100%;
-                padding: 10px 16px;
-                font-size: 14px;
+                padding: 4px 10px;
+                font-size: 0.7rem;
             }
 
             table,
@@ -509,8 +528,8 @@
 
         <div id="record-display" style="display:none;">
             <div class="point-display">
-                <span style="font-size:16px;">ポイント</span><br>
-                <span id="total-points">0</span> pt
+                <span class="point-label">ポイント</span>
+                <span class="point-value"><span id="total-points">0</span><span class="point-unit">pt</span></span>
             </div>
 
             <div class="auto-set-area">
@@ -519,10 +538,10 @@
                 </button>
                 <button id="auto-goal-toggle" class="auto-btn auto-toggle-btn" type="button"
                     aria-pressed="false" onclick="toggleAutoGoalSetting()">
-                    🔁 自動おまかせ：OFF
+                    🔁 オート設定：OFF
                 </button>
                 <p id="auto-goal-status" class="auto-setting-note">
-                    ONにすると、目標クリア後に次の目標を自動で設定します。
+                    ONの<ruby>場合<rt>ばあい</rt></ruby>、<ruby>目標<rt>もくひょう</rt></ruby>をクリアすると、<ruby>次<rt>つぎ</rt></ruby>の<ruby>目標<rt>もくひょう</rt></ruby>が<ruby>自動<rt>じどう</rt></ruby>で<ruby>設定<rt>せってい</rt></ruby>されます。
                 </p>
             </div>
 
@@ -705,10 +724,8 @@
             const isEnabled = readAutoGoalSetting(userName);
             button.classList.toggle('is-on', isEnabled);
             button.setAttribute('aria-pressed', String(isEnabled));
-            button.textContent = isEnabled ? '🔁 自動おまかせ：ON' : '🔁 自動おまかせ：OFF';
-            status.textContent = isEnabled
-                ? '目標をクリアすると、次の目標が自動で設定されます。'
-                : 'ONにすると、目標クリア後に次の目標を自動で設定します。';
+            button.textContent = isEnabled ? '🔁 オート設定：ON' : '🔁 オート設定：OFF';
+            status.innerHTML = 'ONの<ruby>場合<rt>ばあい</rt></ruby>、<ruby>目標<rt>もくひょう</rt></ruby>をクリアすると、<ruby>次<rt>つぎ</rt></ruby>の<ruby>目標<rt>もくひょう</rt></ruby>が<ruby>自動<rt>じどう</rt></ruby>で<ruby>設定<rt>せってい</rt></ruby>されます。';
         }
 
         function applyGoalsWithCurrentRules(userName) {
@@ -730,7 +747,7 @@
 
             const willEnable = !readAutoGoalSetting(userName);
             if (willEnable) {
-                const confirmMsg = "自動おまかせ設定をONにしますか？\n\n今すぐ現在の『おまかせ設定』を行い、これからは目標をクリアするたびに次の目標を自動で設定します。";
+                const confirmMsg = "オート設定をONにしますか？\n\n今すぐ現在の『おまかせ設定』を行い、これからは目標をクリアするたびに次の目標を自動で設定します。";
                 if (!confirm(confirmMsg)) return;
 
                 let changedGoals;
@@ -738,20 +755,20 @@
                     changedGoals = applyGoalsWithCurrentRules(userName);
                 } catch (error) {
                     console.error(error);
-                    alert('自動おまかせ設定に必要な更新を読み込めませんでした。\nページを再読み込みして、もう一度お試しください。');
+                    alert('オート設定に必要な更新を読み込めませんでした。\nページを再読み込みして、もう一度お試しください。');
                     return;
                 }
 
                 writeAutoGoalSetting(userName, true);
                 recordAutoSetMission(userName, changedGoals);
                 showRecords();
-                alert(`自動おまかせ設定をONにしました！\n${changedGoals.length}個の目標を設定・更新しました。`);
+                alert(`オート設定をONにしました！\n${changedGoals.length}個の目標を設定・更新しました。`);
                 return;
             }
 
             writeAutoGoalSetting(userName, false);
             showRecords();
-            alert('自動おまかせ設定をOFFにしました。\n現在の目標はそのまま残ります。');
+            alert('オート設定をOFFにしました。\n現在の目標はそのまま残ります。');
         }
 
         // ▼▼▼ おまかせ設定ロジック ▼▼▼
