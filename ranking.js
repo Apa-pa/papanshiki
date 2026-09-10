@@ -115,7 +115,7 @@ const DEFAULT_GOALS = {
     'enogu_creator': 60,
     'eigo_nakama': 100,
     'eiyou_balance': 70,
-    'math_molkky': 40
+    'math_molkky': 100
 };
 
 // 旧「eawase」は、一覧・全国ランキングとも memory.html の記録として扱われていた。
