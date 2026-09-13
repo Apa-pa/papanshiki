@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#fff8dc">
+    <meta name="description" content="小学1・2年生向け。たて・よこのことばを考えて、ひみつのキーワードを見つけるクロスワードパズルです。">
+    <title>もりのクロスワード｜ぱぱん式</title>
+    <link rel="icon" href="../202609favicon-32.png">
+    <link rel="stylesheet" href="style.css">
+    <script src="../ranking.js"></script>
+</head>
+
+<body>
+    <section id="start-screen" class="start-screen" aria-labelledby="menu-title">
+        <div class="menu-topbar">
+            <a class="home-link" href="../index.html">← ぱぱん式</a>
+        </div>
+        <div class="menu-card">
+            <div class="menu-title-area">
+                <img src="../hi-an-192.webp" alt="エゾリスのヒーとハリネズミのアン">
+                <div>
+                    <p class="eyebrow">ことばの パズル</p>
+                    <h1 id="menu-title">もりのクロスワード</h1>
+                    <p class="lead">だれが どのステージに ちょうせんする？</p>
+                </div>
+            </div>
+
+            <div class="menu-step">
+                <div class="menu-step-title"><span>1</span><h2>ユーザーを えらぼう</h2></div>
+                <div id="user-options" class="user-options" aria-label="ユーザー"></div>
+                <form id="new-user-form" class="new-user-form">
+                    <label for="new-user-name">あたらしい なまえ</label>
+                    <div>
+                        <input id="new-user-name" type="text" maxlength="12" autocomplete="off" placeholder="なまえを いれてね">
+                        <button type="submit">ついか</button>
+                    </div>
+                </form>
+                <p id="user-message" class="menu-message" role="status"></p>
+            </div>
+
+            <div class="menu-step">
+                <div class="menu-step-title"><span>2</span><h2>レベルを えらぼう</h2></div>
+                <div class="level-options" role="group" aria-label="レベル">
+                    <button class="level-button selected" type="button" data-level="1-2">
+                        <b>小学 1・2年生</b><small>やさしい ことば</small>
+                    </button>
+                    <button class="level-button" type="button" disabled>
+                        <b>小学 3・4年生</b><small>じゅんび中</small>
+                    </button>
+                    <button class="level-button" type="button" disabled>
+                        <b>小学 5・6年生</b><small>じゅんび中</small>
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-step">
+                <div class="menu-step-title"><span>3</span><h2>ステージを えらぼう</h2></div>
+                <div class="stage-options" role="group" aria-label="ステージ">
+                    <button class="stage-button selected" type="button" data-stage="stage_1">
+                        <span class="stage-icon">🌱</span><b>ステージ 1</b><small id="stage-1-status">ちょうせんできるよ</small>
+                    </button>
+                    <button class="stage-button" type="button" data-stage="stage_2">
+                        <span class="stage-icon">🌼</span><b>ステージ 2</b><small>ちょうせんできるよ</small>
+                    </button>
+                    <button class="stage-button" type="button" disabled>
+                        <span class="stage-icon">🌳</span><b>ステージ 3</b><small>じゅんび中</small>
+                    </button>
+                </div>
+            </div>
+
+            <button id="start-button" class="start-button" type="button" disabled>ユーザーを えらんでね</button>
+        </div>
+    </section>
+
+    <header id="game-topbar" class="topbar" hidden>
+        <a class="home-link" id="quit-link" href="#menu" aria-label="ポイントをうけとっておわる">← おわる</a>
+        <div class="stage-pill"><span id="current-stage-icon" aria-hidden="true">🌱</span> <span id="current-stage-label">ステージ 1</span></div>
+        <div class="user-pill"><span aria-hidden="true">👤</span> <span id="current-user"></span></div>
+        <div class="score-pill" aria-live="polite"><span aria-hidden="true">⭐</span> <span id="score">0</span> pt</div>
+    </header>
+
+    <main id="game-screen" class="game-shell" hidden>
+        <section class="intro" aria-labelledby="page-title">
+            <div>
+                <p class="eyebrow" id="play-stage-label">しょうがく 1・2ねんせい・ステージ 1</p>
+                <h1 id="page-title">もりのクロスワード</h1>
+                <p class="lead">もんだいを といて、ひみつの ことばを みつけよう！</p>
+            </div>
+            <img class="intro-character" src="../hi-an-192.webp" alt="エゾリスのヒーとハリネズミのアン">
+        </section>
+
+        <div class="play-layout">
+            <section class="board-card" aria-labelledby="board-title">
+                <div class="card-heading">
+                    <div>
+                        <p class="step-label">1. もんだいを とこう</p>
+                        <h2 id="board-title">クロスワード</h2>
+                    </div>
+                    <button class="small-button" id="reset-button" type="button">はじめから</button>
+                </div>
+                <p class="board-guide">もんだいを おすと、いれる マスが ひかるよ。</p>
+                <div id="crossword-grid" class="crossword-grid" role="grid" aria-label="6かける6のクロスワード"></div>
+                <div class="keyword-legend"><span class="legend-star">1</span> すうじの マスは、ひみつの ことばに つかうよ。</div>
+                <div class="forest-floor" aria-hidden="true">
+                    <span>🌿</span><span>🍄</span><span>🌱</span><span>🌼</span><span>🌿</span>
+                </div>
+            </section>
+
+            <section class="question-card" aria-labelledby="questions-title">
+                <div class="card-heading">
+                    <div>
+                        <p class="step-label">たて・よこ あわせて 6もん</p>
+                        <h2 id="questions-title">もんだい</h2>
+                    </div>
+                    <div class="progress-badge"><span id="solved-count">0</span> / 6</div>
+                </div>
+
+                <div class="clue-columns">
+                    <div>
+                        <h3 class="direction-title"><span aria-hidden="true">➡️</span> よこの かぎ</h3>
+                        <div id="across-clues" class="clue-list"></div>
+                    </div>
+                    <div>
+                        <h3 class="direction-title"><span aria-hidden="true">⬇️</span> たての かぎ</h3>
+                        <div id="down-clues" class="clue-list"></div>
+                    </div>
+                </div>
+
+                <div id="answer-panel" class="answer-panel" aria-live="polite">
+                    <p class="answer-kicker" id="active-label">もんだいを えらんでね</p>
+                    <div id="active-clue" class="active-clue">たてか よこの もんだいを おしてね。</div>
+                    <div id="answer-slots" class="answer-slots" aria-label="こたえ"></div>
+                    <div id="letter-bank" class="letter-bank" aria-label="もじカード"></div>
+                    <div class="answer-actions">
+                        <button id="erase-button" class="action-button erase" type="button" disabled>ひとつ けす</button>
+                        <button id="check-button" class="action-button check" type="button" disabled>こたえあわせ</button>
+                    </div>
+                    <p id="feedback" class="feedback" role="status"></p>
+                </div>
+            </section>
+        </div>
+
+        <section id="keyword-section" class="keyword-card locked" aria-labelledby="keyword-title">
+            <div class="keyword-character-wrap">
+                <img src="../pippi192.webp" alt="くまのピッピ" class="keyword-character">
+                <span class="speech">ぜんぶ とけたら<br>ぼくの でばん！</span>
+            </div>
+            <div class="keyword-content">
+                <p class="step-label">2. ひみつの ことば</p>
+                <h2 id="keyword-title">すうじの じゅんに よんでみよう</h2>
+                <div id="keyword-slots" class="keyword-slots" aria-label="ひみつのことば"></div>
+                <p id="keyword-hint" class="keyword-hint">6もん せいかいすると、ここが ひらくよ。</p>
+                <div id="keyword-bank" class="letter-bank keyword-bank" aria-label="キーワードのもじカード"></div>
+                <div class="answer-actions keyword-actions">
+                    <button id="keyword-erase" class="action-button erase" type="button" disabled>ひとつ けす</button>
+                    <button id="keyword-check" class="action-button check" type="button" disabled>これで けってい！</button>
+                </div>
+                <button id="claim-later-button" class="reward-button claim-later" type="button" hidden>60ポイントを もらう</button>
+                <p id="keyword-feedback" class="feedback" role="status"></p>
+            </div>
+        </section>
+    </main>
+
+    <div id="clear-modal" class="modal" hidden>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="clear-title">
+            <div class="celebration" aria-hidden="true">🎉 ⭐ 🎉</div>
+            <h2 id="clear-title">ステージ 1 クリア！</h2>
+            <p>ひみつの ことばは<br><strong id="clear-keyword">「なかよし」</strong> でした！</p>
+            <div class="reward-breakdown">
+                <div><span>6もん × 5pt</span><b>30pt</b></div>
+                <div><span>キーワード</span><b>30pt</b></div>
+                <div class="reward-total"><span>ごうけい</span><b>60pt</b></div>
+            </div>
+            <button id="reward-button" class="reward-button" type="button">60ポイントを もらう</button>
+            <button id="close-modal" class="modal-close" type="button">あとで もらう</button>
+        </div>
+    </div>
+
+    <script src="stages.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

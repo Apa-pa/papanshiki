@@ -41,7 +41,8 @@ const GAME_LIST = {
     'programming_labo': { name: 'プログラミングラボ', type: 'score', unit: '回', url: 'programming_labo/index.html' },
     'crane_bar_threading': { name: 'クレーンゲーム棒とおし', type: 'score', unit: '回', url: 'crane_bar_threading.html' },
     'molkky': { name: '森のモルック', type: 'score', unit: '点', url: 'molkky.html' },
-    'math_molkky': { name: 'ひきざんモルック', type: 'score', unit: '点', url: 'math_molkky.html' }
+    'math_molkky': { name: 'ひきざんモルック', type: 'score', unit: '点', url: 'math_molkky.html' },
+    'word_crossword': { name: 'もりのクロスワード', type: 'score', unit: 'pt', url: 'crossword/index.html' }
 };
 
 // --- リアル株価連動設定 ---

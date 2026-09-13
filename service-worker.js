@@ -1,5 +1,5 @@
 // キャッシュの名前（更新時にバージョンを変えると新しいキャッシュが作られます）
-var CACHE_NAME = 'papanshiki-v44';
+var CACHE_NAME = 'papanshiki-v52';
 var urlsToCache = [
   // === トップページ ===
   './',
@@ -75,6 +75,10 @@ var urlsToCache = [
   './bunsho.html',
   './kanji_dungeon_2grade.html',
   './kanji_card_battle.html',
+  './crossword/index.html',
+  './crossword/style.css',
+  './crossword/stages.js',
+  './crossword/app.js',
 
 
   // === 漢字・文法学習 ===
