@@ -317,6 +317,73 @@
             color: #6a1b9a;
             display: none;
         }
+
+        /* 最近プレイしたコンテンツ */
+        .play-history-header-note {
+            margin: -5px 0 12px;
+            color: #888;
+            font-size: 0.8rem;
+        }
+
+        .play-history-list {
+            display: grid;
+            gap: 8px;
+            max-height: 480px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .play-history-item {
+            display: grid;
+            grid-template-columns: 58px minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 12px;
+            background: #f8fcff;
+            border: 1px solid #d9eefb;
+            border-radius: 12px;
+        }
+
+        .play-history-date {
+            color: #888;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        .play-history-name {
+            color: #554c46;
+            font-weight: bold;
+            line-height: 1.4;
+            overflow-wrap: anywhere;
+        }
+
+        .play-history-category {
+            padding: 3px 8px;
+            color: #39718f;
+            background: #e1f5fe;
+            border-radius: 12px;
+            font-size: 0.72rem;
+            white-space: nowrap;
+        }
+
+        .play-history-count {
+            margin-left: auto;
+            color: #888;
+            font-size: 0.75rem;
+            font-weight: normal;
+        }
+
+        @media (max-width: 480px) {
+            .play-history-item {
+                grid-template-columns: 52px minmax(0, 1fr);
+                gap: 6px 8px;
+            }
+
+            .play-history-category {
+                grid-column: 2;
+                justify-self: start;
+            }
+        }
     </style>
 </head>
 
@@ -385,6 +452,16 @@
                 </div>
             </div>
 
+            <!-- 最近プレイしたコンテンツ -->
+            <div class="card" style="border-color: #81d4fa; margin-bottom: 20px;">
+                <h2>
+                    🕹️ 最近プレイしたコンテンツ
+                    <span id="playHistoryCount" class="play-history-count">0件</span>
+                </h2>
+                <p class="play-history-header-note">直近30日分のうち、新しいものから最大30件を表示します。</p>
+                <div id="playHistoryList" class="play-history-list"></div>
+            </div>
+
             <!-- パフォーマンスラボ成績 -->
             <div class="dashboard-grid" style="margin-bottom: 20px;">
                 <!-- Labo1: スポーツ能力ラボ -->
@@ -446,6 +523,43 @@
             'sci': 'サイエンス',
             'brain': '脳トレ・パズル',
             'other': 'くらし・アート等'
+        };
+
+        // GAME_LISTに含まれないポイント付与型コンテンツの表示名
+        // GAME_LISTへ追加すると保護者おすすめの選択肢にも影響するため、履歴表示用に分離する。
+        const PLAY_LOG_GAME_NAMES = {
+            'addiction': '依存症あるなし',
+            'bunsu_learn': '分数マスター',
+            'burger_shop': 'バーガープログラミング',
+            'color_lab': 'いろまぜ実験室',
+            'dokidoki_obstacle': 'ドキドキ障害物',
+            'fingers_chess': 'フィンガーチェス',
+            'human_model': 'ドキドキ人体模型',
+            'job_learn': 'おしごと図鑑',
+            'kanji_card_battle': '漢字カードバトル',
+            'kanji_learn': '漢字フラッシュカード',
+            'labo': 'スポーツ能力ラボ',
+            'labo2': '感覚測定ラボ',
+            'leaf_stamp_workshop': '葉っぱスタンプ工房',
+            'logic_mine': 'ロジック・マイン',
+            'music_class': 'アンのおんがく教室',
+            'passcode': 'パスコードをあてよう！',
+            'pitch': 'おとあてクイズ',
+            'presentation_learn': 'プレゼンマスター',
+            'programming': 'ロボットゆうどう作戦',
+            'quest_stage1': 'パパを説得してみよう！',
+            'quest_stage2': 'なかまにいれて！',
+            'quest_stage3': '「すき」の つたえかた',
+            'quest_stage4': 'じまんは ほどほどに？',
+            'rhythm': 'アンのリズム教室',
+            'science': 'ヒー先生のかがくクイズ',
+            'shousu_learn': '小数マスター',
+            'star_puzzle': 'ほしぞらパズル',
+            'unit_runner': '単位クイズランナー',
+            'volleyball': 'バレーボール ラリーチャレンジ',
+            'wariai_learn': '割合と％マスター',
+            'warisan_learn': '割り算マスター',
+            'warizan_learn': '割り算マスター'
         };
 
         // Labo1のスコア軸定義
@@ -524,6 +638,7 @@
             renderCalendar(userName);
             renderAssets(userName);
             renderChart(userName);
+            renderPlayHistory(userName);
             renderLabo1(userName);
             renderLabo2(userName);
         }
@@ -587,6 +702,16 @@
             document.getElementById('stockValueDg').textContent = `${stockValDg.toLocaleString()} 🌰`;
         }
 
+        // ゲームIDに対応するカテゴリを返す
+        function getGameCategory(gameId) {
+            for (const category in GAME_CATEGORIES) {
+                if (GAME_CATEGORIES[category].includes(gameId)) {
+                    return category;
+                }
+            }
+            return 'other';
+        }
+
         // 直近30日プレイログからカテゴリ別プレイ回数を集計
         function getPlayLogCount(userName) {
             const logs = (typeof getPlayLog === 'function') ? getPlayLog(userName) : [];
@@ -596,20 +721,59 @@
             }
 
             logs.forEach(entry => {
-                const gameId = entry.gameId;
-                let category = 'other';
-                for (let cat in GAME_CATEGORIES) {
-                    if (GAME_CATEGORIES[cat].includes(gameId)) {
-                        category = cat;
-                        break;
-                    }
-                }
+                const category = getGameCategory(entry.gameId);
                 if (counts[category] !== undefined) {
                     counts[category]++;
                 }
             });
 
             return counts;
+        }
+
+        // 最近プレイしたコンテンツを新しい順に最大30件表示
+        function renderPlayHistory(userName) {
+            const container = document.getElementById('playHistoryList');
+            const countElement = document.getElementById('playHistoryCount');
+            const logs = (typeof getPlayLog === 'function') ? getPlayLog(userName) : [];
+            const recentLogs = logs.slice(-30).reverse();
+
+            container.replaceChildren();
+            countElement.textContent = `${recentLogs.length}件`;
+
+            if (recentLogs.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'empty-message';
+                empty.textContent = 'まだプレイ履歴がありません';
+                container.appendChild(empty);
+                return;
+            }
+
+            recentLogs.forEach(entry => {
+                const item = document.createElement('div');
+                item.className = 'play-history-item';
+
+                const date = document.createElement('span');
+                date.className = 'play-history-date';
+                const dateParts = String(entry.date || '').split('-');
+                date.textContent = dateParts.length === 3
+                    ? `${Number(dateParts[1])}/${Number(dateParts[2])}`
+                    : (entry.date || '日付不明');
+
+                const name = document.createElement('span');
+                name.className = 'play-history-name';
+                name.textContent = GAME_LIST[entry.gameId]?.name
+                    || PLAY_LOG_GAME_NAMES[entry.gameId]
+                    || entry.gameId
+                    || '不明なコンテンツ';
+
+                const category = getGameCategory(entry.gameId);
+                const categoryLabel = document.createElement('span');
+                categoryLabel.className = 'play-history-category';
+                categoryLabel.textContent = CATEGORY_NAMES[category] || CATEGORY_NAMES.other;
+
+                item.append(date, name, categoryLabel);
+                container.appendChild(item);
+            });
         }
 
         // レーダーチャート描画

@@ -302,6 +302,8 @@
 - `showSaveDialog()` は記録保存時に自動で `savePlayLog()` を呼ぶ
 - `showPointGetDialog(amount, gameId)` は `gameId` が渡された場合だけ `savePlayLog()` を呼ぶ。固定ポイント型・成績連動型では第2引数の指定が重要
 - `dashboard.html` は `getPlayLog(userName)` で直近30日のログを取得し、`GAME_CATEGORIES` に基づいて「さんすう・計算」「こくご・ことば」「サイエンス」「脳トレ・パズル」「くらし・アート等」に分類してレーダーチャート表示する
+- `dashboard.html` の「最近プレイしたコンテンツ」は、直近30日分のログから最新30件をユーザー別・新しい順に表示する。同じコンテンツの複数回プレイも別々の履歴として扱う
+- 履歴の表示名は `GAME_LIST` を優先し、未登録のポイント付与型コンテンツは `dashboard.html` の `PLAY_LOG_GAME_NAMES` で補完する
 - `dashboard.html` ではポイント、どんぐり、株評価額（ポイント建て/どんぐり建て）も表示する。株評価額は `getUserStocks()` と `getMarketData()`、`STOCK_MASTER` を参照する
 - ユーザー選択は `papan_dashboard_last_user` に保存され、再訪時に復元される
 
@@ -438,6 +440,7 @@ e:\ぱぱん式\
 4. **ダッシュボードのプレイ履歴集計に対応する場合**:
    - `showPointGetDialog()` を使うゲームは、必ず第2引数に `gameId` を渡す
    - 新しい `gameId` は `dashboard.html` の `GAME_CATEGORIES` に追加する
+   - `GAME_LIST` にない `gameId` は、履歴に日本語名を表示するため `dashboard.html` の `PLAY_LOG_GAME_NAMES` にも追加する
    - 記録保存型は `showSaveDialog()` が自動でプレイログを保存する
 
 5. **画像を追加する場合**:
