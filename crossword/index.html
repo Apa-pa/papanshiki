@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#fff8dc">
-    <meta name="description" content="小学1・2年生向け。たて・よこのことばを考えて、ひみつのキーワードを見つけるクロスワードパズルです。">
+    <meta name="description" content="小学生向け。たて・よこのことばを考えて、ひみつのキーワードを見つけるクロスワードパズルです。">
     <title>もりのクロスワード｜ぱぱん式</title>
     <link rel="icon" href="../202609favicon-32.png">
     <link rel="stylesheet" href="style.css">
@@ -43,31 +43,21 @@
             <div class="menu-step">
                 <div class="menu-step-title"><span>2</span><h2>レベルを えらぼう</h2></div>
                 <div class="level-options" role="group" aria-label="レベル">
-                    <button class="level-button selected" type="button" data-level="1-2">
+                    <button class="level-button selected" type="button" data-level="1-2" aria-pressed="true">
                         <b>小学 1・2年生</b><small>やさしい ことば</small>
                     </button>
-                    <button class="level-button" type="button" disabled>
-                        <b>小学 3・4年生</b><small>じゅんび中</small>
+                    <button class="level-button" type="button" data-level="3-4" aria-pressed="false">
+                        <b>小学 3・4年生</b><small>ことばを かんがえよう</small>
                     </button>
-                    <button class="level-button" type="button" disabled>
-                        <b>小学 5・6年生</b><small>じゅんび中</small>
+                    <button class="level-button" type="button" data-level="5-6" aria-pressed="false">
+                        <b>小学 5・6年生</b><small>いみを ふかく かんがえよう</small>
                     </button>
                 </div>
             </div>
 
             <div class="menu-step">
                 <div class="menu-step-title"><span>3</span><h2>ステージを えらぼう</h2></div>
-                <div class="stage-options" role="group" aria-label="ステージ">
-                    <button class="stage-button selected" type="button" data-stage="stage_1">
-                        <span class="stage-icon">🌱</span><b>ステージ 1</b><small id="stage-1-status">ちょうせんできるよ</small>
-                    </button>
-                    <button class="stage-button" type="button" data-stage="stage_2">
-                        <span class="stage-icon">🌼</span><b>ステージ 2</b><small>ちょうせんできるよ</small>
-                    </button>
-                    <button class="stage-button" type="button" disabled>
-                        <span class="stage-icon">🌳</span><b>ステージ 3</b><small>じゅんび中</small>
-                    </button>
-                </div>
+                <div id="stage-options" class="stage-options" role="group" aria-label="ステージ"></div>
             </div>
 
             <button id="start-button" class="start-button" type="button" disabled>ユーザーを えらんでね</button>
@@ -101,7 +91,7 @@
                     <button class="small-button" id="reset-button" type="button">はじめから</button>
                 </div>
                 <p class="board-guide">もんだいを おすと、いれる マスが ひかるよ。</p>
-                <div id="crossword-grid" class="crossword-grid" role="grid" aria-label="6かける6のクロスワード"></div>
+                <div id="crossword-grid" class="crossword-grid" role="grid" aria-label="クロスワード"></div>
                 <div class="keyword-legend"><span class="legend-star">1</span> すうじの マスは、ひみつの ことばに つかうよ。</div>
                 <div class="forest-floor" aria-hidden="true">
                     <span>🌿</span><span>🍄</span><span>🌱</span><span>🌼</span><span>🌿</span>
@@ -111,10 +101,10 @@
             <section class="question-card" aria-labelledby="questions-title">
                 <div class="card-heading">
                     <div>
-                        <p class="step-label">たて・よこ あわせて 6もん</p>
+                        <p class="step-label" id="clue-count-label">たて・よこ あわせて 6もん</p>
                         <h2 id="questions-title">もんだい</h2>
                     </div>
-                    <div class="progress-badge"><span id="solved-count">0</span> / 6</div>
+                    <div class="progress-badge"><span id="solved-count">0</span> / <span id="total-clue-count">6</span></div>
                 </div>
 
                 <div class="clue-columns">
@@ -169,9 +159,9 @@
             <h2 id="clear-title">ステージ 1 クリア！</h2>
             <p>ひみつの ことばは<br><strong id="clear-keyword">「なかよし」</strong> でした！</p>
             <div class="reward-breakdown">
-                <div><span>6もん × 5pt</span><b>30pt</b></div>
-                <div><span>キーワード</span><b>30pt</b></div>
-                <div class="reward-total"><span>ごうけい</span><b>60pt</b></div>
+                <div><span id="modal-clue-calculation">6もん × 5pt</span><b id="modal-clue-points">30pt</b></div>
+                <div><span>キーワード</span><b id="modal-keyword-points">30pt</b></div>
+                <div class="reward-total"><span>ごうけい</span><b id="modal-total-points">60pt</b></div>
             </div>
             <button id="reward-button" class="reward-button" type="button">60ポイントを もらう</button>
             <button id="close-modal" class="modal-close" type="button">あとで もらう</button>

@@ -216,6 +216,10 @@ ruby rt {
     gap: 11px;
 }
 
+.stage-options {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
 .level-button,
 .stage-button {
     min-height: 82px;
@@ -230,6 +234,7 @@ ruby rt {
     color: #526056;
     background: #f7f9f5;
     box-shadow: 0 5px 0 #d9dfd6;
+    cursor: pointer;
 }
 
 .level-button.selected,
@@ -243,6 +248,7 @@ ruby rt {
 .level-button:disabled,
 .stage-button:disabled {
     opacity: .58;
+    cursor: default;
 }
 
 .level-button b,

@@ -6,6 +6,16 @@
     const progressKey = "papan_crossword_progress_v2";
     const lastUserKey = "papan_crossword_last_user";
     const directionLabel = { across: "よこ", down: "たて" };
+    const gradePlayLabel = {
+        "1-2": "しょうがく 1・2ねんせい",
+        "3-4": "しょうがく 3・4ねんせい",
+        "5-6": "しょうがく 5・6ねんせい"
+    };
+    const gradeMenuLabel = {
+        "1-2": "小学1・2年生",
+        "3-4": "小学3・4年生",
+        "5-6": "小学5・6年生"
+    };
     const letterPool = [
         "あ", "い", "う", "え", "お", "か", "き", "く", "け", "こ",
         "さ", "し", "す", "せ", "そ", "た", "ち", "つ", "て", "と",
@@ -42,8 +52,10 @@
     const userMessageEl = document.getElementById("user-message");
     const startButton = document.getElementById("start-button");
     const newUserInput = document.getElementById("new-user-name");
+    const stageOptionsEl = document.getElementById("stage-options");
 
     let selectedUser = "";
+    let selectedLevel = "1-2";
     let selectedStageId = "stage_1";
     let activeEntryId = null;
     let solvedEntries = new Set();
@@ -82,6 +94,7 @@
     function renderGrid() {
         gridEl.style.setProperty("--rows", stage.rows);
         gridEl.style.setProperty("--cols", stage.cols);
+        gridEl.setAttribute("aria-label", `${stage.rows}かける${stage.cols}のクロスワード`);
         gridEl.innerHTML = "";
 
         for (let row = 0; row < stage.rows; row += 1) {
@@ -354,7 +367,7 @@
             keywordFeedbackEl.className = "feedback correct";
             saveProgress();
             updateKeywordControls();
-            document.getElementById("clear-title").textContent = `ステージ ${stage.number} クリア！`;
+            document.getElementById("clear-title").textContent = `${gradeMenuLabel[stage.gradeBand]}・ステージ ${stage.number} クリア！`;
             document.getElementById("clear-keyword").textContent = `「${stage.keyword.answer}」`;
             window.setTimeout(() => { clearModal.hidden = false; }, 450);
         } else {
@@ -441,7 +454,7 @@
         startButton.disabled = !selectedUser;
         const selectedStage = window.PapanCrosswordStages.find(item => item.id === selectedStageId);
         startButton.textContent = selectedUser
-            ? `${selectedUser}さん・ステージ ${selectedStage.number}で はじめる！`
+            ? `${selectedUser}さん・${gradeMenuLabel[selectedLevel]} ステージ ${selectedStage.number}で はじめる！`
             : "ユーザーを えらんでね";
         document.querySelectorAll(".stage-button[data-stage]").forEach(button => {
             const stageId = button.dataset.stage;
@@ -455,10 +468,57 @@
         });
     }
 
+    function renderStageOptions() {
+        const stages = window.PapanCrosswordStages.filter(item => item.gradeBand === selectedLevel);
+        stageOptionsEl.innerHTML = "";
+        stages.forEach(item => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "stage-button";
+            button.dataset.stage = item.id;
+            button.innerHTML = `<span class="stage-icon" aria-hidden="true">${item.icon}</span><b>ステージ ${item.number}</b><small>ちょうせんできるよ</small>`;
+            button.addEventListener("click", () => selectStage(item.id));
+            stageOptionsEl.appendChild(button);
+        });
+    }
+
+    function selectLevel(level) {
+        const stages = window.PapanCrosswordStages.filter(item => item.gradeBand === level);
+        if (!stages.length) return;
+        selectedLevel = level;
+        selectedStageId = stages[0].id;
+        document.querySelectorAll(".level-button[data-level]").forEach(button => {
+            const selected = button.dataset.level === selectedLevel;
+            button.classList.toggle("selected", selected);
+            button.setAttribute("aria-pressed", String(selected));
+        });
+        renderStageOptions();
+        updateMenuState();
+    }
+
     function selectStage(stageId) {
-        if (!window.PapanCrosswordStages.some(item => item.id === stageId)) return;
+        if (!window.PapanCrosswordStages.some(item => item.id === stageId && item.gradeBand === selectedLevel)) return;
         selectedStageId = stageId;
         updateMenuState();
+    }
+
+    function updateStagePresentation() {
+        const clueCount = stage.entries.length;
+        const cluePoints = clueCount * stage.clueReward;
+        const maximumPoints = getMaximumPoints();
+        const gradeText = gradePlayLabel[stage.gradeBand] || "しょうがくせい";
+        const gradeShort = gradeMenuLabel[stage.gradeBand] || "小学生";
+        document.getElementById("current-stage-icon").textContent = stage.icon;
+        document.getElementById("current-stage-label").textContent = `${gradeShort.replace("小学", "")}・ステージ ${stage.number}`;
+        document.getElementById("play-stage-label").textContent = `${gradeText}・ステージ ${stage.number}`;
+        document.getElementById("clue-count-label").textContent = `たて・よこ あわせて ${clueCount}もん`;
+        document.getElementById("total-clue-count").textContent = clueCount;
+        document.getElementById("modal-clue-calculation").textContent = `${clueCount}もん × ${stage.clueReward}pt`;
+        document.getElementById("modal-clue-points").textContent = `${cluePoints}pt`;
+        document.getElementById("modal-keyword-points").textContent = `${stage.keywordReward}pt`;
+        document.getElementById("modal-total-points").textContent = `${maximumPoints}pt`;
+        document.getElementById("reward-button").textContent = `${maximumPoints}ポイントを もらう`;
+        claimLaterButton.textContent = `${maximumPoints}ポイントを もらう`;
     }
 
     function startGame() {
@@ -469,9 +529,7 @@
         cellMap = buildCellMap();
         localStorage.setItem(lastUserKey, selectedUser);
         document.getElementById("current-user").textContent = `${selectedUser}さん`;
-        document.getElementById("current-stage-icon").textContent = stage.icon;
-        document.getElementById("current-stage-label").textContent = `ステージ ${stage.number}`;
-        document.getElementById("play-stage-label").textContent = `しょうがく 1・2ねんせい・ステージ ${stage.number}`;
+        updateStagePresentation();
         startScreen.hidden = true;
         gameTopbar.hidden = false;
         gameScreen.hidden = false;
@@ -560,11 +618,12 @@
         rewardClaimed = false;
         rewardFlowActive = false;
         clearModal.hidden = true;
+        updateStagePresentation();
         const rewardButton = document.getElementById("reward-button");
         rewardButton.disabled = false;
         rewardButton.textContent = `${getMaximumPoints()}ポイントを もらう`;
         keywordSection.className = "keyword-card locked";
-        keywordHintEl.textContent = "6もん せいかいすると、ここが ひらくよ。";
+        keywordHintEl.textContent = `${stage.entries.length}もん せいかいすると、ここが ひらくよ。`;
         keywordFeedbackEl.textContent = "";
         activeLabelEl.textContent = "もんだいを えらんでね";
         activeClueEl.textContent = "たてか よこの もんだいを おしてね。";
@@ -597,10 +656,11 @@
 
     document.getElementById("new-user-form").addEventListener("submit", registerUser);
     startButton.addEventListener("click", startGame);
-    document.querySelectorAll(".stage-button[data-stage]").forEach(button => {
-        button.addEventListener("click", () => selectStage(button.dataset.stage));
+    document.querySelectorAll(".level-button[data-level]").forEach(button => {
+        button.addEventListener("click", () => selectLevel(button.dataset.level));
     });
 
+    renderStageOptions();
     renderGrid();
     renderClues();
     renderKeywordSlots();
