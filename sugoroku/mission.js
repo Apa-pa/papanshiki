@@ -8,7 +8,8 @@ const MISSION_POOL = [
     // ゲームクリア系ミッション
     { id: 'labo',               name: 'スポーツのうりょくラボ',       type: 'game',   emoji: '🏃', url: '../performance_labo/labo.html' },
     { id: 'learning_labo_play', name: 'がくしゅうスターラボをプレイ', type: 'game',   emoji: '⭐', url: '../learning_labo/labo.html' },
-    { id: 'labo2',              name: 'かんかくのラボ',               type: 'game',   emoji: '🧠', url: '../performance_labo/labo2.html' },
+    { id: 'labo2',              name: 'かんかくのラボ',               type: 'game',   emoji: '🧪', url: '../performance_labo/labo2.html' },
+    { id: 'labo3',              name: 'きおく力のラボ',               type: 'game',   emoji: '🧠', url: '../performance_labo/labo3.html' },
     { id: 'kanji_card_battle',  name: 'かんじカードバトル',           type: 'game',   emoji: '🃏', url: '../kanji_card_battle.html' },
     { id: 'math_strike',        name: 'けいさんビリヤード',           type: 'game',   emoji: '🎱', url: '../math_strike.html' },
     { id: 'math_molkky',        name: 'ひきざんモルック',             type: 'game',   emoji: '🪵', url: '../math_molkky.html' },
@@ -17,6 +18,7 @@ const MISSION_POOL = [
     { id: 'rhythm',             name: 'アンのリズムきょうしつ',       type: 'game',   emoji: '🎵', url: '../rhythm.html' },
     { id: 'dokidoki_obstacle',  name: 'ドキドキしょうがいぶつレース', type: 'game',   emoji: '🏅', url: '../dokidoki_obstacle.html' },
     { id: 'programming_labo',   name: 'プログラミングラボで作品づくり', type: 'game', emoji: '💻', url: '../programming_labo/index.html' },
+    { id: 'slide_puzzle',       name: 'スライドパズル・アトリエ',     type: 'game',   emoji: '🖼️', url: '../slide_puzzle.html' },
     // ページ訪問系ミッション
     { id: 'visit_avatar_shop',  name: 'アバターショップへ',           type: 'visit',  emoji: '👗', url: '../avatar_shop.html' },
     { id: 'visit_room_shop',    name: 'インテリアショップへ',         type: 'visit',  emoji: '🛋️', url: '../room_shop.html' },

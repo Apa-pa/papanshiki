@@ -181,6 +181,8 @@
                     style="margin: 5px; background: #f44336; box-shadow: 0 5px #c62828;">🔴 レベル 2</button>
                 <button class="start-btn" onclick="startGame(3)"
                     style="margin: 5px; background: #7e57c2; box-shadow: 0 5px #5e35b1;">🟣 レベル 3</button>
+                <button class="start-btn" onclick="startGame(4)"
+                    style="margin: 5px; background: #ff9800; box-shadow: 0 5px #e65100;">🟠 レベル 4</button>
             </div>
 
             <br><a href="index.html" class="back-btn">🏠 もどる</a>
@@ -292,7 +294,7 @@
 
         function startGame(levelNum) {
             currentLevel = levelNum;
-            // レベル1ならステージ1〜5、レベル2ならステージ6〜10
+            // レベルNならステージ (N-1)*5+1 〜 N*5（レベル4はステージ16〜20）
             currentStage = (levelNum - 1) * 5 + 1;
             maxStage = currentStage + 4;
 
@@ -655,8 +657,122 @@
                 stageData.obstacles.push({ type: 'rotator', cx: 120, cy: 380, length: 112, angle: 0, speed: 4.1 });
                 stageData.blinkingObstacles.push({ x: 250, y: 238, w: 60, h: 120, activeTime: 0.9, inactiveTime: 1.1, timer: 0.4, isActive: false });
                 stageData.obstacles.push({ type: 'slider', x: 200, y: 185, w: 80, h: 72, baseX: 200, baseY: 185, moveRange: 20, speed: 3.1, angle: Math.PI / 2, isVertical: false });
+            } else if (stage === 16) {
+                // レベル4-1：ぐるぐるボール入門（まっすぐな道を3つのボールが横切る）
+                stageData.start = { x: 200, y: 540, w: 60, h: 60 };
+                stageData.goal = { x: 200, y: 60, w: 60, h: 60 };
+                stageData.paths = [
+                    { x: 170, y: 30, w: 60, h: 540 }
+                ];
+                addOrbitBalls(200, 440, 50, 1, 1.8, 14, 0);
+                addOrbitBalls(200, 300, 50, 1, -2.2, 14, Math.PI);
+                addOrbitBalls(200, 160, 50, 1, 2.6, 14, Math.PI / 2);
+            } else if (stage === 17) {
+                // レベル4-2：ジグザグ道 + ぐるぐるボール + スライダー + 明滅
+                stageData.start = { x: 80, y: 540, w: 60, h: 60 };
+                stageData.goal = { x: 320, y: 100, w: 60, h: 60 };
+                stageData.paths = [
+                    { x: 50, y: 510, w: 300, h: 60 },  // 下段（横）
+                    { x: 290, y: 290, w: 60, h: 280 }, // 右（縦）
+                    { x: 50, y: 290, w: 300, h: 60 },  // 中段（横）
+                    { x: 50, y: 70, w: 60, h: 280 },   // 左（縦）
+                    { x: 50, y: 70, w: 300, h: 60 }    // 上段（横）
+                ];
+                addOrbitBalls(200, 540, 45, 2, 2.2, 12, 0);
+                addOrbitBalls(200, 320, 50, 2, -2.0, 12, Math.PI / 2);
+                stageData.obstacles.push({ type: 'slider', x: 80, y: 210, w: 80, h: 30, baseX: 80, baseY: 210, moveRange: 60, speed: 2.0, angle: 0, isVertical: false });
+                stageData.blinkingObstacles.push({ x: 170, y: 70, w: 60, h: 60, activeTime: 1.0, inactiveTime: 1.2, timer: 0, isActive: false });
+            } else if (stage === 18) {
+                // レベル4-3：動く足場に乗りながらボールと回転棒をよける
+                stageData.start = { x: 80, y: 540, w: 60, h: 60 };
+                stageData.goal = { x: 60, y: 70, w: 60, h: 60 };
+                stageData.paths = [
+                    { x: 50, y: 510, w: 60, h: 60 },   // スタート足場
+                    { x: 290, y: 490, w: 80, h: 80 },  // 右下の休けい足場
+                    { x: 310, y: 190, w: 60, h: 300 }, // 右の縦道
+                    { x: 20, y: 30, w: 80, h: 220 }    // 左のゴール道
+                ];
+                // 下の横移動足場（スタート→右下）
+                stageData.movingPaths.push({ x: 70, y: 510, w: 70, h: 60, baseX: 165, baseY: 510, moveRange: 95, speed: 0.9, angle: -Math.PI / 2, dir: 'x' });
+                // 上の横移動足場（右上→左）
+                stageData.movingPaths.push({ x: 280, y: 190, w: 70, h: 60, baseX: 170, baseY: 190, moveRange: 110, speed: 0.8, angle: Math.PI / 2, dir: 'x' });
+                // 下の足場の上をかすめるボール×3
+                addOrbitBalls(200, 480, 50, 3, 1.8, 12, 0);
+                // 右の縦道を横切るボール×3（輪の中心で待てる）
+                addOrbitBalls(340, 370, 45, 3, 2.0, 12, 0);
+                // 上の足場を上下からはさむ回転棒（90度ずらし）
+                stageData.obstacles.push({ type: 'rotator', cx: 200, cy: 160, length: 120, angle: 0, speed: 2.0 });
+                stageData.obstacles.push({ type: 'rotator', cx: 200, cy: 280, length: 120, angle: Math.PI / 2, speed: 2.0 });
+                // ゴール前の明滅
+                stageData.blinkingObstacles.push({ x: 20, y: 120, w: 80, h: 40, activeTime: 0.8, inactiveTime: 1.2, timer: 0, isActive: false });
+            } else if (stage === 19) {
+                // レベル4-4：細いクネクネ道のギミック総まとめ
+                stageData.start = { x: 60, y: 540, w: 50, h: 50 };
+                stageData.goal = { x: 55, y: 120, w: 50, h: 50 };
+                stageData.paths = [
+                    { x: 30, y: 515, w: 340, h: 50 },  // 下段（横）
+                    { x: 320, y: 375, w: 50, h: 190 }, // 右（縦）
+                    { x: 30, y: 375, w: 340, h: 50 },  // 中段1（横）
+                    { x: 30, y: 235, w: 50, h: 190 },  // 左（縦）
+                    { x: 30, y: 235, w: 340, h: 50 },  // 中段2（横）
+                    { x: 320, y: 95, w: 50, h: 190 },  // 右（縦）
+                    { x: 30, y: 95, w: 340, h: 50 }    // 上段（横）
+                ];
+                // 下段：3つのボール
+                addOrbitBalls(190, 540, 40, 3, 2.0, 11, 0);
+                // 中段1：明滅×2（あいだで休める）
+                stageData.blinkingObstacles.push({ x: 130, y: 375, w: 50, h: 50, activeTime: 0.8, inactiveTime: 1.0, timer: 0, isActive: false });
+                stageData.blinkingObstacles.push({ x: 220, y: 375, w: 50, h: 50, activeTime: 0.8, inactiveTime: 1.0, timer: 0.9, isActive: false });
+                // 左の縦道：左右からのクラッシャー
+                stageData.obstacles.push({ type: 'slider', x: 15, y: 330, w: 60, h: 30, baseX: 15, baseY: 330, moveRange: 25, speed: 3.0, angle: 0, isVertical: false });
+                stageData.obstacles.push({ type: 'slider', x: 95, y: 330, w: 60, h: 30, baseX: 95, baseY: 330, moveRange: 25, speed: 3.0, angle: Math.PI, isVertical: false });
+                // 中段2：4つのボール（輪の中心で待てる）
+                addOrbitBalls(190, 260, 45, 4, -1.8, 11, 0);
+                // 右の縦道：明滅
+                stageData.blinkingObstacles.push({ x: 320, y: 160, w: 50, h: 60, activeTime: 0.7, inactiveTime: 1.0, timer: 0.3, isActive: false });
+                // 上段：上下に動くスライダー×2（逆位相）
+                stageData.obstacles.push({ type: 'slider', x: 150, y: 120, w: 30, h: 70, baseX: 150, baseY: 120, moveRange: 50, speed: 3.0, angle: 0, isVertical: true });
+                stageData.obstacles.push({ type: 'slider', x: 250, y: 120, w: 30, h: 70, baseX: 250, baseY: 120, moveRange: 50, speed: 3.0, angle: Math.PI, isVertical: true });
+            } else if (stage === 20) {
+                // レベル4-5：観覧車・ボール・クラッシャー・回転棒の集大成
+                stageData.start = { x: 80, y: 540, w: 60, h: 60 };
+                stageData.goal = { x: 330, y: 70, w: 60, h: 60 };
+                stageData.paths = [
+                    { x: 50, y: 510, w: 130, h: 60 },  // スタート横道
+                    { x: 300, y: 380, w: 90, h: 80 },  // 観覧車の出口
+                    { x: 330, y: 230, w: 60, h: 230 }, // 右の縦道
+                    { x: 110, y: 230, w: 280, h: 60 }, // 中段（横）
+                    { x: 110, y: 40, w: 60, h: 250 },  // 左の縦道
+                    { x: 110, y: 40, w: 250, h: 60 }   // 上段（ゴールへ）
+                ];
+                // 観覧車
+                for (let i = 0; i < 4; i++) {
+                    stageData.movingPaths.push({
+                        type: 'orbit', cx: 200, cy: 430, r: 100,
+                        w: 55, h: 55, angle: (Math.PI / 2) * i, speed: 0.7
+                    });
+                }
+                // 右の縦道：明滅
+                stageData.blinkingObstacles.push({ x: 330, y: 300, w: 60, h: 40, activeTime: 0.8, inactiveTime: 1.0, timer: 0, isActive: false });
+                // 中段：4つのボール（輪の中心で待てる）
+                addOrbitBalls(260, 260, 45, 4, -1.8, 11, 0);
+                // 左の縦道：左右からのクラッシャー
+                stageData.obstacles.push({ type: 'slider', x: 95, y: 160, w: 60, h: 30, baseX: 95, baseY: 160, moveRange: 25, speed: 3.2, angle: 0, isVertical: false });
+                stageData.obstacles.push({ type: 'slider', x: 185, y: 160, w: 60, h: 30, baseX: 185, baseY: 160, moveRange: 25, speed: 3.2, angle: Math.PI, isVertical: false });
+                // 上段：回転棒
+                stageData.obstacles.push({ type: 'rotator', cx: 240, cy: 70, length: 80, angle: 0, speed: 3.2 });
             }
             updateCharPositions(stageData.start, stageData.goal);
+        }
+
+        // ぐるぐるボール（中心のまわりを回る危険なボール）を追加する
+        function addOrbitBalls(cx, cy, r, count, speed, ballR, offset) {
+            for (let i = 0; i < count; i++) {
+                stageData.obstacles.push({
+                    type: 'orbitBall', cx: cx, cy: cy, r: r, ballR: ballR,
+                    angle: offset + ((Math.PI * 2) / count) * i, speed: speed
+                });
+            }
         }
 
         function updateCharPositions(start, goal) {
@@ -879,6 +995,24 @@
                         context.rotate(o.angle);
                         context.fillRect(-o.length / 2, -10, o.length, 20);
                         context.restore();
+                    });
+                } else if (o.type === 'orbitBall') {
+                    // 軌道のガイド線（見た目のみ・当たり判定なし）
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.setLineDash([6, 6]);
+                    ctx.arc(o.cx, o.cy, o.r, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(239, 83, 80, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.restore();
+                    // ボール本体（当たり判定あり）
+                    const bx = o.cx + Math.cos(o.angle) * o.r;
+                    const by = o.cy + Math.sin(o.angle) * o.r;
+                    drawDanger((context) => {
+                        context.beginPath();
+                        context.arc(bx, by, o.ballR, 0, Math.PI * 2);
+                        context.fill();
                     });
                 }
             });

@@ -212,6 +212,17 @@
             margin-right: 10px;
         }
 
+        .labo-total-badge3 {
+            display: inline-block;
+            background: linear-gradient(135deg, #7e57c2, #ab47bc);
+            color: white;
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
         .labo-date {
             font-size: 0.8rem;
             color: #aaa;
@@ -477,6 +488,13 @@
                     <div id="labo2Content"></div>
                     <a href="performance_labo/labo2.html" class="labo-link-btn" style="background:#fff3e0; color:#e65100;">▶ ラボに挑戦する</a>
                 </div>
+
+                <!-- Labo3: きおく力測定ラボ -->
+                <div class="card" style="border-color: #ce93d8;">
+                    <h2>🧠 きおく力測定ラボ</h2>
+                    <div id="labo3Content"></div>
+                    <a href="performance_labo/labo3.html" class="labo-link-btn" style="background:#f3e5f5; color:#6a1b9a;">▶ ラボに挑戦する</a>
+                </div>
             </div>
 
         </div>
@@ -513,7 +531,7 @@
             'math': ['make10', 'math_add_easy', 'math_add_hard', 'math_sub_easy', 'math_sub_hard', 'math_multi', 'math_div', 'rain_math', 'water', 'frac_add_easy', 'frac_add_hard', 'frac_sub_easy', 'frac_sub_hard', 'frac_multi', 'math_strike', 'math_molkky', 'shousu_learn', 'bunsu_learn', 'warisan_learn', 'warizan_learn', 'wariai_learn'],
             'lang': ['katakana', 'alphabet', 'romaji_hole', 'rain_vowel', 'rain_consonant', 'tsumitsumi', 'daily_english', 'eigo_nakama', 'kanji_learn', 'kanji_card_battle', 'presentation_learn', 'quest_stage1', 'quest_stage2', 'quest_stage3', 'quest_stage4', 'word_crossword'],
             'sci': ['science', 'human_model', 'star_puzzle', 'programming', 'programming_labo', 'burger_shop', 'addiction', 'unit_runner', 'logic_mine', 'science_lab'],
-            'brain': ['touch25', 'memory', 'youji', 'rail', 'memory_route', 'attention_dual_task', 'shopping_mission_brain', 'dokidoki_obstacle', 'fingers_chess', 'volleyball', 'passcode', 'molkky', 'labo', 'labo2'],
+            'brain': ['touch25', 'memory', 'youji', 'rail', 'memory_route', 'attention_dual_task', 'shopping_mission_brain', 'dokidoki_obstacle', 'fingers_chess', 'volleyball', 'passcode', 'molkky', 'slide_puzzle', 'labo', 'labo2', 'labo3'],
             'other': ['clock_read', 'triangle_angle', 'shopping', 'enogu_creator', 'eiyou_balance', 'job_learn', 'rhythm', 'color_lab', 'pitch', 'leaf_stamp_workshop', 'music_class']
         };
 
@@ -540,6 +558,7 @@
             'kanji_learn': '漢字フラッシュカード',
             'labo': 'スポーツ能力ラボ',
             'labo2': '感覚測定ラボ',
+            'labo3': 'きおく力測定ラボ',
             'leaf_stamp_workshop': '葉っぱスタンプ工房',
             'logic_mine': 'ロジック・マイン',
             'music_class': 'アンのおんがく教室',
@@ -554,6 +573,7 @@
             'rhythm': 'アンのリズム教室',
             'science': 'ヒー先生のかがくクイズ',
             'shousu_learn': '小数マスター',
+            'slide_puzzle': 'スライドパズル・アトリエ',
             'star_puzzle': 'ほしぞらパズル',
             'unit_runner': '単位クイズランナー',
             'volleyball': 'バレーボール ラリーチャレンジ',
@@ -578,6 +598,15 @@
             { key: 'space',    label: '空間・形' },
             { key: 'length',   label: '長さの感覚' },
             { key: 'color',    label: '色彩感覚' },
+        ];
+
+        // Labo3のスコア軸定義
+        const LABO3_AXES = [
+            { key: 'photo', label: '📷 しゃしん' },
+            { key: 'space', label: '🗺 ばしょ' },
+            { key: 'order', label: '🔢 じゅんばん' },
+            { key: 'work',  label: '⚙️ ワーキング' },
+            { key: 'ear',    label: '👂 みみ' },
         ];
 
         let radarChartInstance = null;
@@ -641,6 +670,7 @@
             renderPlayHistory(userName);
             renderLabo1(userName);
             renderLabo2(userName);
+            renderLabo3(userName);
         }
 
         // 今月のスタンプ表示
@@ -912,6 +942,50 @@
                     <div class="labo-score-item">
                         <div class="labo-score-label">${axis.label}</div>
                         <div class="labo-score-value" style="color:#e65100;">${score}</div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Labo3（きおく力測定ラボ）成果表示
+        function renderLabo3(userName) {
+            const container = document.getElementById('labo3Content');
+            const KEY = 'papan_labo3_records_v1';
+            const all = JSON.parse(localStorage.getItem(KEY) || '{}');
+            const records = all[userName] || [];
+
+            if (records.length === 0) {
+                container.innerHTML = '<div class="empty-message">まだ測定記録がありません</div>';
+                return;
+            }
+
+            // 最新エントリ
+            const latest = records[records.length - 1];
+            const scores = latest.scores || {};
+            const total = latest.total || 0;
+            const date = latest.date || '';
+
+            // 過去最高スコア
+            const bestTotal = Math.max(...records.map(r => r.total || 0));
+
+            let html = `
+                <div style="display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+                    <span class="labo-total-badge3">総合 ${total}点</span>
+                    <span style="font-size:0.8rem; color:#888;">最高: ${bestTotal}点</span>
+                    <span class="labo-date" style="margin-left:auto;">${date}（${records.length}回測定）</span>
+                </div>
+                <div class="labo-score-grid">
+            `;
+
+            LABO3_AXES.forEach(axis => {
+                const score = scores[axis.key] !== undefined ? scores[axis.key] : '-';
+                html += `
+                    <div class="labo-score-item">
+                        <div class="labo-score-label">${axis.label}</div>
+                        <div class="labo-score-value" style="color:#6a1b9a;">${score}</div>
                     </div>
                 `;
             });

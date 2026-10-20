@@ -1,5 +1,5 @@
 // キャッシュの名前（更新時にバージョンを変えると新しいキャッシュが作られます）
-var CACHE_NAME = 'papanshiki-v56';
+var CACHE_NAME = 'papanshiki-v58';
 var urlsToCache = [
   // === トップページ ===
   './',
@@ -160,6 +160,7 @@ var urlsToCache = [
   './dokidoki_obstacle.html',
   './calc_puzzle.html',
   './matchstick.html',
+  './slide_puzzle.html',
 
   // === 生活・社会 ===
   './whattime.html',
@@ -244,6 +245,15 @@ var urlsToCache = [
   './performance_labo/result2.js',
   './performance_labo/main2.js',
   './performance_labo/results2.html',
+  './performance_labo/labo3.html',
+  './performance_labo/labo3_game1_flash.js',
+  './performance_labo/labo3_game2_route.js',
+  './performance_labo/labo3_game3_pairs.js',
+  './performance_labo/labo3_game4_passcode.js',
+  './performance_labo/labo3_game5_sound.js',
+  './performance_labo/result3.js',
+  './performance_labo/main3.js',
+  './performance_labo/results3.html',
   './performance_labo/train.webp',
 
   // === がくしゅうラボ ===

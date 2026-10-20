@@ -1,0 +1,2552 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>スライドパズル・アトリエ | ぱぱん式</title>
+    <meta name="description" content="ピースをスライドしてイラストを完成させよう！3×3のかんたんモードから5×5のむずかしいモードまで遊べる脳トレパズルゲーム。">
+    <link rel="icon" type="image/png" sizes="32x32" href="202609favicon-32.png">
+    <script src="ranking.js"></script>
+    <script src="sugoroku/mission.js"></script>
+    <style>
+        :root {
+            --bg-pastel-1: #fffbeb;
+            --bg-pastel-2: #fef3c7;
+            --bg-pastel-3: #e0f7fa;
+            --accent-orange: #ff9800;
+            --accent-orange-dark: #e65100;
+            --board-bg: #d9a066;
+            --board-border: #7c4d25;
+            --board-inner: #432818;
+            --text-main: #451a03;
+            --text-sub: #92400e;
+            --card-bg: rgba(255, 255, 255, 0.92);
+            --card-border: #fde68a;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        ruby rt {
+            font-size: 0.6em;
+            font-weight: bold;
+        }
+
+        body {
+            font-family: "UD Digital Kyokasho-tai-R", "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            background: radial-gradient(circle at 50% 20%, var(--bg-pastel-1) 0%, var(--bg-pastel-2) 55%, #fde68a 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            overscroll-behavior: none;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 10px 12px 24px;
+        }
+
+        /* 紙吹雪キャンバス */
+        #confetti-canvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 50;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* メインコンテナ */
+        .app-container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: auto;
+        }
+
+        /* ヘッダーバー */
+        .header-bar {
+            background: var(--card-bg);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 22px;
+            padding: 10px 14px;
+            box-shadow: 0 6px 16px rgba(146, 64, 14, 0.1);
+            border: 2px solid var(--card-border);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .back-home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+            background: #e0f7fa;
+            color: #00695c;
+            border: 2px solid #80deea;
+            border-radius: 16px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 800;
+            box-shadow: 0 3px 0 #4dd0e1;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
+        }
+
+        .back-home-btn:hover {
+            background: #b2ebf2;
+        }
+
+        .back-home-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #4dd0e1;
+        }
+
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .title-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f59e0b, #ea580c);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            box-shadow: 0 3px 6px rgba(234, 88, 12, 0.25);
+            flex-shrink: 0;
+        }
+
+        .title-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .title-text h1 {
+            font-size: clamp(16px, 4vw, 20px);
+            font-weight: 900;
+            line-height: 1.15;
+            color: var(--text-main);
+        }
+
+        .title-text p {
+            font-size: 11px;
+            color: var(--text-sub);
+            font-weight: bold;
+            margin-top: 2px;
+        }
+
+        .header-utils {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 3D風共通ボタン */
+        .btn-3d {
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 800;
+            border-radius: 16px;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
+            touch-action: manipulation;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-3d:active {
+            transform: translateY(2px);
+        }
+
+        .btn-util {
+            padding: 7px 12px;
+            font-size: 13px;
+            background: #fef3c7;
+            color: #78350f;
+            border: 2px solid #fcd34d;
+            box-shadow: 0 3px 0 #f59e0b;
+        }
+
+        .btn-util:hover {
+            background: #fde68a;
+        }
+
+        .btn-util:active {
+            box-shadow: 0 1px 0 #f59e0b;
+        }
+
+        .num-icon-badge {
+            width: 18px;
+            height: 18px;
+            border-radius: 5px;
+            background: #d97706;
+            color: #fff;
+            font-size: 11px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+        }
+
+        .btn-sound {
+            padding: 7px 10px;
+        }
+
+        .btn-sound svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* 2カラムグリッド */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            align-items: center;
+        }
+
+        @media (min-width: 820px) {
+            .main-grid {
+                grid-template-columns: 7fr 5fr;
+                align-items: stretch;
+            }
+        }
+
+        /* 左カラム：パズル盤面 */
+        .board-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 木製パズルフレーム */
+        .wood-frame {
+            background: linear-gradient(145deg, #d99b66, #b87a44);
+            border: 6px solid #7c4d25;
+            border-radius: 28px;
+            padding: 12px;
+            width: 100%;
+            max-width: 440px;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow:
+                0 14px 28px rgba(89, 51, 32, 0.25),
+                0 8px 10px rgba(89, 51, 32, 0.15),
+                inset 0 2px 4px rgba(255, 255, 255, 0.35),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .wood-depression {
+            background-color: #432818;
+            box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.65);
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+        #tiles-layer {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ピースのアニメーションと立体感 */
+        .puzzle-tile {
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 4px;
+            transition: transform 0.18s cubic-bezier(0.2, 0.9, 0.3, 1);
+            will-change: transform;
+            cursor: pointer;
+            touch-action: none;
+        }
+
+        .puzzle-tile-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            box-shadow:
+                0 4px 6px rgba(0, 0, 0, 0.35),
+                inset 0 2px 2px rgba(255, 255, 255, 0.4),
+                inset 0 -2px 3px rgba(0, 0, 0, 0.25);
+            border: 1.5px solid rgba(255, 255, 255, 0.28);
+            transition: transform 0.1s ease, filter 0.15s ease;
+        }
+
+        .puzzle-tile:hover .puzzle-tile-inner {
+            filter: brightness(1.05);
+        }
+
+        .puzzle-tile:active .puzzle-tile-inner {
+            transform: scale(0.96);
+        }
+
+        /* 数字ガイドバッジ */
+        .tile-num-badge {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            min-width: 24px;
+            height: 24px;
+            padding: 0 5px;
+            border-radius: 8px;
+            background: rgba(69, 26, 3, 0.78);
+            color: #fffbeb;
+            font-size: 13px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            transition: opacity 0.2s ease;
+        }
+
+        .tile-num-badge.badge-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* プレビュー＆完成オーバーレイ */
+        .peek-overlay,
+        .solved-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .peek-overlay {
+            z-index: 20;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(2px);
+            padding: 4px;
+            transition: opacity 0.2s ease;
+        }
+
+        .solved-overlay {
+            z-index: 30;
+            transition: opacity 0.5s ease;
+        }
+
+        .peek-overlay.active,
+        .solved-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .peek-overlay img,
+        .solved-overlay img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 14px;
+        }
+
+        .peek-badge {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(69, 26, 3, 0.88);
+            color: #fffbeb;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 5px 14px;
+            border-radius: 999px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+            white-space: nowrap;
+        }
+
+        /* 盤面下のヒント */
+        .board-hints {
+            margin-top: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            font-size: 12px;
+            color: #78350f;
+            font-weight: bold;
+        }
+
+        .hint-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .hint-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-orange);
+            display: inline-block;
+        }
+
+        /* 右カラム：コントロールパネル */
+        .control-column {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 440px;
+            margin: 0 auto;
+            justify-content: center;
+        }
+
+        .panel-card {
+            background: var(--card-bg);
+            border-radius: 22px;
+            padding: 14px;
+            box-shadow: 0 6px 16px rgba(146, 64, 14, 0.08);
+            border: 2px solid var(--card-border);
+        }
+
+        /* ステータス3列 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            text-align: center;
+        }
+
+        .stat-box {
+            background: #fffbeb;
+            border-radius: 15px;
+            padding: 8px 6px;
+            border: 1.5px solid #fde68a;
+        }
+
+        .stat-box.best-box {
+            background: #fff7ed;
+            border-color: #fed7aa;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: #b45309;
+        }
+
+        .stat-value {
+            font-size: clamp(18px, 4vw, 23px);
+            font-weight: 900;
+            color: var(--text-main);
+            font-variant-numeric: tabular-nums;
+            margin-top: 2px;
+        }
+
+        .stat-best-value {
+            font-size: 13px;
+            font-weight: 900;
+            color: #c2410c;
+            margin-top: 5px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* アクションボタン群 */
+        .action-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .btn-primary-orange {
+            padding: 11px 14px;
+            font-size: 14px;
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 0 #e65100;
+        }
+
+        .btn-primary-orange:hover {
+            filter: brightness(1.05);
+        }
+
+        .btn-primary-orange:active {
+            box-shadow: 0 2px 0 #e65100;
+        }
+
+        .btn-secondary-amber {
+            padding: 11px 14px;
+            font-size: 14px;
+            background: #fef3c7;
+            color: #78350f;
+            border: 2px solid #fcd34d;
+            box-shadow: 0 4px 0 #f59e0b;
+        }
+
+        .btn-secondary-amber:hover {
+            background: #fde68a;
+        }
+
+        .btn-secondary-amber:active {
+            box-shadow: 0 2px 0 #f59e0b;
+        }
+
+        .action-btns svg {
+            width: 17px;
+            height: 17px;
+            flex-shrink: 0;
+        }
+
+        /* 難易度選択 */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 900;
+            color: #78350f;
+        }
+
+        .section-sub {
+            font-size: 11px;
+            font-weight: 800;
+            color: #d97706;
+        }
+
+        .diff-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .diff-btn {
+            padding: 8px 4px;
+            border-radius: 16px;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
+            border: 2px solid #fde68a;
+            background: #fffbeb;
+            color: #78350f;
+            box-shadow: 0 4px 0 #fcd34d;
+        }
+
+        .diff-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #fcd34d;
+        }
+
+        .diff-btn.active {
+            background: linear-gradient(135deg, #ff9800, #ea580c);
+            color: #fff;
+            border-color: #c2410c;
+            box-shadow: 0 4px 0 #9a3412;
+        }
+
+        .diff-btn.active:active {
+            box-shadow: 0 2px 0 #9a3412;
+        }
+
+        .diff-size {
+            font-size: 15px;
+            font-weight: 900;
+        }
+
+        .diff-label {
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .diff-pt {
+            font-size: 10px;
+            font-weight: 900;
+            padding: 1px 6px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.25);
+            margin-top: 2px;
+        }
+
+        .diff-btn:not(.active) .diff-pt {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        /* イラスト選択＆写真アップロード */
+        .upload-label {
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 900;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 2px solid #a5d6a7;
+            padding: 4px 10px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 3px 0 #81c784;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .upload-label:hover {
+            background: #c8e6c9;
+        }
+
+        .upload-label:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #81c784;
+        }
+
+        .upload-label svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .theme-grid.cols-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .theme-btn {
+            cursor: pointer;
+            font-family: inherit;
+            border-radius: 15px;
+            padding: 5px;
+            border: 2.5px solid #fde68a;
+            background: #fffbeb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.1s ease, border-color 0.15s ease, background 0.15s ease;
+            box-shadow: 0 3px 0 #fcd34d;
+        }
+
+        .theme-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #fcd34d;
+        }
+
+        .theme-btn.active {
+            border-color: #ff9800;
+            background: #fff7ed;
+            box-shadow: 0 3px 0 #e65100;
+        }
+
+        .theme-thumb {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+
+        .theme-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .theme-name {
+            font-size: 10px;
+            font-weight: 900;
+            color: var(--text-main);
+            width: 100%;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* クリア祝福モーダル */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 40;
+            background: rgba(69, 26, 3, 0.65);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: 28px;
+            max-width: 420px;
+            width: 100%;
+            padding: 22px 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+            border: 4px solid #fbbf24;
+            text-align: center;
+            transform: scale(0.95);
+            opacity: 0;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .modal-card.show {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .modal-icon-wrap {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 52px;
+            height: 52px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #fbbf24, #f97316);
+            color: #fff;
+            box-shadow: 0 6px 14px rgba(249, 115, 22, 0.35);
+            margin-bottom: 6px;
+        }
+
+        .modal-icon-wrap svg {
+            width: 30px;
+            height: 30px;
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 900;
+            color: var(--text-main);
+        }
+
+        .modal-subtitle {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-sub);
+            margin-top: 2px;
+        }
+
+        .modal-preview-wrap {
+            margin: 12px auto;
+            position: relative;
+            width: 165px;
+            height: 165px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+            border: 4px solid #fde68a;
+        }
+
+        .modal-preview-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .record-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 900;
+            padding: 3px 9px;
+            border-radius: 999px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background: #fffbeb;
+            border-radius: 18px;
+            padding: 10px;
+            border: 2px solid #fde68a;
+            margin-bottom: 12px;
+        }
+
+        .modal-stat-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-sub);
+        }
+
+        .modal-stat-val {
+            font-size: 21px;
+            font-weight: 900;
+            color: var(--text-main);
+        }
+
+        /* ポイント獲得ボックス */
+        .reward-banner {
+            background: linear-gradient(135deg, #fff8e1, #ffecb3);
+            border: 2px solid #ffb300;
+            border-radius: 18px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .reward-banner-text {
+            text-align: left;
+            font-size: 12px;
+            font-weight: 800;
+            color: #78350f;
+        }
+
+        .reward-banner-pts {
+            font-size: 20px;
+            font-weight: 900;
+            color: #e65100;
+        }
+
+        .btn-claim-point {
+            width: 100%;
+            padding: 13px;
+            font-size: 16px;
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 0 #1b5e20;
+            margin-bottom: 10px;
+        }
+
+        .btn-claim-point:active {
+            box-shadow: 0 2px 0 #1b5e20;
+        }
+
+        .btn-claim-point:disabled {
+            background: #bdbdbd;
+            box-shadow: none;
+            cursor: default;
+            transform: none;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 11px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 紙吹雪用キャンバス -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- メインコンテナ -->
+    <div class="app-container">
+
+        <!-- ヘッダーバー -->
+        <header class="header-bar">
+            <div class="header-left">
+                <a href="index.html" class="back-home-btn">◀ もどる</a>
+                <div class="title-group">
+                    <div class="title-icon">
+                        <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
+                        </svg>
+                    </div>
+                    <div class="title-text">
+                        <h1>スライドパズル・アトリエ</h1>
+                        <p>ピースをうごかして<ruby>絵<rt>え</rt></ruby>を<ruby>完成<rt>かんせい</rt></ruby>させよう！</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ユーティリティボタン群 -->
+            <div class="header-utils">
+                <button id="btn-numbers" class="btn-3d btn-util">
+                    <span class="num-icon-badge">1</span>
+                    <span id="label-numbers"><ruby>数字<rt>すうじ</rt></ruby>: ON</span>
+                </button>
+
+                <button id="btn-sound" class="btn-3d btn-util btn-sound" title="おと ON/OFF">
+                    <svg id="icon-sound-on" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                    </svg>
+                    <svg id="icon-sound-off" class="hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- メインコンテンツ領域（レスポンシブ2カラム） -->
+        <div class="main-grid">
+
+            <!-- 左カラム：パズルボード領域 -->
+            <div class="board-column">
+                <div class="wood-frame">
+                    <div id="board-container" class="wood-depression">
+                        <!-- タイルが動的に挿入されるレイヤー -->
+                        <div id="tiles-layer"></div>
+
+                        <!-- お手本プレビュー -->
+                        <div id="peek-overlay" class="peek-overlay">
+                            <img id="peek-image" alt="完成図プレビュー" />
+                            <div class="peek-badge">
+                                👀 <ruby>完成図<rt>かんせいず</rt></ruby>プレビュー<ruby>中<rt>ちゅう</rt></ruby>（タップでとじる）
+                            </div>
+                        </div>
+
+                        <!-- 完成時のシームレス全体イラスト表示レイヤー -->
+                        <div id="solved-overlay" class="solved-overlay">
+                            <img id="solved-image" alt="完成イラスト" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 盤面下の操作ヒント -->
+                <div class="board-hints">
+                    <span class="hint-item">
+                        <span class="hint-dot"></span>
+                        タップ / スワイプ / <ruby>矢印<rt>やじるし</rt></ruby>キーでうごくよ
+                    </span>
+                    <span class="hint-item">
+                        <span class="hint-dot"></span>
+                        はなれたピースもまとめてスライドできるよ！
+                    </span>
+                </div>
+            </div>
+
+            <!-- 右カラム：ステータス＆設定パネル -->
+            <div class="control-column">
+
+                <!-- スコア・ステータスカード -->
+                <div class="panel-card">
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">うごかした<ruby>数<rt>かず</rt></ruby></div>
+                            <div id="stat-moves" class="stat-value">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">タイム</div>
+                            <div id="stat-time" class="stat-value">00:00</div>
+                        </div>
+                        <div class="stat-box best-box">
+                            <div class="stat-label">ベスト<ruby>記録<rt>きろく</rt></ruby></div>
+                            <div id="stat-best" class="stat-best-value">--</div>
+                        </div>
+                    </div>
+
+                    <!-- アクションボタン（まぜる＆お手本を見る） -->
+                    <div class="action-btns">
+                        <button id="btn-shuffle" class="btn-3d btn-primary-orange">
+                            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            シャッフル
+                        </button>
+                        <button id="btn-peek" class="btn-3d btn-secondary-amber">
+                            <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            <span>お<ruby>手本<rt>てほん</rt></ruby>をみる</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 難易度（サイズ）選択 -->
+                <div class="panel-card">
+                    <div class="section-header">
+                        <span>むずかしさ（マスの<ruby>数<rt>かず</rt></ruby>）</span>
+                        <span id="difficulty-desc" class="section-sub">8ピース・かんたん</span>
+                    </div>
+                    <div class="diff-grid">
+                        <button data-size="3" class="diff-btn">
+                            <span class="diff-size">3 × 3</span>
+                            <span class="diff-label">かんたん</span>
+                            <span class="diff-pt">🎁 50pt</span>
+                        </button>
+                        <button data-size="4" class="diff-btn">
+                            <span class="diff-size">4 × 4</span>
+                            <span class="diff-label">ふつう</span>
+                            <span class="diff-pt">🎁 80pt</span>
+                        </button>
+                        <button data-size="5" class="diff-btn">
+                            <span class="diff-size">5 × 5</span>
+                            <span class="diff-label">むずかしい</span>
+                            <span class="diff-pt">🎁 150pt</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- イラスト選択＆画像アップロード -->
+                <div class="panel-card">
+                    <div class="section-header">
+                        <span>イラストをえらぶ</span>
+                        <label for="file-upload" class="upload-label">
+                            <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            じぶんの<ruby>写真<rt>しゃしん</rt></ruby>をつかう
+                        </label>
+                        <input id="file-upload" type="file" accept="image/*" class="hidden" />
+                    </div>
+
+                    <div id="theme-list" class="theme-grid">
+                        <!-- テーマボタンはJSでサムネイル付きで生成 -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- クリア祝福モーダル -->
+    <div id="win-modal" class="modal-backdrop hidden">
+        <div class="modal-card" id="win-modal-card">
+            <div class="modal-icon-wrap">
+                <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                </svg>
+            </div>
+            <h2 class="modal-title">パズル<ruby>完成<rt>かんせい</rt></ruby>！おめでとう！</h2>
+            <p id="win-theme-title" class="modal-subtitle">もりのリスとハリネズミ (3×3)</p>
+
+            <!-- 完成イラストサムネイル -->
+            <div class="modal-preview-wrap">
+                <img id="win-preview-img" alt="完成イラスト" />
+                <div id="new-record-badge" class="record-badge hidden">
+                    ★ じこベスト！
+                </div>
+            </div>
+
+            <!-- 結果スコア -->
+            <div class="modal-stats">
+                <div>
+                    <div class="modal-stat-label">うごかした<ruby>数<rt>かず</rt></ruby></div>
+                    <div id="win-moves" class="modal-stat-val">0 <ruby>回<rt>かい</rt></ruby></div>
+                </div>
+                <div>
+                    <div class="modal-stat-label">クリアタイム</div>
+                    <div id="win-time" class="modal-stat-val">00:00</div>
+                </div>
+            </div>
+
+            <!-- ごほうびポイント表示 -->
+            <div class="reward-banner">
+                <div class="reward-banner-text">
+                    🎁 クリアごほうび
+                </div>
+                <div id="win-reward-points" class="reward-banner-pts">+50 ポイント</div>
+            </div>
+
+            <button id="btn-claim-point" class="btn-3d btn-claim-point">
+                🎁 ポイントをもらう
+            </button>
+
+            <div class="modal-actions">
+                <button id="btn-modal-close" class="btn-3d btn-secondary-amber">
+                    パズルをみる
+                </button>
+                <button id="btn-modal-replay" class="btn-3d btn-primary-orange">
+                    もういちどあそぶ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /*
+         * スライドパズル・アトリエ（ぱぱん式 脳トレ・パズル）
+         * ゲームタイプ D（難易度連動ポイント付与型）
+         * 3×3: 50pt / 4×4: 80pt / 5×5: 150pt
+         */
+        const GAME_ID = 'slide_puzzle';
+        const REWARD_BY_SIZE = {
+            3: 50,
+            4: 80,
+            5: 150
+        };
+
+        /**
+         * Web Audio API を使った効果音シンセサイザー（外部音源不要）
+         */
+        class SoundEffects {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            // 木のピースをスライドさせたような温かみのあるクリック音
+            playSlide(count = 1) {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const now = this.ctx.currentTime;
+                for (let i = 0; i < count; i++) {
+                    const startTime = now + i * 0.035;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'triangle';
+                    const baseFreq = 320 + (i * 45);
+                    osc.frequency.setValueAtTime(baseFreq, startTime);
+                    osc.frequency.exponentialRampToValueAtTime(110, startTime + 0.065);
+
+                    gain.gain.setValueAtTime(0.22, startTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.065);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(startTime);
+                    osc.stop(startTime + 0.07);
+                }
+            }
+
+            // シャッフル時の軽快な音
+            playShuffle() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const now = this.ctx.currentTime;
+                const freqs = [260, 320, 290, 380, 340, 440];
+                freqs.forEach((f, idx) => {
+                    const t = now + idx * 0.03;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(f, t);
+                    gain.gain.setValueAtTime(0.12, t);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(t);
+                    osc.stop(t + 0.05);
+                });
+            }
+
+            // 完成時の明るいファンファーレ
+            playWinFanfare() {
+                if (this.muted) return;
+                this.init();
+                if (!this.ctx) return;
+
+                const now = this.ctx.currentTime;
+                const notes = [
+                    { f: 523.25, t: 0.0, d: 0.14 },  // C5
+                    { f: 659.25, t: 0.12, d: 0.14 }, // E5
+                    { f: 783.99, t: 0.24, d: 0.14 }, // G5
+                    { f: 1046.50, t: 0.36, d: 0.45 } // C6
+                ];
+
+                notes.forEach(n => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(n.f, now + n.t);
+
+                    gain.gain.setValueAtTime(0.001, now + n.t);
+                    gain.gain.linearRampToValueAtTime(0.25, now + n.t + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.d);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + n.t);
+                    osc.stop(now + n.t + n.d + 0.02);
+                });
+            }
+        }
+
+        /**
+         * 3種類の内蔵イラストをCanvas 2Dでプロシージャル描画するジェネレーター
+         */
+        class IllustrationGenerator {
+            static SIZE = 900; // 高解像度正方形キャンバス
+
+            static generateAll() {
+                return [
+                    {
+                        id: 'forest',
+                        name: 'もりのリスとハリネズミ',
+                        dataUrl: this.drawForestFriends()
+                    },
+                    {
+                        id: 'space',
+                        name: 'うちゅうのたび',
+                        dataUrl: this.drawSpaceOdyssey()
+                    },
+                    {
+                        id: 'geometric',
+                        name: 'カラフルアート',
+                        dataUrl: this.drawGeometricArt()
+                    }
+                ];
+            }
+
+            // 1. もりのリスとハリネズミ
+            static drawForestFriends() {
+                const S = this.SIZE;
+                const canvas = document.createElement('canvas');
+                canvas.width = S;
+                canvas.height = S;
+                const ctx = canvas.getContext('2d');
+
+                // 空と木漏れ日の背景グラデーション
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, S);
+                skyGrad.addColorStop(0, '#a7f3d0');
+                skyGrad.addColorStop(0.55, '#fef08a');
+                skyGrad.addColorStop(1, '#4ade80');
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, S, S);
+
+                // 太陽と光の輪
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+                ctx.beginPath();
+                ctx.arc(S * 0.2, S * 0.18, 150, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#fde047';
+                ctx.beginPath();
+                ctx.arc(S * 0.2, S * 0.18, 95, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 遠景の丘
+                ctx.fillStyle = '#86efac';
+                ctx.beginPath();
+                ctx.arc(S * 0.25, S * 0.85, 420, Math.PI, 0);
+                ctx.arc(S * 0.8, S * 0.85, 380, Math.PI, 0);
+                ctx.fill();
+
+                // 背景の木々
+                const drawTree = (x, y, scale, trunkColor, leafColor) => {
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.scale(scale, scale);
+                    // 幹
+                    ctx.fillStyle = trunkColor;
+                    ctx.beginPath();
+                    ctx.roundRect(-28, 0, 56, 220, 12);
+                    ctx.fill();
+                    // 葉っぱ
+                    ctx.fillStyle = leafColor;
+                    ctx.beginPath();
+                    ctx.arc(0, -40, 110, 0, Math.PI * 2);
+                    ctx.arc(-75, 20, 85, 0, Math.PI * 2);
+                    ctx.arc(75, 20, 85, 0, Math.PI * 2);
+                    ctx.arc(0, -110, 80, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                };
+
+                drawTree(130, 390, 1.05, '#78350f', '#22c55e');
+                drawTree(780, 360, 1.15, '#78350f', '#16a34a');
+
+                // 手前の芝生広場
+                const grassGrad = ctx.createLinearGradient(0, S * 0.58, 0, S);
+                grassGrad.addColorStop(0, '#4ade80');
+                grassGrad.addColorStop(1, '#15803d');
+                ctx.fillStyle = grassGrad;
+                ctx.beginPath();
+                ctx.moveTo(0, S * 0.62);
+                ctx.quadraticCurveTo(S * 0.5, S * 0.54, S, S * 0.64);
+                ctx.lineTo(S, S);
+                ctx.lineTo(0, S);
+                ctx.closePath();
+                ctx.fill();
+
+                // 切り株テーブル（中央下）
+                ctx.fillStyle = '#92400e';
+                ctx.beginPath();
+                ctx.moveTo(350, 760);
+                ctx.lineTo(380, 640);
+                ctx.lineTo(520, 640);
+                ctx.lineTo(550, 760);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = '#fde68a';
+                ctx.beginPath();
+                ctx.ellipse(450, 640, 72, 24, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#b45309';
+                ctx.lineWidth = 6;
+                ctx.stroke();
+
+                // カラフルなキノコ（左下＆右下）
+                const drawMushroom = (x, y, s, capColor) => {
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.scale(s, s);
+                    // 軸
+                    ctx.fillStyle = '#fef3c7';
+                    ctx.beginPath();
+                    ctx.roundRect(-22, 0, 44, 65, 16);
+                    ctx.fill();
+                    // カサ
+                    ctx.fillStyle = capColor;
+                    ctx.beginPath();
+                    ctx.arc(0, 5, 62, Math.PI, 0);
+                    ctx.closePath();
+                    ctx.fill();
+                    // 水玉模様
+                    ctx.fillStyle = '#ffffff';
+                    [[-28, -18, 10], [5, -34, 12], [32, -15, 9]].forEach(([dx, dy, r]) => {
+                        ctx.beginPath();
+                        ctx.arc(dx, dy, r, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                    ctx.restore();
+                };
+                drawMushroom(120, 730, 1.0, '#ef4444');
+                drawMushroom(210, 775, 0.65, '#f97316');
+                drawMushroom(790, 745, 0.9, '#ec4899');
+
+                // リス（左側）を描画
+                ctx.save();
+                ctx.translate(260, 560);
+                // 大きなふわふわしっぽ
+                ctx.fillStyle = '#d97706';
+                ctx.beginPath();
+                ctx.arc(-95, -55, 85, 0, Math.PI * 2);
+                ctx.arc(-115, -125, 70, 0, Math.PI * 2);
+                ctx.arc(-60, -145, 55, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#f59e0b';
+                ctx.beginPath();
+                ctx.arc(-85, -70, 55, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 体
+                ctx.fillStyle = '#ea580c';
+                ctx.beginPath();
+                ctx.ellipse(0, 20, 68, 85, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // お腹
+                ctx.fillStyle = '#fef3c7';
+                ctx.beginPath();
+                ctx.ellipse(12, 30, 42, 60, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 耳
+                ctx.fillStyle = '#ea580c';
+                ctx.beginPath();
+                ctx.ellipse(-28, -110, 18, 36, -0.2, 0, Math.PI * 2);
+                ctx.ellipse(25, -110, 18, 36, 0.2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#fda4af';
+                ctx.beginPath();
+                ctx.ellipse(-28, -108, 9, 20, -0.2, 0, Math.PI * 2);
+                ctx.ellipse(25, -108, 9, 20, 0.2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 頭
+                ctx.fillStyle = '#ea580c';
+                ctx.beginPath();
+                ctx.arc(5, -55, 64, 0, Math.PI * 2);
+                ctx.fill();
+                // ほっぺ
+                ctx.fillStyle = '#fb7185';
+                ctx.beginPath();
+                ctx.arc(-28, -42, 14, 0, Math.PI * 2);
+                ctx.arc(42, -42, 14, 0, Math.PI * 2);
+                ctx.fill();
+                // 目
+                ctx.fillStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.arc(-14, -62, 10, 0, Math.PI * 2);
+                ctx.arc(30, -62, 10, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(-17, -65, 4, 0, Math.PI * 2);
+                ctx.arc(27, -65, 4, 0, Math.PI * 2);
+                ctx.fill();
+                // 鼻と口
+                ctx.fillStyle = '#451a03';
+                ctx.beginPath();
+                ctx.arc(10, -48, 7, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#451a03';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.arc(10, -40, 10, 0.15 * Math.PI, 0.85 * Math.PI);
+                ctx.stroke();
+                ctx.restore();
+
+                // 切り株の上の大きなどんぐり
+                ctx.save();
+                ctx.translate(450, 605);
+                ctx.fillStyle = '#d97706';
+                ctx.beginPath();
+                ctx.arc(0, 0, 36, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#78350f';
+                ctx.beginPath();
+                ctx.arc(0, -10, 40, Math.PI, 0);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = '#78350f';
+                ctx.lineWidth = 7;
+                ctx.beginPath();
+                ctx.moveTo(0, -48);
+                ctx.lineTo(6, -62);
+                ctx.stroke();
+                ctx.restore();
+
+                // ハリネズミ（右側）を描画
+                ctx.save();
+                ctx.translate(650, 610);
+                // トゲトゲの背中
+                ctx.fillStyle = '#57534e';
+                const spikes = 14;
+                for (let i = 0; i < spikes; i++) {
+                    const angle = (i / spikes) * Math.PI * 1.3 - Math.PI * 0.45;
+                    const sx = Math.cos(angle) * 95 + 15;
+                    const sy = Math.sin(angle) * 85;
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, 28, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.fillStyle = '#78716c';
+                ctx.beginPath();
+                ctx.ellipse(15, 0, 95, 78, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 顔とお腹
+                ctx.fillStyle = '#fde68a';
+                ctx.beginPath();
+                ctx.ellipse(-35, 10, 70, 58, -0.1, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 耳
+                ctx.fillStyle = '#d6d3d1';
+                ctx.beginPath();
+                ctx.arc(-20, -40, 18, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 目と黒い鼻先
+                ctx.fillStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.arc(-55, -8, 9, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(-58, -11, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 鼻
+                ctx.fillStyle = '#292524';
+                ctx.beginPath();
+                ctx.arc(-102, 5, 11, 0, Math.PI * 2);
+                ctx.fill();
+                // ほっぺ
+                ctx.fillStyle = '#fb7185';
+                ctx.beginPath();
+                ctx.arc(-45, 15, 13, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // 空を飛ぶ青い小鳥と花々
+                const drawFlower = (x, y, color) => {
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.fillStyle = color;
+                    for (let i = 0; i < 5; i++) {
+                        const a = (i * Math.PI * 2) / 5;
+                        ctx.beginPath();
+                        ctx.arc(Math.cos(a) * 14, Math.sin(a) * 14, 11, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.fillStyle = '#facc15';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 9, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                };
+                drawFlower(310, 820, '#ffffff');
+                drawFlower(590, 810, '#f472b6');
+                drawFlower(460, 845, '#60a5fa');
+                drawFlower(85, 620, '#facc15');
+                drawFlower(825, 630, '#c084fc');
+
+                // 青い鳥（上部中央）
+                ctx.save();
+                ctx.translate(490, 190);
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 42, 28, -0.15, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#0284c7';
+                ctx.beginPath();
+                ctx.ellipse(10, -18, 25, 14, 0.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#f59e0b';
+                ctx.beginPath();
+                ctx.moveTo(-40, -5);
+                ctx.lineTo(-58, 2);
+                ctx.lineTo(-40, 8);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.arc(-24, -4, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                return canvas.toDataURL('image/png');
+            }
+
+            // 2. 宇宙の旅
+            static drawSpaceOdyssey() {
+                const S = this.SIZE;
+                const canvas = document.createElement('canvas');
+                canvas.width = S;
+                canvas.height = S;
+                const ctx = canvas.getContext('2d');
+
+                // 深い宇宙のグラデーション
+                const bgGrad = ctx.createLinearGradient(0, 0, S, S);
+                bgGrad.addColorStop(0, '#090d16');
+                bgGrad.addColorStop(0.45, '#1e1b4b');
+                bgGrad.addColorStop(0.8, '#3b0764');
+                bgGrad.addColorStop(1, '#172554');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, S, S);
+
+                // カラフルな星雲（ネビュラ）
+                const drawNebula = (x, y, r, color) => {
+                    const g = ctx.createRadialGradient(x, y, 10, x, y, r);
+                    g.addColorStop(0, color);
+                    g.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = g;
+                    ctx.beginPath();
+                    ctx.arc(x, y, r, 0, Math.PI * 2);
+                    ctx.fill();
+                };
+                drawNebula(220, 260, 280, 'rgba(236, 72, 153, 0.28)');
+                drawNebula(680, 620, 320, 'rgba(56, 189, 248, 0.25)');
+                drawNebula(640, 200, 220, 'rgba(168, 85, 247, 0.3)');
+
+                // 煌めく星々
+                for (let i = 0; i < 95; i++) {
+                    const sx = ((i * 173) % 880) + 10;
+                    const sy = ((i * 293) % 880) + 10;
+                    const sr = (i % 3) + 1.5;
+                    ctx.fillStyle = i % 5 === 0 ? '#fde047' : '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // 土星風のリング付き巨大惑星（左上）
+                ctx.save();
+                ctx.translate(235, 250);
+                ctx.rotate(-0.32);
+                ctx.strokeStyle = 'rgba(253, 224, 71, 0.55)';
+                ctx.lineWidth = 26;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 175, 48, 0, Math.PI, Math.PI * 2);
+                ctx.stroke();
+
+                const planetGrad = ctx.createLinearGradient(-90, -90, 90, 90);
+                planetGrad.addColorStop(0, '#38bdf8');
+                planetGrad.addColorStop(0.5, '#6366f1');
+                planetGrad.addColorStop(1, '#1e1b4b');
+                ctx.fillStyle = planetGrad;
+                ctx.beginPath();
+                ctx.arc(0, 0, 96, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = '#fde047';
+                ctx.lineWidth = 26;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 175, 48, 0, 0, Math.PI);
+                ctx.stroke();
+                ctx.strokeStyle = '#f97316';
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 175, 48, 0, 0.05, Math.PI - 0.05);
+                ctx.stroke();
+                ctx.restore();
+
+                // 赤い縞模様の惑星（右上）
+                ctx.save();
+                ctx.translate(715, 210);
+                const redGrad = ctx.createRadialGradient(-25, -25, 10, 0, 0, 85);
+                redGrad.addColorStop(0, '#fca5a5');
+                redGrad.addColorStop(0.4, '#ef4444');
+                redGrad.addColorStop(1, '#7f1d1d');
+                ctx.fillStyle = redGrad;
+                ctx.beginPath();
+                ctx.arc(0, 0, 80, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // 手前の月面クレーター（下部）
+                ctx.save();
+                const moonGrad = ctx.createLinearGradient(0, 720, 0, S);
+                moonGrad.addColorStop(0, '#cbd5e1');
+                moonGrad.addColorStop(1, '#64748b');
+                ctx.fillStyle = moonGrad;
+                ctx.beginPath();
+                ctx.arc(450, 1180, 520, Math.PI * 1.15, Math.PI * 1.85);
+                ctx.lineTo(S, S);
+                ctx.lineTo(0, S);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = '#94a3b8';
+                [[240, 810, 48, 18], [580, 790, 62, 22], [420, 845, 38, 14]].forEach(([cx, cy, rx, ry]) => {
+                    ctx.beginPath();
+                    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.restore();
+
+                // メインのロケット（中央を斜めに飛行）
+                ctx.save();
+                ctx.translate(470, 480);
+                ctx.rotate(0.65);
+
+                // ジェット噴射の炎
+                ctx.fillStyle = '#f97316';
+                ctx.beginPath();
+                ctx.moveTo(-48, 130);
+                ctx.quadraticCurveTo(0, 290, 48, 130);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = '#fde047';
+                ctx.beginPath();
+                ctx.moveTo(-28, 130);
+                ctx.quadraticCurveTo(0, 235, 28, 130);
+                ctx.closePath();
+                ctx.fill();
+
+                // 左右のウイング
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.moveTo(-65, 40);
+                ctx.lineTo(-125, 145);
+                ctx.lineTo(-55, 130);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(65, 40);
+                ctx.lineTo(125, 145);
+                ctx.lineTo(55, 130);
+                ctx.closePath();
+                ctx.fill();
+
+                // ロケットのボディ
+                ctx.fillStyle = '#f8fafc';
+                ctx.beginPath();
+                ctx.moveTo(0, -175);
+                ctx.bezierCurveTo(95, -75, 85, 75, 58, 135);
+                ctx.lineTo(-58, 135);
+                ctx.bezierCurveTo(-85, 75, -95, -75, 0, -175);
+                ctx.closePath();
+                ctx.fill();
+
+                // 先端の赤いノーズコーン
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.moveTo(0, -175);
+                ctx.bezierCurveTo(48, -125, 62, -75, 66, -55);
+                ctx.lineTo(-66, -55);
+                ctx.bezierCurveTo(-62, -75, -48, -125, 0, -175);
+                ctx.closePath();
+                ctx.fill();
+
+                // 2つの丸窓
+                ctx.fillStyle = '#0ea5e9';
+                ctx.strokeStyle = '#fbbf24';
+                ctx.lineWidth = 10;
+                ctx.beginPath();
+                ctx.arc(0, -5, 34, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(0, 72, 22, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
+
+                // 宇宙飛行士のマスコット（右下）
+                ctx.save();
+                ctx.translate(715, 585);
+                ctx.rotate(-0.2);
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.roundRect(-38, 0, 76, 82, 22);
+                ctx.fill();
+                ctx.fillStyle = '#38bdf8';
+                ctx.fillRect(-20, 22, 40, 26);
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(0, -32, 52, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.ellipse(0, -32, 38, 28, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                ctx.beginPath();
+                ctx.ellipse(-14, -40, 12, 6, -0.4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                return canvas.toDataURL('image/png');
+            }
+
+            // 3. カラフル幾何学アート
+            static drawGeometricArt() {
+                const S = this.SIZE;
+                const canvas = document.createElement('canvas');
+                canvas.width = S;
+                canvas.height = S;
+                const ctx = canvas.getContext('2d');
+
+                const N = 6;
+                const cell = S / N;
+                const palette = [
+                    '#ef4444', '#f97316', '#f59e0b', '#10b981',
+                    '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899',
+                    '#1e293b', '#fef08a'
+                ];
+
+                for (let r = 0; r < N; r++) {
+                    for (let c = 0; c < N; c++) {
+                        const x = c * cell;
+                        const y = r * cell;
+                        const bgIdx = (r * 3 + c * 2) % palette.length;
+                        const fgIdx = (bgIdx + 3 + ((r + c) % 4)) % palette.length;
+                        const accIdx = (fgIdx + 2) % palette.length;
+
+                        ctx.fillStyle = palette[bgIdx];
+                        ctx.fillRect(x, y, cell, cell);
+
+                        const patternType = (r * N + c) % 5;
+                        ctx.save();
+                        ctx.translate(x, y);
+
+                        if (patternType === 0) {
+                            ctx.fillStyle = palette[fgIdx];
+                            ctx.beginPath();
+                            ctx.arc(cell / 2, cell / 2, cell * 0.38, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.fillStyle = palette[accIdx];
+                            ctx.beginPath();
+                            ctx.arc(cell / 2, cell / 2, cell * 0.18, 0, Math.PI * 2);
+                            ctx.fill();
+                        } else if (patternType === 1) {
+                            ctx.fillStyle = palette[fgIdx];
+                            ctx.beginPath();
+                            ctx.moveTo(0, 0);
+                            ctx.lineTo(cell, 0);
+                            ctx.lineTo(0, cell);
+                            ctx.closePath();
+                            ctx.fill();
+
+                            ctx.fillStyle = '#ffffff';
+                            ctx.beginPath();
+                            ctx.arc(cell * 0.7, cell * 0.7, cell * 0.14, 0, Math.PI * 2);
+                            ctx.fill();
+                        } else if (patternType === 2) {
+                            ctx.fillStyle = palette[fgIdx];
+                            ctx.beginPath();
+                            ctx.moveTo(0, cell);
+                            ctx.arc(0, cell, cell * 0.85, Math.PI * 1.5, Math.PI * 2);
+                            ctx.closePath();
+                            ctx.fill();
+
+                            ctx.fillStyle = palette[accIdx];
+                            ctx.beginPath();
+                            ctx.moveTo(0, cell);
+                            ctx.arc(0, cell, cell * 0.45, Math.PI * 1.5, Math.PI * 2);
+                            ctx.closePath();
+                            ctx.fill();
+                        } else if (patternType === 3) {
+                            ctx.fillStyle = palette[fgIdx];
+                            ctx.beginPath();
+                            ctx.moveTo(cell / 2, cell * 0.1);
+                            ctx.lineTo(cell * 0.9, cell / 2);
+                            ctx.lineTo(cell / 2, cell * 0.9);
+                            ctx.lineTo(cell * 0.1, cell / 2);
+                            ctx.closePath();
+                            ctx.fill();
+
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillRect(cell * 0.38, cell * 0.38, cell * 0.24, cell * 0.24);
+                        } else {
+                            ctx.fillStyle = palette[fgIdx];
+                            for (let s = 0; s < 4; s++) {
+                                ctx.fillRect(0, s * (cell / 4), cell, cell / 8);
+                            }
+                            ctx.fillStyle = palette[accIdx];
+                            ctx.beginPath();
+                            ctx.arc(cell / 2, cell / 2, cell * 0.3, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                        ctx.restore();
+                    }
+                }
+
+                // 中央のサンバースト・エンブレム
+                ctx.save();
+                ctx.translate(S / 2, S / 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+                ctx.beginPath();
+                ctx.arc(0, 0, 155, 0, Math.PI * 2);
+                ctx.fill();
+
+                const rays = 12;
+                for (let i = 0; i < rays; i++) {
+                    ctx.save();
+                    ctx.rotate((i * Math.PI * 2) / rays);
+                    ctx.fillStyle = i % 2 === 0 ? '#f43f5e' : '#3b82f6';
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(-22, -135);
+                    ctx.lineTo(22, -135);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                ctx.fillStyle = '#facc15';
+                ctx.beginPath();
+                ctx.arc(0, 0, 58, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.lineWidth = 8;
+                ctx.strokeStyle = '#1e293b';
+                ctx.stroke();
+                ctx.restore();
+
+                return canvas.toDataURL('image/png');
+            }
+        }
+
+        /**
+         * クリア時の紙吹雪（コンフェッティ）エフェクト
+         */
+        class ConfettiSystem {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.particles = [];
+                this.running = false;
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            burst() {
+                this.resize();
+                const colors = ['#f43f5e', '#f59e0b', '#10b981', '#3b82f6', '#a855f7', '#ec4899', '#fde047'];
+                this.particles = [];
+                for (let i = 0; i < 110; i++) {
+                    this.particles.push({
+                        x: this.canvas.width * 0.5 + (Math.random() - 0.5) * 160,
+                        y: this.canvas.height * 0.45,
+                        vx: (Math.random() - 0.5) * 18,
+                        vy: -Math.random() * 16 - 5,
+                        size: Math.random() * 9 + 6,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        rot: Math.random() * Math.PI * 2,
+                        vRot: (Math.random() - 0.5) * 0.25,
+                        gravity: 0.35 + Math.random() * 0.15
+                    });
+                }
+                if (!this.running) {
+                    this.running = true;
+                    this.animate();
+                }
+            }
+
+            animate() {
+                if (!this.running) return;
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                let alive = 0;
+                for (const p of this.particles) {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += p.gravity;
+                    p.vx *= 0.99;
+                    p.rot += p.vRot;
+
+                    if (p.y < this.canvas.height + 40) {
+                        alive++;
+                        this.ctx.save();
+                        this.ctx.translate(p.x, p.y);
+                        this.ctx.rotate(p.rot);
+                        this.ctx.fillStyle = p.color;
+                        this.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
+                        this.ctx.restore();
+                    }
+                }
+
+                if (alive > 0) {
+                    requestAnimationFrame(() => this.animate());
+                } else {
+                    this.running = false;
+                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                }
+            }
+        }
+
+        /**
+         * スライドパズル本体クラス
+         */
+        class SlidingPuzzleApp {
+            constructor() {
+                this.sound = new SoundEffects();
+                this.confetti = new ConfettiSystem(document.getElementById('confetti-canvas'));
+                this.themes = IllustrationGenerator.generateAll();
+
+                // 状態管理（子ども向けに初期サイズは3×3かんたん）
+                this.size = 3;
+                this.currentTheme = this.themes[0];
+                this.showNumbers = true;
+
+                // 盤面配列: 1 .. (N*N-1) がタイル番号、0 が空白マス
+                this.board = [];
+                this.tileElements = new Map();
+
+                // ゲーム進行ステータス
+                this.moves = 0;
+                this.seconds = 0;
+                this.timerId = null;
+                this.isPlaying = false;
+                this.isSolved = false;
+                this.rewardClaimed = false;
+
+                // タッチ・スワイプ操作用
+                this.touchStartX = 0;
+                this.touchStartY = 0;
+
+                this.initDOM();
+                this.renderThemeSelector();
+                this.updateDifficultyUI();
+                this.startNewGame();
+            }
+
+            initDOM() {
+                this.boardContainer = document.getElementById('board-container');
+                this.tilesLayer = document.getElementById('tiles-layer');
+                this.peekOverlay = document.getElementById('peek-overlay');
+                this.peekImage = document.getElementById('peek-image');
+                this.solvedOverlay = document.getElementById('solved-overlay');
+                this.solvedImage = document.getElementById('solved-image');
+
+                this.statMoves = document.getElementById('stat-moves');
+                this.statTime = document.getElementById('stat-time');
+                this.statBest = document.getElementById('stat-best');
+                this.claimBtn = document.getElementById('btn-claim-point');
+
+                // 数字ガイド切替
+                document.getElementById('btn-numbers').addEventListener('click', () => {
+                    this.showNumbers = !this.showNumbers;
+                    document.getElementById('label-numbers').innerHTML = `<ruby>数字<rt>すうじ</rt></ruby>: ${this.showNumbers ? 'ON' : 'OFF'}`;
+                    this.updateNumberBadges();
+                });
+
+                // 効果音ミュート切替
+                document.getElementById('btn-sound').addEventListener('click', () => {
+                    this.sound.muted = !this.sound.muted;
+                    document.getElementById('icon-sound-on').classList.toggle('hidden', this.sound.muted);
+                    document.getElementById('icon-sound-off').classList.toggle('hidden', !this.sound.muted);
+                });
+
+                // シャッフルボタン
+                document.getElementById('btn-shuffle').addEventListener('click', () => {
+                    this.sound.playShuffle();
+                    this.startNewGame();
+                });
+
+                // お手本プレビューボタン
+                const btnPeek = document.getElementById('btn-peek');
+                btnPeek.addEventListener('click', () => {
+                    this.peekOverlay.classList.toggle('active');
+                });
+                this.peekOverlay.addEventListener('click', () => {
+                    this.peekOverlay.classList.remove('active');
+                });
+
+                // 難易度変更ボタン
+                document.querySelectorAll('.diff-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const newSize = parseInt(btn.dataset.size, 10);
+                        if (this.size !== newSize) {
+                            this.size = newSize;
+                            this.sound.playShuffle();
+                            this.updateDifficultyUI();
+                            this.startNewGame();
+                        }
+                    });
+                });
+
+                // ユーザー画像アップロード処理
+                document.getElementById('file-upload').addEventListener('change', (e) => {
+                    const file = e.target.files && e.target.files[0];
+                    if (!file) return;
+                    this.loadCustomImage(file);
+                    e.target.value = '';
+                });
+
+                // キーボード操作（矢印キー / WASD）
+                window.addEventListener('keydown', (e) => {
+                    if (this.isSolved) return;
+                    const keyMap = {
+                        ArrowUp: 'UP', KeyW: 'UP',
+                        ArrowDown: 'DOWN', KeyS: 'DOWN',
+                        ArrowLeft: 'LEFT', KeyA: 'LEFT',
+                        ArrowRight: 'RIGHT', KeyD: 'RIGHT'
+                    };
+                    const dir = keyMap[e.code];
+                    if (dir) {
+                        e.preventDefault();
+                        this.handleDirectionSlide(dir);
+                    }
+                });
+
+                // 盤面スワイプ操作
+                this.boardContainer.addEventListener('touchstart', (e) => {
+                    if (e.touches.length === 1) {
+                        this.touchStartX = e.touches[0].clientX;
+                        this.touchStartY = e.touches[0].clientY;
+                    }
+                }, { passive: true });
+
+                this.boardContainer.addEventListener('touchend', (e) => {
+                    if (this.isSolved || e.changedTouches.length === 0) return;
+                    const dx = e.changedTouches[0].clientX - this.touchStartX;
+                    const dy = e.changedTouches[0].clientY - this.touchStartY;
+                    const absX = Math.abs(dx);
+                    const absY = Math.abs(dy);
+
+                    if (Math.max(absX, absY) > 32) {
+                        if (absX > absY) {
+                            this.handleDirectionSlide(dx > 0 ? 'RIGHT' : 'LEFT');
+                        } else {
+                            this.handleDirectionSlide(dy > 0 ? 'DOWN' : 'UP');
+                        }
+                    }
+                }, { passive: true });
+
+                // ポイント受取ボタン
+                this.claimBtn.addEventListener('click', () => {
+                    this.claimRewardPoints();
+                });
+
+                // モーダルボタン
+                document.getElementById('btn-modal-close').addEventListener('click', () => {
+                    this.hideWinModal();
+                });
+                document.getElementById('btn-modal-replay').addEventListener('click', () => {
+                    this.hideWinModal();
+                    this.sound.playShuffle();
+                    this.startNewGame();
+                });
+            }
+
+            // ユーザーが選択した写真を正方形に中央トリミングしてパズル用画像にする
+            loadCustomImage(file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const S = IllustrationGenerator.SIZE;
+                        const canvas = document.createElement('canvas');
+                        canvas.width = S;
+                        canvas.height = S;
+                        const ctx = canvas.getContext('2d');
+
+                        const minSide = Math.min(img.width, img.height);
+                        const sx = (img.width - minSide) / 2;
+                        const sy = (img.height - minSide) / 2;
+                        ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, S, S);
+
+                        const customDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+                        const existingIdx = this.themes.findIndex(t => t.id === 'custom');
+                        const customTheme = {
+                            id: 'custom',
+                            name: 'じぶんのしゃしん',
+                            dataUrl: customDataUrl
+                        };
+
+                        if (existingIdx >= 0) {
+                            this.themes[existingIdx] = customTheme;
+                        } else {
+                            this.themes.push(customTheme);
+                        }
+
+                        this.currentTheme = customTheme;
+                        this.renderThemeSelector();
+                        this.sound.playShuffle();
+                        this.startNewGame();
+                    };
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            renderThemeSelector() {
+                const list = document.getElementById('theme-list');
+                list.innerHTML = '';
+                list.className = this.themes.length === 4 ? 'theme-grid cols-4' : 'theme-grid';
+
+                this.themes.forEach(theme => {
+                    const isSelected = theme.id === this.currentTheme.id;
+                    const btn = document.createElement('button');
+                    btn.className = `theme-btn ${isSelected ? 'active' : ''}`;
+                    btn.innerHTML = `
+                        <div class="theme-thumb">
+                            <img src="${theme.dataUrl}" alt="${theme.name}" />
+                        </div>
+                        <span class="theme-name">${theme.name}</span>
+                    `;
+                    btn.addEventListener('click', () => {
+                        if (this.currentTheme.id !== theme.id) {
+                            this.currentTheme = theme;
+                            this.renderThemeSelector();
+                            this.sound.playShuffle();
+                            this.startNewGame();
+                        }
+                    });
+                    list.appendChild(btn);
+                });
+            }
+
+            updateDifficultyUI() {
+                const descMap = {
+                    3: '8ピース・気軽にサクッと！（50pt）',
+                    4: '15ピース・定番サイズ（80pt）',
+                    5: '24ピース・じっくり本格派！（150pt）'
+                };
+                document.getElementById('difficulty-desc').textContent = descMap[this.size];
+
+                document.querySelectorAll('.diff-btn').forEach(btn => {
+                    const s = parseInt(btn.dataset.size, 10);
+                    btn.classList.toggle('active', s === this.size);
+                });
+            }
+
+            // 新規ゲームの初期化と「100%解ける」シャッフル
+            startNewGame() {
+                this.stopTimer();
+                this.moves = 0;
+                this.seconds = 0;
+                this.isPlaying = false;
+                this.isSolved = false;
+                this.rewardClaimed = false;
+
+                this.peekOverlay.classList.remove('active');
+                this.solvedOverlay.classList.remove('active');
+                this.peekImage.src = this.currentTheme.dataUrl;
+                this.solvedImage.src = this.currentTheme.dataUrl;
+
+                this.updateStatsUI();
+                this.loadBestScoreUI();
+
+                // 1. 完成状態の配列を作成 [1, 2, ..., N*N-1, 0]
+                const total = this.size * this.size;
+                this.board = Array.from({ length: total }, (_, i) => (i + 1) % total);
+
+                // 2. 完成状態から有効なスライド移動をランダムに繰り返すことで100%解ける盤面を生成
+                this.shuffleSolvable(this.size === 3 ? 80 : this.size === 4 ? 180 : 300);
+
+                // 3. タイルDOM要素を構築して配置
+                this.buildTileElements();
+                this.updateTilePositions();
+            }
+
+            shuffleSolvable(steps) {
+                const N = this.size;
+                let emptyIdx = this.board.indexOf(0);
+                let prevEmptyIdx = -1;
+
+                for (let step = 0; step < steps; step++) {
+                    const r = Math.floor(emptyIdx / N);
+                    const c = emptyIdx % N;
+                    const neighbors = [];
+
+                    if (r > 0) neighbors.push((r - 1) * N + c);
+                    if (r < N - 1) neighbors.push((r + 1) * N + c);
+                    if (c > 0) neighbors.push(r * N + (c - 1));
+                    if (c < N - 1) neighbors.push(r * N + (c + 1));
+
+                    const candidates = neighbors.filter(idx => idx !== prevEmptyIdx);
+                    const nextIdx = candidates[Math.floor(Math.random() * candidates.length)];
+
+                    this.board[emptyIdx] = this.board[nextIdx];
+                    this.board[nextIdx] = 0;
+                    prevEmptyIdx = emptyIdx;
+                    emptyIdx = nextIdx;
+                }
+
+                // 万が一シャッフル後に偶然完成状態になっていた場合はもう1手動かす
+                if (this.checkSolvedState()) {
+                    const swapIdx = emptyIdx - 1 >= 0 ? emptyIdx - 1 : emptyIdx + 1;
+                    this.board[emptyIdx] = this.board[swapIdx];
+                    this.board[swapIdx] = 0;
+                }
+            }
+
+            buildTileElements() {
+                this.tilesLayer.innerHTML = '';
+                this.tileElements.clear();
+
+                const N = this.size;
+                const total = N * N;
+                const pct = 100 / N;
+
+                for (let tileNum = 1; tileNum < total; tileNum++) {
+                    const goalIdx = tileNum - 1;
+                    const goalRow = Math.floor(goalIdx / N);
+                    const goalCol = goalIdx % N;
+
+                    const tile = document.createElement('div');
+                    tile.className = 'puzzle-tile';
+                    tile.style.width = `${pct}%`;
+                    tile.style.height = `${pct}%`;
+
+                    const inner = document.createElement('div');
+                    inner.className = 'puzzle-tile-inner';
+                    inner.style.backgroundImage = `url(${this.currentTheme.dataUrl})`;
+                    inner.style.backgroundSize = `${N * 100}% ${N * 100}%`;
+                    const bgPosX = N > 1 ? (goalCol / (N - 1)) * 100 : 0;
+                    const bgPosY = N > 1 ? (goalRow / (N - 1)) * 100 : 0;
+                    inner.style.backgroundPosition = `${bgPosX}% ${bgPosY}%`;
+
+                    // 数字ガイドバッジ
+                    const badge = document.createElement('span');
+                    badge.className = `tile-num-badge ${this.showNumbers ? '' : 'badge-hidden'}`;
+                    badge.textContent = tileNum;
+
+                    inner.appendChild(badge);
+                    tile.appendChild(inner);
+
+                    tile.addEventListener('click', () => {
+                        this.handleTileClick(tileNum);
+                    });
+
+                    this.tilesLayer.appendChild(tile);
+                    this.tileElements.set(tileNum, tile);
+                }
+            }
+
+            updateNumberBadges() {
+                this.tilesLayer.querySelectorAll('.tile-num-badge').forEach(badge => {
+                    badge.classList.toggle('badge-hidden', !this.showNumbers);
+                });
+            }
+
+            updateTilePositions() {
+                const N = this.size;
+                this.board.forEach((tileNum, index) => {
+                    if (tileNum === 0) return;
+                    const el = this.tileElements.get(tileNum);
+                    if (!el) return;
+
+                    const row = Math.floor(index / N);
+                    const col = index % N;
+                    el.style.transform = `translate3d(${col * 100}%, ${row * 100}%, 0)`;
+                });
+            }
+
+            handleTileClick(tileNum) {
+                if (this.isSolved) return;
+
+                const N = this.size;
+                const clickedIdx = this.board.indexOf(tileNum);
+                const emptyIdx = this.board.indexOf(0);
+
+                const clickedRow = Math.floor(clickedIdx / N);
+                const clickedCol = clickedIdx % N;
+                const emptyRow = Math.floor(emptyIdx / N);
+                const emptyCol = emptyIdx % N;
+
+                if (clickedRow !== emptyRow && clickedCol !== emptyCol) return;
+
+                let slideCount = 0;
+
+                if (clickedRow === emptyRow) {
+                    const step = clickedCol < emptyCol ? -1 : 1;
+                    for (let c = emptyCol; c !== clickedCol; c += step) {
+                        const targetIdx = emptyRow * N + c;
+                        const nextIdx = emptyRow * N + (c + step);
+                        this.board[targetIdx] = this.board[nextIdx];
+                        slideCount++;
+                    }
+                } else {
+                    const step = clickedRow < emptyRow ? -1 : 1;
+                    for (let r = emptyRow; r !== clickedRow; r += step) {
+                        const targetIdx = r * N + emptyCol;
+                        const nextIdx = (r + step) * N + emptyCol;
+                        this.board[targetIdx] = this.board[nextIdx];
+                        slideCount++;
+                    }
+                }
+
+                this.board[clickedIdx] = 0;
+                this.onAfterMove(slideCount);
+            }
+
+            handleDirectionSlide(direction) {
+                const N = this.size;
+                const emptyIdx = this.board.indexOf(0);
+                const emptyRow = Math.floor(emptyIdx / N);
+                const emptyCol = emptyIdx % N;
+
+                let targetRow = emptyRow;
+                let targetCol = emptyCol;
+
+                if (direction === 'UP') targetRow = emptyRow + 1;
+                if (direction === 'DOWN') targetRow = emptyRow - 1;
+                if (direction === 'LEFT') targetCol = emptyCol + 1;
+                if (direction === 'RIGHT') targetCol = emptyCol - 1;
+
+                if (targetRow >= 0 && targetRow < N && targetCol >= 0 && targetCol < N) {
+                    const targetTile = this.board[targetRow * N + targetCol];
+                    this.handleTileClick(targetTile);
+                }
+            }
+
+            onAfterMove(slideCount) {
+                if (!this.isPlaying) {
+                    this.startTimer();
+                }
+
+                this.moves += 1;
+                this.sound.playSlide(slideCount);
+                this.updateTilePositions();
+                this.updateStatsUI();
+
+                if (this.checkSolvedState()) {
+                    this.handlePuzzleSolved();
+                }
+            }
+
+            checkSolvedState() {
+                const total = this.size * this.size;
+                for (let i = 0; i < total - 1; i++) {
+                    if (this.board[i] !== i + 1) return false;
+                }
+                return this.board[total - 1] === 0;
+            }
+
+            handlePuzzleSolved() {
+                this.isSolved = true;
+                this.stopTimer();
+
+                // 完成イラストをシームレスに表示
+                this.solvedOverlay.classList.add('active');
+                this.peekOverlay.classList.remove('active');
+
+                // ベストスコア判定＆保存
+                const isNewBest = this.saveBestScore();
+                this.loadBestScoreUI();
+
+                // ファンファーレ＆紙吹雪
+                setTimeout(() => {
+                    this.sound.playWinFanfare();
+                    this.confetti.burst();
+                    this.showWinModal(isNewBest);
+                }, 320);
+            }
+
+            claimRewardPoints() {
+                if (this.rewardClaimed) return;
+                const points = REWARD_BY_SIZE[this.size] || 30;
+
+                if (typeof showPointGetDialog === 'function') {
+                    showPointGetDialog(points, GAME_ID, (userName) => {
+                        this.rewardClaimed = true;
+                        this.claimBtn.disabled = true;
+                        this.claimBtn.textContent = '✓ ポイントをもらいました！';
+
+                        if (userName && typeof addMissionStock === 'function') {
+                            addMissionStock(userName, GAME_ID);
+                        }
+                    });
+                } else {
+                    alert(`${points}ポイント もらったよ！`);
+                    this.rewardClaimed = true;
+                    this.claimBtn.disabled = true;
+                    this.claimBtn.textContent = '✓ ポイントをもらいました！';
+                }
+            }
+
+            startTimer() {
+                this.isPlaying = true;
+                this.stopTimer();
+                this.timerId = setInterval(() => {
+                    this.seconds++;
+                    this.updateStatsUI();
+                }, 1000);
+            }
+
+            stopTimer() {
+                if (this.timerId) {
+                    clearInterval(this.timerId);
+                    this.timerId = null;
+                }
+            }
+
+            formatTime(sec) {
+                const m = String(Math.floor(sec / 60)).padStart(2, '0');
+                const s = String(sec % 60).padStart(2, '0');
+                return `${m}:${s}`;
+            }
+
+            updateStatsUI() {
+                this.statMoves.textContent = this.moves;
+                this.statTime.textContent = this.formatTime(this.seconds);
+            }
+
+            getStorageKey() {
+                return `papan_slide_puzzle_best_${this.currentTheme.id}_${this.size}`;
+            }
+
+            loadBestScoreUI() {
+                try {
+                    const raw = localStorage.getItem(this.getStorageKey());
+                    if (!raw) {
+                        this.statBest.textContent = '--';
+                        return;
+                    }
+                    const best = JSON.parse(raw);
+                    this.statBest.textContent = `${best.moves}回 (${this.formatTime(best.seconds)})`;
+                } catch (e) {
+                    this.statBest.textContent = '--';
+                }
+            }
+
+            saveBestScore() {
+                try {
+                    const key = this.getStorageKey();
+                    const raw = localStorage.getItem(key);
+                    let isNewBest = false;
+
+                    if (!raw) {
+                        isNewBest = true;
+                    } else {
+                        const prev = JSON.parse(raw);
+                        if (this.moves < prev.moves || (this.moves === prev.moves && this.seconds < prev.seconds)) {
+                            isNewBest = true;
+                        }
+                    }
+
+                    if (isNewBest) {
+                        localStorage.setItem(key, JSON.stringify({
+                            moves: this.moves,
+                            seconds: this.seconds
+                        }));
+                    }
+                    return isNewBest;
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            showWinModal(isNewBest) {
+                const modal = document.getElementById('win-modal');
+                const card = document.getElementById('win-modal-card');
+                const points = REWARD_BY_SIZE[this.size] || 30;
+
+                document.getElementById('win-theme-title').textContent = `${this.currentTheme.name} (${this.size}×${this.size})`;
+                document.getElementById('win-preview-img').src = this.currentTheme.dataUrl;
+                document.getElementById('win-moves').innerHTML = `${this.moves} <ruby>回<rt>かい</rt></ruby>`;
+                document.getElementById('win-time').textContent = this.formatTime(this.seconds);
+                document.getElementById('win-reward-points').textContent = `+${points} ポイント`;
+                document.getElementById('new-record-badge').classList.toggle('hidden', !isNewBest);
+
+                this.claimBtn.disabled = this.rewardClaimed;
+                this.claimBtn.textContent = this.rewardClaimed ? '✓ ポイントをもらいました！' : '🎁 ポイントをもらう';
+
+                modal.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    card.classList.add('show');
+                });
+            }
+
+            hideWinModal() {
+                const modal = document.getElementById('win-modal');
+                const card = document.getElementById('win-modal-card');
+                card.classList.remove('show');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 180);
+            }
+        }
+
+        // アプリ起動
+        window.addEventListener('DOMContentLoaded', () => {
+            new SlidingPuzzleApp();
+        });
+    </script>
+</body>
+</html>

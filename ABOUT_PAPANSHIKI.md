@@ -55,6 +55,7 @@
 | `papan_parent_bonus_v1` | おすすめコンテンツのボーナス受取履歴 |
 | `papan_labo_records_v1` | スポーツ能力ラボの測定記録 |
 | `papan_labo2_records_v1` | 感覚測定ラボの測定記録 |
+| `papan_labo3_records_v1` | きおく力測定ラボの測定記録 |
 | `sugoroku_weekly_v1` | ミッションすごろくの週替わりミッションと達成状況 |
 | `missionStock` | ミッション達成で得たすごろく用ストック数 |
 | `currentPosition` | ミッションすごろくのユーザー別コマ位置 |
@@ -150,6 +151,8 @@
 | `detective.html` | 名探偵ぱぱん | 推理パズル | C (30pt) | 6〜12歳 |
 | `fingers_chess.html` | フィンガーチェス | 戦略ゲーム | C (変動) | 6〜12歳 |
 | `passcode.html` | パスコードをあてよう！ | 記憶力 | D (成績連動) | 6〜12歳 |
+| `slide_puzzle.html` | スライドパズル・アトリエ | スライドパズル | D (50/80/150pt) | 5〜12歳 |
+| `performance_labo/labo3.html` | きおく力測定ラボ | 総合記憶力測定 | D (成績連動) | 6〜12歳 |
 | `ura/sheep_stable.html` | ひつじ牧場 | 育成・戦略ゲーム | ― | 7〜12歳 |
 
 ### 🎵 おんがく・アート
@@ -256,7 +259,7 @@
 - すごろく本体では `missionStock` を1消費して1マス進む。位置は `currentPosition` にユーザー別で保存される
 - 途中マスではサイコロ報酬でどんぐりを付与し、ゴール時はゴール用サイコロ報酬を付与する。ゴール後は翌週リセットまで待機する
 - 現在のミッション種別は `game` / `visit` / `action`。達成判定は各ページ側から `addMissionStock()` を呼ぶ方式
-- 主な達成呼び出し元: `gacha.html`（ガチャ）、`bank.html`（交換）、`stock.html`（株売買）、`record.html`（記録確認・目標おまかせ）、`dashboard.html`（ダッシュボード表示）、`avatar_shop.html`、`room_shop.html`、`ura/sheep_stable.html`、`rail.html`、`rhythm.html`、`math_strike.html`、`math_molkky.html`、`dokidoki_obstacle.html`、`passcode.html`、`kanji_card_battle.html`、`performance_labo/main.js`、`performance_labo/main2.js`
+- 主な達成呼び出し元: `gacha.html`（ガチャ）、`bank.html`（交換）、`stock.html`（株売買）、`record.html`（記録確認・目標おまかせ）、`dashboard.html`（ダッシュボード表示）、`avatar_shop.html`、`room_shop.html`、`ura/sheep_stable.html`、`rail.html`、`rhythm.html`、`math_strike.html`、`math_molkky.html`、`dokidoki_obstacle.html`、`passcode.html`、`kanji_card_battle.html`、`performance_labo/main.js`、`performance_labo/main2.js`、`performance_labo/main3.js`
 
 ### 5.6 記録・目標管理
 - 各ゲームのベスト記録を `localStorage` に保存

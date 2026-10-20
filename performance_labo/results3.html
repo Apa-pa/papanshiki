@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>きおく力測定ラボ 成績表｜ぱぱん式 まなびポータル</title>
+    <meta name="description" content="きおく力測定ラボの過去の測定記録・レーダーチャートと成長を確認できます。">
+
+    <script src="../ranking.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        body {
+            background: #fdfbf7;
+        }
+
+        .user-select-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: #fff;
+            padding: 12px 16px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .user-select-bar label {
+            font-weight: bold;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .user-select-bar select {
+            font-family: inherit;
+            font-size: 1rem;
+            padding: 6px 14px;
+            border: 2px solid #ce93d8;
+            border-radius: 10px;
+            background: #fff;
+            color: #333;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .record-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+            border: 1px solid #ede7f6;
+        }
+
+        .record-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px dashed #f3e5f5;
+        }
+
+        .record-card-date {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #4a148c;
+        }
+
+        .record-card-total {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #e65100;
+            background: #fff3e0;
+            padding: 4px 12px;
+            border-radius: 12px;
+        }
+
+        .record-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .record-item {
+            background: #fdfbfd;
+            border: 1px solid #f3e5f5;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .record-item-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .record-item-score {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #6a1b9a;
+        }
+
+        .btn-back-labo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: #7e57c2;
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 12px 24px;
+            border-radius: 30px;
+            box-shadow: 0 4px #5e35b1;
+            margin-top: 15px;
+            transition: transform 0.1s;
+        }
+
+        .btn-back-labo:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px #5e35b1;
+        }
+
+        .no-records {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+            background: #fff;
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="labo-container" style="max-width: 600px;">
+
+        <div id="labo-header">
+            <span style="font-size:1.8rem;">📊</span>
+            <div>
+                <div class="header-title">きおく力測定 成績表</div>
+                <div class="header-sub">これまでの そくてい きろく</div>
+            </div>
+        </div>
+
+        <!-- ユーザー選択 -->
+        <div class="user-select-bar">
+            <label for="user-select">プレイヤー:</label>
+            <select id="user-select" onchange="onUserChange()">
+                <option value="">（えらんでね）</option>
+            </select>
+        </div>
+
+        <!-- 最新のレーダーチャート -->
+        <div id="latest-chart-card" class="record-card" style="display:none;">
+            <div class="record-card-header">
+                <div class="record-card-date">🌟 最新のプロファイル</div>
+                <div class="record-card-total" id="latest-total-badge">--点</div>
+            </div>
+            <div style="max-width:320px; margin:0 auto 15px auto;">
+                <canvas id="latest-radar-chart"></canvas>
+            </div>
+            <div class="record-grid" id="latest-scores-grid"></div>
+        </div>
+
+        <!-- 過去の履歴リスト -->
+        <div id="history-container"></div>
+
+        <div style="text-align:center;">
+            <a href="labo3.html" class="btn-back-labo">🧠 ラボ3にもどる</a>
+            <br>
+            <a href="../index.html" class="home-link" style="margin-top:15px; display:inline-block;">🏠 ホームへもどる</a>
+        </div>
+
+    </div>
+
+    <script>
+        const LABO_RECORDS_KEY = 'papan_labo3_records_v1';
+        let latestChartInstance = null;
+
+        const AXES = [
+            { key: 'photo', label: '📷 しゃしんきおく' },
+            { key: 'space', label: '🗺 ばしょきおく' },
+            { key: 'order', label: '🔢 じゅんばんきおく' },
+            { key: 'work',  label: '⚙️ のうみそワーク' },
+            { key: 'ear',    label: '👂 みみきおく' }
+        ];
+
+        function getAllRecords() {
+            return JSON.parse(localStorage.getItem(LABO_RECORDS_KEY) || '{}');
+        }
+
+        function initUserSelect() {
+            const select = document.getElementById('user-select');
+            const rankingUsers = (typeof getUsers === 'function') ? getUsers() : [];
+            const laboUsers = Object.keys(getAllRecords());
+            const allUsers = [...new Set([...rankingUsers, ...laboUsers])].sort();
+
+            select.innerHTML = '<option value="">（えらんでね）</option>';
+            allUsers.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u;
+                opt.textContent = u;
+                select.appendChild(opt);
+            });
+
+            // 最後に選択したユーザーがあれば自動選択
+            const lastUser = localStorage.getItem('papan_dashboard_last_user');
+            if (lastUser && allUsers.includes(lastUser)) {
+                select.value = lastUser;
+                renderUserRecords(lastUser);
+            } else if (allUsers.length > 0) {
+                select.value = allUsers[0];
+                renderUserRecords(allUsers[0]);
+            }
+        }
+
+        function onUserChange() {
+            const user = document.getElementById('user-select').value;
+            if (user) {
+                localStorage.setItem('papan_dashboard_last_user', user);
+                renderUserRecords(user);
+            }
+        }
+
+        function renderUserRecords(userName) {
+            const all = getAllRecords();
+            const recs = all[userName] || [];
+            const historyContainer = document.getElementById('history-container');
+            const latestCard = document.getElementById('latest-chart-card');
+
+            historyContainer.innerHTML = '';
+
+            if (recs.length === 0) {
+                latestCard.style.display = 'none';
+                historyContainer.innerHTML = `
+                    <div class="no-records">
+                        まだ 測定の記録が ありません。<br>
+                        「きおく力測定ラボ」をプレイしてみよう！
+                    </div>
+                `;
+                return;
+            }
+
+            // 最新レコードの表示
+            const latest = recs[recs.length - 1];
+            latestCard.style.display = 'block';
+            document.getElementById('latest-total-badge').textContent = `総合 ${latest.total}点`;
+
+            const latestGrid = document.getElementById('latest-scores-grid');
+            latestGrid.innerHTML = '';
+            AXES.forEach(ax => {
+                const s = latest.scores[ax.key] || 0;
+                latestGrid.innerHTML += `
+                    <div class="record-item">
+                        <div class="record-item-label">${ax.label}</div>
+                        <div class="record-item-score">${s}点</div>
+                    </div>
+                `;
+            });
+
+            renderLatestRadar(latest.scores);
+
+            // 履歴リストの描画 (新しい順)
+            for (let i = recs.length - 1; i >= 0; i--) {
+                const r = recs[i];
+                let gridHtml = '';
+                AXES.forEach(ax => {
+                    const s = r.scores[ax.key] || 0;
+                    gridHtml += `
+                        <div class="record-item">
+                            <div class="record-item-label">${ax.label}</div>
+                            <div class="record-item-score">${s}点</div>
+                        </div>
+                    `;
+                });
+
+                historyContainer.innerHTML += `
+                    <div class="record-card">
+                        <div class="record-card-header">
+                            <div class="record-card-date">📅 ${r.date} （第${i + 1}回）</div>
+                            <div class="record-card-total">総合 ${r.total}点</div>
+                        </div>
+                        <div class="record-grid">
+                            ${gridHtml}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderLatestRadar(scores) {
+            const canvas = document.getElementById('latest-radar-chart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            if (latestChartInstance) {
+                latestChartInstance.destroy();
+            }
+
+            const dataValues = AXES.map(ax => scores[ax.key] || 0);
+
+            latestChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: AXES.map(ax => ax.label),
+                    datasets: [{
+                        label: '能力値',
+                        data: dataValues,
+                        backgroundColor: 'rgba(126, 87, 194, 0.25)',
+                        borderColor: '#7e57c2',
+                        pointBackgroundColor: '#7e57c2',
+                        borderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 100,
+                            ticks: { display: false, stepSize: 20 },
+                            pointLabels: {
+                                font: { family: '"UD Digital Kyokasho-tai-R", sans-serif', size: 11 },
+                                color: '#555'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        window.onload = function() {
+            initUserSelect();
+        };
+    </script>
+
+</body>
+
+</html>
