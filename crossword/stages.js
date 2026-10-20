@@ -352,6 +352,109 @@
             }
         },
         {
+            id: "grade_3_4_stage_2",
+            number: 2,
+            icon: "🎒",
+            gradeBand: "3-4",
+            rows: 7,
+            cols: 7,
+            clueReward: 5,
+            keywordReward: 30,
+            entries: [
+                {
+                    id: "a1",
+                    number: 1,
+                    direction: "across",
+                    row: 0,
+                    col: 0,
+                    answer: "たいよう",
+                    clueHtml: "ひるの そらで かがやき、<ruby>地球<rt>ちきゅう</rt></ruby>を あたためてくれる <ruby>大<rt>おお</rt></ruby>きな <ruby>星<rt>ほし</rt></ruby>。",
+                    letters: ["た", "い", "よ", "う", "ち", "き", "ゅ", "ほ", "し"]
+                },
+                {
+                    id: "a2",
+                    number: 2,
+                    direction: "across",
+                    row: 1,
+                    col: 4,
+                    answer: "きのこ",
+                    clueHtml: "<ruby>秋<rt>あき</rt></ruby>に もりなどで よく みかける、かさのような かたちの たべもの。",
+                    letters: ["き", "の", "こ", "も", "り", "あ", "か", "さ", "た"]
+                },
+                {
+                    id: "a3",
+                    number: 3,
+                    direction: "across",
+                    row: 3,
+                    col: 0,
+                    answer: "うんどうかい",
+                    clueHtml: "<ruby>学校<rt>がっこう</rt></ruby>のみんなで、かけっこや リレーをして <ruby>力<rt>ちから</rt></ruby>を あわせる <ruby>行事<rt>ぎょうじ</rt></ruby>。",
+                    letters: ["う", "ん", "ど", "か", "い", "は", "し", "る", "り"]
+                },
+                {
+                    id: "a4",
+                    number: 4,
+                    direction: "across",
+                    row: 6,
+                    col: 3,
+                    answer: "わかば",
+                    clueHtml: "<ruby>春<rt>はる</rt></ruby>に <ruby>木<rt>き</rt></ruby>から でてきたばかりの、あざやかな みどりいろの <ruby>葉<rt>は</rt></ruby>。",
+                    letters: ["わ", "か", "ば", "は", "る", "み", "ど", "り", "き"]
+                },
+                {
+                    id: "d1",
+                    number: 1,
+                    direction: "down",
+                    row: 0,
+                    col: 2,
+                    answer: "よろこび",
+                    clueHtml: "うれしい ことが あったときに、こころの なかに うまれる あかるい きもち。",
+                    letters: ["よ", "ろ", "こ", "び", "う", "れ", "し", "い", "き"]
+                },
+                {
+                    id: "d2",
+                    number: 2,
+                    direction: "down",
+                    row: 0,
+                    col: 5,
+                    answer: "たのしみ",
+                    clueHtml: "これから おこる いい ことを まって、わくわくする きもち。",
+                    letters: ["た", "の", "し", "み", "わ", "く", "ま", "つ", "こ"]
+                },
+                {
+                    id: "d3",
+                    number: 3,
+                    direction: "down",
+                    row: 2,
+                    col: 0,
+                    answer: "おうえん",
+                    clueHtml: "がんばっている ひとに、こえや <ruby>手拍子<rt>てびょうし</rt></ruby>で パワーを おくること。",
+                    letters: ["お", "う", "え", "ん", "が", "ば", "れ", "ち", "か"]
+                },
+                {
+                    id: "d4",
+                    number: 4,
+                    direction: "down",
+                    row: 3,
+                    col: 3,
+                    answer: "うらにわ",
+                    clueHtml: "いえの うしろがわに ある <ruby>庭<rt>にわ</rt></ruby>。",
+                    letters: ["う", "ら", "に", "わ", "い", "え", "は", "な", "き"]
+                }
+            ],
+            keyword: {
+                answer: "たからばこ",
+                cells: [
+                    { row: 0, col: 0 },
+                    { row: 3, col: 4 },
+                    { row: 4, col: 3 },
+                    { row: 6, col: 5 },
+                    { row: 1, col: 6 }
+                ],
+                letters: ["た", "か", "ら", "ば", "こ", "だ", "い", "じ", "ひ", "み"]
+            }
+        },
+        {
             id: "grade_5_6_stage_1",
             number: 1,
             icon: "🧭",
