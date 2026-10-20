@@ -1,7 +1,7 @@
 /* ============================================
    labo3_game5_sound.js — おと・ルールきおく（G5）
-   聴覚記憶とルールの連動・順序記憶の測定
-   ピアノ音（ド・ミ・ソ）を使用
+   聴覚・ルール連想記憶と順序記憶の測定
+   ピアノ音（ド・ミ・ソ）＋鍵盤発光ヒント付き
    ============================================ */
 
 'use strict';
@@ -9,16 +9,16 @@
 window.Labo3Game5 = (function () {
 
     const SOUNDS = {
-        'C4': { file: '../se/C4.mp3', name: 'ド（ひくい音）', color: '#e53935', label: 'あか', id: 'red' },
-        'E4': { file: '../se/E4.mp3', name: 'ミ（まんなか）', color: '#fbc02d', label: 'きいろ', id: 'yellow' },
-        'G4': { file: '../se/G4.mp3', name: 'ソ（たかい音）', color: '#1e88e5', label: 'あお', id: 'blue' },
+        'C4': { file: '../se/C4.mp3', noteName: 'ド', name: 'ド（ひくい音）', color: '#e53935', label: 'あか', id: 'red' },
+        'E4': { file: '../se/E4.mp3', noteName: 'ミ', name: 'ミ（まんなか）', color: '#fbc02d', label: 'きいろ', id: 'yellow' },
+        'G4': { file: '../se/G4.mp3', noteName: 'ソ', name: 'ソ（たかい音）', color: '#1e88e5', label: 'あお', id: 'blue' },
     };
 
     const NOTE_KEYS = ['C4', 'E4', 'G4'];
     const audioObjects = {};
 
     const STATE = {
-        phase: 'check',   // 'check' -> 'practice' -> 'test'
+        phase: 'check',   // 'check' -> 'test'
         level: 2,         // 現在の音数 (2〜9)
         maxLevel: 9,
         missCountInLevel: 0,
@@ -58,15 +58,25 @@ window.Labo3Game5 = (function () {
             const playPromise = audio.play();
             if (playPromise !== undefined) {
                 playPromise.then(() => {
-                    if (callback) addTimer(callback, 500);
+                    if (callback) addTimer(callback, 480);
                 }).catch(() => {
                     // 自動再生ブロック時のフォールバック
-                    if (callback) callback();
+                    if (callback) addTimer(callback, 480);
                 });
             }
         } catch (e) {
-            if (callback) callback();
+            if (callback) addTimer(callback, 480);
         }
+    }
+
+    // 鍵盤を光らせる演出
+    function highlightPianoKey(key, durationMs = 420) {
+        const keyEl = document.getElementById(`s5-pkey-${key}`);
+        if (!keyEl) return;
+        keyEl.classList.add('lit');
+        addTimer(() => {
+            keyEl.classList.remove('lit');
+        }, durationMs);
     }
 
     function start() {
@@ -94,7 +104,7 @@ window.Labo3Game5 = (function () {
                 </div>
 
                 <div id="s5-message" style="font-size:1.15rem; font-weight:bold; min-height:1.6em; margin-bottom:12px; color:var(--text-main);">
-                    おとのルールをおぼえよう！
+                    「おと」と「いろ」のルールをおぼえよう！
                 </div>
 
                 <!-- 音チェック＆ルール説明エリア -->
@@ -106,41 +116,66 @@ window.Labo3Game5 = (function () {
                     margin-bottom: 15px;
                     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
                 ">
-                    <p style="font-size:0.95rem; color:#555; margin-bottom:12px;">
-                        ピアノの音を聞いて、どの音かおぼえてね！<br>
-                        ボタンをおして音をたしかめてみよう！
+                    <p style="font-size:0.95rem; color:#555; margin-bottom:12px; line-height:1.5;">
+                        どの音が <strong>どの色</strong> かおぼえてね！<br>
+                        本番では鍵盤が光って「ド・ミ・ソ」を教えてくれるよ。<br>
+                        まずはボタンを押して音をたしかめてみよう！
                     </p>
                     <div style="display:flex; justify-content:center; gap:10px; margin-bottom:15px;">
                         <button class="l3-btn sample-note-btn" style="background:#e53935; color:#fff;" onclick="Labo3Game5.testSound('C4')">
-                            ド 🎵<br><small style="font-size:0.75rem;">ひくい音</small>
+                            <strong>ド ＝ あか</strong> 🎵<br><small style="font-size:0.75rem;">ひくい音</small>
                         </button>
                         <button class="l3-btn sample-note-btn" style="background:#fbc02d; color:#333;" onclick="Labo3Game5.testSound('E4')">
-                            ミ 🎵<br><small style="font-size:0.75rem;">まんなか</small>
+                            <strong>ミ ＝ きいろ</strong> 🎵<br><small style="font-size:0.75rem;">まんなか</small>
                         </button>
                         <button class="l3-btn sample-note-btn" style="background:#1e88e5; color:#fff;" onclick="Labo3Game5.testSound('G4')">
-                            ソ 🎵<br><small style="font-size:0.75rem;">たかい音</small>
+                            <strong>ソ ＝ あお</strong> 🎵<br><small style="font-size:0.75rem;">たかい音</small>
                         </button>
                     </div>
 
                     <button class="btn btn-accent l3-btn" style="font-size:1.1rem; padding:10px 25px; border-radius:30px;" onclick="Labo3Game5.startRealTest()">
-                        ✅ おとが聞こえた！本番へGO！
+                        ✅ ルールをおぼえた！本番へGO！
                     </button>
                 </div>
 
-                <!-- 本番の音再生スピーカー演出 -->
+                <!-- 本番のピアノ鍵盤ステージ（音が鳴るときに鍵盤が光る） -->
                 <div id="s5-speaker-stage" style="
                     display: none;
-                    background: #fce4ec;
+                    background: #37474f;
                     border-radius: 20px;
-                    padding: 20px;
+                    padding: 16px 12px 14px;
                     margin-bottom: 15px;
-                    box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
+                    box-shadow: inset 0 3px 8px rgba(0,0,0,0.3);
                 ">
-                    <div id="s5-speaker-icon" style="font-size:4rem; transition:transform 0.15s ease;">🎹</div>
-                    <div id="s5-notes-visual" style="min-height:28px; margin-top:8px; font-size:1.2rem; font-weight:bold; color:#ad1457;"></div>
+                    <div id="s5-notes-visual" style="min-height:28px; margin-bottom:10px; font-size:1.15rem; font-weight:bold; color:#fff;">
+                        🎵 よく見て・聞いてね
+                    </div>
+
+                    <!-- 5鍵盤（ド・レ・ミ・ファ・ソ） -->
+                    <div class="s5-piano-wrap">
+                        <div class="s5-pkey target-key" id="s5-pkey-C4">
+                            <span class="pkey-note">ド</span>
+                        </div>
+                        <div class="s5-pkey dummy-key">
+                            <span class="pkey-note" style="color:#bbb; font-size:0.85rem;">レ</span>
+                        </div>
+                        <div class="s5-pkey target-key" id="s5-pkey-E4">
+                            <span class="pkey-note">ミ</span>
+                        </div>
+                        <div class="s5-pkey dummy-key">
+                            <span class="pkey-note" style="color:#bbb; font-size:0.85rem;">ファ</span>
+                        </div>
+                        <div class="s5-pkey target-key" id="s5-pkey-G4">
+                            <span class="pkey-note">ソ</span>
+                        </div>
+                        <!-- 黒鍵（飾り） -->
+                        <div class="s5-bkey" style="left: 14%;"></div>
+                        <div class="s5-bkey" style="left: 34%;"></div>
+                        <div class="s5-bkey" style="left: 74%;"></div>
+                    </div>
                 </div>
 
-                <!-- 回答用 3色ボタン -->
+                <!-- 回答用 3色ボタン（本番は色と色名のみ） -->
                 <div id="s5-buttons-stage" style="
                     display: none;
                     grid-template-columns: repeat(3, 1fr);
@@ -162,10 +197,67 @@ window.Labo3Game5 = (function () {
             </div>
             <style>
                 .sample-note-btn {
-                    padding: 10px 14px;
+                    padding: 10px 12px;
                     border-radius: 12px;
-                    font-size: 1rem;
+                    font-size: 0.95rem;
                     box-shadow: 0 3px rgba(0,0,0,0.2);
+                }
+                .s5-piano-wrap {
+                    position: relative;
+                    display: grid;
+                    grid-template-columns: repeat(5, 1fr);
+                    gap: 4px;
+                    max-width: 300px;
+                    height: 110px;
+                    margin: 0 auto;
+                    background: #263238;
+                    padding: 6px;
+                    border-radius: 12px;
+                }
+                .s5-pkey {
+                    background: #fafafa;
+                    border: 2px solid #cfd8dc;
+                    border-radius: 0 0 8px 8px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: flex-end;
+                    align-items: center;
+                    padding-bottom: 8px;
+                    box-shadow: 0 4px #b0bec5;
+                    transition: transform 0.1s ease, background 0.1s ease, box-shadow 0.1s ease;
+                    user-select: none;
+                }
+                .s5-pkey.dummy-key {
+                    background: #eceff1;
+                    opacity: 0.75;
+                }
+                .pkey-note {
+                    font-size: 1.15rem;
+                    font-weight: bold;
+                    color: #37474f;
+                }
+                /* 鍵盤が光ったときのスタイル（色の答えは出さず、明るいオレンジゴールドに光る） */
+                .s5-pkey.lit {
+                    background: #fff59d !important;
+                    border-color: #fbc02d !important;
+                    box-shadow: 0 0 18px #ffee58, inset 0 0 10px #fdd835 !important;
+                    transform: translateY(3px) scale(1.03);
+                    z-index: 2;
+                }
+                .s5-pkey.lit .pkey-note {
+                    color: #d84315;
+                    font-size: 1.35rem;
+                }
+                .s5-bkey {
+                    position: absolute;
+                    top: 6px;
+                    width: 11%;
+                    height: 56px;
+                    background: #212121;
+                    border-radius: 0 0 5px 5px;
+                    box-shadow: 0 3px #000;
+                    pointer-events: none;
+                    z-index: 3;
                 }
                 .sound-input-btn {
                     height: 85px;
@@ -180,10 +272,6 @@ window.Labo3Game5 = (function () {
                 .sound-input-btn:active {
                     transform: translateY(3px);
                     box-shadow: 0 2px rgba(0,0,0,0.25);
-                }
-                .sound-input-btn.playing {
-                    transform: scale(1.05);
-                    filter: brightness(1.2);
                 }
                 .input-history-dot {
                     width: 24px;
@@ -210,7 +298,7 @@ window.Labo3Game5 = (function () {
         document.getElementById('s5-input-history').style.display = 'flex';
 
         const msg = document.getElementById('s5-message');
-        if (msg) msg.textContent = '本番スタート！音が鳴るよ！';
+        if (msg) msg.textContent = '本番スタート！光る鍵盤と音をおぼえてね！';
 
         addTimer(startTrial, 1000);
     }
@@ -242,8 +330,8 @@ window.Labo3Game5 = (function () {
             btnsStage.style.opacity = '0.4';
             btnsStage.style.pointerEvents = 'none';
         }
-        if (msg) msg.textContent = 'よく耳をすましてね...';
-        if (visual) visual.textContent = '🎵 ...';
+        if (msg) msg.textContent = '光る鍵盤と音を じゅんばんにおぼえてね...';
+        if (visual) visual.textContent = '🎵 じゅんび...';
 
         // 1秒待ってから連続再生
         addTimer(() => {
@@ -252,19 +340,18 @@ window.Labo3Game5 = (function () {
             function playNext() {
                 if (noteIdx < STATE.currentSequence.length) {
                     const key = STATE.currentSequence[noteIdx];
-                    const speaker = document.getElementById('s5-speaker-icon');
-                    if (speaker) {
-                        speaker.style.transform = 'scale(1.25)';
-                    }
+                    const noteName = SOUNDS[key].noteName;
+
+                    // 鍵盤を光らせ、何の音が出たかを表示
+                    highlightPianoKey(key, 420);
                     if (visual) {
-                        visual.textContent = `${noteIdx + 1}こ目！`;
+                        visual.innerHTML = `${noteIdx + 1}こ目： <span style="color:#ffee58; font-size:1.35rem;">「${noteName}」</span> ♪`;
                     }
 
                     playNote(key, () => {
-                        if (speaker) speaker.style.transform = 'scale(1.0)';
                         noteIdx++;
-                        // 0.35秒空けて次の音
-                        addTimer(playNext, 350);
+                        // 0.32秒空けて次の音
+                        addTimer(playNext, 320);
                     });
                 } else {
                     // 全音再生完了 -> 入力受付開始
@@ -273,8 +360,8 @@ window.Labo3Game5 = (function () {
                         btnsStage.style.opacity = '1';
                         btnsStage.style.pointerEvents = 'auto';
                     }
-                    if (msg) msg.textContent = '鳴った順に 色ボタンを押してね！';
-                    if (visual) visual.textContent = '？';
+                    if (msg) msg.textContent = '鳴った順に 対応する「色ボタン」を押してね！';
+                    if (visual) visual.textContent = 'どの色だったかな？';
                 }
             }
 
@@ -312,6 +399,7 @@ window.Labo3Game5 = (function () {
     function inputColor(key) {
         if (!STATE.isPlaying || STATE.isPlayingAudio) return;
 
+        highlightPianoKey(key, 300);
         playNote(key);
         STATE.userInput.push(key);
         renderHistory();
@@ -332,7 +420,7 @@ window.Labo3Game5 = (function () {
         if (isCorrect) {
             App.showFeedback('correct');
             STATE.maxClearedNotes = Math.max(STATE.maxClearedNotes, STATE.level);
-            msg.innerHTML = `<span style="color:#2e7d32;">大正解！！お見事！</span>`;
+            msg.innerHTML = `<span style="color:#2e7d32;">大正解！！ルールも順番もバッチリ！</span>`;
             if (visual) visual.textContent = '⭕ かんぺき！';
 
             STATE.missCountInLevel = 0;
@@ -348,8 +436,8 @@ window.Labo3Game5 = (function () {
             App.showFeedback('wrong');
             STATE.missCountInLevel++;
 
-            // 正解の並びを提示
-            const correctNames = STATE.currentSequence.map(k => SOUNDS[k].label).join(' → ');
+            // 正解の並び（音名＋色名）を提示
+            const correctNames = STATE.currentSequence.map(k => `${SOUNDS[k].noteName}(${SOUNDS[k].label})`).join(' → ');
             msg.innerHTML = `<span style="color:#c62828;">おしい！正解は「${correctNames}」でした</span>`;
             if (visual) visual.textContent = '❌';
 
