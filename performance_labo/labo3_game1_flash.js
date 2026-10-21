@@ -27,7 +27,7 @@ window.Labo3Game1 = (function () {
     ];
 
     const STATE = {
-        level: 3,         // 現在の表示絵文字数 (3〜10)
+        level: 2,         // 現在の表示絵文字数 (2〜10)
         maxLevel: 10,     // 上限
         missCountInLevel: 0,
         maxClearedLevel: 0,
@@ -52,7 +52,7 @@ window.Labo3Game1 = (function () {
 
     function start() {
         clearAllTimers();
-        STATE.level = 3;
+        STATE.level = 2;
         STATE.maxLevel = 10;
         STATE.missCountInLevel = 0;
         STATE.maxClearedLevel = 0;
@@ -66,7 +66,7 @@ window.Labo3Game1 = (function () {
         const html = `
             <div id="f1-container" style="text-align:center; padding: 10px 0; max-width:420px; margin:0 auto;">
                 <div class="level-indicator">
-                    <span>おぼえる数: <strong id="f1-level-text">3こ</strong></span>
+                    <span>おぼえる数: <strong id="f1-level-text">2こ</strong></span>
                     <div class="dots">
                         <span class="dot" id="f1-dot-1"></span>
                         <span class="dot" id="f1-dot-2"></span>
@@ -177,12 +177,13 @@ window.Labo3Game1 = (function () {
             }
         });
 
-        // 選択肢の作成（正解 + 紛らわしいダミー + 余分なダミーで12〜16個に調整）
+        // 選択肢の作成（正解 + 紛らわしいダミー + 余分なダミー、最低8個〜最大16個に調整）
         const optionPool = [...STATE.targetEmojis, ...dummyCandidates];
 
-        // 余白があれば追加ペアから補充
+        // 余白があれば追加ペアから補充（最低8個は確保して選びがいを作る）
+        const targetOptionCount = Math.min(16, Math.max(8, STATE.level * 2));
         let extraIdx = STATE.level;
-        while (optionPool.length < Math.min(16, STATE.level * 2) && extraIdx < shuffledPairs.length) {
+        while (optionPool.length < targetOptionCount && extraIdx < shuffledPairs.length) {
             optionPool.push(shuffledPairs[extraIdx][0]);
             extraIdx++;
         }
@@ -289,9 +290,30 @@ window.Labo3Game1 = (function () {
         if (selectArea) selectArea.style.pointerEvents = 'none';
 
         // 判定：ターゲットが全て選ばれており、かつ余分な間違いを1つも選んでいないこと
-        const hasAllTargets = STATE.targetEmojis.every(em => STATE.selected.includes(em));
-        const hasNoExtra = (STATE.selected.length === STATE.targetEmojis.length);
+        let correctCount = 0;
+        let wrongCount = 0;
+        STATE.selected.forEach(em => {
+            if (STATE.targetEmojis.includes(em)) {
+                correctCount++;
+            } else {
+                wrongCount++;
+            }
+        });
+        const netCorrect = Math.max(0, correctCount - wrongCount);
+
+        const hasAllTargets = (correctCount === STATE.targetEmojis.length);
+        const hasNoExtra = (wrongCount === 0);
         const isPerfect = (hasAllTargets && hasNoExtra);
+
+        // 部分評価の計算（実際に正しく記憶できていた個数をベースに評価）
+        let partialScore = netCorrect;
+        if (isPerfect) {
+            partialScore = STATE.level;
+        } else if (STATE.level > 2 && netCorrect === STATE.level - 1 && wrongCount <= 1) {
+            // 前のレベルをクリア済みで、今回あと1個で完全正解だった場合は +0.5 ボーナス
+            partialScore = STATE.level - 0.5;
+        }
+        STATE.maxClearedLevel = Math.max(STATE.maxClearedLevel, partialScore);
 
         // 正解・不正解の可視化
         document.querySelectorAll('.option-btn').forEach(btn => {

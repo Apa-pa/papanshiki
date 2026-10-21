@@ -23,23 +23,25 @@ window.ResultModule3 = (function () {
         return 50;
     }
 
-    // G1 フラッシュ（個数）
+    // G1 フラッシュ（個数：2〜10個）
     const TBL_FLASH = [
         { val: 0, score: 0 },
-        { val: 2, score: 10 },
-        { val: 3, score: 20 },
-        { val: 4, score: 35 },
-        { val: 5, score: 50 },
-        { val: 6, score: 65 },
-        { val: 7, score: 78 },
-        { val: 8, score: 88 },
+        { val: 1, score: 8 },
+        { val: 2, score: 16 },
+        { val: 3, score: 28 },
+        { val: 4, score: 42 },
+        { val: 5, score: 56 },
+        { val: 6, score: 70 },
+        { val: 7, score: 82 },
+        { val: 8, score: 90 },
         { val: 10, score: 100 }
     ];
 
-    // G2 ルート（マス数）
+    // G2 ルート（マス数：3〜10マス）
     const TBL_ROUTE_SPACE = [
         { val: 0, score: 0 },
-        { val: 2, score: 10 },
+        { val: 1, score: 5 },
+        { val: 2, score: 12 },
         { val: 3, score: 20 },
         { val: 4, score: 35 },
         { val: 5, score: 52 },
@@ -50,6 +52,7 @@ window.ResultModule3 = (function () {
     ];
     const TBL_ROUTE_ORDER = [
         { val: 0, score: 0 },
+        { val: 1, score: 5 },
         { val: 2, score: 10 },
         { val: 3, score: 18 },
         { val: 4, score: 32 },
@@ -60,10 +63,20 @@ window.ResultModule3 = (function () {
         { val: 10, score: 100 }
     ];
 
+    // G3 神経衰弱（獲得ペア数：最大34ペア → 最大75点 ＋ 精度最大25点 ＝ 100点）
+    const TBL_PAIRS = [
+        { val: 0, score: 0 },
+        { val: 3, score: 15 },  // ステージ1クリア (3ペア)
+        { val: 9, score: 35 },  // ステージ2クリア (累計9ペア)
+        { val: 19, score: 58 }, // ステージ3クリア (累計19ペア)
+        { val: 34, score: 75 }  // 全ステージ制覇 (累計34ペア)
+    ];
+
     // G4 パスコード（桁数）
     const TBL_PASS_FORWARD = [
         { val: 0, score: 0 },
-        { val: 2, score: 10 },
+        { val: 1, score: 5 },
+        { val: 2, score: 12 },
         { val: 3, score: 20 },
         { val: 4, score: 35 },
         { val: 5, score: 52 },
@@ -97,6 +110,14 @@ window.ResultModule3 = (function () {
         { val: 9, score: 100 }
     ];
 
+    // 実績表示用フォーマッタ（小数は子ども向けに分かりやすく整形）
+    function formatSpan(num, unit) {
+        if (!num || num === 0) return `0${unit}`;
+        if (Number.isInteger(num)) return `${num}${unit}`;
+        const base = Math.floor(num);
+        return `${base}${unit}（おしい！）`;
+    }
+
     /**
      * 各ゲームの生データから5つの能力値（0〜100）とテキストを算出
      */
@@ -107,7 +128,7 @@ window.ResultModule3 = (function () {
         if (raw.flash) {
             const count = raw.flash.maxItems || (raw.flash.level || 0);
             photoScore = interpolate(count, TBL_FLASH);
-            photoText = `${count}こ きおく`;
+            photoText = `${formatSpan(count, 'こ')} きおく`;
         }
         outScores.photo = photoScore;
         outTexts.photo = photoText;
@@ -118,17 +139,18 @@ window.ResultModule3 = (function () {
         if (raw.route) {
             const rSpace = raw.route.maxSpace || (raw.route.level || 0);
             routeSpaceScore = interpolate(rSpace, TBL_ROUTE_SPACE);
-            g2SpaceText = `${rSpace}マス`;
+            g2SpaceText = formatSpan(rSpace, 'マス');
         }
 
         let pairsScore = 0;
         let g3Text = '0ペア';
         if (raw.pairs) {
-            // 到達ペア数と正確度から算出
+            // 到達ペア数（最大34ペア→最大75点）と記憶正確度（最大25点）から算出
             const pCount = raw.pairs.clearedPairs || 0;
             const accuracy = raw.pairs.accuracy || 0; // 0〜1
-            // 基礎点(ペア数 × 6) + 精度点(最大40点)
-            pairsScore = Math.min(100, Math.round((pCount * 4.5) + (accuracy * 35)));
+            const baseScore = interpolate(pCount, TBL_PAIRS);
+            const accBonus = (pCount > 0) ? Math.round(accuracy * 25) : 0;
+            pairsScore = Math.min(100, baseScore + accBonus);
             g3Text = `${pCount}ペア達成`;
         }
         outScores.space = Math.round((routeSpaceScore + pairsScore) / 2);
@@ -140,7 +162,7 @@ window.ResultModule3 = (function () {
         if (raw.route) {
             const rOrder = raw.route.maxOrder || (raw.route.level || 0);
             routeOrderScore = interpolate(rOrder, TBL_ROUTE_ORDER);
-            g2OrderText = `${rOrder}マス連続`;
+            g2OrderText = `${formatSpan(rOrder, 'マス')}連続`;
         }
 
         let passForwardScore = 0;
@@ -148,7 +170,7 @@ window.ResultModule3 = (function () {
         if (raw.passcode) {
             const fwd = raw.passcode.forwardSpan || 0;
             passForwardScore = interpolate(fwd, TBL_PASS_FORWARD);
-            g4FwdText = `${fwd}けた`;
+            g4FwdText = formatSpan(fwd, 'けた');
         }
         outScores.order = Math.round((routeOrderScore + passForwardScore) / 2);
         outTexts.order = `${g2OrderText} / 順唱${g4FwdText}`;
@@ -159,7 +181,7 @@ window.ResultModule3 = (function () {
         if (raw.passcode) {
             const back = raw.passcode.backwardSpan || 0;
             passBackwardScore = interpolate(back, TBL_PASS_BACKWARD);
-            g4BackText = `ぎゃくから${back}けた`;
+            g4BackText = `ぎゃくから${formatSpan(back, 'けた')}`;
         }
         outScores.work = passBackwardScore;
         outTexts.work = g4BackText;
@@ -170,7 +192,7 @@ window.ResultModule3 = (function () {
         if (raw.sound) {
             const sCount = raw.sound.maxNotes || (raw.sound.level || 0);
             soundScore = interpolate(sCount, TBL_SOUND);
-            soundText = `${sCount}おと連続`;
+            soundText = `${formatSpan(sCount, 'おと')}連続`;
         }
         outScores.ear = soundScore;
         outTexts.ear = soundText;

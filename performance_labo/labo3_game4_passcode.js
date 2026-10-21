@@ -288,22 +288,37 @@ window.Labo3Game4 = (function () {
             targetCode = [...STATE.currentCode].reverse();
         }
 
-        const isCorrect = STATE.inputCode.every((val, i) => val === targetCode[i]);
+        let matchedDigits = 0;
+        for (let i = 0; i < STATE.level; i++) {
+            if (STATE.inputCode[i] === targetCode[i]) {
+                matchedDigits++;
+            }
+        }
+        const isCorrect = (matchedDigits === STATE.level);
         const msg = document.getElementById('p4-message');
         const screen = document.getElementById('p4-screen');
+
+        // 部分評価の計算（実際に正しい位置で入力できた桁数をベースに評価）
+        const initialLevel = (STATE.phase === 'forward') ? 3 : 2;
+        let partialSpan = matchedDigits;
+        if (isCorrect) {
+            partialSpan = STATE.level;
+        } else if (STATE.level > initialLevel && matchedDigits === STATE.level - 1) {
+            // 前の桁数をクリア済みで、今回あと1桁で正解だった場合は +0.5
+            partialSpan = STATE.level - 0.5;
+        }
+
+        if (STATE.phase === 'forward') {
+            STATE.forwardSpan = Math.max(STATE.forwardSpan, partialSpan);
+        } else {
+            STATE.backwardSpan = Math.max(STATE.backwardSpan, partialSpan);
+        }
 
         if (isCorrect) {
             App.showFeedback('correct');
             msg.innerHTML = `<span style="color:#2e7d32;">正解！！すごい！</span>`;
             screen.textContent = targetCode.join('');
             screen.style.color = '#00e676';
-
-            // クリア実績更新
-            if (STATE.phase === 'forward') {
-                STATE.forwardSpan = Math.max(STATE.forwardSpan, STATE.level);
-            } else {
-                STATE.backwardSpan = Math.max(STATE.backwardSpan, STATE.level);
-            }
 
             // 次のレベルへ昇格
             STATE.missCountInLevel = 0;

@@ -106,9 +106,9 @@ const GAME_SEQUENCE = [
     {
         id: 'sound',
         moduleKey: 'Labo3Game5',
-        name: 'おと・ルールきおく',
+        name: 'おと・メロディきおく',
         icon: '👂',
-        ability: '音の順序とルール記憶',
+        ability: '音のながれを覚える力',
         bannerClass: 'l3-g5',
     },
 ];

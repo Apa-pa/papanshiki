@@ -274,13 +274,28 @@ window.Labo3Game2 = (function () {
 
         const msg = document.getElementById('r2-message');
 
+        // 部分評価の計算（場所記憶：実際に当てたマス数をベースに評価）
+        let partialSpace = spaceMatchCount;
         if (isSpacePerfect) {
-            STATE.maxSpace = Math.max(STATE.maxSpace, STATE.level);
+            partialSpace = STATE.level;
+        } else if (STATE.maxSpace >= STATE.level - 1 && spaceMatchCount === STATE.level - 1) {
+            // 前のレベルの場所記憶を達成済みで、今回あと1マスだった場合は +0.5
+            partialSpace = STATE.level - 0.5;
         }
+        STATE.maxSpace = Math.max(STATE.maxSpace, partialSpace);
+
+        // 部分評価の計算（順序記憶：実際に順番通り当てたマス数をベースに評価）
+        let partialOrder = orderMatchCount;
+        if (isOrderPerfect) {
+            partialOrder = STATE.level;
+        } else if (STATE.level > 3 && orderMatchCount === STATE.level - 1) {
+            // 前のレベルをクリア済みで、今回あと1マスだった場合は +0.5
+            partialOrder = STATE.level - 0.5;
+        }
+        STATE.maxOrder = Math.max(STATE.maxOrder, partialOrder);
 
         if (isOrderPerfect) {
             App.showFeedback('correct');
-            STATE.maxOrder = Math.max(STATE.maxOrder, STATE.level);
             msg.innerHTML = `<span style="color:#2e7d32;">かんぺき大正解！！順番もバッチリ！</span>`;
 
             STATE.missCountInLevel = 0;
