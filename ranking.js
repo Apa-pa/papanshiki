@@ -43,7 +43,8 @@ const GAME_LIST = {
     'molkky': { name: '森のモルック', type: 'score', unit: '点', url: 'molkky.html' },
     'math_molkky': { name: 'ひきざんモルック', type: 'score', unit: '点', url: 'math_molkky.html' },
     'word_crossword': { name: 'もりのクロスワード', type: 'score', unit: 'pt', url: 'crossword/index.html' },
-    'slide_puzzle': { name: 'スライドパズル', type: 'time', unit: '秒', url: 'slide_puzzle.html' }
+    'slide_puzzle': { name: 'スライドパズル', type: 'time', unit: '秒', url: 'slide_puzzle.html' },
+    'kakezan_maze': { name: 'かけざんめいろ(ミックス)', type: 'time', unit: '秒', url: 'kakezan_maze.html' }
 };
 
 // --- リアル株価連動設定 ---
@@ -117,7 +118,8 @@ const DEFAULT_GOALS = {
     'enogu_creator': 60,
     'eigo_nakama': 100,
     'eiyou_balance': 70,
-    'math_molkky': 100
+    'math_molkky': 100,
+    'kakezan_maze': 180
 };
 
 // 旧「eawase」は、一覧・全国ランキングとも memory.html の記録として扱われていた。
