@@ -577,6 +577,7 @@
             'programming_labo',
             'crane_bar_threading',
             'molkky',
+            'word_crossword',
             'slide_puzzle'
         ]);
 
@@ -629,6 +630,7 @@
             list.innerHTML = '';
 
             // データ取得
+            if (typeof ensureDefaultGoalsForUser === 'function') { ensureDefaultGoalsForUser(userName, getRecordGameIds()); }
             const allRecords = getAllRecords();
             const allGoals = getAllGoals();
             const userRecords = allRecords[userName] || {};
@@ -707,11 +709,18 @@
         const AUTO_GOAL_STORAGE_KEY = 'papan_auto_goals_v1';
 
         function readAutoGoalSetting(userName) {
+            if (typeof isAutoGoalEnabled === 'function') {
+                return isAutoGoalEnabled(userName);
+            }
             const settings = JSON.parse(localStorage.getItem(AUTO_GOAL_STORAGE_KEY) || '{}');
-            return settings[userName] === true;
+            return settings[userName] !== false;
         }
 
         function writeAutoGoalSetting(userName, enabled) {
+            if (typeof setAutoGoalEnabled === 'function') {
+                setAutoGoalEnabled(userName, enabled);
+                return;
+            }
             const settings = JSON.parse(localStorage.getItem(AUTO_GOAL_STORAGE_KEY) || '{}');
             settings[userName] = Boolean(enabled);
             localStorage.setItem(AUTO_GOAL_STORAGE_KEY, JSON.stringify(settings));

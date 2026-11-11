@@ -244,8 +244,16 @@ function getAutoGoalSettings() {
     return JSON.parse(localStorage.getItem(AUTO_GOAL_KEY) || '{}');
 }
 
+// ユーザー作成時はデフォルトでオート設定ON（明示的にfalseが保存されている場合のみOFF）
 function isAutoGoalEnabled(userName) {
-    return getAutoGoalSettings()[userName] === true;
+    if (!userName) return false;
+    const settings = getAutoGoalSettings();
+    if (!Object.prototype.hasOwnProperty.call(settings, userName)) {
+        settings[userName] = true;
+        localStorage.setItem(AUTO_GOAL_KEY, JSON.stringify(settings));
+        return true;
+    }
+    return settings[userName] !== false;
 }
 
 function setAutoGoalEnabled(userName, enabled) {
@@ -253,6 +261,18 @@ function setAutoGoalEnabled(userName, enabled) {
     const settings = getAutoGoalSettings();
     settings[userName] = Boolean(enabled);
     localStorage.setItem(AUTO_GOAL_KEY, JSON.stringify(settings));
+}
+
+// ユーザーの目標が未設定のゲームに対して初期目標（または推奨目標）を自動補完する
+function ensureDefaultGoalsForUser(userName, gameIds = Object.keys(DEFAULT_GOALS)) {
+    if (!userName || !isAutoGoalEnabled(userName)) return [];
+    const userGoals = getAllGoals()[userName] || {};
+    const missingGameIds = gameIds.filter(gameId => {
+        const val = userGoals[gameId];
+        return val === undefined || val === null || val === '';
+    });
+    if (missingGameIds.length === 0) return [];
+    return applyRecommendedGoals(userName, missingGameIds);
 }
 
 function calculateRecommendedGoal(gameId, recordValue, goalValue) {
@@ -844,7 +864,18 @@ function checkAndAwardPoints(userName, gameId, currentRecord) {
     };
 
     const goals = _getAllGoals();
-    const userGoal = goals[userName]?.[gameId];
+    let userGoal = goals[userName]?.[gameId];
+
+    // オート設定がONでまだ目標が未設定なら、初期目標（DEFAULT_GOALS）を自動でセットして判定に使う
+    if ((userGoal === undefined || userGoal === null || userGoal === '') && typeof isAutoGoalEnabled === 'function' && isAutoGoalEnabled(userName)) {
+        if (Object.prototype.hasOwnProperty.call(DEFAULT_GOALS, gameId)) {
+            userGoal = DEFAULT_GOALS[gameId];
+            if (!goals[userName]) goals[userName] = {};
+            goals[userName][gameId] = userGoal;
+            const _GOAL_KEY = (typeof GOAL_KEY !== 'undefined') ? GOAL_KEY : 'papan_goals_v1';
+            localStorage.setItem(_GOAL_KEY, JSON.stringify(goals));
+        }
+    }
 
     // 目標が設定されていなければ終了
     if (!userGoal) return 0;
@@ -1053,6 +1084,8 @@ function showSaveDialog(gameId, resultValue, customBasePoint, onComplete) {
         registerNew: () => {
             const name = document.getElementById('new-username').value.trim();
             if (!name) return;
+            setAutoGoalEnabled(name, true);
+            ensureDefaultGoalsForUser(name);
             Ranking.selectUser(name);
         }
     };
@@ -1115,6 +1148,8 @@ function showPointGetDialog(amount, arg2 = null, arg3 = null) {
                 if (input) input.focus();
                 return;
             }
+            setAutoGoalEnabled(name, true);
+            ensureDefaultGoalsForUser(name);
             RankingPoint.selectUser(name, amount);
         }
     };

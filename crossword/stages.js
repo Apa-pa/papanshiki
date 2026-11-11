@@ -387,19 +387,19 @@
                     direction: "across",
                     row: 3,
                     col: 0,
-                    answer: "うんどうかい",
-                    clueHtml: "<ruby>学校<rt>がっこう</rt></ruby>のみんなで、かけっこや リレーをして <ruby>力<rt>ちから</rt></ruby>を あわせる <ruby>行事<rt>ぎょうじ</rt></ruby>。",
-                    letters: ["う", "ん", "ど", "か", "い", "は", "し", "る", "り"]
+                    answer: "さんぽみち",
+                    clueHtml: "けしきを みながら、のんびり あるくための <ruby>道<rt>みち</rt></ruby>。",
+                    letters: ["さ", "ん", "ぽ", "み", "ち", "あ", "る", "く", "け"]
                 },
                 {
                     id: "a4",
                     number: 4,
                     direction: "across",
-                    row: 6,
-                    col: 3,
-                    answer: "わかば",
-                    clueHtml: "<ruby>春<rt>はる</rt></ruby>に <ruby>木<rt>き</rt></ruby>から でてきたばかりの、あざやかな みどりいろの <ruby>葉<rt>は</rt></ruby>。",
-                    letters: ["わ", "か", "ば", "は", "る", "み", "ど", "り", "き"]
+                    row: 5,
+                    col: 1,
+                    answer: "おにぎり",
+                    clueHtml: "ごはんを さんかくや まるの かたちに にぎって、のりなどを まいた たべもの。",
+                    letters: ["お", "に", "ぎ", "り", "ご", "は", "ん", "の", "ま"]
                 },
                 {
                     id: "d1",
@@ -407,9 +407,9 @@
                     direction: "down",
                     row: 0,
                     col: 2,
-                    answer: "よろこび",
-                    clueHtml: "うれしい ことが あったときに、こころの なかに うまれる あかるい きもち。",
-                    letters: ["よ", "ろ", "こ", "び", "う", "れ", "し", "い", "き"]
+                    answer: "よつば",
+                    clueHtml: "みつけると しあわせに なると いわれる、めずらしい クローバーの <ruby>葉<rt>は</rt></ruby>。",
+                    letters: ["よ", "つ", "ば", "く", "ろ", "し", "あ", "わ", "せ"]
                 },
                 {
                     id: "d2",
@@ -417,9 +417,9 @@
                     direction: "down",
                     row: 0,
                     col: 5,
-                    answer: "たのしみ",
-                    clueHtml: "これから おこる いい ことを まって、わくわくする きもち。",
-                    letters: ["た", "の", "し", "み", "わ", "く", "ま", "つ", "こ"]
+                    answer: "ものさし",
+                    clueHtml: "ものの <ruby>長<rt>なが</rt></ruby>さを はかったり、まっすぐな <ruby>線<rt>せん</rt></ruby>を ひいたりするときに つかう どうぐ。",
+                    letters: ["も", "の", "さ", "し", "な", "が", "せ", "ん", "は"]
                 },
                 {
                     id: "d3",
@@ -427,9 +427,9 @@
                     direction: "down",
                     row: 2,
                     col: 0,
-                    answer: "おうえん",
-                    clueHtml: "がんばっている ひとに、こえや <ruby>手拍子<rt>てびょうし</rt></ruby>で パワーを おくること。",
-                    letters: ["お", "う", "え", "ん", "が", "ば", "れ", "ち", "か"]
+                    answer: "あさがお",
+                    clueHtml: "<ruby>夏<rt>なつ</rt></ruby>の あさに、ラッパのような かたちの <ruby>花<rt>はな</rt></ruby>を さかせる しょくぶつ。",
+                    letters: ["あ", "さ", "が", "お", "な", "つ", "は", "た", "ね"]
                 },
                 {
                     id: "d4",
@@ -437,21 +437,20 @@
                     direction: "down",
                     row: 3,
                     col: 3,
-                    answer: "うらにわ",
-                    clueHtml: "いえの うしろがわに ある <ruby>庭<rt>にわ</rt></ruby>。",
-                    letters: ["う", "ら", "に", "わ", "い", "え", "は", "な", "き"]
+                    answer: "みどり",
+                    clueHtml: "<ruby>木<rt>き</rt></ruby>の <ruby>葉<rt>は</rt></ruby>や くさのような、しぜんの なかに たくさん ある いろ。",
+                    letters: ["み", "ど", "り", "き", "は", "く", "さ", "い", "ろ"]
                 }
             ],
             keyword: {
-                answer: "たからばこ",
+                answer: "いきもの",
                 cells: [
-                    { row: 0, col: 0 },
-                    { row: 3, col: 4 },
-                    { row: 4, col: 3 },
-                    { row: 6, col: 5 },
-                    { row: 1, col: 6 }
+                    { row: 0, col: 1 },
+                    { row: 1, col: 4 },
+                    { row: 0, col: 5 },
+                    { row: 1, col: 5 }
                 ],
-                letters: ["た", "か", "ら", "ば", "こ", "だ", "い", "じ", "ひ", "み"]
+                letters: ["い", "き", "も", "の", "し", "ぜ", "ん", "は", "な"]
             }
         },
         {

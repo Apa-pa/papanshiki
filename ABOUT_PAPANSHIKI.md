@@ -85,17 +85,17 @@
 - 公開名（6文字以内）を入力するとFirestoreに送信される
 
 ### タイプC: 固定ポイント付与型（`showPointGetDialog(固定値, gameId)` 使用）
-- タイム/スコアの記録は行わない
+- タイム/スコアの自己ベスト記録は行わない（`record.html` には掲載しない）
 - クリアや1プレイ完了時に `showPointGetDialog(固定値, 'game_id')` を呼ぶ（※第2引数にゲームIDを必ず渡すこと。ダッシュボードの集計に必須）
 - ユーザーを選んで固定ポイントを受け取る
-- `GAME_LIST` への登録は不要
+- 保護者ダッシュボードの「おすすめコンテンツ」で選択できるようにするため、`ranking.js` の `GAME_LIST` への登録は**必須（マスト）**とし、同時に `record.html` の `RECORD_EXCLUDED_GAME_IDS` に必ず追加して記録ページから除外する
 
 ### タイプD: 成績連動ポイント付与型（`showPointGetDialog(変動値, gameId)` 使用）
-- タイム/スコアの記録は行わない
+- タイム/スコアの自己ベスト記録は行わない（`record.html` には掲載しない）
 - 正答数や到達度に応じてポイントが変動する
 - 例: `science.html` → `showPointGetDialog(score * 5, 'science')`
 - これも同じく第2引数にゲームIDを必ず渡すこと。ダッシュボードの集計に必須
-- `GAME_LIST` への登録は不要
+- 保護者ダッシュボードの「おすすめコンテンツ」で選択できるようにするため、`ranking.js` の `GAME_LIST` への登録は**必須（マスト）**とし、同時に `record.html` の `RECORD_EXCLUDED_GAME_IDS` に必ず追加して記録ページから除外する
 
 ---
 
@@ -264,8 +264,13 @@
 ### 5.6 記録・目標管理
 - 各ゲームのベスト記録を `localStorage` に保存
 - `record.html` で一覧表示・目標設定・達成判定
-- 「おまかせ設定」: 達成済みの目標を自動で1%上方修正
-- 「自動おまかせ設定」: ユーザーごとにON/OFFでき、ON時は目標達成直後に同じルールで次の目標を設定
+- **記録ページ（`record.html`）の掲載基準**:
+  - `record.html` は `ranking.js` の `GAME_LIST` から `RECORD_EXCLUDED_GAME_IDS` を除いたゲームを一覧表示する
+  - **新コンテンツは全タイプ（A/B/C/D）とも `ranking.js` の `GAME_LIST` への登録を必須（マスト）とする**（保護者ダッシュボードの「おすすめコンテンツ」およびプレイ履歴の表示名に自動対応させるため）
+  - **掲載対象（タイプA/B）**: `showSaveDialog` を呼び出し、タイムやスコアの自己ベスト更新・目標達成を目指すコンテンツ。必ず `ranking.js` の `DEFAULT_GOALS` にも初期目標値（基準目標）を設定する
+  - **掲載対象外（タイプC/D）**: ポイント付与型・ステージクリア型・体験型など、ベスト記録を競わないコンテンツ。**必ず `record.html` の `RECORD_EXCLUDED_GAME_IDS` にゲームIDを追加して記録ページから除外する**
+- 「おまかせ設定」: 達成済みの目標を自動で1%上方修正（未プレイ時は `DEFAULT_GOALS` の基準目標を設定）
+- 「自動おまかせ設定（オート設定）」: **新規ユーザー作成時はデフォルトでON**に設定される（明示的にOFFにした場合のみ `false` として保持）。ON時は未設定のゲームに初期目標（`DEFAULT_GOALS`）が自動補完され、目標達成直後に同じルールで次の目標を自動設定する
 - ゲームのタイプ: `time`（タイム型：少ないほど良い）、`score`（スコア型：多いほど良い）
 
 ### 5.7 まなびカレンダー（スタンプ機能）
@@ -358,15 +363,17 @@ e:\ぱぱん式\
 ## 7. 設計方針・ルール
 
 ### UIの統一ルール
+- **フォント**: `UD Digital Kyokasho-tai-R` を最優先し、次に `Helvetica Neue, Arial, Meiryo` を指定する
 - **タッチ操作最適化**: `touch-action: manipulation;` を使用、`-webkit-tap-highlight-color: transparent;` でタップ時のハイライトを除去
 - **ボタンの押下感覚**: `box-shadow` + `:active` で `translateY(2px)` する「3D風」ボタン
 - **丸みのあるデザイン**: `border-radius: 15px〜30px` を基調にした温かいUI
 - **カラーパレット**: パステル系（水色 `#e0f7fa`、薄緑 `#e8f5e9`、薄紫 `#f3e5f5` 等）をベースとし、アクセントにオレンジ `#ff9800` を使用
-- **子ども向けテキスト**: ひらがな・カタカナ中心で漢字にはふりがなを付ける
+- **子ども向けテキスト**: 3歳〜12歳の子どもが直感的に使えるよう、ひらがな・カタカナ中心で、漢字には必ずふりがな（`<ruby>`タグ）を付ける
 
 ### 命名規則
 - ゲームID: 英語のスネークケース（`make10`, `flash_anzan`, `math_add_easy` 等）
 - ファイル名: 小文字英数字＋アンダースコア（`.html`）
+- 変数・関数名: キャメルケース（`calculateScore` 等）
 - localStorage キー: `papan_` プレフィックス + 機能名 + バージョン
 
 ### 画像形式
@@ -417,17 +424,18 @@ e:\ぱぱん式\
    - **まずゲームタイプ（A/B/C/D）を決定する**（→ セクション3参照）
    - HTMLファイルを作成
    - **全タイプ共通の作業**:
+     - `ranking.js` の `GAME_LIST` にゲームIDを追加する（※保護者ダッシュボードの「おすすめコンテンツ」選択肢・履歴表示名への登録を全タイプで**必須（マスト）**とする）
      - `dashboard.html` の `GAME_CATEGORIES` にゲームIDを追加する（ダッシュボードでのジャンル別プレイ回数集計のため）
      - `service-worker.js` の `urlsToCache` にファイルを追加
      - `index.html` にカードを追加してホーム画面から遷移できるようにする
    - **タイプA/Bの場合の追加作業**:
-     - `ranking.js` の `GAME_LIST` にゲームIDを追加（※保護者ダッシュボードの「おすすめコンテンツ」選択肢にも自動反映されます）
-     - `ranking.js` の `DEFAULT_GOALS` に初期目標値を追加
+     - `ranking.js` の `GAME_LIST` は全タイプ共通作業で追加済みであることを確認する
+     - `ranking.js` の `DEFAULT_GOALS` に初期目標値（基準目標）を必ず追加（※`record.html` の掲載対象であり、「おまかせ設定」機能で必須）
      - ゲーム終了時に `showSaveDialog(gameId, resultValue)` を呼ぶ
      - タイプBの場合は `<script type="module" src="firebase-ranking.js"></script>` を追加
    - **タイプC/Dの場合の追加作業**:
      - ゲーム終了時に `showPointGetDialog(ポイント数, 'game_id')` を呼ぶ（ダッシュボードでプレイ回数を集計するため、必ず第2引数にゲームIDを指定すること）
-     - `GAME_LIST` への登録は必須ではありませんが、保護者ダッシュボードの「おすすめコンテンツ」で選べるようにしたい場合は `ranking.js` の `GAME_LIST` にも追加してください。
+     - **【必須（マスト）】** タイムやスコアを競う記録ページの対象外であるため、**必ず `record.html` の `RECORD_EXCLUDED_GAME_IDS` にゲームIDを追加して記録ページから除外する**（`GAME_LIST` に入れたままだと `record.html` に表示されてしまうため）
 
 2. **新しい株銘柄を追加する場合**:
    - `ranking.js` の `STOCK_MASTER` に定義を追加
@@ -443,7 +451,7 @@ e:\ぱぱん式\
 4. **ダッシュボードのプレイ履歴集計に対応する場合**:
    - `showPointGetDialog()` を使うゲームは、必ず第2引数に `gameId` を渡す
    - 新しい `gameId` は `dashboard.html` の `GAME_CATEGORIES` に追加する
-   - `GAME_LIST` にない `gameId` は、履歴に日本語名を表示するため `dashboard.html` の `PLAY_LOG_GAME_NAMES` にも追加する
+   - 新コンテンツは全タイプとも `GAME_LIST` に登録するため履歴にも日本語名が自動表示される（過去の `GAME_LIST` 未登録コンテンツのみ `dashboard.html` の `PLAY_LOG_GAME_NAMES` で補完）
    - 記録保存型は `showSaveDialog()` が自動でプレイログを保存する
 
 5. **画像を追加する場合**:
