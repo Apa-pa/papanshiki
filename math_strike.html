@@ -7,6 +7,7 @@
     <title>計算ビリヤード - ぱぱん式</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <script src="ranking.js"></script>
+    <script src="sound.js"></script>
     <script src="sugoroku/mission.js"></script>
     <script type="module" src="firebase-ranking.js"></script>
     <style>
@@ -41,6 +42,7 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
+            gap: 8px;
             padding: 10px;
             background-color: #4e342e;
             border-bottom: 5px solid #3e2723;
@@ -58,12 +60,41 @@
 
         .target-box {
             background: rgba(255, 255, 255, 0.9);
-            padding: 8px 25px;
+            padding: 8px 18px;
             border-radius: 30px;
             border: 4px solid #fbc02d;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             text-align: center;
             margin-bottom: 0;
+        }
+
+        .sound-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 2px solid #fbc02d;
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+            font-size: 20px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 3px #3e2723;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            flex-shrink: 0;
+        }
+
+        .sound-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .sound-btn.is-muted {
+            opacity: 0.6;
+            border-color: #bcaaa4;
         }
 
         .target-label {
@@ -215,6 +246,7 @@
                 <p class="target-label">もくひょう</p>
                 <p class="target-number" id="target-display">15</p>
             </div>
+            <button id="sound-toggle-btn" class="sound-btn" type="button" aria-label="効果音をオフにする">🔊</button>
         </div>
         <div id="game-container">
 
@@ -284,6 +316,18 @@
             let aimCurrentPos = null;
             let ballIsMoving = false;
             let hitAnyBallThisTurn = false;
+            let absorbComboThisTurn = 0;
+
+            // 共通効果音（sound.js）の安全な再生ラッパー
+            function playSE(name, options) {
+                if (window.PapanSE) {
+                    window.PapanSE.play(name, options);
+                }
+            }
+
+            if (window.PapanSE) {
+                window.PapanSE.bindButton(document.getElementById('sound-toggle-btn'));
+            }
 
             // 発射パワーの調整用
             const MAX_PULL_DISTANCE = 150; // これ以上引っ張っても線やパワーは伸びない
@@ -405,7 +449,7 @@
                     }
                 });
 
-                // 衝突：手球と標的球
+                // 衝突：手球と標的球・壁
                 Events.on(engine, 'collisionStart', function (event) {
                     if (!isPlaying) return;
                     event.pairs.forEach(pair => {
@@ -413,9 +457,11 @@
                         let isTargetHit = (a.label === 'player' && b.label === 'target') || (a.label === 'target' && b.label === 'player');
 
                         if (isTargetHit) {
-                            hitAnyBallThisTurn = true;
-
                             let target = a.label === 'target' ? a : b;
+                            // 同一フレームでの二重吸収判定を防止
+                            if (!targetBalls.includes(target)) return;
+
+                            hitAnyBallThisTurn = true;
 
                             // 吸収処理（足し算）
                             playerBall.mathVal += target.mathVal;
@@ -424,9 +470,20 @@
                             Composite.remove(engine.world, target);
                             targetBalls = targetBalls.filter(t => t !== target);
 
+                            // 連続吸収に応じて少し音程を上げる
+                            playSE('hit', { combo: absorbComboThisTurn });
+                            absorbComboThisTurn++;
+
                             // ちょっと光る（吸収エフェクト）
                             container.style.boxShadow = "inset 0 0 50px rgba(255, 235, 59, 0.6)";
                             setTimeout(() => container.style.boxShadow = "0 0 20px rgba(0,0,0,0.4)", 150);
+                            return;
+                        }
+
+                        // 壁に当たった時の軽い衝突音
+                        let isWallHit = (a.label === 'player' && b.label === 'wall') || (a.label === 'wall' && b.label === 'player');
+                        if (isWallHit && playerBall && playerBall.speed > 0.8) {
+                            playSE('wall', { intensity: Math.min(1, playerBall.speed / 12) });
                         }
                     });
                 });
@@ -496,9 +553,14 @@
 
                         ballIsMoving = true;
                         hitAnyBallThisTurn = false;
+                        absorbComboThisTurn = 0;
                         shotsLeft--;
                         shotsUsedThisLevel++;
                         updateUI();
+
+                        // 引っ張り具合に応じたショット音
+                        const power = Math.min(1, forceLength / MAX_PULL_DISTANCE);
+                        playSE('shot', { power });
                     }
                 });
             }
@@ -507,6 +569,7 @@
                 const w = MathHelpers().wallT;
                 const wallOpt = {
                     isStatic: true,
+                    label: 'wall',
                     restitution: 0.5, // 壁での跳ね返りを抑える
                     render: { fillStyle: '#4e342e' } // 茶色い枠
                 };
@@ -636,11 +699,13 @@
                     // 完全クリアボーナス
                     if (level > 10) {
                         score += 200; // 完全クリアボーナス
+                        playSE('fanfare');
                         showCharacterMessage("すごい！ぜんぶ<ruby>達成<rt>たっせい</rt></ruby>だよ！", "both", true);
                         gameOver("🎉 全ステージクリア！おみごと！", true);
                         return;
                     }
 
+                    playSE('clear');
                     showCharacterMessage("ピッタリ！その<ruby>調子<rt>ちょうし</rt></ruby>！");
                     // 少し待ってから次のレベルへ
                     setTimeout(() => setupLevel(carryOver), 1500); // メッセージを読む時間を考慮して少し延ばす
@@ -708,6 +773,9 @@
             }
 
             function startGame() {
+                if (window.PapanSE) PapanSE.unlock();
+                playSE('tap');
+
                 handleResize();
                 if (!engine) init();
 
@@ -739,7 +807,8 @@
                     document.getElementById('result-title').textContent = '🎉 おみごと！';
                     document.getElementById('result-title').style.color = '#2e7d32';
                 } else {
-                    // ゲームオーバー：赤フラッシュ
+                    // ゲームオーバー：効果音＋赤フラッシュ
+                    playSE('gameover');
                     container.style.boxShadow = "inset 0 0 80px rgba(244, 67, 54, 0.8)";
                     document.getElementById('result-title').textContent = 'ゲームオーバー';
                     document.getElementById('result-title').style.color = '#5d4037';

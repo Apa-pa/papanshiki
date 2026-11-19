@@ -23,6 +23,8 @@
 | ファイル | 役割 |
 |---|---|
 | `ranking.js` | ポイント・どんぐり・記録・目標・スタンプ・株・ガチャ・日替わりミッション管理 |
+| `sound.js` | 全ゲーム共通の効果音再生・ミュート状態管理（Web Audio API） |
+| `ura/sheep_sound.js` | ひつじレース関連4ページ専用の独自効果音スクリプト（ミュート設定 `papan_sound_v1` を共有） |
 | `firebase-ranking.js` | Firebase連携（全国ランキング・マイルーム公開・全国ひつじレース） |
 | `service-worker.js` | PWA対応（オフラインキャッシュ、ネットワーク優先戦略） |
 
@@ -60,6 +62,7 @@
 | `missionStock` | ミッション達成で得たすごろく用ストック数 |
 | `currentPosition` | ミッションすごろくのユーザー別コマ位置 |
 | `papan_dashboard_last_user` | ダッシュボードで最後に選択したユーザー |
+| `papan_sound_v1` | 全ゲーム共通の効果音 ON/OFF 設定 |
 
 ### ホスティング・PWA
 - **GitHub Pages** でホスティング（CNAMEファイルでカスタムドメイン設定）
@@ -325,6 +328,7 @@ e:\ぱぱん式\
 ├── index.html          # トップページ（全コンテンツへの入口）
 ├── index2.html         # サブページ
 ├── ranking.js          # 共通システム（ポイント・記録・株等）
+├── sound.js            # 共通効果音スクリプト（Web Audio API・ミュート状態共有）
 ├── firebase-ranking.js # Firebase連携
 ├── service-worker.js   # PWAサービスワーカー
 ├── manifest.json       # PWAマニフェスト
@@ -461,3 +465,8 @@ e:\ぱぱん式\
 
 6. **Service Workerのキャッシュ更新**:
    - `CACHE_NAME` のバージョン番号を変更すると、次回アクセス時に新キャッシュが作成される
+
+7. **共通効果音（`sound.js`）を既存・新規ゲームへ導入する場合**:
+   - `<head>` 内で `<script src="sound.js"></script>` を読み込む（サブディレクトリ配下では `../sound.js`）
+   - 画面上に効果音 ON/OFF ボタンを配置し、`PapanSE.bindButton(buttonEl)` で状態表示と `localStorage`（`papan_sound_v1`）を自動同期する
+   - 開始ボタン等では `PapanSE.unlock()` を行い、各イベント（操作・発射・衝突・正解・ミス・クリア・ゲームオーバー）で `PapanSE.play(presetName, options)` を呼ぶ

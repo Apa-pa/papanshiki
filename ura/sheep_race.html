@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ひつじプロ・ダービー</title>
     <script src="../ranking.js"></script>
+    <script src="sheep_sound.js"></script>
     <style>
         body {
             font-family: 'Arial Black', sans-serif;
@@ -31,6 +32,34 @@
         .balance-area {
             color: #ffd700;
             font-size: 18px;
+        }
+
+        .sound-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #ffd700;
+            background: rgba(0, 0, 0, 0.6);
+            color: #ffd700;
+            font-size: 16px;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            flex-shrink: 0;
+        }
+
+        .sound-btn:active {
+            transform: translateY(2px);
+        }
+
+        .sound-btn.is-muted {
+            opacity: 0.6;
+            border-color: #9e9e9e;
+            color: #ccc;
         }
 
         .user-name-tag {
@@ -205,7 +234,10 @@
 
     <div class="header">
         <div id="user-display" class="user-name-tag">ゲスト</div>
-        <div class="balance-area">💰 <span id="balance">0</span> <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり"></div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <button id="sound-toggle-btn" class="sound-btn" type="button" aria-label="効果音をオフにする">🔊</button>
+            <div class="balance-area">💰 <span id="balance">0</span> <img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり"></div>
+        </div>
     </div>
 
     <div class="commentary" id="commentary">どのひつじが勝つか予想してね！</div>
@@ -256,6 +288,14 @@
         let currentUserName = "";
         let selectedSheep = 0;
         let raceInProgress = false;
+        let spurtSoundPlayed = false;
+
+        // 効果音の安全な再生ラッパー
+        function playSheepSE(name, options) {
+            if (window.SheepSE) {
+                window.SheepSE.play(name, options);
+            }
+        }
 
         // 設定：オッズの幅を小さく調整（3.3倍 〜 14.3倍）
         // winProbの合計は 1.0 (100%) になっています
@@ -272,6 +312,9 @@
         window.onload = init;
 
         function init() {
+            if (window.SheepSE) {
+                window.SheepSE.bindButton(document.getElementById('sound-toggle-btn'));
+            }
             showUserSelection();
             setupSelectors();
         }
@@ -302,11 +345,29 @@
             document.getElementById('user-selection-screen').style.display = 'none';
             document.getElementById('user-display').innerText = name;
             updateBalance();
+            if (window.SheepSE) {
+                window.SheepSE.unlock();
+            }
+            playSheepSE('ui');
         }
 
         function updateBalance() {
             const balance = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
             document.getElementById('balance').innerText = balance;
+        }
+
+        function selectSheepOption(id, silent = false) {
+            selectedSheep = id;
+            document.querySelectorAll('.sheep-btn').forEach(b => b.classList.remove('selected'));
+            const targetBtn = document.getElementById(`btn-${id}`);
+            if (targetBtn) targetBtn.classList.add('selected');
+            const cfg = SHEEP_CONFIG[id];
+            if (cfg) {
+                document.getElementById('commentary').innerText = `No.${cfg.id + 1} 「${cfg.name}」に賭けたぞ！`;
+            }
+            if (!silent) {
+                playSheepSE('ui');
+            }
         }
 
         function setupSelectors() {
@@ -320,14 +381,11 @@
                 btn.innerHTML = `No.${s.id + 1}<span class="odds-val">${s.odds.toFixed(1)}倍</span>`;
                 btn.onclick = () => {
                     if (raceInProgress) return;
-                    selectedSheep = s.id;
-                    document.querySelectorAll('.sheep-btn').forEach(b => b.classList.remove('selected'));
-                    btn.classList.add('selected');
-                    document.getElementById('commentary').innerText = `No.${s.id + 1} 「${s.name}」に賭けたぞ！`;
+                    selectSheepOption(s.id, false);
                 };
                 selectors.appendChild(btn);
             });
-            document.getElementById('btn-0').click();
+            selectSheepOption(0, true);
         }
 
         function startRace() {
@@ -335,7 +393,11 @@
             const bet = parseInt(betInput.value);
             const currentBalance = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
 
-            if (bet > currentBalance) { alert("どんぐりが足りないよ！"); return; }
+            if (bet > currentBalance) {
+                playSheepSE('error');
+                alert("どんぐりが足りないよ！");
+                return;
+            }
             if (bet <= 0) return;
 
             if (typeof spendDonguri === 'function') {
@@ -344,6 +406,17 @@
             updateBalance();
 
             raceInProgress = true;
+            spurtSoundPlayed = false;
+            if (window.SheepSE) {
+                window.SheepSE.unlock();
+            }
+            playSheepSE('bet');
+            setTimeout(() => {
+                if (raceInProgress) playSheepSE('gate_open');
+            }, 120);
+            if (window.SheepSE) {
+                window.SheepSE.startGallop({ speed: 1.15 });
+            }
             document.getElementById('start-btn').disabled = true;
             document.getElementById('commentary').innerText = "各ひつじ、いっせいに出走！！";
 
@@ -396,6 +469,15 @@
                     positions[i] += move;
                     document.getElementById(`sheep-${i}`).style.left = positions[i] + 'px';
 
+                    // 先頭が72%地点を超えたらラストスパート音
+                    if (!spurtSoundPlayed && positions[i] >= trackWidth * 0.72) {
+                        spurtSoundPlayed = true;
+                        playSheepSE('tenacity', { isPlayer: true });
+                        if (window.SheepSE) {
+                            window.SheepSE.setGallopSpeed(1.55);
+                        }
+                    }
+
                     // 画像切り替え
                     const img = document.getElementById(`img-${i}`);
                     img.src = (frame % 10 < 5) ? "hitsuji_walk.webp" : "hitsuji_run1.webp";
@@ -405,6 +487,10 @@
                         if (i === winnerId) {
                             finished = true;
                             clearInterval(raceInterval);
+                            if (window.SheepSE) {
+                                window.SheepSE.stopGallop();
+                            }
+                            playSheepSE('goal');
                             finishRace(winnerId, bet);
                         }
                     }
@@ -430,9 +516,22 @@
                 document.getElementById('result-title').style.color = "#ffd700";
             }
             document.getElementById('result-overlay').style.display = 'flex';
+
+            // ゴール鐘・歓声の少し後に結果ファンファーレ／残念音を鳴らす
+            setTimeout(() => {
+                if (isWin) {
+                    playSheepSE('win_fanfare', { jackpot: SHEEP_CONFIG[winnerId].odds >= 6.0 });
+                } else {
+                    playSheepSE('lose');
+                }
+            }, 220);
         }
 
         function resetRace() {
+            if (window.SheepSE) {
+                window.SheepSE.stopGallop();
+            }
+            playSheepSE('ui');
             document.getElementById('result-overlay').style.display = 'none';
             document.getElementById('start-btn').disabled = false;
             document.getElementById('commentary').innerText = "次の勝負はどうする？";

@@ -7,6 +7,7 @@
     <title>全国レース 最新結果速報</title>
     <!-- firebaseの読み込み -->
     <script type="module" src="../firebase-ranking.js"></script>
+    <script src="sheep_sound.js"></script>
     <style>
         body {
             font-family: 'Arial Black', sans-serif;
@@ -231,10 +232,43 @@
             font-size: 16px;
             color: #ccc;
         }
+
+        .sound-btn {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            z-index: 1200;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #ffd700;
+            background: rgba(0, 0, 0, 0.68);
+            color: #ffd700;
+            font-size: 18px;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .sound-btn:active {
+            transform: translateY(2px);
+        }
+
+        .sound-btn.is-muted {
+            opacity: 0.6;
+            border-color: #9e9e9e;
+            color: #ccc;
+        }
     </style>
 </head>
 
 <body>
+    <button id="sound-toggle-btn" class="sound-btn" type="button" aria-label="効果音をオフにする">🔊</button>
 
     <!-- アニメーション画面 -->
     <div id="animation-container">
@@ -265,6 +299,18 @@
     </div>
 
     <script>
+        // 効果音の安全な再生ラッパー
+        function playSheepSE(name, options) {
+            if (window.SheepSE) {
+                window.SheepSE.play(name, options);
+            }
+        }
+
+        if (window.SheepSE) {
+            window.SheepSE.bindButton(document.getElementById('sound-toggle-btn'));
+            window.SheepSE.watchAutoplayUnlock();
+        }
+
         // ヒツジの走りアニメーション交互切替
         const sheepImgs = [
             document.getElementById('sheep1'),
@@ -283,6 +329,11 @@
 
         // 表示制御
         window.addEventListener('load', async () => {
+            playSheepSE('start_fanfare');
+            if (window.SheepSE) {
+                window.SheepSE.startDrumroll(3400);
+            }
+
             let resultsData = null;
             // データ取得開始
             if (typeof window.fetchLatestNationalResults === 'function') {
@@ -321,12 +372,17 @@
         };
 
         function renderResults(data) {
+            if (window.SheepSE) {
+                window.SheepSE.stopDrumroll();
+            }
             const content = document.getElementById('results-content');
             if (!data) {
+                playSheepSE('ui');
                 document.getElementById('race-date').innerText = "";
                 content.innerHTML = `<div style="text-align:center; padding:30px; color:#ff9800; font-weight:bold; font-size:18px;">🏆 まだレース結果がありません 🏆<br><span style="font-size:12px; color:#ccc;">(次回開催をお待ちください)</span></div>`;
                 return;
             }
+            playSheepSE('reveal');
 
             // 開催日時のフォーマット (例: 2024-05-18-1600 -> 2024/05/18 16:00版)
             let dateStr = data.raceId || "不明";

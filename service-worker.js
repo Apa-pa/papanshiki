@@ -1,5 +1,5 @@
 // キャッシュの名前（更新時にバージョンを変えると新しいキャッシュが作られます）
-var CACHE_NAME = 'papanshiki-v59';
+var CACHE_NAME = 'papanshiki-v61';
 var urlsToCache = [
   // === トップページ ===
   './',
@@ -220,6 +220,7 @@ var urlsToCache = [
   './ura/chinchiro.html',
   './ura/highlow.html',
   './ura/sheep_national_race_result.html',
+  './ura/sheep_sound.js',
   './ura/hitsuji_shomen.webp',
   './ura/hitsuji_walk.webp',
   './ura/hitsuji_run1.webp',
@@ -276,6 +277,7 @@ var urlsToCache = [
 
   // === JS・CSS ===
   './ranking.js',
+  './sound.js',
   './firebase-ranking.js',
   './css/human_model.css',
   './js/human_model.js',

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ひつじ厩舎・トレーニング</title>
     <script src="../ranking.js"></script>
+    <script src="sheep_sound.js"></script>
     <script src="../sugoroku/mission.js"></script>
     <script type="module" src="../firebase-ranking.js"></script>
     <style>
@@ -381,6 +382,35 @@
         .sheep-howto-dot.active {
             background: #ffd700;
         }
+        .sound-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #ffd700;
+            background: rgba(0, 0, 0, 0.6);
+            color: #ffd700;
+            font-size: 16px;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            flex-shrink: 0;
+        }
+
+        .sound-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .sound-btn.is-muted {
+            opacity: 0.6;
+            border-color: #9e9e9e;
+            color: #ccc;
+        }
     </style>
 </head>
 
@@ -391,6 +421,7 @@
         <div style="display:flex; align-items:center; gap:8px;">
             <!-- 「あそびかた」ボタン -->
             <button class="howto-btn" onclick="openSheepHowto()" id="sheep-howto-trigger">あそびかた</button>
+            <button id="sound-toggle-btn" class="sound-btn" type="button" aria-label="効果音をオフにする">🔊</button>
             <div class="balance-box"><img src="../image/donguri.webp" class="donguri-icon" alt="どんぐり"> <span
                     id="balance">0</span></div>
         </div>
@@ -470,6 +501,14 @@
     <script>
         let currentUserName = "";
         const SHEEP_STORAGE_KEY = "papan_my_sheep_v3";
+        let isStartingLocalRace = false;
+
+        // 効果音の安全な再生ラッパー
+        function playSheepSE(name, options) {
+            if (window.SheepSE) {
+                window.SheepSE.play(name, options);
+            }
+        }
 
         // --- ★ 不足していたヘルパー関数を追加 ---
         function getUserData() {
@@ -527,6 +566,9 @@
         ];
 
         window.onload = () => {
+            if (window.SheepSE) {
+                window.SheepSE.bindButton(document.getElementById('sound-toggle-btn'));
+            }
             const users = (typeof getUserNames === 'function') ? getUserNames() : [];
             const list = document.getElementById('user-list');
             users.forEach(u => {
@@ -541,6 +583,10 @@
 
         function selectUser(name) {
             currentUserName = name;
+            if (window.SheepSE) {
+                window.SheepSE.unlock();
+            }
+            playSheepSE('ui');
             const allData = getUserData();
             prepareSheepIdentity(allData, currentUserName);
             document.getElementById('user-overlay').style.display = 'none';
@@ -614,7 +660,7 @@
         function signContract(rank) {
             const target = MASTERS.find(m => m.rank === rank);
             const bal = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
-            if (bal < target.cost) { alert("どんぐりが足りません！"); return; }
+            if (bal < target.cost) { playSheepSE('error'); alert("どんぐりが足りません！"); return; }
             if (!confirm(`${target.name} と契約しますか？ (24レース契約)`)) return;
             if (typeof spendDonguri === 'function') spendDonguri(currentUserName, target.cost);
             const allData = getUserData();
@@ -633,6 +679,7 @@
             };
 
             saveUserData(allData);
+            playSheepSE('contract');
             playActionAnimation("hitsuji_eat.webp", "契約完了！");
         }
 
@@ -651,9 +698,9 @@
             const s = allData[currentUserName];
             if (!s) return;
             const currentTotal = s.speed + s.stamina + s.tenacity;
-            if (currentTotal >= s.totalMax) { showToast("限界です！"); return; }
+            if (currentTotal >= s.totalMax) { playSheepSE('error'); showToast("限界です！"); return; }
             const bal = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
-            if (bal < 1) { showToast("どんぐり不足！"); return; }
+            if (bal < 1) { playSheepSE('error'); showToast("どんぐり不足！"); return; }
 
             let trainImg = "hitsuji_eat.webp";
             if (type === 'speed') { s.speed += 2; trainImg = "hitsuji_run2.webp"; }
@@ -665,6 +712,7 @@
 
             if (typeof spendDonguri === 'function') spendDonguri(currentUserName, 1);
             saveUserData(allData);
+            playSheepSE('train', { type });
             playActionAnimation(trainImg, "ナイス特訓！");
         }
 
@@ -689,13 +737,18 @@
 
         function startLocalRace() {
             const bal = (typeof getUserDonguri === 'function') ? getUserDonguri(currentUserName) : 0;
-            if (bal < 5) { alert("出走料が足りません！"); return; }
+            if (bal < 5) { playSheepSE('error'); alert("出走料が足りません！"); return; }
 
             if (confirm(`出走料 5 🌰 を払って出場しますか？`)) {
+                if (isStartingLocalRace) return;
+                isStartingLocalRace = true;
                 if (typeof spendDonguri === 'function') spendDonguri(currentUserName, 5);
                 const allData = getUserData();
                 const s = allData[currentUserName];
-                location.href = `sheep_stable_race.html?user=${encodeURIComponent(currentUserName)}&rank=${encodeURIComponent(s.rank)}`;
+                playSheepSE('bet');
+                setTimeout(() => {
+                    location.href = `sheep_stable_race.html?user=${encodeURIComponent(currentUserName)}&rank=${encodeURIComponent(s.rank)}`;
+                }, 180);
             }
         }
 
@@ -732,8 +785,10 @@
                         allData[currentUserName] = s;
                         saveUserData(allData);
                         updateUI();
+                        playSheepSE('contract');
                         showToast("全国レースにエントリー完了！🌏");
                     } else {
+                        playSheepSE('error');
                         alert("通信エラーで登録できませんでした。");
                     }
                 }
@@ -788,10 +843,12 @@
                         prize = (myRank === 1) ? 20 : (myRank === 2) ? 10 : 5;
                         if (typeof addDonguri === 'function') {
                             addDonguri(currentUserName, prize);
+                            playSheepSE('win_fanfare');
                             alert(`🏆全国レース結果発表！\nあなたは第${myRank}位でした！\n賞金 ${prize} 🌰 を受け取りました！`);
                         }
                     } else {
                         // 入賞圏外でも結果を通知
+                        playSheepSE('lose');
                         alert("📢 全国レース結果発表！\n残念、今回は入賞ならず…\n次のレースに期待！");
                     }
 
@@ -916,7 +973,7 @@
         // 初回訪問時に自動表示
         document.addEventListener('DOMContentLoaded', function () {
             if (!localStorage.getItem(SHEEP_HOWTO_KEY)) {
-                openSheepHowto();
+                openSheepHowto(true);
             }
         });
 
@@ -937,19 +994,22 @@
         }
 
         function nextSheepHowtoStep() {
+            if (window.SheepSE) window.SheepSE.play('ui');
             if (sheepHowtoStep < SHEEP_HOWTO_TOTAL - 1) {
                 sheepHowtoStep++;
                 updateSheepHowtoView();
             }
         }
 
-        function openSheepHowto() {
+        function openSheepHowto(silent = false) {
+            if (!silent && window.SheepSE) window.SheepSE.play('ui');
             sheepHowtoStep = 0;
             updateSheepHowtoView();
             document.getElementById('sheep-howto-modal').style.display = 'flex';
         }
 
         function closeSheepHowto() {
+            if (window.SheepSE) window.SheepSE.play('ui');
             // 初回表示済みフラグをセット
             localStorage.setItem(SHEEP_HOWTO_KEY, 'true');
             document.getElementById('sheep-howto-modal').style.display = 'none';

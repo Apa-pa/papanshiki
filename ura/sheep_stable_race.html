@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>プロ・オーナーズレース</title>
     <script src="../ranking.js"></script>
+    <script src="sheep_sound.js"></script>
     <style>
         body {
             font-family: 'Arial Black', sans-serif;
@@ -145,6 +146,35 @@
             min-width: 60px;
         }
 
+        .sound-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #444;
+            color: #ffd700;
+            border: 2px solid #ffd700;
+            font-size: 16px;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-right: 8px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            flex-shrink: 0;
+        }
+
+        .sound-btn:active {
+            transform: translateY(2px);
+        }
+
+        .sound-btn.is-muted {
+            opacity: 0.6;
+            border-color: #9e9e9e;
+            color: #ccc;
+        }
+
         @keyframes pulse {
             0% {
                 transform: scale(1);
@@ -209,6 +239,7 @@
     <div class="header">
         <div id="race-title" style="font-weight:bold;">🏁 プロ・オーナーズレース</div>
         <div style="display:flex; align-items:center;">
+            <button id="sound-toggle-btn" class="sound-btn" type="button" aria-label="効果音をオフにする">🔊</button>
             <button id="speed-btn" class="speed-btn" onclick="toggleSpeed()">×1.0</button>
             <div style="color:#ffd700;">
                 <span id="race-rank-label"
@@ -249,6 +280,13 @@
         let miracleTriggered = false;
         let gameSpeed = 1.0; // 倍速設定
 
+        // 効果音の安全な再生ラッパー
+        function playSheepSE(name, options) {
+            if (window.SheepSE) {
+                window.SheepSE.play(name, options);
+            }
+        }
+
         window.onload = init;
 
         function toggleSpeed() {
@@ -256,9 +294,17 @@
             else if (gameSpeed === 2.0) gameSpeed = 3.0;
             else gameSpeed = 1.0;
             document.getElementById('speed-btn').innerText = `×${gameSpeed.toFixed(1)}`;
+            playSheepSE('ui');
+            if (window.SheepSE) {
+                window.SheepSE.setGallopSpeed(gameSpeed);
+            }
         }
 
         function init() {
+            if (window.SheepSE) {
+                window.SheepSE.bindButton(document.getElementById('sound-toggle-btn'));
+                window.SheepSE.watchAutoplayUnlock();
+            }
             const allData = JSON.parse(localStorage.getItem(SHEEP_STORAGE_KEY) || "{}");
             playerSheep = allData[userName];
 
@@ -298,6 +344,7 @@
             if (miracleTriggered) {
                 document.getElementById('race-title').innerText = "✨ 奇跡の追い風が発生中！ ✨";
                 document.getElementById('race-title').style.color = "#ff4081";
+                playSheepSE('miracle');
             }
 
             // 1. プレイヤー設定
@@ -376,12 +423,18 @@
         }
 
         function startCountdown() {
+            if (!miracleTriggered) {
+                playSheepSE('start_fanfare');
+            }
             const txt = document.getElementById('count-text');
             let count = 3;
             const timer = setInterval(() => {
-                if (count > 0) txt.innerText = count;
-                else if (count === 0) {
+                if (count > 0) {
+                    txt.innerText = count;
+                    playSheepSE('countdown', { step: count });
+                } else if (count === 0) {
                     txt.innerText = "GO!!";
+                    playSheepSE('gate_open');
                     clearInterval(timer);
                     setTimeout(() => {
                         document.getElementById('count-overlay').style.display = 'none';
@@ -395,6 +448,10 @@
         function runRace() {
             const trackWidth = document.getElementById('track').clientWidth - 130;
             let frame = 0;
+
+            if (window.SheepSE) {
+                window.SheepSE.startGallop({ speed: gameSpeed });
+            }
 
             raceInterval = setInterval(() => {
                 frame += gameSpeed; // 倍速対応
@@ -418,6 +475,7 @@
                         if (!r.isTenacityActive) {
                             r.isTenacityActive = true;
                             document.getElementById(`aura-${i}`).style.display = 'block';
+                            playSheepSE('tenacity', { isPlayer: r.isPlayer });
                         }
                     }
 
@@ -438,6 +496,10 @@
                 if (winner) {
                     isFinished = true;
                     clearInterval(raceInterval);
+                    if (window.SheepSE) {
+                        window.SheepSE.stopGallop();
+                    }
+                    playSheepSE('goal');
                     setTimeout(showResult, 800 / gameSpeed);
                 }
             }, 30);
@@ -467,10 +529,12 @@
             const prizeMsg = document.getElementById('prize-msg');
 
             if (playerRank === 1) {
+                playSheepSE('win_fanfare');
                 commentTxt.innerHTML = "🏆 おめでとう！ 優勝だ！";
                 prizeMsg.innerText = `獲得賞金: ${currentPrize} どんぐり`;
                 if (typeof addDonguri === 'function') addDonguri(userName, currentPrize);
             } else {
+                playSheepSE('lose');
                 commentTxt.innerText = "残念！ 1位になれなかった...";
                 prizeMsg.innerText = "";
             }
@@ -497,6 +561,10 @@
                     delete allData[userName];
                     localStorage.setItem(SHEEP_STORAGE_KEY, JSON.stringify(allData));
                     document.getElementById('fatigue-msg').innerHTML = "<span style='font-size:18px; color:#ffd700;'>🎓 契約期間終了！</span><br>ひつじは次の牧場へと旅立ちました。お疲れ様でした！";
+                    // 優勝／残念ファンファーレと重ならないよう遅延再生
+                    setTimeout(() => {
+                        playSheepSE('graduate');
+                    }, 1400);
                 } else {
                     // 継続
                     allData[userName] = s;
@@ -507,7 +575,13 @@
             }
         }
 
-        function backToStable() { location.href = "sheep_stable.html"; }
+        function backToStable() {
+            if (window.SheepSE) {
+                window.SheepSE.stopGallop();
+            }
+            playSheepSE('ui');
+            location.href = "sheep_stable.html";
+        }
     </script>
 </body>
 
